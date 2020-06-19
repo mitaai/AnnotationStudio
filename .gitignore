@@ -17,6 +17,9 @@ pids
 *.seed
 *.pid.lock
 
+# VSCode
+.vscode
+
 # Next.js
 # next.js build output
 .next
