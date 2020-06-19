@@ -1,5 +1,9 @@
 // .gitnignore
 
+# Cache
+.DS_STORE
+.eslintcache
+
 # Logs
 logs
 *.log

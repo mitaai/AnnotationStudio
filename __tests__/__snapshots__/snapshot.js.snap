@@ -1,0 +1,159 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders homepage unchanged 1`] = `
+<div
+  className="md-container container"
+>
+  <div
+    className="container"
+  >
+    <h1>
+      Welcome to 
+      <a
+        href="https://nextjs.org"
+      >
+        Next.js!
+      </a>
+    </h1>
+    <p>
+      Get started by editing 
+      <code>
+        pages/index.js
+      </code>
+    </p>
+    <div
+      className="container"
+    >
+      <div
+        className="justify-content-md-between row"
+      >
+        <div
+          className="sml-card card"
+        >
+          <div
+            className="card-body"
+          >
+            <div
+              className="card-title h5"
+            >
+              Documentation
+            </div>
+            <p
+              className="card-text"
+            >
+              Find in-depth information about Next.js features and API.
+            </p>
+            <a
+              className="btn btn-primary"
+              href="https://nextjs.org/docs"
+              onClick={[Function]}
+              onKeyDown={[Function]}
+            >
+              More →
+            </a>
+          </div>
+        </div>
+        <div
+          className="sml-card card"
+        >
+          <div
+            className="card-body"
+          >
+            <div
+              className="card-title h5"
+            >
+              Learn
+            </div>
+            <p
+              className="card-text"
+            >
+              Learn about Next.js in an interactive course with quizzes!
+            </p>
+            <a
+              className="btn btn-primary"
+              href="https://nextjs.org/learn"
+              onClick={[Function]}
+              onKeyDown={[Function]}
+            >
+              More →
+            </a>
+          </div>
+        </div>
+      </div>
+      <div
+        className="justify-content-md-between row"
+      >
+        <div
+          className="sml-card card"
+        >
+          <div
+            className="card-body"
+          >
+            <div
+              className="card-title h5"
+            >
+              Examples
+            </div>
+            <p
+              className="card-text"
+            >
+              Discover and deploy boilerplate example Next.js projects.
+            </p>
+            <a
+              className="btn btn-primary"
+              href="https://github.com/vercel/next.js/tree/master/examples"
+              onClick={[Function]}
+              onKeyDown={[Function]}
+            >
+              More →
+            </a>
+          </div>
+        </div>
+        <div
+          className="sml-card card"
+        >
+          <div
+            className="card-body"
+          >
+            <div
+              className="card-title h5"
+            >
+              Deploy
+            </div>
+            <p
+              className="card-text"
+            >
+              Instantly deploy your Next.js site to a public URL with Vercel.
+            </p>
+            <a
+              className="btn btn-primary"
+              href="https://vercel.com/import?filter=next.js&utm_source=github&utm_medium=example&utm_campaign=next-example"
+              onClick={[Function]}
+              onKeyDown={[Function]}
+            >
+              More →
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer
+    className="cntr-footer"
+  >
+    <a
+      href="https://vercel.com?filter=next.js&utm_source=github&utm_medium=example&utm_campaign=next-example"
+      rel="noopener noreferrer"
+      target="_blank"
+    >
+      Powered by
+       
+      <img
+        alt="Vercel Logo"
+        className="sml-logo"
+        src="/vercel.svg"
+      />
+    </a>
+  </footer>
+</div>
+`;

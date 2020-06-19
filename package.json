@@ -1,12 +1,14 @@
 {
-  "name": "with-react-bootstrap",
-  "version": "0.1.0",
-  "author": "Wenzhi Li",
+  "name": "annotation-studio",
+  "version": "4.0.0",
+  "author": "Ben Silverman and Joshua Mbogo",
   "license": "MIT",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "test": "jest --watch",
+    "test:ci": "jest --ci"
   },
   "dependencies": {
     "bootstrap": "^4.4.1",
@@ -14,5 +16,13 @@
     "react": "^16.13.1",
     "react-bootstrap": "^1.0.1",
     "react-dom": "^16.13.1"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^5.1.0",
+    "@testing-library/react": "^9.4.0",
+    "babel-jest": "^25.1.0",
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "^25.1.0",
+    "react-test-renderer": "^16.12.0"
   }
 }
