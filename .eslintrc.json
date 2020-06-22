@@ -1,0 +1,18 @@
+{
+	"extends": ["airbnb"],
+    "plugins": ["jest"],
+    "parserOptions": {
+		"ecmaVersion": 6,
+		"sourceType": "module",
+		"ecmaFeatures": {
+			"jsx": true
+		}
+    },
+    "rules": {
+      "no-tabs": 0,
+      "no-multiple-empty-lines": ["error", { "max": 2, "maxBOF": 1 }],
+      "arrow-parens": ["error", "always"],
+      "react/react-in-jsx-scope": "off",
+      "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx"] }]
+    }
+}
