@@ -21,6 +21,7 @@
     "jquery": "^3.5.1",
     "mongo-seeding": "^3.4.1",
     "next": "latest",
+    "next-auth": "^2.0.0",
     "popper.js": "^1.16.1",
     "react": "^16.13.1",
     "react-bootstrap": "^1.0.1",
