@@ -1,5 +1,7 @@
-import Head from 'next/head'
-import { Container, Row, Card, Button } from 'react-bootstrap'
+import Head from 'next/head';
+import {
+  Container, Row, Card, Button,
+} from 'react-bootstrap';
 
 export default function Home() {
   return (
@@ -10,10 +12,14 @@ export default function Home() {
       </Head>
       <Container>
         <h1>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
+          Welcome to
+          {' '}
+          <a href="https://nextjs.org">Next.js!</a>
         </h1>
         <p>
-          Get started by editing <code>pages/index.js</code>
+          Get started by editing
+          {' '}
+          <code>pages/index.js</code>
         </p>
         <Container>
           <Row className="justify-content-md-between">
@@ -80,10 +86,11 @@ export default function Home() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Powered by{' '}
+          Powered by
+          {' '}
           <img src="/vercel.svg" alt="Vercel Logo" className="sml-logo" />
         </a>
       </footer>
     </Container>
-  )
+  );
 }
