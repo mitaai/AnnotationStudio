@@ -18,7 +18,7 @@ This should install and use the project's correct node version as defined in the
 [Read more about how to use nvm here](https://github.com/nvm-sh/nvm/blob/master/README.md#usage). 
 
 ## MongoDB
-In order to run the DB server locally, you will need to install MongoDB. This can be done using any package manager—we use homebrew for MacOS (https://brew.sh/). For other operating systems, see the [MongoDB documentation](https://docs.mongodb.com/manual/installation) (community edition).
+In order to run the DB server locally, you will need to install MongoDB. This can be done using any package manager—we use [homebrew for MacOS](https://brew.sh/). For other operating systems, see the [MongoDB documentation](https://docs.mongodb.com/manual/installation) (community edition).
 
 With homebrew on MacOS:
 ```sh
