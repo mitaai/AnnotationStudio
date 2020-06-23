@@ -72,6 +72,8 @@ Serves the build on http://localhost:3000. Will only run after `npm run build` h
 ## Code style
 We use [ESLint](https://eslint.org/) to lint the JavaScript code, thus making sure that we avoid syntax errors and that the code style remains consistent throughout the project. ESLint can be configured to adapt to any team's taste. We use [Airbnb's preset](https://www.npmjs.com/package/eslint-config-airbnb).
 
+ESLint can be integrated with most common text editors, so that you can immediately see errors in your code without running any shell scripts. If you are using VSCode, you can use the [ESLint extension](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint). If you are using Atom, navigate to the [linter-eslint](https://atom.io/packages/linter-eslint) extension and click the Install button.
+
 The ESLint configuration can be changed int the `.eslintrc` file. The file `.eslintignore` can be used to ignore files that aren't owned by the project or shouldn't be linted. 
 
 #### `npm run lint`
