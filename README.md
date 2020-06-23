@@ -87,8 +87,20 @@ We use unit testing to make sure our components' functionality is working as exp
 
 Unit testing is done using [Jest](https://jestjs.io/). Jest can be configured within the `jest.config.js` file in the project's root.
 
+### Naming tests
+Unit tests are named after the file they test. For example, if we need to test the file `dateUtil.js`, we would create a new file next to it called `dateUtil.test.js`. Jest would then automatically recognize and run it.
+
+Tests that involve multiple components' interactions, also known as integration tests, should be placed in the `__tests__` directory.
+
 ### Testing React components
 We use [React Testing Library](https://testing-library.com/docs/react-testing-library/intro) to test React components.
+
+### Running tests
+#### `npm run test`
+Runs the tests in interactive mode. Useful when developing. Runs by default only on files changed since the last commit, but all tests can be run at any time by typing `a` in the interactive test mode.
+
+#### `npm run test-latest`
+This command is the equivalent of `npm run test`, but doesn't run in interactive mode and only the tests related to the files changed since the last commit are tested.
 
 ***
 
