@@ -12,7 +12,8 @@
     "build": "next build",
     "start": "next start",
     "test": "jest --watch",
-    "test:ci": "jest --ci"
+    "test:ci": "jest --ci",
+    "lint": "eslint --fix ./src/**/*.js ./src/**/*.jsx"
   },
   "dependencies": {
     "bootstrap": "^4.5.0",
