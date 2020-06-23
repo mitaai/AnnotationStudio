@@ -13,7 +13,8 @@
     "start": "next start",
     "test": "jest --watch",
     "test:ci": "jest --ci",
-    "lint": "eslint --fix ./src/**/*.js ./src/**/*.jsx"
+    "lint": "eslint --fix ./src/**/*.js ./src/**/*.jsx",
+    "lint-latest": "LIST=`git diff-index --name-only --diff-filter=d HEAD | grep .*\\.js | grep -v json`; if [ \"$LIST\" ]; then eslint --fix $LIST; fi"
   },
   "dependencies": {
     "bootstrap": "^4.5.0",
