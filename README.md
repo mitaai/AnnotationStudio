@@ -68,4 +68,26 @@ Serves the build on http://localhost:3000. Will only run after `npm run build` h
 
 *** 
 
+# Quality management
+## Code style
+We use [ESLint](https://eslint.org/) to lint the JavaScript code, thus making sure that we avoid syntax errors and that the code style remains consistent throughout the project. ESLint can be configured to adapt to any team's taste. We use [Airbnb's preset](https://www.npmjs.com/package/eslint-config-airbnb).
+
+The ESLint configuration can be changed int the `.eslintrc` file. The file `.eslintignore` can be used to ignore files that aren't owned by the project or shouldn't be linted. 
+
+#### `npm run lint`
+Runs ESLint in the `src` folder and fixes all errors that can be fixed automatically.
+
+#### `npm run lint-latest`
+Runs ESLint on all JavaScript and JSON files that changed since the last commit.
+
+## Unit testing
+We use unit testing to make sure our components' functionality is working as expected, thus avoiding the creation of new bugs. Testing also serves as a self documentation, as tests describe really well the purpose of the code.
+
+Unit testing is done using [Jest](https://jestjs.io/). Jest can be configured within the `jest.config.js` file in the project's root.
+
+### Testing React components
+We use [React Testing Library](https://testing-library.com/docs/react-testing-library/intro) to test React components.
+
+***
+
 This README was adapted from [hyperstudio/hidden-perspectives-app](https://github.com/hyperstudio/hidden-perspectives-app/blob/master/README.md).
