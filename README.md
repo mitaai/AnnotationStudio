@@ -93,7 +93,7 @@ Unit tests are named after the file they test. For example, if we need to test t
 Tests that involve multiple components' interactions, also known as integration tests, should be placed in the `__tests__` directory.
 
 ### Testing React components
-We use [React Testing Library](https://testing-library.com/docs/react-testing-library/intro) to test React components.
+We use [React Testing Library](https://testing-library.com/docs/react-testing-library/intro) to test React components. An example test using React Testing Library can be found in [this Next.js example](https://github.com/vercel/next.js/blob/canary/examples/with-jest/__tests__/testing-library.js).
 
 ### Running tests
 #### `npm run test`
