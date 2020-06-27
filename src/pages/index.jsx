@@ -2,26 +2,20 @@ import Head from 'next/head';
 import {
   Container,
 } from 'react-bootstrap';
+import Layout from '../components/Layout';
+import Header from '../components/Header';
 
 export default function Home() {
   return (
-    <Container className="md-container">
+    <Layout>
       <Head>
-        <title>ReactJS with react-bootstrap</title>
+        <title>Annotation Studio</title>
         <link rel="icon" href="/favicon-32x32.png" />
       </Head>
+      <Header />
       <Container>
-        <h1>
-          Welcome to
-          {' '}
-          <a href="https://nextjs.org">Next.js!</a>
-        </h1>
-        <p>
-          Get started by editing
-          {' '}
-          <code>pages/index.js</code>
-        </p>
+        Welcome to Annotation Studio.
       </Container>
-    </Container>
+    </Layout>
   );
 }
