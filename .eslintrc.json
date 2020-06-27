@@ -13,7 +13,8 @@
     "no-multiple-empty-lines": ["error", { "max": 2, "maxBOF": 1 }],
     "arrow-parens": ["error", "always"],
     "react/react-in-jsx-scope": "off",
-    "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx"] }]
+    "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx"] }],
+    "react/prop-types": 0
   },
   "env": {
     "jest": true
