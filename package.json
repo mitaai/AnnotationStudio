@@ -27,7 +27,9 @@
     "popper.js": "^1.16.1",
     "react": "^16.13.1",
     "react-bootstrap": "^1.0.1",
+    "react-bootstrap-icons": "^1.0.3-alpha4",
     "react-dom": "^16.13.1",
+    "sass": "^1.26.9",
     "typescript": "^3.9.5"
   },
   "devDependencies": {
