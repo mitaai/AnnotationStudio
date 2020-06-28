@@ -1,5 +1,6 @@
 import Head from 'next/head';
 import Header from './Header';
+import Footer from './Footer';
 
 function Layout({ children }) {
   return (
@@ -9,7 +10,10 @@ function Layout({ children }) {
         <link rel="icon" href="/favicon-32x32.png" />
       </Head>
       <Header />
-      {children}
+      <main role="main" className="flex-shrink-0">
+        {children}
+      </main>
+      <Footer />
     </>
   );
 }

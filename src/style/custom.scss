@@ -1,7 +1,13 @@
-/* custom theming */
+/* custom colors */
 $theme-colors: (
   "ans-color": #FCCE02
 );
+
+.footer .logo { 
+  height: 30px; 
+  max-height: 30px; 
+  min-height: 30px; 
+}
 
 /* import bootstrap */
 @import "~bootstrap/scss/bootstrap";

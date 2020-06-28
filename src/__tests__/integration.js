@@ -6,3 +6,9 @@ it('renders header', () => {
   const navElement = getByRole('navigation');
   expect(navElement).toBeInTheDocument();
 });
+
+test('renders footer', () => {
+  const { getByRole } = render(<Index />);
+  const footerElem = getByRole('contentinfo');
+  expect(footerElem).toBeInTheDocument();
+});
