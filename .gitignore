@@ -27,8 +27,9 @@ pids
 # Next.js
 # next.js build output
 .next
-# dotenv environment variables file (build for Zeit Now)
+# dotenv environment variables
 .env
+.env.local
 .env.build
 # Dependency directories
 node_modules/
