@@ -14,6 +14,19 @@ function Layout({ children }) {
         {children}
       </main>
       <Footer />
+      <style jsx global>
+        {`
+          html,
+          body,
+          #__next {
+            height: 100% !important
+          }
+          #__next {
+            flex-direction: column !important;
+            display: flex !important;        
+          }
+        `}
+      </style>
     </>
   );
 }
