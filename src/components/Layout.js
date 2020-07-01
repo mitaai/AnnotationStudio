@@ -10,7 +10,7 @@ function Layout({ children }) {
         <link rel="icon" href="/favicon-32x32.png" />
       </Head>
       <Header />
-      <main role="main" className="flex-shrink-0">
+      <main role="main" className="flex-shrink-0 p-3">
         {children}
       </main>
       <Footer />
@@ -20,6 +20,9 @@ function Layout({ children }) {
           body,
           #__next {
             height: 100% !important
+          }
+          body {
+            background-color: #eee;
           }
           #__next {
             flex-direction: column !important;
