@@ -2,7 +2,7 @@
   "extends": ["airbnb", "plugin:testing-library/react"],
   "plugins": ["jest","testing-library"],
   "parserOptions": {
-    "ecmaVersion": 6,
+    "ecmaVersion": 8,
     "sourceType": "module",
     "ecmaFeatures": {
       "jsx": true
