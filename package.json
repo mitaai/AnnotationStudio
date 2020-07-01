@@ -39,6 +39,7 @@
   "devDependencies": {
     "@testing-library/jest-dom": "^5.11.0",
     "@testing-library/react": "^9.4.0",
+    "@testing-library/react-hooks": "^3.3.0",
     "babel-jest": "^25.1.0",
     "eslint-config-airbnb": "^18.2.0",
     "eslint-plugin-import": "^2.22.0",
