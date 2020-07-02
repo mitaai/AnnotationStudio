@@ -22,6 +22,7 @@
     "eslint-config-airbnb-base": "^14.2.0",
     "formik": "^2.1.4",
     "jquery": "^3.5.1",
+    "moment": "^2.27.0",
     "mongo-seeding": "^3.4.1",
     "mongodb": "^3.5.9",
     "next": "latest",
