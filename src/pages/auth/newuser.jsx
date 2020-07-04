@@ -1,4 +1,6 @@
+// import { useState } from 'react';
 import { useSession } from 'next-auth/client';
+import fetch from 'unfetch';
 import { Formik } from 'formik';
 import * as yup from 'yup';
 import {
@@ -7,9 +9,33 @@ import {
 import Feedback from 'react-bootstrap/Feedback';
 import Link from 'next/link';
 import Layout from '../../components/Layout';
+// import useCurrentUser from '../../utils/hooks';
 
-export default function NewUser() {
+const NewUser = () => {
   const [session] = useSession();
+
+  // const [, { mutate }] = useCurrentUser();
+  // const [, setErrorMsg] = useState('');
+
+  const submitHandler = async (values) => {
+    const body = {
+      email: session.user.email,
+      firstName: values.firstName,
+      lastName: values.lastName,
+      affiliation: values.affiliation,
+    };
+    const res = await fetch('/api/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    // if (res.status === 201) {
+    //   const userObj = await res.json();
+    //   mutate(userObj);
+    // } else {
+    //   setErrorMsg(await res.text());
+    // }
+  };
 
   const schema = yup.object({
     firstName: yup.string().required('Required'),
@@ -32,6 +58,12 @@ export default function NewUser() {
                 </Card.Text>
 
                 <Formik
+                  onSubmit={(values, actions) => {
+                    setTimeout(() => {
+                      submitHandler(values);
+                      actions.setSubmitting(false);
+                    }, 1000);
+                  }}
                   validationSchema={schema}
                   initialValues={{
                     firstName: '',
@@ -40,21 +72,14 @@ export default function NewUser() {
                     tosCheck: false,
                   }}
                 >
-                  {({
-                    handleSubmit,
-                    handleChange,
-                    handleBlur,
-                    values,
-                    touched,
-                    errors,
-                  }) => (
-                    <Form onSubmit={handleSubmit} noValidate>
+                  {(props) => (
+                    <Form onSubmit={props.handleSubmit} noValidate>
                       <Form.Group as={Row} controlId="formPlaintextEmail">
                         <Form.Label column lg="4">
                           Email
                         </Form.Label>
                         <Col>
-                          <Form.Control plaintext readOnly defaultValue={session.user.email} />
+                          <Form.Control name="email" plaintext readOnly defaultValue={session.user.email} />
                         </Col>
                       </Form.Group>
 
@@ -67,14 +92,14 @@ export default function NewUser() {
                             type="text"
                             name="firstName"
                             placeholder="First Name"
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            value={values.firstName}
-                            isValid={touched.firstName && !errors.firstName}
-                            isInvalid={!!errors.firstName}
+                            onChange={props.handleChange}
+                            onBlur={props.handleBlur}
+                            value={props.values.firstName}
+                            isValid={props.touched.firstName && !props.errors.firstName}
+                            isInvalid={!!props.errors.firstName}
                           />
                           <Form.Control.Feedback type="invalid">
-                            {errors.firstName}
+                            {props.errors.firstName}
                           </Form.Control.Feedback>
                         </Col>
                       </Form.Group>
@@ -88,14 +113,14 @@ export default function NewUser() {
                             type="text"
                             name="lastName"
                             placeholder="Last Name"
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            value={values.lastName}
-                            isValid={touched.lastName && !errors.lastName}
-                            isInvalid={!!errors.lastName}
+                            onChange={props.handleChange}
+                            onBlur={props.handleBlur}
+                            value={props.values.lastName}
+                            isValid={props.touched.lastName && !props.errors.lastName}
+                            isInvalid={!!props.errors.lastName}
                           />
                           <Form.Control.Feedback type="invalid">
-                            {errors.lastName}
+                            {props.errors.lastName}
                           </Form.Control.Feedback>
                         </Col>
                       </Form.Group>
@@ -109,10 +134,10 @@ export default function NewUser() {
                             type="text"
                             name="affiliation"
                             placeholder="e.g. MIT"
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            value={values.affiliation}
-                            isValid={touched.affiliation && !errors.affiliation}
+                            onChange={props.handleChange}
+                            onBlur={props.handleBlur}
+                            value={props.values.affiliation}
+                            isValid={props.touched.affiliation && !props.errors.affiliation}
                           />
                         </Col>
                       </Form.Group>
@@ -123,11 +148,11 @@ export default function NewUser() {
                             type="checkbox"
                             name="tosCheck"
                             id="tosCheck"
-                            value={values.tosCheck}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            isValid={touched.tosCheck && !errors.tosCheck}
-                            isInvalid={!!errors.tosCheck}
+                            value={props.values.tosCheck}
+                            onChange={props.handleChange}
+                            onBlur={props.handleBlur}
+                            isValid={props.touched.tosCheck && !props.errors.tosCheck}
+                            isInvalid={!!props.errors.tosCheck}
                           />
                           <Form.Check.Label for="tosCheck">
                             I agree to the Annotation Studio
@@ -135,24 +160,26 @@ export default function NewUser() {
                             <Link href="#tos">Terms and Conditions</Link>
                           </Form.Check.Label>
                           <Feedback type="invalid">
-                            {errors.tosCheck}
+                            {props.errors.tosCheck}
                           </Feedback>
                         </Form.Check>
                       </Form.Group>
                       <Row>
                         <Col className="text-right">
-                          {!Formik.isSubmitting && (
-                            <Button variant="primary" type="submit">
-                              Submit
-                            </Button>
-                          )}
-                          {Formik.isSubmitting && (
-                            <Button variant="primary" type="submit" disabled>
-                              Submit
-                            </Button>
-                          )}
+                          <Button
+                            variant="primary"
+                            type="submit"
+                            disabled={props.isSubmitting}
+                          >
+                            Submit
+                          </Button>
                         </Col>
                       </Row>
+                      <pre id="tester">
+                        session.user:
+                        {' '}
+                        {JSON.stringify(session.user, null, 2)}
+                      </pre>
                     </Form>
                   )}
                 </Formik>
@@ -163,4 +190,6 @@ export default function NewUser() {
       </Container>
     </Layout>
   );
-}
+};
+
+export default NewUser;
