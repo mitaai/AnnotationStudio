@@ -30,9 +30,9 @@ function Header() {
               )}
               {session && (
                 <>
-                  {session.user.firstName && (
+                  {session.user.name && (
                     <Nav.Link eventKey="disabled" disabled>
-                      {session.user.firstName}
+                      {session.user.name}
                       {' '}
                     </Nav.Link>
                   )}

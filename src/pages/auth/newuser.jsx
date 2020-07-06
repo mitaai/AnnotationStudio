@@ -1,4 +1,4 @@
-// import { useState } from 'react';
+import { useState } from 'react';
 import { useSession } from 'next-auth/client';
 import fetch from 'unfetch';
 import { Formik } from 'formik';
@@ -8,20 +8,20 @@ import {
 } from 'react-bootstrap';
 import Feedback from 'react-bootstrap/Feedback';
 import Link from 'next/link';
+import fullName from '../../utils/nameUtil';
 import Layout from '../../components/Layout';
-// import useCurrentUser from '../../utils/hooks';
 
 const NewUser = () => {
   const [session] = useSession();
 
-  // const [, { mutate }] = useCurrentUser();
-  // const [, setErrorMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
 
   const submitHandler = async (values) => {
     const body = {
       email: session.user.email,
       firstName: values.firstName,
       lastName: values.lastName,
+      name: fullName(values.firstName, values.lastName),
       affiliation: values.affiliation,
     };
     const res = await fetch('/api/users', {
@@ -29,12 +29,11 @@ const NewUser = () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
-    // if (res.status === 201) {
-    //   const userObj = await res.json();
-    //   mutate(userObj);
-    // } else {
-    //   setErrorMsg(await res.text());
-    // }
+    if (res.status === 201) {
+      await res.json();
+    } else {
+      setErrorMsg(await res.text());
+    }
   };
 
   const schema = yup.object({
@@ -74,6 +73,7 @@ const NewUser = () => {
                 >
                   {(props) => (
                     <Form onSubmit={props.handleSubmit} noValidate>
+                      {errorMsg ? <p style={{ color: 'red' }}>{errorMsg}</p> : null}
                       <Form.Group as={Row} controlId="formPlaintextEmail">
                         <Form.Label column lg="4">
                           Email
@@ -154,10 +154,10 @@ const NewUser = () => {
                             isValid={props.touched.tosCheck && !props.errors.tosCheck}
                             isInvalid={!!props.errors.tosCheck}
                           />
-                          <Form.Check.Label for="tosCheck">
+                          <Form.Check.Label htmlFor="tosCheck">
                             I agree to the Annotation Studio
                             {' '}
-                            <Link href="#tos">Terms and Conditions</Link>
+                            <Link href="#tos"><a href="#tos" title="tos">Terms and Conditions</a></Link>
                           </Form.Check.Label>
                           <Feedback type="invalid">
                             {props.errors.tosCheck}
@@ -175,11 +175,11 @@ const NewUser = () => {
                           </Button>
                         </Col>
                       </Row>
-                      <pre id="tester">
+                      {/* <pre id="tester">
                         session.user:
                         {' '}
                         {JSON.stringify(session.user, null, 2)}
-                      </pre>
+                      </pre> */}
                     </Form>
                   )}
                 </Formik>

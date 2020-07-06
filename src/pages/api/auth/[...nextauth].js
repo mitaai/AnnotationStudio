@@ -1,6 +1,8 @@
 import NextAuth from 'next-auth';
 import Providers from 'next-auth/providers';
+import Adapters from 'next-auth/adapters';
 import sendVerificationRequestOverride from '../../../utils/verificationUtil';
+import ASUser from '../../../models/user';
 
 const options = {
   site: process.env.SITE || 'http://localhost:3000',
@@ -26,8 +28,14 @@ const options = {
       },
     }),
   ],
-
-  database: process.env.MONGODB_URI,
+  // database: process.env.MONGODB_URI,
+  adapter: Adapters.TypeORM.Adapter({
+    type: 'mongodb',
+    url: process.env.MONGODB_URI,
+    customModels: {
+      User: ASUser,
+    },
+  }),
 
   session: {
     jwt: true,

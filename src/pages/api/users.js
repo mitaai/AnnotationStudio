@@ -4,13 +4,14 @@ import middleware from '../../middlewares/middleware';
 const handler = nc()
   .use(middleware)
   .post(
-    async (req) => {
+    async (req, res) => {
       await req.db
         .collection('users')
         .findOneAndUpdate(
           { email: req.body.email },
           {
             $set: {
+              name: req.body.name,
               firstName: req.body.firstName,
               lastName: req.body.lastName,
               affiliation: req.body.affiliation,
@@ -19,8 +20,14 @@ const handler = nc()
               updatedAt: true,
             },
           },
-        )
-        .then(({ ops }) => ops[0]);
+          {
+            returnOriginal: false,
+          },
+          (err, doc) => {
+            if (err) throw err;
+            res.status(201).json(doc);
+          },
+        );
     },
   );
 
