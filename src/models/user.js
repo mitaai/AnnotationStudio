@@ -1,10 +1,10 @@
 Object.defineProperty(exports, '__esModule', {
   value: true,
 });
-exports.ASUser = undefined;
-exports.ASUserSchema = exports.ASUser;
+exports.User = undefined;
+exports.UserSchema = exports.User;
 
-class ASUser {
+class User {
   constructor(name, email, image, emailVerified) {
     if (name) {
       this.name = name;
@@ -24,11 +24,11 @@ class ASUser {
     }
   }
 }
-exports.ASUser = ASUser;
+exports.User = User;
 
-const ASUserSchema = {
-  name: 'ASUser',
-  target: ASUser,
+const UserSchema = {
+  name: 'User',
+  target: User,
   columns: {
     id: {
       primary: true,
@@ -79,4 +79,4 @@ const ASUserSchema = {
     columns: ['email'],
   },
 };
-exports.ASUserSchema = ASUserSchema;
+exports.UserSchema = UserSchema;

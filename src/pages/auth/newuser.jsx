@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useSession } from 'next-auth/client';
+import { useSession, getSession } from 'next-auth/client';
 import fetch from 'unfetch';
 import { Formik } from 'formik';
 import * as yup from 'yup';
@@ -31,6 +31,7 @@ const NewUser = () => {
     });
     if (res.status === 201) {
       await res.json();
+      getSession();
     } else {
       setErrorMsg(await res.text());
     }

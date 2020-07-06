@@ -2,7 +2,7 @@ import NextAuth from 'next-auth';
 import Providers from 'next-auth/providers';
 import Adapters from 'next-auth/adapters';
 import sendVerificationRequestOverride from '../../../utils/verificationUtil';
-import ASUser from '../../../models/user';
+import Models from '../../../models';
 
 const options = {
   site: process.env.SITE || 'http://localhost:3000',
@@ -33,7 +33,7 @@ const options = {
     type: 'mongodb',
     url: process.env.MONGODB_URI,
     customModels: {
-      User: ASUser,
+      User: Models.User,
     },
   }),
 
