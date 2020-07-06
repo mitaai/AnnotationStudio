@@ -23,15 +23,15 @@ function Footer() {
               {' '}
               Active Archives Initiative at MIT
               <br />
-              <Link href="#tos">Terms and Conditions</Link>
+              <Link href="#tos"><a href="#tos">Terms and Conditions</a></Link>
               {' '}
               |
               {' '}
-              <Link href="#privacy">Privacy Policy</Link>
+              <Link href="#privacy"><a href="#privacy">Privacy Policy</a></Link>
               {' '}
               |
               {' '}
-              <Link href="#cookie">Cookie Policy</Link>
+              <Link href="#cookie"><a href="#cookie">Cookie Policy</a></Link>
               {' '}
             </small>
           </Col>
