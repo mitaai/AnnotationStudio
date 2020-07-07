@@ -3,7 +3,7 @@ import middleware from '../../middlewares/middleware';
 
 const handler = nc()
   .use(middleware)
-  .post(
+  .patch(
     async (req, res) => {
       await req.db
         .collection('users')
@@ -25,7 +25,7 @@ const handler = nc()
           },
           (err, doc) => {
             if (err) throw err;
-            res.status(201).json(doc);
+            res.status(200).json(doc);
           },
         );
     },

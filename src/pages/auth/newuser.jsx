@@ -25,11 +25,11 @@ const NewUser = () => {
       affiliation: values.affiliation,
     };
     const res = await fetch('/api/users', {
-      method: 'POST',
+      method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
-    if (res.status === 201) {
+    if (res.status === 200) {
       await res.json();
       getSession();
     } else {
