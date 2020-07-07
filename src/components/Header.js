@@ -11,7 +11,7 @@ function Header() {
     <header sticky="top">
       <Navbar bg="dark" variant="dark">
         <Container>
-          <Navbar.Brand href="#home">Annotation Studio</Navbar.Brand>
+          <Navbar.Brand href="/">Annotation Studio</Navbar.Brand>
           <Navbar.Toggle aria-controls="responsive-navbar-nav" />
           <Navbar.Collapse className="justify-content-end">
             <Nav>

@@ -1,6 +1,7 @@
 import NextAuth from 'next-auth';
 import Providers from 'next-auth/providers';
 import Adapters from 'next-auth/adapters';
+import fetch from 'isomorphic-unfetch';
 import sendVerificationRequestOverride from '../../../utils/verificationUtil';
 import Models from '../../../models';
 
@@ -28,7 +29,6 @@ const options = {
       },
     }),
   ],
-  // database: process.env.MONGODB_URI,
   adapter: Adapters.TypeORM.Adapter({
     type: 'mongodb',
     url: process.env.MONGODB_URI,
@@ -47,6 +47,23 @@ const options = {
 
   pages: {
     newUser: '/auth/newuser',
+  },
+
+  callbacks: {
+    session: async (session) => {
+      const { email } = session.user;
+      const newSession = session;
+      const url = `${process.env.SITE}/api/user/${email}`;
+      const res = await fetch(url, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (res.status === 200) {
+        const user = await res.json();
+        newSession.user.name = user.name;
+      }
+      return Promise.resolve(newSession);
+    },
   },
 
 };
