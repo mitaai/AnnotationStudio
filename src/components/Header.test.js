@@ -1,21 +1,45 @@
-import { render } from '@testing-library/react';
+import { render, wait } from '@testing-library/react';
 import Header from './Header';
 
-test('renders site name', () => {
+test('renders site name', async () => {
   const { getByText } = render(<Header />);
   const nameElement = getByText(/Annotation Studio/);
-  expect(nameElement).toBeInTheDocument();
+  await wait(() => {
+    expect(nameElement).toBeInTheDocument();
+  });
 });
 
+test('renders navbar', async () => {
+  const { getByRole } = render(<Header />);
+  const navElement = getByRole('navigation');
+  await wait(() => {
+    expect(navElement).toBeInTheDocument();
+  });
+});
 
-test('renders nav and all nav elements', () => {
+test('renders about dropdown', async () => {
   const { getByRole, getByTestId } = render(<Header />);
   const navElement = getByRole('navigation');
-  expect(navElement).toBeInTheDocument();
   const aboutDropdown = getByTestId('nav-about-dropdown');
-  expect(navElement).toContainElement(aboutDropdown);
+  await wait(() => {
+    expect(navElement).toContainElement(aboutDropdown);
+  });
+});
+
+test('renders help link', async () => {
+  const { getByRole, getByTestId } = render(<Header />);
+  const navElement = getByRole('navigation');
   const helpLink = getByTestId('nav-help-link');
-  expect(navElement).toContainElement(helpLink);
+  await wait(() => {
+    expect(navElement).toContainElement(helpLink);
+  });
+});
+
+test('renders login link', async () => {
+  const { getByRole, getByTestId } = render(<Header />);
+  const navElement = getByRole('navigation');
   const loginLink = getByTestId('nav-login-link');
-  expect(navElement).toContainElement(loginLink);
+  await wait(() => {
+    expect(navElement).toContainElement(loginLink);
+  });
 });
