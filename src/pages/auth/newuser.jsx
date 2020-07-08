@@ -40,6 +40,7 @@ const NewUser = () => {
   const schema = yup.object({
     firstName: yup.string().required('Required'),
     lastName: yup.string().required('Required'),
+    affiliation: yup.string().required('Required'),
     tosCheck: yup.boolean()
       .required('You must agree to the Terms and Conditions before registering.')
       .oneOf([true], 'You must agree to the Terms and Conditions before registering.'),
@@ -139,6 +140,7 @@ const NewUser = () => {
                             onBlur={props.handleBlur}
                             value={props.values.affiliation}
                             isValid={props.touched.affiliation && !props.errors.affiliation}
+                            isInvalid={!!props.errors.affiliation}
                           />
                         </Col>
                       </Form.Group>
