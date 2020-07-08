@@ -8,6 +8,7 @@ import {
 } from 'react-bootstrap';
 import Feedback from 'react-bootstrap/Feedback';
 import Link from 'next/link';
+import Router from 'next/router';
 import fullName from '../../utils/nameUtil';
 import Layout from '../../components/Layout';
 
@@ -31,7 +32,11 @@ const NewUser = () => {
     });
     if (res.status === 200) {
       await res.json();
-      getSession();
+      getSession({ username: 'test' });
+      Router.push({
+        pathname: '/',
+        query: { regComplete: true },
+      });
     } else {
       setErrorMsg(await res.text());
     }

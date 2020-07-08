@@ -52,7 +52,6 @@ const options = {
   callbacks: {
     session: async (session) => {
       const { email } = session.user;
-      const newSession = session;
       const url = `${process.env.SITE}/api/user/${email}`;
       const res = await fetch(url, {
         method: 'GET',
@@ -60,9 +59,10 @@ const options = {
       });
       if (res.status === 200) {
         const user = await res.json();
-        newSession.user.name = user.name;
+        // eslint-disable-next-line no-param-reassign
+        session.user.name = user.name;
       }
-      return Promise.resolve(newSession);
+      return Promise.resolve(session);
     },
   },
 
