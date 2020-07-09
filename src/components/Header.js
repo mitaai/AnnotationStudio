@@ -30,15 +30,14 @@ function Header() {
               {session && (
                 <>
                   {session.user.name && (
-                    <Nav.Link eventKey="disabled" disabled>
-                      {session.user.name}
-                      {' '}
-                    </Nav.Link>
+                    <NavDropdown title={session.user.name} id="basic-nav-dropdown" data-testid="nav-profile-dropdown">
+                      <NavDropdown.Item href="#editprofile">My Profile</NavDropdown.Item>
+                      <NavDropdown.Item href="/api/auth/signout" data-testid="nav-login-link">
+                        Log Out
+                        <BoxArrowRight className="align-text-bottom ml-1" />
+                      </NavDropdown.Item>
+                    </NavDropdown>
                   )}
-                  <Nav.Link href="/api/auth/signout" data-testid="nav-login-link">
-                    Log Out
-                    <BoxArrowRight className="align-text-bottom ml-1" />
-                  </Nav.Link>
                 </>
               )}
             </Nav>

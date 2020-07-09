@@ -1,6 +1,8 @@
 import Head from 'next/head';
+import { Container } from 'react-bootstrap';
 import Header from './Header';
 import Footer from './Footer';
+import Alerts from './Alerts';
 
 function Layout({ children }) {
   return (
@@ -11,7 +13,10 @@ function Layout({ children }) {
       </Head>
       <Header />
       <main role="main" className="flex-shrink-0 p-3">
-        {children}
+        <Container>
+          <Alerts />
+          {children}
+        </Container>
       </main>
       <Footer />
       <style jsx global>
