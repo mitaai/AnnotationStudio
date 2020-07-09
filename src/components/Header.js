@@ -44,7 +44,9 @@ function Header() {
           </Navbar.Collapse>
         </Container>
       </Navbar>
-      <SecondNavbar />
+      {session && (
+        <SecondNavbar />
+      )}
     </header>
   );
 }
