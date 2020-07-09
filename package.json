@@ -35,7 +35,7 @@
     "react-bootstrap": "^1.0.1",
     "react-bootstrap-icons": "^1.0.3-alpha5",
     "react-dom": "^16.13.1",
-    "sass": "^1.26.9",
+    "sass": "^1.26.10",
     "swr": "^0.2.3",
     "typeorm": "^0.2.24",
     "typescript": "^3.9.5",

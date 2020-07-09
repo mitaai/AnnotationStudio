@@ -1,9 +1,8 @@
 import { useSession } from 'next-auth/client';
 import Container from 'react-bootstrap/Container';
-import Nav from 'react-bootstrap/Nav';
-import Navbar from 'react-bootstrap/Navbar';
-import NavDropdown from 'react-bootstrap/NavDropdown';
+import { Nav, Navbar, NavDropdown } from 'react-bootstrap';
 import { BoxArrowUpRight, BoxArrowInRight, BoxArrowRight } from 'react-bootstrap-icons';
+import SecondNavbar from './SecondNavbar';
 
 function Header() {
   const [session] = useSession();
@@ -46,6 +45,7 @@ function Header() {
           </Navbar.Collapse>
         </Container>
       </Navbar>
+      <SecondNavbar />
     </header>
   );
 }

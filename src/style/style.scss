@@ -1,0 +1,68 @@
+.Second-Navbar {
+
+    .breadcrumb {
+        background-color: #f8f9fa !important;
+        margin-bottom: 0px;
+    }
+
+    .container .row {
+        width: 100% !important;
+    }
+
+    #btn-document-more-info {
+        float: right;
+        margin-top: 12px;
+        color: #007bff;
+        cursor: pointer;
+    }
+}
+
+#annotations-header-label {
+    padding: 12px 0px 0px 20px;
+}
+
+#document-container {
+    height: calc(100vh - 230px);
+    overflow-y: scroll;
+
+    .card {
+        min-height: 100%;
+    }
+
+    #document-card-container {
+        padding: 40px;
+        font-family: 'Times';
+    }
+
+    #annotation-well-card-container .card-body {
+        padding: 10px;
+
+        #annotation-well-header {
+            margin-bottom: 10px;
+        }
+
+        #annotation-list-container > .col > .row {
+            margin-bottom: 5px;
+        }
+
+        .btn-group:first-child {
+            margin-right: 10px;
+        }
+
+        .list-group-item {
+            padding: 5px 10px;
+        }
+    }
+}
+
+#btn-filter-annotation-well {
+    margin-top: 7px;
+    float: right;
+
+    svg {
+        margin-right: 5px;
+        position: relative;
+        top: -2px;
+    }
+}
+
