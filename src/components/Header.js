@@ -1,4 +1,5 @@
 import { useSession } from 'next-auth/client';
+import { useRouter } from 'next/router';
 import Container from 'react-bootstrap/Container';
 import { Nav, Navbar, NavDropdown } from 'react-bootstrap';
 import { BoxArrowUpRight, BoxArrowInRight, BoxArrowRight } from 'react-bootstrap-icons';
@@ -6,6 +7,7 @@ import SecondNavbar from './SecondNavbar';
 
 function Header() {
   const [session] = useSession();
+  const router = useRouter();
   return (
     <header sticky="top">
       <Navbar bg="dark" variant="dark">
@@ -37,6 +39,11 @@ function Header() {
                         <BoxArrowRight className="align-text-bottom ml-1" />
                       </NavDropdown.Item>
                     </NavDropdown>
+                  )}
+                  {!session.user.name && router.pathname !== '/auth/newuser' && (
+                    <Nav.Link href="/auth/newuser" className="text-danger">
+                      Complete Registration
+                    </Nav.Link>
                   )}
                 </>
               )}
