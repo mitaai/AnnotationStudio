@@ -10,16 +10,16 @@ test('renders site name', async () => {
 });
 
 test('renders navbar', async () => {
-  const { getByRole } = render(<Header />);
-  const navElement = getByRole('navigation');
+  const { getAllByRole } = render(<Header />);
+  const navElement = getAllByRole('navigation')[0];
   await wait(() => {
     expect(navElement).toBeInTheDocument();
   });
 });
 
 test('renders about dropdown', async () => {
-  const { getByRole, getByTestId } = render(<Header />);
-  const navElement = getByRole('navigation');
+  const { getAllByRole, getByTestId } = render(<Header />);
+  const navElement = getAllByRole('navigation')[0];
   const aboutDropdown = getByTestId('nav-about-dropdown');
   await wait(() => {
     expect(navElement).toContainElement(aboutDropdown);
@@ -27,19 +27,10 @@ test('renders about dropdown', async () => {
 });
 
 test('renders help link', async () => {
-  const { getByRole, getByTestId } = render(<Header />);
-  const navElement = getByRole('navigation');
+  const { getAllByRole, getByTestId } = render(<Header />);
+  const navElement = getAllByRole('navigation')[0];
   const helpLink = getByTestId('nav-help-link');
   await wait(() => {
     expect(navElement).toContainElement(helpLink);
-  });
-});
-
-test('renders login link', async () => {
-  const { getByRole, getByTestId } = render(<Header />);
-  const navElement = getByRole('navigation');
-  const loginLink = getByTestId('nav-login-link');
-  await wait(() => {
-    expect(navElement).toContainElement(loginLink);
   });
 });

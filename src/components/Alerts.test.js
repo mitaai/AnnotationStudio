@@ -1,4 +1,4 @@
-import { render, wait } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import { mockNextUseRouter } from '../utils/testUtil.ts';
 import Alerts from './Alerts';
 
@@ -13,10 +13,8 @@ describe('alerts', () => {
   });
 
   test('renders alert', async () => {
-    const { getByText } = render(<Alerts />);
-    const alert = getByText('Close alert');
-    await wait(() => {
-      expect(alert).toBeInTheDocument();
-    });
+    const { findByText } = render(<Alerts />);
+    const alert = await findByText(/You have successfully registered for Annotation Studio/);
+    expect(alert).toBeInTheDocument();
   });
 });

@@ -5,8 +5,8 @@ import Index from '../pages/index';
 test('renders header', async () => {
   let navElement;
   act(() => {
-    const { getByRole } = render(<Index />);
-    navElement = getByRole('navigation');
+    const { getAllByRole } = render(<Index />);
+    [navElement] = getAllByRole('navigation');
   });
   await wait(() => {
     expect(navElement).toBeInTheDocument();
