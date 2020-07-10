@@ -11,9 +11,13 @@ const handler = nc()
         .findOne(
           { email: req.query.email },
           (err, doc) => {
-            const { name, firstName, lastName } = doc;
+            const {
+              name, firstName, lastName, affiliation,
+            } = doc;
             if (err) throw err;
-            res.status(200).json({ name, firstName, lastName });
+            res.status(200).json({
+              name, firstName, lastName, affiliation,
+            });
           },
         );
     },
