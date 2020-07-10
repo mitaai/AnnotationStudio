@@ -6,16 +6,34 @@ import * as yup from 'yup';
 import {
   Button, Card, Col, Form, Row, Spinner,
 } from 'react-bootstrap';
-import Feedback from 'react-bootstrap/Feedback';
-import Link from 'next/link';
 import Router from 'next/router';
 import fullName from '../../utils/nameUtil';
 import Layout from '../../components/Layout';
 
-const NewUser = () => {
+const EditProfile = () => {
   const [session] = useSession();
 
   const [errorMsg, setErrorMsg] = useState('');
+
+  const getInitialValues = async () => {
+    const { email } = session.user;
+    const url = `/api/user/${email}`;
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (res.status === 200) {
+      const user = await res.json();
+      setErrorMsg(JSON.stringify(user));
+      const { firstName, lastName, affiliation } = user;
+      return Promise.resolve({
+        email, firstName, lastName, affiliation,
+      });
+    }
+    return Promise.resolve({
+      error: 'User not found',
+    });
+  };
 
   const submitHandler = async (values) => {
     const body = {
@@ -35,7 +53,9 @@ const NewUser = () => {
       getSession();
       Router.push({
         pathname: '/',
-        query: { alert: 'completeRegistration' },
+        query: {
+          alert: 'profileEdited',
+        },
       });
     } else {
       setErrorMsg(await res.text());
@@ -46,9 +66,6 @@ const NewUser = () => {
     firstName: yup.string().required('Required'),
     lastName: yup.string().required('Required'),
     affiliation: yup.string().required('Required'),
-    tosCheck: yup.boolean()
-      .required('You must agree to the Terms and Conditions before registering.')
-      .oneOf([true], 'You must agree to the Terms and Conditions before registering.'),
   });
 
   return (
@@ -64,11 +81,7 @@ const NewUser = () => {
           )}
           {session && (
             <Card.Body>
-              <Card.Title>Welcome to Annotation Studio</Card.Title>
-              <Card.Text>
-                Please fill out the following form to complete your registration.
-              </Card.Text>
-
+              <Card.Title>Edit Profile</Card.Title>
               <Formik
                 onSubmit={(values, actions) => {
                   setTimeout(() => {
@@ -77,12 +90,8 @@ const NewUser = () => {
                   }, 1000);
                 }}
                 validationSchema={schema}
-                initialValues={{
-                  firstName: '',
-                  lastName: '',
-                  affiliation: '',
-                  tosCheck: false,
-                }}
+                initialValues={getInitialValues}
+                enableReinitialize={true}
               >
                 {(props) => (
                   <Form onSubmit={props.handleSubmit} noValidate>
@@ -108,6 +117,7 @@ const NewUser = () => {
                           onChange={props.handleChange}
                           onBlur={props.handleBlur}
                           value={props.values.firstName}
+                          defaultValue={props.values.firstName}
                           isValid={props.touched.firstName && !props.errors.firstName}
                           isInvalid={!!props.errors.firstName}
                         />
@@ -155,29 +165,6 @@ const NewUser = () => {
                         />
                       </Col>
                     </Form.Group>
-                    <Form.Group>
-                      <Form.Check type="checkbox">
-                        <Form.Check.Input
-                          required
-                          type="checkbox"
-                          name="tosCheck"
-                          id="tosCheck"
-                          value={props.values.tosCheck}
-                          onChange={props.handleChange}
-                          onBlur={props.handleBlur}
-                          isValid={props.touched.tosCheck && !props.errors.tosCheck}
-                          isInvalid={!!props.errors.tosCheck}
-                        />
-                        <Form.Check.Label htmlFor="tosCheck">
-                          I agree to the Annotation Studio
-                          {' '}
-                          <Link href="#tos"><a href="#tos" title="tos">Terms and Conditions</a></Link>
-                        </Form.Check.Label>
-                        <Feedback type="invalid">
-                          {props.errors.tosCheck}
-                        </Feedback>
-                      </Form.Check>
-                    </Form.Group>
                     <Row>
                       <Col className="text-right">
                         <Button
@@ -200,4 +187,4 @@ const NewUser = () => {
   );
 };
 
-export default NewUser;
+export default EditProfile;
