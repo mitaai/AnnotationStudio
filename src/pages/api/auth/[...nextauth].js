@@ -31,7 +31,7 @@ const options = {
   ],
   adapter: Adapters.TypeORM.Adapter({
     type: 'mongodb',
-    url: process.env.MONGODB_URI,
+    url: process.env.DB_URI,
     customModels: {
       User: Models.User,
     },
