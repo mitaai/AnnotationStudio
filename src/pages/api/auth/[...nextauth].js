@@ -46,7 +46,7 @@ const options = {
   secret: process.env.AUTH_SECRET,
 
   pages: {
-    newUser: '/auth/newuser',
+    newUser: '/user/newuser',
   },
 
   callbacks: {
@@ -61,6 +61,8 @@ const options = {
         const user = await res.json();
         // eslint-disable-next-line no-param-reassign
         session.user.name = user.name;
+      } else {
+        return Promise.reject();
       }
       return Promise.resolve(session);
     },

@@ -15,6 +15,7 @@ const handler = nc()
               firstName: req.body.firstName,
               lastName: req.body.lastName,
               affiliation: req.body.affiliation,
+              slug: req.body.slug,
             },
             $currentDate: {
               updatedAt: true,

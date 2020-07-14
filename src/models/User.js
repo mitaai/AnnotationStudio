@@ -63,6 +63,10 @@ const UserSchema = {
       type: 'varchar',
       nullable: true,
     },
+    slug: {
+      type: 'varchar',
+      nullable: true,
+    },
     createdAt: {
       type: 'timestamp',
       createDate: true,
@@ -72,11 +76,19 @@ const UserSchema = {
       updateDate: true,
     },
   },
-  indices: {
-    name: 'email',
-    unique: true,
-    sparse: true,
-    columns: ['email'],
-  },
+  indices: [
+    {
+      name: 'email',
+      unique: true,
+      sparse: true,
+      columns: ['email'],
+    },
+    {
+      name: 'slug',
+      unique: true,
+      sparse: true,
+      columns: ['slug'],
+    },
+  ],
 };
 exports.UserSchema = UserSchema;
