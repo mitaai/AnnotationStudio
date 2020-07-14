@@ -1,8 +1,8 @@
 import Head from 'next/head';
 import { Container } from 'react-bootstrap';
-import Header from './Header';
-import Footer from './Footer';
-import Alerts from './Alerts';
+import Header from '../Header';
+import Footer from '../Footer';
+import Alerts from '../Alerts';
 
 function Layout({ children }) {
   return (

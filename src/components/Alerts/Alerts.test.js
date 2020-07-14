@@ -1,5 +1,5 @@
 import { render } from '@testing-library/react';
-import { mockNextUseRouter } from '../utils/testUtil.ts';
+import { mockNextUseRouter } from '../../utils/testUtil.ts';
 import Alerts from './Alerts';
 
 describe('alerts', () => {
