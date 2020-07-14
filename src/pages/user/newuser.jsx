@@ -4,7 +4,7 @@ import fetch from 'unfetch';
 import { Formik } from 'formik';
 import * as yup from 'yup';
 import {
-  Button, Card, Col, Form, Row,
+  Button, Card, Col, Form, Row, Spinner,
 } from 'react-bootstrap';
 import Feedback from 'react-bootstrap/Feedback';
 import Link from 'next/link';
@@ -24,6 +24,7 @@ const NewUser = () => {
       lastName: values.lastName,
       name: fullName(values.firstName, values.lastName),
       affiliation: values.affiliation,
+      slug: session.user.email.replace(/[*+~.()'"!:@]/g, '-'),
     };
     const res = await fetch('/api/users', {
       method: 'PATCH',
@@ -32,7 +33,7 @@ const NewUser = () => {
     });
     if (res.status === 200) {
       await res.json();
-      getSession({ username: 'test' });
+      getSession();
       Router.push({
         pathname: '/',
         query: { alert: 'completeRegistration' },
@@ -53,9 +54,16 @@ const NewUser = () => {
 
   return (
     <Layout>
-      {session && (
-        <Col lg="8" className="mx-auto">
-          <Card>
+      <Col lg="8" className="mx-auto">
+        <Card>
+          {!session && (
+            <Card.Body className="text-center">
+              <Spinner animation="border" role="status">
+                <span className="sr-only">Loading...</span>
+              </Spinner>
+            </Card.Body>
+          )}
+          {session && (
             <Card.Body>
               <Card.Title>Welcome to Annotation Studio</Card.Title>
               <Card.Text>
@@ -186,9 +194,9 @@ const NewUser = () => {
                 )}
               </Formik>
             </Card.Body>
-          </Card>
-        </Col>
-      )}
+          )}
+        </Card>
+      </Col>
     </Layout>
   );
 };

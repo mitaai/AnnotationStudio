@@ -7,6 +7,7 @@ const client = new MongoClient(process.env.MONGODB_URI, {
 
 export async function setUpDb(db) {
   db.collection('users').createIndex({ email: 1 }, { unique: true });
+  db.collection('users').createIndex({ slug: 1 }, { unique: true });
 }
 
 export default async function database(req, res, next) {
