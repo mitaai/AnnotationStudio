@@ -7,13 +7,13 @@ import {
   Card,
   ButtonGroup,
   Button,
-  ListGroup,
 } from 'react-bootstrap';
 import Layout from '../../components/Layout';
 
 export default function DocumentPage() {
   const router = useRouter();
   const { slug } = router.query;
+  console.log(slug);
 
   return (
     <Layout>
