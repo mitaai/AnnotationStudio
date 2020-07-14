@@ -2,7 +2,7 @@ import { useSession } from 'next-auth/client';
 import Container from 'react-bootstrap/Container';
 import { Nav, Navbar, NavDropdown } from 'react-bootstrap';
 import { BoxArrowUpRight, BoxArrowInRight, BoxArrowRight } from 'react-bootstrap-icons';
-import SecondNavbar from './SecondNavbar';
+import SecondNavbar from '../SecondNavbar';
 
 function Header() {
   const [session] = useSession();
