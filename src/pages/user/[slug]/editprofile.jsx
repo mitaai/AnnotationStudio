@@ -16,12 +16,12 @@ const EditProfile = ({ user }) => {
 
   const submitHandler = async (values) => {
     const body = {
-      email: session.user.email,
+      email: values.email,
       firstName: values.firstName,
       lastName: values.lastName,
       name: fullName(values.firstName, values.lastName),
       affiliation: values.affiliation,
-      slug: session.user.email.replace(/[*+~.()'"!:@]/g, '-'),
+      slug: values.email.replace(/[*+~.()'"!:@]/g, '-'),
     };
     // eslint-disable-next-line no-undef
     const res = await fetch('/api/users', {
@@ -60,7 +60,7 @@ const EditProfile = ({ user }) => {
               </Spinner>
             </Card.Body>
           )}
-          {session && (
+          {session && user && (
             <Card.Body>
               <Card.Title>Edit Profile</Card.Title>
               <Formik
@@ -82,7 +82,7 @@ const EditProfile = ({ user }) => {
                         Email
                       </Form.Label>
                       <Col>
-                        <Form.Control name="email" plaintext readOnly defaultValue={session.user.email} />
+                        <Form.Control name="email" plaintext readOnly value={session.user.email} />
                       </Col>
                     </Form.Group>
 
@@ -98,7 +98,6 @@ const EditProfile = ({ user }) => {
                           onChange={props.handleChange}
                           onBlur={props.handleBlur}
                           value={props.values.firstName}
-                          defaultValue={props.values.firstName}
                           isValid={props.touched.firstName && !props.errors.firstName}
                           isInvalid={!!props.errors.firstName}
                         />
@@ -152,6 +151,7 @@ const EditProfile = ({ user }) => {
                           variant="primary"
                           type="submit"
                           disabled={props.isSubmitting || props.submitCount >= 1}
+                          data-testid="newuser-submit-button"
                         >
                           Submit
                         </Button>

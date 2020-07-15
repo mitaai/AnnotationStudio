@@ -185,6 +185,7 @@ const NewUser = () => {
                           variant="primary"
                           type="submit"
                           disabled={props.isSubmitting || props.submitCount >= 1}
+                          data-testid="newuser-submit-button"
                         >
                           Submit
                         </Button>
