@@ -47,6 +47,36 @@ function SecondNavbar() {
 
         </Container>
       </Navbar>
+      <style jsx global>
+        {`
+          .Second-Navbar .breadcrumb {
+            background-color: #f8f9fa !important;
+            margin-bottom: 0px;
+          }
+    
+          .Second-Navbar .container .row {
+              width: 100% !important;
+          }
+      
+          .Second-Navbar #btn-document-more-info {
+              float: right;
+              margin-top: 12px;
+              color: #007bff;
+              cursor: pointer;
+          }
+          #btn-filter-annotation-well {
+            margin-top: 7px;
+            float: right;
+          }
+
+          #btn-filter-annotation-well svg {
+            margin-right: 5px;
+            position: relative;
+            top: -2px;
+          }
+          
+        `}
+      </style>
     </>
   );
 }
