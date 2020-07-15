@@ -1,30 +1,29 @@
 import { useState } from 'react';
 import { useSession, getSession } from 'next-auth/client';
-import fetch from 'unfetch';
 import { Formik } from 'formik';
 import * as yup from 'yup';
 import {
-  Button, Card, Col, Form, Row,
+  Button, Card, Col, Form, Row, Spinner,
 } from 'react-bootstrap';
-import Feedback from 'react-bootstrap/Feedback';
-import Link from 'next/link';
 import Router from 'next/router';
-import fullName from '../../utils/nameUtil';
-import Layout from '../../components/Layout';
+import fullName from '../../../utils/nameUtil';
+import Layout from '../../../components/Layout';
 
-const NewUser = () => {
+const EditProfile = ({ user }) => {
   const [session] = useSession();
 
   const [errorMsg, setErrorMsg] = useState('');
 
   const submitHandler = async (values) => {
     const body = {
-      email: session.user.email,
+      email: values.email,
       firstName: values.firstName,
       lastName: values.lastName,
       name: fullName(values.firstName, values.lastName),
       affiliation: values.affiliation,
+      slug: values.email.replace(/[*+~.()'"!:@]/g, '-'),
     };
+    // eslint-disable-next-line no-undef
     const res = await fetch('/api/users', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -32,10 +31,12 @@ const NewUser = () => {
     });
     if (res.status === 200) {
       await res.json();
-      getSession({ username: 'test' });
+      getSession();
       Router.push({
         pathname: '/',
-        query: { alert: 'completeRegistration' },
+        query: {
+          alert: 'profileEdited',
+        },
       });
     } else {
       setErrorMsg(await res.text());
@@ -46,22 +47,22 @@ const NewUser = () => {
     firstName: yup.string().required('Required'),
     lastName: yup.string().required('Required'),
     affiliation: yup.string().required('Required'),
-    tosCheck: yup.boolean()
-      .required('You must agree to the Terms and Conditions before registering.')
-      .oneOf([true], 'You must agree to the Terms and Conditions before registering.'),
   });
 
   return (
     <Layout>
-      {session && (
-        <Col lg="8" className="mx-auto">
-          <Card>
+      <Col lg="8" className="mx-auto">
+        <Card>
+          {!session && (
+            <Card.Body className="text-center">
+              <Spinner animation="border" role="status">
+                <span className="sr-only">Loading...</span>
+              </Spinner>
+            </Card.Body>
+          )}
+          {session && user && (
             <Card.Body>
-              <Card.Title>Welcome to Annotation Studio</Card.Title>
-              <Card.Text>
-                Please fill out the following form to complete your registration.
-              </Card.Text>
-
+              <Card.Title>Edit Profile</Card.Title>
               <Formik
                 onSubmit={(values, actions) => {
                   setTimeout(() => {
@@ -70,12 +71,8 @@ const NewUser = () => {
                   }, 1000);
                 }}
                 validationSchema={schema}
-                initialValues={{
-                  firstName: '',
-                  lastName: '',
-                  affiliation: '',
-                  tosCheck: false,
-                }}
+                initialValues={user}
+                enableReinitialize
               >
                 {(props) => (
                   <Form onSubmit={props.handleSubmit} noValidate>
@@ -85,7 +82,7 @@ const NewUser = () => {
                         Email
                       </Form.Label>
                       <Col>
-                        <Form.Control name="email" plaintext readOnly defaultValue={session.user.email} />
+                        <Form.Control name="email" plaintext readOnly value={session.user.email} />
                       </Col>
                     </Form.Group>
 
@@ -148,35 +145,13 @@ const NewUser = () => {
                         />
                       </Col>
                     </Form.Group>
-                    <Form.Group>
-                      <Form.Check type="checkbox">
-                        <Form.Check.Input
-                          required
-                          type="checkbox"
-                          name="tosCheck"
-                          id="tosCheck"
-                          value={props.values.tosCheck}
-                          onChange={props.handleChange}
-                          onBlur={props.handleBlur}
-                          isValid={props.touched.tosCheck && !props.errors.tosCheck}
-                          isInvalid={!!props.errors.tosCheck}
-                        />
-                        <Form.Check.Label htmlFor="tosCheck">
-                          I agree to the Annotation Studio
-                          {' '}
-                          <Link href="#tos"><a href="#tos" title="tos">Terms and Conditions</a></Link>
-                        </Form.Check.Label>
-                        <Feedback type="invalid">
-                          {props.errors.tosCheck}
-                        </Feedback>
-                      </Form.Check>
-                    </Form.Group>
                     <Row>
                       <Col className="text-right">
                         <Button
                           variant="primary"
                           type="submit"
                           disabled={props.isSubmitting || props.submitCount >= 1}
+                          data-testid="editprofile-submit-button"
                         >
                           Submit
                         </Button>
@@ -186,11 +161,37 @@ const NewUser = () => {
                 )}
               </Formik>
             </Card.Body>
-          </Card>
-        </Col>
-      )}
+          )}
+        </Card>
+      </Col>
     </Layout>
   );
 };
 
-export default NewUser;
+export async function getServerSideProps(context) {
+  const { slug } = context.params;
+
+  const url = `${process.env.SITE}/api/user/slug/${slug}`;
+  // eslint-disable-next-line no-undef
+  const res = await fetch(url, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  if (res.status === 200) {
+    const foundUser = await res.json();
+    const {
+      email, firstName, lastName, affiliation,
+    } = foundUser;
+    const user = {
+      email, firstName, lastName, affiliation,
+    };
+    return {
+      props: { user },
+    };
+  }
+  return {
+    props: { },
+  };
+}
+
+export default EditProfile;

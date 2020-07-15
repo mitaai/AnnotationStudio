@@ -1,4 +1,4 @@
-import User, { UserSchema } from './User';
+import User, { UserSchema } from './user';
 
 export default {
   User: {
