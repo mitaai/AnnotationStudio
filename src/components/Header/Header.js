@@ -59,7 +59,11 @@ function Header() {
         </Container>
       </Navbar>
       {session && (
+      <>
+        {session.user.name && (
         <SecondNavbar />
+        )}
+      </>
       )}
     </header>
   );
