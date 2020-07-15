@@ -40,7 +40,7 @@ test('renders submit button', async () => {
     affiliation: 'Jest Tests',
   }}
   />);
-  const submitButton = getByTestId('newuser-submit-button');
+  const submitButton = getByTestId('editprofile-submit-button');
   await wait(() => {
     expect(submitButton).toBeInTheDocument();
   });

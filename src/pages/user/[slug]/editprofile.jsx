@@ -151,7 +151,7 @@ const EditProfile = ({ user }) => {
                           variant="primary"
                           type="submit"
                           disabled={props.isSubmitting || props.submitCount >= 1}
-                          data-testid="newuser-submit-button"
+                          data-testid="editprofile-submit-button"
                         >
                           Submit
                         </Button>
