@@ -44,7 +44,14 @@ npm install
 ```
 
 ## Environment variables
-Finally, set up environment variables in a new file called `.env.local`. You can copy the sample `.env.local.sample` and fill in the values received from team members, or use your own values. You will need to provide details for an email server; in our case we use Papertrail. The auth secret should be kept secret between team members and never exposed publicly.
+Set up environment variables in a new file called `.env.local`. You can copy the sample `.env.local.sample` and fill in the values received from team members, or use your own values. You will need to provide details for an email server; in our case we use Papertrail. The auth secret should be kept secret between team members and never exposed publicly.
+
+## Seed database
+To seed the database with test data, run the following command:
+```sh
+npm seed
+```
+This command assumes your database name is `as4`. If that is not the case, prepend the command with `DBNAME=yourdbname`.
 
 ## Available scripts
 ### `npm run dev`
