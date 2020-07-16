@@ -1,8 +1,9 @@
-import getObjectId from '../../utils/seedUtil';
+const { getObjectId } = require('mongo-seeding');
+
 
 const name = 'Public Domain Literature';
 const docTitle = 'Afterward';
-const dateCreated = Date.now();
+const dateCreated = new Date(Date.now());
 
 const group = {
   id: getObjectId(name),
