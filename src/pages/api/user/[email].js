@@ -16,13 +16,15 @@ const handler = nc()
             { email: req.query.email },
             (err, doc) => {
               if (doc) {
-                const {
-                  name, firstName, lastName, affiliation,
-                } = doc;
-                if (err) throw err;
-                res.status(200).json({
-                  name, firstName, lastName, affiliation,
-                });
+                if (doc.email === token.user.email) {
+                  const {
+                    name, firstName, lastName, affiliation,
+                  } = doc;
+                  if (err) throw err;
+                  res.status(200).json({
+                    name, firstName, lastName, affiliation,
+                  });
+                } else res.status(403).json({ error: '403 Forbidden' });
               } else {
                 res.status(404).json({});
               }

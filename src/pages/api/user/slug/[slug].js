@@ -16,13 +16,15 @@ const handler = nc()
             { slug: req.query.slug },
             (err, doc) => {
               if (doc) {
-                const {
-                  name, firstName, lastName, affiliation, email,
-                } = doc;
-                if (err) throw err;
-                res.status(200).json({
-                  name, firstName, lastName, affiliation, email,
-                });
+                if (doc.email === token.user.email) {
+                  const {
+                    name, firstName, lastName, affiliation, email,
+                  } = doc;
+                  if (err) throw err;
+                  res.status(200).json({
+                    name, firstName, lastName, affiliation, email,
+                  });
+                } else res.status(403).json({ error: '403 Forbidden' });
               } else {
                 res.status(404).json({});
               }
