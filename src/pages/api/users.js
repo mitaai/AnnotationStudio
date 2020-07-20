@@ -10,32 +10,31 @@ const handler = nc()
     async (req, res) => {
       const token = await jwt.getJwt({ req, secret });
       if (token && token.exp > 0) {
-        if (req.body.email === token.user.email) {
-          await req.db
-            .collection('users')
-            .findOneAndUpdate(
-              { email: req.body.email },
-              {
-                $set: {
-                  name: req.body.name,
-                  firstName: req.body.firstName,
-                  lastName: req.body.lastName,
-                  affiliation: req.body.affiliation,
-                  slug: req.body.slug,
-                },
-                $currentDate: {
-                  updatedAt: true,
-                },
+        await req.db
+          .collection('users')
+          .findOneAndUpdate(
+            { email: token.user.email },
+            {
+              $set: {
+                name: req.body.name,
+                email: req.body.email,
+                firstName: req.body.firstName,
+                lastName: req.body.lastName,
+                affiliation: req.body.affiliation,
+                slug: req.body.slug,
               },
-              {
-                returnOriginal: false,
+              $currentDate: {
+                updatedAt: true,
               },
-              (err, doc) => {
-                if (err) throw err;
-                res.status(200).json(doc);
-              },
-            );
-        } else res.status(403).json({ error: '403 Unauthorized' });
+            },
+            {
+              returnOriginal: false,
+            },
+            (err, doc) => {
+              if (err) throw err;
+              res.status(200).json(doc);
+            },
+          );
       } else res.status(403).json({ error: '403 Invalid or expired token' });
     },
   );
