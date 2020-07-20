@@ -26,7 +26,7 @@ const handler = nc()
                   });
                 } else res.status(403).json({ error: '403 Forbidden' });
               } else {
-                res.status(404).json({});
+                res.status(404).json({ error: '404 Not Found' });
               }
             },
           );
