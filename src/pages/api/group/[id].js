@@ -1,5 +1,5 @@
-/* eslint-disable max-len */
 import nc from 'next-connect';
+import { getObjectId } from 'mongo-seeding';
 import { ObjectID } from 'mongodb';
 import jwt from 'next-auth/jwt';
 import middleware from '../../../middlewares/middleware';
@@ -39,16 +39,25 @@ const handler = nc()
               } else {
                 res.status(404).json({ error: '404 Not Found' });
               }
-          },
-        )
+            },
+          );
+      }
+    },
+  )
   .patch(
     async (req, res) => {
       const token = await jwt.getJwt({ req, secret });
       if (token && token.exp > 0) {
-        const memberQuery = (process.env.NODE_ENV === 'development') ? [{ members: ObjectID(token.user.id) }, { members: getObjectId('FakeUserReplaceMe') }] : [{ members: ObjectID(token.user.id) }];
+        const memberQuery = (process.env.NODE_ENV === 'development')
+          ? [{ members: ObjectID(token.user.id) }, { members: getObjectId('FakeUserReplaceMe') }]
+          : [{ members: ObjectID(token.user.id) }];
         const fieldsToSet = req.body.name ? { name: req.body.name } : {};
-        const membersToPush = req.body.addedUserId ? { members: ObjectID(req.body.addedUserId) } : {};
-        const membersToPull = req.body.removedUserId ? { members: ObjectID(req.body.removedUserId) } : {};
+        const membersToPush = req.body.addedUserId
+          ? { members: ObjectID(req.body.addedUserId) }
+          : {};
+        const membersToPull = req.body.removedUserId
+          ? { members: ObjectID(req.body.removedUserId) }
+          : {};
         await req.db
           .collection('groups')
           .findOneAndUpdate(
