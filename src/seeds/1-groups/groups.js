@@ -8,7 +8,7 @@ const dateCreated = new Date(Date.now());
 const group = {
   id: getObjectId(name),
   name,
-  members: [],
+  members: [getObjectId('FakeUserReplaceMe')],
   documents: [getObjectId(docTitle)],
   createdAt: dateCreated,
   updatedAt: dateCreated,
