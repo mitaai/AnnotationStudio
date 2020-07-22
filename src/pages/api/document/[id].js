@@ -22,6 +22,7 @@ const handler = nc()
               if (doc) {
                 const {
                   title,
+                  slug,
                   owner,
                   groups,
                   resourceType,
@@ -44,11 +45,14 @@ const handler = nc()
                   issue,
                   pageNumbers,
                   publication,
+                  series,
+                  sesiesNumber,
                   notes,
                 } = doc;
                 if (err) throw err;
                 res.status(200).json({
                   title,
+                  slug,
                   owner,
                   groups,
                   resourceType,
@@ -71,6 +75,8 @@ const handler = nc()
                   issue,
                   pageNumbers,
                   publication,
+                  series,
+                  sesiesNumber,
                   notes,
                 });
               } else {
