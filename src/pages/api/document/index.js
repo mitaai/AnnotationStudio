@@ -14,6 +14,7 @@ const handler = nc()
         const dateCreated = new Date(Date.now());
         const {
           title,
+          slug,
           groups,
           resourceType,
           authors,
@@ -39,6 +40,7 @@ const handler = nc()
         } = req.body;
         const metadata = {
           title,
+          slug,
           groups,
           resourceType,
           authors,
@@ -62,6 +64,11 @@ const handler = nc()
           sesiesNumber,
           notes,
         };
+        Object.keys(metadata).forEach((key) => {
+          if (metadata[key] === undefined) {
+            delete metadata[key];
+          }
+        });
         await req.db
           .collection('documents')
           .insert(
