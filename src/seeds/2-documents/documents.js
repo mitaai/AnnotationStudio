@@ -13,7 +13,14 @@ const documents = [{
   title,
   slug: 'afterward',
   owner: getObjectId('FakeUserReplaceMe'),
-  groups: [getObjectId(groupName)],
+  groups: [{
+    id: getObjectId(groupName),
+    name: groupName,
+    members: [{
+      id: getObjectId('FakeUserReplaceMe'),
+      name: 'Fake User',
+    }],
+  }],
   resourceType: 'Book Section',
   authors: ['Edith Wharton'],
   publisher: '(MacMillan and Co.) Project Gutenberg',
