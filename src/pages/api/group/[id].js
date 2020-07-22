@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 import nc from 'next-connect';
 import { ObjectID } from 'mongodb';
 import jwt from 'next-auth/jwt';
@@ -40,8 +39,11 @@ const handler = nc()
               } else {
                 res.status(404).json({ error: '404 Not Found' });
               }
-          },
-        )
+            },
+          );
+      }
+    },
+  )
   .patch(
     async (req, res) => {
       const token = await jwt.getJwt({ req, secret });
