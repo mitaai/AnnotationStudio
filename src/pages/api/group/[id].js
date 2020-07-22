@@ -18,7 +18,7 @@ const handler = nc()
           .findOne(
             {
               _id: ObjectID(req.query.id),
-              'members.id': token.user.id,
+              'members.id': ObjectID(token.user.id),
             },
             (err, doc) => {
               if (doc) {
@@ -55,7 +55,7 @@ const handler = nc()
         let documentToUpdate = {};
         let documentByID = {};
         if (req.body.updatedDocument) {
-          documentByID = { 'documents.id': req.body.updatedDocument.id };
+          documentByID = { 'documents.id': ObjectID(req.body.updatedDocument.id) };
           documentToUpdate = {
             'documents.$.slug': req.body.updatedDocument.slug,
             'documents.$.name': req.body.updatedDocument.name,
