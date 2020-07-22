@@ -4,7 +4,7 @@ import jwt from 'next-auth/jwt';
 import middleware from '../../../middlewares/middleware';
 
 const secret = process.env.AUTH_SECRET;
-const fakeUserID = ObjectID('7b639ae33efb36eaf6447c55');
+const fakeUserId = ObjectID('7b639ae33efb36eaf6447c55');
 
 const handler = nc()
   .use(middleware)
@@ -49,15 +49,15 @@ const handler = nc()
       const token = await jwt.getJwt({ req, secret });
       if (token && token.exp > 0) {
         const memberQuery = (process.env.NODE_ENV === 'development')
-          ? [{ 'members.id': ObjectID(token.user.id) }, { 'members.id': fakeUserID }]
+          ? [{ 'members.id': ObjectID(token.user.id) }, { 'members.id': fakeUserId }]
           : [{ 'members.id': ObjectID(token.user.id) }];
         const nameToUpdate = req.body.name
           ? { name: req.body.name }
           : {};
         let documentToUpdate = {};
-        let documentByID = {};
+        let documentById = {};
         if (req.body.updatedDocument) {
-          documentByID = { 'documents.id': ObjectID(req.body.updatedDocument.id) };
+          documentById = { 'documents.id': ObjectID(req.body.updatedDocument.id) };
           documentToUpdate = {
             'documents.$.slug': req.body.updatedDocument.slug,
             'documents.$.name': req.body.updatedDocument.name,
@@ -66,14 +66,14 @@ const handler = nc()
         const memberToPush = req.body.addedUser
           ? { members: req.body.addedUser }
           : {};
-        const documentToPush = req.body.addedDoc
-          ? { documents: req.body.addedDoc }
+        const documentToPush = req.body.addedDocument
+          ? { documents: req.body.addedDocument }
           : {};
-        const memberToPull = req.body.removedUserID
-          ? { 'members.id': ObjectID(req.body.removedUserID) }
+        const memberToPull = req.body.removedUserId
+          ? { 'members.id': ObjectID(req.body.removedUserId) }
           : {};
-        const documentToPull = req.body.removedDocumentID
-          ? { 'documents.id': ObjectID(req.body.removedDocumentID) }
+        const documentToPull = req.body.removedDocumentId
+          ? { 'documents.id': ObjectID(req.body.removedDocumentId) }
           : {};
         await req.db
           .collection('groups')
@@ -81,7 +81,7 @@ const handler = nc()
             {
               _id: ObjectID(req.query.id),
               $or: memberQuery,
-              ...documentByID,
+              ...documentById,
             },
             {
               $set: { ...nameToUpdate, ...documentToUpdate },
