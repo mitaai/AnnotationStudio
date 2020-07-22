@@ -50,12 +50,14 @@ const options = {
   },
 
   callbacks: {
-    session: async (session) => {
-      const { email } = session.user;
-      const url = `${process.env.SITE}/api/user/${email}`;
+    session: async (session, token) => {
+      const { id } = token.user;
+      const url = `${process.env.SITE}/api/user/${id}`;
       const res = await fetch(url, {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
       if (res.status === 200) {
         const user = await res.json();
