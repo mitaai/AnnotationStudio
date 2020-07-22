@@ -16,7 +16,7 @@ const handler = nc()
           .findOne(
             {
               _id: ObjectID(req.query.id),
-              'groups.members.id': ObjectID(token.user.id),
+              $or: [{ 'groups.members.id': ObjectID(token.user.id) }, { owner: ObjectID(token.user.id) }],
             },
             (err, doc) => {
               if (doc) {
