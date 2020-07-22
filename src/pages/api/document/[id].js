@@ -14,7 +14,10 @@ const handler = nc()
         await req.db
           .collection('documents')
           .findOne(
-            { _id: ObjectID(req.query.id) },
+            {
+              _id: ObjectID(req.query.id),
+              'groups.members.id': ObjectID(token.user.id),
+            },
             (err, doc) => {
               if (doc) {
                 const {
