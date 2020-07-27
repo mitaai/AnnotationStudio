@@ -7,12 +7,6 @@
 
 import '@testing-library/jest-dom/extend-expect';
 
-import fs from 'fs';
 import fetchMock from 'jest-fetch-mock';
 
 fetchMock.enableMocks();
-
-afterAll(() => {
-  // Unlink config used in jest-mongodb
-  fs.unlink(`${process.cwd()}/globalConfig.json`, () => {});
-});
