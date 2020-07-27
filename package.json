@@ -15,7 +15,7 @@
     "test:ci": "jest --ci",
     "lint": "eslint --fix ./src/**/*.js ./src/**/*.jsx",
     "lint-latest": "LIST=`git diff-index --name-only --diff-filter=d HEAD | grep .*\\.js | grep -v json`; if [ \"$LIST\" ]; then eslint --fix $LIST; fi",
-    "seed":"seed -u --db-name ${DBNAME=as4} --replace-id ./src/seeds"
+    "seed": "seed -u --db-name ${DBNAME=as4} --replace-id ./src/seeds"
   },
   "dependencies": {
     "bootstrap": "^4.5.0",
@@ -38,6 +38,7 @@
     "react-bootstrap-icons": "^1.0.3-alpha5",
     "react-dom": "^16.13.1",
     "sass": "^1.26.10",
+    "shortid": "^2.2.15",
     "swr": "^0.2.3",
     "typeorm": "^0.2.24",
     "typescript": "^3.9.5",
@@ -45,6 +46,7 @@
     "yup": "^0.29.1"
   },
   "devDependencies": {
+    "@shelf/jest-mongodb": "^1.2.1",
     "@testing-library/jest-dom": "^5.11.0",
     "@testing-library/react": "^9.4.0",
     "@testing-library/react-hooks": "^3.3.0",
