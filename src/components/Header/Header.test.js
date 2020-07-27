@@ -1,3 +1,7 @@
+/**
+ * @jest-environment jsdom
+ */
+
 import { render, wait } from '@testing-library/react';
 import Header from './Header';
 

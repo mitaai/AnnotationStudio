@@ -1,3 +1,7 @@
+/**
+ * @jest-environment jsdom
+ */
+
 import { render } from '@testing-library/react';
 import { mockNextUseRouter } from '../../utils/testUtil.ts';
 import Alerts from './Alerts';
