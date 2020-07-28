@@ -11,6 +11,8 @@ const handler = nc()
     async (req, res) => {
       const token = await jwt.getToken({ req, secret });
       if (token && token.exp > 0) {
+        const createdAt = new Date(Date.now());
+        const updatedAt = createdAt;
         const { name } = req.body;
         const members = [{
           id: ObjectID(token.id),
@@ -22,7 +24,9 @@ const handler = nc()
         await req.db
           .collection('groups')
           .insertOne(
-            { name, members, documents },
+            {
+              name, members, documents, createdAt, updatedAt,
+            },
             (err, doc) => {
               if (err) throw err;
               res.status(200).json(doc);
