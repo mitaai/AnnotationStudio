@@ -2,10 +2,11 @@ import fetch from 'unfetch';
 import { Formik } from 'formik';
 import { useSession } from 'next-auth/client';
 import {
-  Button, Card, Col, Form, Row, Spinner,
+  Button, Card, Col, Form, Row,
 } from 'react-bootstrap';
 import * as yup from 'yup';
 import Layout from '../../components/Layout';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 const NewGroup = () => {
   const [session] = useSession();
@@ -63,11 +64,7 @@ const NewGroup = () => {
       <Col lg="8" className="mx-auto">
         <Card>
           {!session && (
-            <Card.Body className="text-center">
-              <Spinner animation="border" role="status">
-                <span className="sr-only">Loading...</span>
-              </Spinner>
-            </Card.Body>
+            <LoadingSpinner />
           )}
           {session && (
             <Card.Body className="text-center">
