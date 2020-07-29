@@ -3,11 +3,12 @@ import { useSession, getSession } from 'next-auth/client';
 import { Formik } from 'formik';
 import * as yup from 'yup';
 import {
-  Button, Card, Col, Form, Row, Spinner,
+  Button, Card, Col, Form, Row,
 } from 'react-bootstrap';
 import Router from 'next/router';
 import fullName from '../../../utils/nameUtil';
 import Layout from '../../../components/Layout';
+import LoadingSpinner from '../../../components/LoadingSpinner';
 
 const EditProfile = ({ user }) => {
   const [session] = useSession();
@@ -54,11 +55,7 @@ const EditProfile = ({ user }) => {
       <Col lg="8" className="mx-auto">
         <Card>
           {!session && (
-            <Card.Body className="text-center">
-              <Spinner animation="border" role="status">
-                <span className="sr-only">Loading...</span>
-              </Spinner>
-            </Card.Body>
+            <LoadingSpinner />
           )}
           {session && user && (
             <Card.Body>
