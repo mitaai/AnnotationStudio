@@ -16,7 +16,7 @@ const handler = nc()
             { slug: req.query.slug },
             (err, doc) => {
               if (doc) {
-                if (doc.email === token.user.email) {
+                if (doc.email === token.email) {
                   const {
                     name, firstName, lastName, affiliation, email,
                   } = doc;

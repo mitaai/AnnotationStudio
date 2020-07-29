@@ -28,13 +28,13 @@ const options = {
       },
     }),
   ],
-  adapter: Adapters.TypeORM.Adapter({
-    type: 'mongodb',
-    url: process.env.MONGODB_URI,
-    customModels: {
-      User: Models.User,
-    },
-  }),
+
+  adapter: Adapters.TypeORM.Adapter(process.env.MONGODB_URI,
+    {
+      models: {
+        User: Models.User,
+      },
+    }),
 
   session: {
     jwt: true,
@@ -43,6 +43,11 @@ const options = {
   },
 
   secret: process.env.AUTH_SECRET,
+
+  jwt: {
+    secret: process.env.AUTH_SECRET,
+    raw: true,
+  },
 
   pages: {
     newUser: '/user/newuser',
@@ -66,6 +71,7 @@ const options = {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
       });
       if (res.status === 200) {
         const user = await res.json();

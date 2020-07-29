@@ -17,7 +17,7 @@ const handler = nc()
           .findOne(
             {
               _id: ObjectID(req.query.id),
-              'members.id': ObjectID(token.user.id),
+              'members.id': ObjectID(token.id),
             },
             (err, doc) => {
               if (doc) {
@@ -49,8 +49,8 @@ const handler = nc()
       const token = await jwt.getToken({ req, secret });
       if (token && token.exp > 0) {
         const memberQuery = (process.env.NODE_ENV === 'development')
-          ? [{ 'members.id': ObjectID(token.user.id) }, { 'members.id': fakeUserId }]
-          : [{ 'members.id': ObjectID(token.user.id) }];
+          ? [{ 'members.id': ObjectID(token.id) }, { 'members.id': fakeUserId }]
+          : [{ 'members.id': ObjectID(token.id) }];
         const nameToUpdate = req.body.name
           ? { name: req.body.name }
           : {};

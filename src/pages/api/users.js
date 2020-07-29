@@ -13,7 +13,7 @@ const handler = nc()
         await req.db
           .collection('users')
           .findOneAndUpdate(
-            { email: token.user.email },
+            { email: token.email },
             {
               $set: {
                 name: req.body.name,

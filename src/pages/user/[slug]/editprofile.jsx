@@ -10,7 +10,7 @@ import fullName from '../../../utils/nameUtil';
 import Layout from '../../../components/Layout';
 
 const EditProfile = ({ user }) => {
-  const [session] = useSession();
+  const [session, loading] = useSession();
 
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -53,7 +53,7 @@ const EditProfile = ({ user }) => {
     <Layout>
       <Col lg="8" className="mx-auto">
         <Card>
-          {!session && (
+          {!session && loading && (
             <Card.Body className="text-center">
               <Spinner animation="border" role="status">
                 <span className="sr-only">Loading...</span>
@@ -175,7 +175,10 @@ export async function getServerSideProps(context) {
   // eslint-disable-next-line no-undef
   const res = await fetch(url, {
     method: 'GET',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      Cookie: context.req.headers.cookie,
+    },
   });
   if (res.status === 200) {
     const foundUser = await res.json();

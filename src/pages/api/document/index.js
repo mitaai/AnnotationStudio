@@ -73,7 +73,7 @@ const handler = nc()
           .collection('documents')
           .insert(
             {
-              owner: ObjectID(token.user.id),
+              owner: ObjectID(token.id),
               createdAt: dateCreated,
               updatedAt: dateCreated,
               ...metadata,

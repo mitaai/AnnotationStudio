@@ -16,7 +16,7 @@ const handler = nc()
           .findOne(
             {
               _id: ObjectID(req.query.id),
-              $or: [{ 'groups.members.id': ObjectID(token.user.id) }, { owner: ObjectID(token.user.id) }],
+              $or: [{ 'groups.members.id': ObjectID(token.id) }, { owner: ObjectID(token.id) }],
             },
             (err, doc) => {
               if (doc) {
@@ -171,7 +171,7 @@ const handler = nc()
           .findOneAndUpdate(
             {
               _id: ObjectID(req.query.id),
-              owner: ObjectID(token.user.id),
+              owner: ObjectID(token.id),
               ...groupById,
             },
             {
