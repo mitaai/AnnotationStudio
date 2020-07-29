@@ -7,14 +7,6 @@ import {
 import * as yup from 'yup';
 import Layout from '../../components/Layout';
 
-
-// async function updateOwnerWithGroup({ id, name, role }) {
-//   const url = `/api/user/${id}`;
-//   const res = await fetch(url, {
-//     method: 'PATCH',
-
-// }
-
 const NewGroup = () => {
   const [session] = useSession();
 
