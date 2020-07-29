@@ -8,12 +8,12 @@ const handler = nc()
   .use(middleware)
   .patch(
     async (req, res) => {
-      const token = await jwt.getJwt({ req, secret });
+      const token = await jwt.getToken({ req, secret });
       if (token && token.exp > 0) {
         await req.db
           .collection('users')
           .findOneAndUpdate(
-            { email: token.user.email },
+            { email: token.email },
             {
               $set: {
                 name: req.body.name,

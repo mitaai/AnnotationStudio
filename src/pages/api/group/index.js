@@ -9,13 +9,13 @@ const handler = nc()
   .use(middleware)
   .post(
     async (req, res) => {
-      const token = await jwt.getJwt({ req, secret });
+      const token = await jwt.getToken({ req, secret });
       if (token && token.exp > 0) {
         const { name } = req.body;
         const members = [{
-          id: ObjectID(token.user.id),
-          name: token.user.name,
-          email: token.user.email,
+          id: ObjectID(token.id),
+          name: token.name,
+          email: token.email,
           role: 'owner',
         }];
         const documents = [{}];

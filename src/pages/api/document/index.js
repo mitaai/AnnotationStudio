@@ -9,7 +9,7 @@ const handler = nc()
   .use(middleware)
   .post(
     async (req, res) => {
-      const token = await jwt.getJwt({ req, secret });
+      const token = await jwt.getToken({ req, secret });
       if (token && token.exp > 0) {
         const dateCreated = new Date(Date.now());
         const {
@@ -73,7 +73,7 @@ const handler = nc()
           .collection('documents')
           .insert(
             {
-              owner: ObjectID(token.user.id),
+              owner: ObjectID(token.id),
               createdAt: dateCreated,
               updatedAt: dateCreated,
               ...metadata,
