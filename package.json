@@ -15,7 +15,7 @@
     "test:ci": "jest --ci",
     "lint": "eslint --fix ./src/**/*.js ./src/**/*.jsx",
     "lint-latest": "LIST=`git diff-index --name-only --diff-filter=d HEAD | grep .*\\.js | grep -v json`; if [ \"$LIST\" ]; then eslint --fix $LIST; fi",
-    "seed":"seed -u --db-name ${DBNAME=as4} --replace-id ./src/seeds"
+    "seed": "seed -u --db-name ${DBNAME=as4} --replace-id ./src/seeds"
   },
   "dependencies": {
     "bootstrap": "^4.5.0",
@@ -29,7 +29,7 @@
     "mongo-seeding-cli": "^3.4.1",
     "mongodb": "^3.5.9",
     "next": "latest",
-    "next-auth": "^2.2.0",
+    "next-auth": "^3.0.1",
     "next-connect": "^0.8.0",
     "nodemailer": "^6.4.10",
     "popper.js": "^1.16.1",
