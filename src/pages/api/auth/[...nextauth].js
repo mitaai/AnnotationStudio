@@ -31,7 +31,7 @@ const options = {
 
   adapter: Adapters.TypeORM.Adapter(process.env.MONGODB_URI,
     {
-      models: {
+      customModels: {
         User: Models.User,
       },
     }),
