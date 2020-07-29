@@ -10,7 +10,7 @@ const handler = nc()
   .use(middleware)
   .get(
     async (req, res) => {
-      const token = await jwt.getJwt({ req, secret });
+      const token = await jwt.getToken({ req, secret });
       if (token && token.exp > 0) {
         await req.db
           .collection('groups')
@@ -46,7 +46,7 @@ const handler = nc()
   )
   .patch(
     async (req, res) => {
-      const token = await jwt.getJwt({ req, secret });
+      const token = await jwt.getToken({ req, secret });
       if (token && token.exp > 0) {
         const memberQuery = (process.env.NODE_ENV === 'development')
           ? [{ 'members.id': ObjectID(token.user.id) }, { 'members.id': fakeUserId }]

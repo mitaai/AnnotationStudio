@@ -9,7 +9,7 @@ const handler = nc()
   .use(middleware)
   .get(
     async (req, res) => {
-      const token = await jwt.getJwt({ req, secret });
+      const token = await jwt.getToken({ req, secret });
       if (token && token.exp > 0) {
         await req.db
           .collection('documents')
@@ -89,7 +89,7 @@ const handler = nc()
   )
   .patch(
     async (req, res) => {
-      const token = await jwt.getJwt({ req, secret });
+      const token = await jwt.getToken({ req, secret });
       if (token && token.exp > 0) {
         const {
           title,

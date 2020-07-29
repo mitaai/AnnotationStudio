@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import NextAuth from 'next-auth';
 import Providers from 'next-auth/providers';
 import Adapters from 'next-auth/adapters';
@@ -6,8 +7,6 @@ import sendVerificationRequestOverride from '../../../utils/verificationUtil';
 import Models from '../../../models';
 
 const options = {
-  site: process.env.SITE || 'http://localhost:3000',
-
   providers: [
     Providers.Email({
       server: {
@@ -50,8 +49,17 @@ const options = {
   },
 
   callbacks: {
-    session: async (session, token) => {
-      const { id } = token.user;
+    jwt: async (token, user) => {
+      const isSignIn = !!(user);
+      if (isSignIn) {
+        token.auth_time = Number(new Date());
+        token.id = user.id;
+      }
+      return Promise.resolve(token);
+    },
+
+    session: async (session, sessionToken) => {
+      const { id } = sessionToken;
       const url = `${process.env.SITE}/api/user/${id}`;
       const res = await fetch(url, {
         method: 'GET',
@@ -61,7 +69,6 @@ const options = {
       });
       if (res.status === 200) {
         const user = await res.json();
-        // eslint-disable-next-line no-param-reassign
         session.user.name = user.name;
       } else {
         return Promise.reject();
