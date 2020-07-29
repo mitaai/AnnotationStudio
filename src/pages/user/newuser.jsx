@@ -4,13 +4,14 @@ import fetch from 'unfetch';
 import { Formik } from 'formik';
 import * as yup from 'yup';
 import {
-  Button, Card, Col, Form, Row, Spinner,
+  Button, Card, Col, Form, Row,
 } from 'react-bootstrap';
 import Feedback from 'react-bootstrap/Feedback';
 import Link from 'next/link';
 import Router from 'next/router';
 import fullName from '../../utils/nameUtil';
 import Layout from '../../components/Layout';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 const NewUser = () => {
   const [session] = useSession();
@@ -58,11 +59,7 @@ const NewUser = () => {
       <Col lg="8" className="mx-auto">
         <Card>
           {!session && (
-            <Card.Body className="text-center">
-              <Spinner animation="border" role="status">
-                <span className="sr-only">Loading...</span>
-              </Spinner>
-            </Card.Body>
+            <LoadingSpinner />
           )}
           {session && (
             <Card.Body>
@@ -98,7 +95,7 @@ const NewUser = () => {
                       </Col>
                     </Form.Group>
 
-                    <Form.Group as={Row} controlId="validationFormik01">
+                    <Form.Group as={Row} controlId="formPlaintextFirstName">
                       <Form.Label column lg="4">
                         First Name
                       </Form.Label>
@@ -119,7 +116,7 @@ const NewUser = () => {
                       </Col>
                     </Form.Group>
 
-                    <Form.Group as={Row} controlId="validationFormik02">
+                    <Form.Group as={Row} controlId="formPlaintextLastName">
                       <Form.Label column lg="4">
                         Last Name
                       </Form.Label>
@@ -140,7 +137,7 @@ const NewUser = () => {
                       </Col>
                     </Form.Group>
 
-                    <Form.Group as={Row} controlId="validationFormik03">
+                    <Form.Group as={Row} controlId="formPlaintextAffiliation">
                       <Form.Label column lg="4">
                         Affiliation
                       </Form.Label>
@@ -157,7 +154,7 @@ const NewUser = () => {
                         />
                       </Col>
                     </Form.Group>
-                    <Form.Group>
+                    <Form.Group controlId="formCheckboxTos">
                       <Form.Check type="checkbox">
                         <Form.Check.Input
                           required
