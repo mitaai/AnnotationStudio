@@ -18,9 +18,10 @@ const handler = nc()
               const {
                 name, firstName, lastName, affiliation,
               } = doc;
+              const groups = doc.groups ? doc.groups : [];
               if (err) throw err;
               res.status(200).json({
-                name, firstName, lastName, affiliation,
+                name, firstName, lastName, affiliation, groups,
               });
             } else {
               res.status(404).json({ error: '404 Not Found' });
@@ -31,7 +32,7 @@ const handler = nc()
   )
   .patch(
     async (req, res) => {
-      const token = await jwt.getJwt({ req, secret });
+      const token = await jwt.getToken({ req, secret });
       if (token && token.exp > 0) {
         const groupToPush = req.body.addedGroup
           ? { groups: req.body.addedGroup }
