@@ -40,7 +40,7 @@ const GroupList = () => {
                   {session.user.groups.map((value) => (
                     <tr>
                       <td>
-                        <Link href="#">
+                        <Link href={`/groups/${value.id}`}>
                           {value.name}
                         </Link>
                       </td>
