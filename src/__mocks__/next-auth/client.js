@@ -6,6 +6,7 @@ function useSession() {
       user: {
         name: 'Test User',
         email: 'test@email.com',
+        groups: [],
       },
       expires: '2081-10-05T14:48:00.000',
     },

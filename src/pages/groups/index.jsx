@@ -23,7 +23,7 @@ const GroupList = () => {
             <Card.Header>
               Groups
             </Card.Header>
-            <Card.Body>
+            <Card.Body data-testid="grouplist-card-body">
               {session.user.groups.length === 0 && (
               <>You are not a member of any groups.</>
               )}
@@ -64,7 +64,7 @@ const GroupList = () => {
               )}
             </Card.Body>
             <Card.Footer>
-              <Button variant="primary" href="/groups/new">
+              <Button variant="primary" href="/groups/new" data-testid="grouplist-create-button">
                 <Plus className="mr-1 ml-n1 mt-n1" />
                 Create New Group
               </Button>
