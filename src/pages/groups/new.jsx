@@ -1,9 +1,10 @@
 import fetch from 'unfetch';
 import { Formik } from 'formik';
-import { useSession } from 'next-auth/client';
+import { useSession, getSession } from 'next-auth/client';
 import {
   Button, Card, Col, Form, Row,
 } from 'react-bootstrap';
+import Router from 'next/router';
 import * as yup from 'yup';
 import Layout from '../../components/Layout';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -29,13 +30,18 @@ const NewGroup = () => {
     });
     if (res.status === 200) {
       const result = await res.json();
+      getSession();
+      Router.push({
+        pathname: '/groups',
+      });
       return Promise.resolve(result);
     }
     return Promise.reject(Error(`Unable to add group to user: error ${res.status} received from server`));
   };
 
-  const submitHandler = async (name) => {
+  const submitHandler = async (values) => {
     const url = '/api/group';
+    const { name } = values;
     const res = await fetch(url, {
       method: 'POST',
       body: JSON.stringify({ name }),
@@ -83,36 +89,38 @@ const NewGroup = () => {
                 }}
               >
                 {(props) => (
-                  <Form onSubmit={props.handleSubmit} noValidate as={Row} className="pt-2">
-                    <Col lg>
-                      <Form.Group controlId="formPlaintextGroupName">
-                        <Form.Control
+                  <Form onSubmit={props.handleSubmit} noValidate className="pt-2">
+                    <Row>
+                      <Col lg className="pr-1">
+                        <Form.Group controlId="formPlaintextGroupName">
+                          <Form.Control
+                            size="lg"
+                            type="text"
+                            name="name"
+                            placeholder="Name"
+                            onChange={props.handleChange}
+                            onBlur={props.handleBlur}
+                            value={props.values.name}
+                            isValid={props.touched.name && !props.errors.name}
+                            isInvalid={!!props.errors.name}
+                          />
+                          <Form.Control.Feedback type="invalid">
+                            {props.errors.name}
+                          </Form.Control.Feedback>
+                        </Form.Group>
+                      </Col>
+                      <Col lg="auto">
+                        <Button
+                          variant="primary"
                           size="lg"
-                          type="text"
-                          name="name"
-                          placeholder="Name"
-                          onChange={props.handleChange}
-                          onBlur={props.handleBlur}
-                          value={props.values.name}
-                          isValid={props.touched.name && !props.errors.name}
-                          isInvalid={!!props.errors.name}
-                        />
-                        <Form.Control.Feedback type="invalid">
-                          {props.errors.name}
-                        </Form.Control.Feedback>
-                      </Form.Group>
-                    </Col>
-                    <Col lg="auto">
-                      <Button
-                        variant="primary"
-                        size="lg"
-                        type="submit"
-                        disabled={props.isSubmitting || props.submitCount >= 1}
-                        data-testid="newgroup-submit-button"
-                      >
-                        Create
-                      </Button>
-                    </Col>
+                          type="submit"
+                          disabled={props.isSubmitting || props.submitCount >= 1}
+                          data-testid="newgroup-submit-button"
+                        >
+                          Create
+                        </Button>
+                      </Col>
+                    </Row>
                   </Form>
                 )}
               </Formik>
