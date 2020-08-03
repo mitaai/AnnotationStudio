@@ -1,18 +1,65 @@
 import { useSession } from 'next-auth/client';
-import { Card } from 'react-bootstrap';
+import {
+  Button, ButtonGroup, Card, Table,
+} from 'react-bootstrap';
+import {
+  PencilSquare, TrashFill,
+} from 'react-bootstrap-icons';
 import Layout from '../../../components/Layout';
+import LoadingSpinner from '../../../components/LoadingSpinner';
 
 const ViewGroup = ({ group }) => {
   const [session, loading] = useSession();
+
+  const roleInGroup = (currentSession) => currentSession.user.groups.find((o) => Object.entries(o).some(([k, value]) => k === 'id' && value === group.id)).role;
+
   return (
     <Layout>
       <Card>
-        <Card.Header>
-          {session && !loading && group.name}
-        </Card.Header>
-        <Card.Body>
-          {session && !loading && JSON.stringify(group)}
-        </Card.Body>
+        {!session && loading && (
+          <LoadingSpinner />
+        )}
+        {session && !loading && (
+          <>
+            <Card.Header>
+              {group.name}
+            </Card.Header>
+            <Card.Body>
+              <Table striped bordered hover variant="light">
+                <thead>
+                  <tr>
+                    <th>Member</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {group.members.map((member) => (
+                    <tr>
+                      <td>{member.name}</td>
+                      <td>{member.email}</td>
+                      <td>{member.role}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+              {(roleInGroup(session) === 'owner' || roleInGroup(session) === 'manager') && (
+                <ButtonGroup>
+                  <Button variant="outline-primary">
+                    <PencilSquare className="align-text-bottom mr-1" />
+                    Edit this group
+                  </Button>
+                  {roleInGroup(session) === 'owner' && (
+                    <Button variant="outline-danger">
+                      <TrashFill className="align-text-bottom mr-1" />
+                      Delete this group
+                    </Button>
+                  )}
+                </ButtonGroup>
+              )}
+            </Card.Body>
+          </>
+        )}
       </Card>
     </Layout>
   );
@@ -37,6 +84,7 @@ export async function getServerSideProps(context) {
       members,
     } = foundGroup;
     const group = {
+      id: context.params.id,
       name,
       members,
     };
