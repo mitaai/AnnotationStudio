@@ -49,7 +49,7 @@ const GroupList = () => {
                       <td>
                         {(value.role === 'owner' || value.role === 'manager') && (
                         <ButtonGroup>
-                          <Button variant="outline-primary">
+                          <Button variant="outline-primary" href={`/groups/${value.id}/edit`}>
                             <PencilSquare className="align-text-bottom mr-1" />
                             Edit
                           </Button>
