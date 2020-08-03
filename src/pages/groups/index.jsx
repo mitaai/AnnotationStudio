@@ -8,6 +8,7 @@ import {
 } from 'react-bootstrap-icons';
 import Layout from '../../components/Layout';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import GroupRoleSummaries from '../../components/GroupRoleSummaries';
 
 const GroupList = () => {
   const [session, loading] = useSession();
@@ -76,6 +77,7 @@ const GroupList = () => {
           </>
         )}
       </Card>
+      <GroupRoleSummaries />
     </Layout>
   );
 };

@@ -7,6 +7,7 @@ import {
 } from 'react-bootstrap-icons';
 import Layout from '../../../components/Layout';
 import LoadingSpinner from '../../../components/LoadingSpinner';
+import GroupRoleSummaries from '../../../components/GroupRoleSummaries';
 
 const ViewGroup = ({ group }) => {
   const [session, loading] = useSession();
@@ -61,6 +62,7 @@ const ViewGroup = ({ group }) => {
           </>
         )}
       </Card>
+      <GroupRoleSummaries />
     </Layout>
   );
 };
