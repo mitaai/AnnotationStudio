@@ -2,7 +2,7 @@ const { getObjectId } = require('mongo-seeding');
 
 const jwt = jest.genMockFromModule('next-auth/jwt');
 
-function getJwt() {
+function getToken() {
   return {
     exp: 1000,
     user: {
@@ -13,5 +13,5 @@ function getJwt() {
   };
 }
 
-jwt.getJwt = getJwt;
+jwt.getToken = getToken;
 module.exports = jwt;
