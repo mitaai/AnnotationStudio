@@ -30,6 +30,7 @@ const NewUser = () => {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
+      credentials: 'include',
     });
     if (res.status === 200) {
       await res.json();

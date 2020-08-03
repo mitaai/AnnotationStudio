@@ -9,14 +9,14 @@ const handler = nc()
   .use(middleware)
   .get(
     async (req, res) => {
-      const token = await jwt.getJwt({ req, secret });
+      const token = await jwt.getToken({ req, secret });
       if (token && token.exp > 0) {
         await req.db
           .collection('documents')
           .findOne(
             {
               _id: ObjectID(req.query.id),
-              $or: [{ 'groups.members.id': ObjectID(token.user.id) }, { owner: ObjectID(token.user.id) }],
+              $or: [{ 'groups.members.id': ObjectID(token.id) }, { owner: ObjectID(token.id) }],
             },
             (err, doc) => {
               if (doc) {
@@ -89,7 +89,7 @@ const handler = nc()
   )
   .patch(
     async (req, res) => {
-      const token = await jwt.getJwt({ req, secret });
+      const token = await jwt.getToken({ req, secret });
       if (token && token.exp > 0) {
         const {
           title,
@@ -171,7 +171,7 @@ const handler = nc()
           .findOneAndUpdate(
             {
               _id: ObjectID(req.query.id),
-              owner: ObjectID(token.user.id),
+              owner: ObjectID(token.id),
               ...groupById,
             },
             {

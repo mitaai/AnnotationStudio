@@ -8,7 +8,7 @@ const handler = nc()
   .use(middleware)
   .get(
     async (req, res) => {
-      const token = await jwt.getJwt({ req, secret });
+      const token = await jwt.getToken({ req, secret });
       if (token && token.exp > 0) {
         await req.db
           .collection('users')
@@ -16,7 +16,7 @@ const handler = nc()
             { slug: req.query.slug },
             (err, doc) => {
               if (doc) {
-                if (doc.email === token.user.email) {
+                if (doc.email === token.email) {
                   const {
                     name, firstName, lastName, affiliation, email,
                   } = doc;
