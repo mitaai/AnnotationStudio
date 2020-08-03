@@ -46,16 +46,20 @@ const GroupList = () => {
                       </td>
                       <td>{value.role}</td>
                       <td>
+                        {(value.role === 'owner' || value.role === 'manager') && (
                         <ButtonGroup>
                           <Button variant="outline-primary">
                             <PencilSquare className="align-text-bottom mr-1" />
                             Edit
                           </Button>
-                          <Button variant="outline-danger">
-                            <TrashFill className="align-text-bottom mr-1" />
-                            Delete
-                          </Button>
+                          {value.role === 'owner' && (
+                            <Button variant="outline-danger">
+                              <TrashFill className="align-text-bottom mr-1" />
+                              Delete
+                            </Button>
+                          )}
                         </ButtonGroup>
+                        )}
                       </td>
                     </tr>
                   ))}
