@@ -9,6 +9,7 @@ import {
 import Layout from '../../components/Layout';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import GroupRoleSummaries from '../../components/GroupRoleSummaries';
+import GroupRoleBadge from '../../components/GroupRoleBadge';
 
 const GroupList = () => {
   const [session, loading] = useSession();
@@ -45,7 +46,7 @@ const GroupList = () => {
                           {value.name}
                         </Link>
                       </td>
-                      <td>{value.role}</td>
+                      <td><GroupRoleBadge groupRole={value.role} /></td>
                       <td>
                         {(value.role === 'owner' || value.role === 'manager') && (
                         <ButtonGroup>

@@ -6,6 +6,7 @@ import { TrashFill } from 'react-bootstrap-icons';
 import Layout from '../../../components/Layout';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import GroupRoleSummaries from '../../../components/GroupRoleSummaries';
+import GroupRoleBadge from '../../../components/GroupRoleBadge';
 
 const EditGroup = ({ group }) => {
   const [session, loading] = useSession();
@@ -42,7 +43,7 @@ const EditGroup = ({ group }) => {
                         <tr>
                           <td>{member.name}</td>
                           <td>{member.email}</td>
-                          <td>{member.role}</td>
+                          <td><GroupRoleBadge groupRole={member.role} /></td>
                           <td>
                             <ButtonGroup>
                               <Button variant="outline-danger">
