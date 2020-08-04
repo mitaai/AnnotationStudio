@@ -1,6 +1,6 @@
 import { useSession } from 'next-auth/client';
 import {
-  Button, ButtonGroup, Card, Dropdown, Table,
+  Button, ButtonGroup, Card, Table,
 } from 'react-bootstrap';
 import {
   PencilSquare, TrashFill,
@@ -40,22 +40,7 @@ const ViewGroup = ({ group }) => {
                     <tr>
                       <td>{member.name}</td>
                       <td>{member.email}</td>
-                      <td>
-                        {member.role === 'owner' && (
-                          <GroupRoleBadge groupRole={member.role} />
-                        )}
-                        {member.role !== 'owner' && (
-                          <Dropdown>
-                            <Dropdown.Toggle variant="outline-secondary">
-                              {member.role}
-                            </Dropdown.Toggle>
-                            <Dropdown.Menu>
-                              <Dropdown.Item href="#/action-1">manager</Dropdown.Item>
-                              <Dropdown.Item href="#/action-2">member</Dropdown.Item>
-                            </Dropdown.Menu>
-                          </Dropdown>
-                        )}
-                      </td>
+                      <td><GroupRoleBadge groupRole={member.role} /></td>
                     </tr>
                   ))}
                 </tbody>

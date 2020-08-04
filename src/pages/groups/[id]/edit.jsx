@@ -1,6 +1,6 @@
 import { useSession } from 'next-auth/client';
 import {
-  ButtonGroup, Row, Col, Button, Card, Table,
+  Button, Card, Col, Dropdown, FormControl, InputGroup, Row, Table,
 } from 'react-bootstrap';
 import { TrashFill } from 'react-bootstrap-icons';
 import Layout from '../../../components/Layout';
@@ -28,7 +28,7 @@ const EditGroup = ({ group }) => {
             </Card.Header>
             <Card.Body>
               <Row>
-                <Col>
+                <Col sm={6}>
                   <Table striped bordered hover variant="light">
                     <thead>
                       <tr>
@@ -43,28 +43,77 @@ const EditGroup = ({ group }) => {
                         <tr>
                           <td>{member.name}</td>
                           <td>{member.email}</td>
-                          <td><GroupRoleBadge groupRole={member.role} /></td>
                           <td>
-                            <ButtonGroup>
+                            {member.role === 'owner' && (
+                            <GroupRoleBadge groupRole={member.role} />
+                            )}
+                            {member.role !== 'owner' && (
+                            <Dropdown>
+                              <Dropdown.Toggle variant="outline-secondary">
+                                {member.role}
+                              </Dropdown.Toggle>
+                              <Dropdown.Menu>
+                                <Dropdown.Item href="#/action-1">manager</Dropdown.Item>
+                                <Dropdown.Item href="#/action-2">member</Dropdown.Item>
+                              </Dropdown.Menu>
+                            </Dropdown>
+                            )}
+                          </td>
+                          <td>
+                            {member.role !== 'owner' && (
                               <Button variant="outline-danger">
                                 <TrashFill className="align-text-bottom mr-1" />
                                 Remove
                               </Button>
-                            </ButtonGroup>
+                            )}
                           </td>
                         </tr>
                       ))}
                     </tbody>
                   </Table>
                 </Col>
-                {roleInGroup(session) === 'owner' && (
-                  <Col>
+                <Col>
+                  <Row>
+                    <h6>Invite link</h6>
+                    <p>Generate an invite link to send to registered or new users.</p>
+                    <Button variant="outline-secondary">
+                      Generate
+                    </Button>
+                  </Row>
+                  <Row>
+                    <h6 className="mt-3">Add registered user</h6>
+                    <p>
+                      Automatically add a registered user to this group by entering
+                      their email here.
+                    </p>
+                    <InputGroup>
+                      <FormControl
+                        aria-describedby="basic-addon1"
+                        placeholder="User's email"
+                        aria-label="User's email"
+                      />
+                      <InputGroup.Append>
+                        <Button variant="outline-secondary">Add</Button>
+                      </InputGroup.Append>
+                    </InputGroup>
+                  </Row>
+                </Col>
+                <Col>
+                  <h6>Delete group</h6>
+                  <p>
+                    Delete this group permanently. This action cannot be undone.
+                  </p>
+                  <p>
+                    Documents assigned to this group will not be deleted, but may
+                    become inaccessible to group members.
+                  </p>
+                  {roleInGroup(session) === 'owner' && (
                     <Button variant="outline-danger">
                       <TrashFill className="align-text-bottom mr-1" />
                       Delete this group
                     </Button>
-                  </Col>
-                )}
+                  )}
+                </Col>
               </Row>
             </Card.Body>
           </>
