@@ -1,12 +1,16 @@
 import { useSession } from 'next-auth/client';
 import {
-  Button, Card, Col, Dropdown, FormControl, InputGroup, Row, Table,
+  Button, Card, Col, Dropdown, FormControl, InputGroup, Row, Table, Form,
 } from 'react-bootstrap';
 import { TrashFill } from 'react-bootstrap-icons';
+import * as yup from 'yup';
+import { Formik } from 'formik';
 import Layout from '../../../components/Layout';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import GroupRoleSummaries from '../../../components/GroupRoleSummaries';
 import GroupRoleBadge from '../../../components/GroupRoleBadge';
+import { AddUserToGroup } from '../../../utils/groupUtil';
+
 
 const EditGroup = ({ group }) => {
   const [session, loading] = useSession();
@@ -22,14 +26,14 @@ const EditGroup = ({ group }) => {
         {session && !loading && (roleInGroup(session) === 'owner' || roleInGroup(session) === 'manager') && (
           <>
             <Card.Header>
-              Editing Group:
+              Manage Group:
               {' '}
               {group.name}
             </Card.Header>
             <Card.Body>
-              <Row>
-                <Col sm={6}>
-                  <Table striped bordered hover variant="light">
+              <Row fluid>
+                <Col lg={7}>
+                  <Table striped bordered hover variant="light" size="sm">
                     <thead>
                       <tr>
                         <th>Member</th>
@@ -49,7 +53,7 @@ const EditGroup = ({ group }) => {
                             )}
                             {member.role !== 'owner' && (
                             <Dropdown>
-                              <Dropdown.Toggle variant="outline-secondary">
+                              <Dropdown.Toggle variant="outline-secondary" className="btn-sm">
                                 {member.role}
                               </Dropdown.Toggle>
                               <Dropdown.Menu>
@@ -61,8 +65,7 @@ const EditGroup = ({ group }) => {
                           </td>
                           <td>
                             {member.role !== 'owner' && (
-                              <Button variant="outline-danger">
-                                <TrashFill className="align-text-bottom mr-1" />
+                              <Button variant="outline-danger" className="btn-sm">
                                 Remove
                               </Button>
                             )}
@@ -86,16 +89,54 @@ const EditGroup = ({ group }) => {
                       Automatically add a registered user to this group by entering
                       their email here.
                     </p>
-                    <InputGroup>
-                      <FormControl
-                        aria-describedby="basic-addon1"
-                        placeholder="User's email"
-                        aria-label="User's email"
-                      />
-                      <InputGroup.Append>
-                        <Button variant="outline-secondary">Add</Button>
-                      </InputGroup.Append>
-                    </InputGroup>
+                    <Formik
+                      validationSchema={yup.object({
+                        email: yup.string().required().email(),
+                      })}
+                      onSubmit={(values, actions) => {
+                        setTimeout(() => {
+                          AddUserToGroup(group, values.email);
+                          actions.setSubmitting(false);
+                        }, 1000);
+                      }}
+                      initialValues={{
+                        email: '',
+                      }}
+                    >
+                      {(props) => (
+                        <Form noValidate onSubmit={props.handleSubmit}>
+                          <Form.Group controlId="formPlaintextEmail">
+                            <InputGroup>
+                              <FormControl
+                                placeholder="User's email"
+                                aria-label="User's email"
+                                name="email"
+                                value={props.values.email}
+                                onChange={props.handleChange}
+                                onBlur={props.handleBlur}
+                                isValid={props.touched.email && !props.errors.email}
+                                isInvalid={!!props.errors.email}
+                              />
+                              <InputGroup.Append>
+                                <Button
+                                  variant="outline-secondary"
+                                  type="submit"
+                                  className="rounded-right"
+                                  disabled={props.isSubmitting || props.errors.email || props.values.email === ''}
+                                  data-testid="newgroup-submit-button"
+                                >
+                                  Add
+                                </Button>
+                              </InputGroup.Append>
+                              <Form.Control.Feedback type="invalid" className="w-100">
+                                {props.errors.email}
+                              </Form.Control.Feedback>
+                            </InputGroup>
+                          </Form.Group>
+                        </Form>
+                      )}
+                    </Formik>
+
                   </Row>
                 </Col>
                 <Col>
