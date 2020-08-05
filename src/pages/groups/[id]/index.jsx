@@ -49,7 +49,7 @@ const ViewGroup = ({ group }) => {
                 <ButtonGroup>
                   <Button variant="outline-primary" href={`${group.id}/edit`}>
                     <PencilSquare className="align-text-bottom mr-1" />
-                    Edit this group
+                    Manage this group
                   </Button>
                   {roleInGroup(session) === 'owner' && (
                     <Button variant="outline-danger">

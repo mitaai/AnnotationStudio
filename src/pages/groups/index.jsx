@@ -10,6 +10,7 @@ import Layout from '../../components/Layout';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import GroupRoleSummaries from '../../components/GroupRoleSummaries';
 import GroupRoleBadge from '../../components/GroupRoleBadge';
+import { FirstNameLastInitial } from '../../utils/nameUtil';
 
 const GroupList = () => {
   const [session, loading] = useSession();
@@ -35,6 +36,8 @@ const GroupList = () => {
                   <tr>
                     <th>Name</th>
                     <th>Role</th>
+                    <th>Owner</th>
+                    <th>Members</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -47,12 +50,14 @@ const GroupList = () => {
                         </Link>
                       </td>
                       <td><GroupRoleBadge groupRole={value.role} /></td>
+                      <td>{FirstNameLastInitial(value.ownerName)}</td>
+                      <td>{value.memberCount}</td>
                       <td>
                         {(value.role === 'owner' || value.role === 'manager') && (
                         <ButtonGroup>
                           <Button variant="outline-primary" href={`/groups/${value.id}/edit`}>
                             <PencilSquare className="align-text-bottom mr-1" />
-                            Edit
+                            Manage
                           </Button>
                           {value.role === 'owner' && (
                             <Button variant="outline-danger">
