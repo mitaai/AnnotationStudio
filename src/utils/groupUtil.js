@@ -2,14 +2,39 @@ import fetch from 'unfetch';
 import Router from 'next/router';
 import { GetUserByEmail } from './userUtil';
 
+const UpdateMemberCounts = async (group) => {
+  const { members } = group;
+  // eslint-disable-next-line no-underscore-dangle
+  const updatedGroupId = group._id;
+  const memberCount = members.length;
+  return Promise.all(
+    members.map(async (member) => {
+      const url = `/api/user/${member.id}`;
+      const body = {
+        updatedGroupId,
+        memberCount,
+      };
+      const res = await fetch(url, {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      if (res.status !== 200) { return Promise.reject(Error(`Unable to update member counts: error ${res.status} received from server`)); }
+      return Promise.resolve(res.json());
+    }),
+  );
+};
+
 const AddGroupToUser = async (group, user) => {
   const url = `/api/user/${user.id}`;
-  const { role } = user;
   const {
     id,
     name,
     ownerName,
     memberCount,
+    role,
   } = group;
   const body = {
     addedGroup: {
@@ -69,11 +94,12 @@ const AddUserToGroup = async (group, email) => {
       const ownerName = result.value.members.filter((member) => member.role === 'owner')[0].name;
       const groupToAdd = {
         id: group.id,
-        name: result.name,
+        name: result.value.name,
         memberCount,
         ownerName,
+        role: 'member',
       };
-      return AddGroupToUser(groupToAdd, user);
+      return AddGroupToUser(groupToAdd, user).then(UpdateMemberCounts(result.value));
     } return Promise.reject(Error(`Unable to add user to group: error ${res.status} received from server`));
   } return Promise.reject(Error(`Unable to add user with email ${email}: error ${user.error}.`));
 };
@@ -109,7 +135,8 @@ const RemoveUserFromGroup = async (group, user) => {
     },
   });
   if (res.status === 200) {
-    return RemoveGroupFromUser(group, user);
+    const result = await res.json();
+    return RemoveGroupFromUser(group, user).then(UpdateMemberCounts(result.value));
   } return Promise.reject(Error(`Unable to remove user from group: error ${res.status} received from server`));
 };
 

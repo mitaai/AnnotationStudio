@@ -40,22 +40,38 @@ const handler = nc()
         const groupToPull = req.body.removedGroupId
           ? { groups: { id: req.body.removedGroupId } }
           : {};
+        let groupById;
+        let groupToUpdate;
+        if (req.body.updatedGroupId) {
+          groupById = { 'groups.id': req.body.updatedGroupId };
+          if (req.body.memberCount) {
+            groupToUpdate = {
+              'groups.$.memberCount': req.body.memberCount,
+            };
+          }
+        }
         const updateMethods = {};
         const fieldsToPush = { ...groupToPush };
         if (Object.keys(fieldsToPush).length !== 0) updateMethods.$push = fieldsToPush;
         const fieldsToPull = { ...groupToPull };
         if (Object.keys(fieldsToPull).length !== 0) updateMethods.$pull = fieldsToPull;
+        const fieldsToSet = { ...groupToUpdate };
+        if (Object.keys(fieldsToSet).length !== 0) updateMethods.$set = fieldsToSet;
         updateMethods.$currentDate = { updatedAt: true };
         await req.db
           .collection('users')
           .findOneAndUpdate(
-            { _id: ObjectID(req.query.id) },
+            {
+              _id: ObjectID(req.query.id),
+              ...groupById,
+            },
             updateMethods,
             {
               returnOriginal: false,
             },
             (err, doc) => {
               if (err) throw err;
+              // console.log(doc);
               res.status(200).json(doc);
             },
           );

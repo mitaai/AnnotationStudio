@@ -57,8 +57,8 @@ const EditGroup = ({ group }) => {
                                 {member.role}
                               </Dropdown.Toggle>
                               <Dropdown.Menu>
-                                <Dropdown.Item href="#/action-1">manager</Dropdown.Item>
-                                <Dropdown.Item href="#/action-2">member</Dropdown.Item>
+                                <Dropdown.Item disabled={member.role === 'member'} href="#/action-1">member</Dropdown.Item>
+                                <Dropdown.Item disabled={member.role === 'manager'} href="#/action-2">manager</Dropdown.Item>
                               </Dropdown.Menu>
                             </Dropdown>
                             )}
