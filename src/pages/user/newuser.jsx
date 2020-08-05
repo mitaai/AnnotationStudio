@@ -9,7 +9,7 @@ import {
 import Feedback from 'react-bootstrap/Feedback';
 import Link from 'next/link';
 import Router from 'next/router';
-import fullName from '../../utils/nameUtil';
+import { FullName } from '../../utils/nameUtil';
 import Layout from '../../components/Layout';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
@@ -23,7 +23,7 @@ const NewUser = () => {
       email: session.user.email,
       firstName: values.firstName,
       lastName: values.lastName,
-      name: fullName(values.firstName, values.lastName),
+      name: FullName(values.firstName, values.lastName),
       affiliation: values.affiliation,
       slug: session.user.email.replace(/[*+~.()'"!:@]/g, '-'),
     };

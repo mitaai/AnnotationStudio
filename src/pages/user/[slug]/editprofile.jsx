@@ -6,7 +6,7 @@ import {
   Button, Card, Col, Form, Row,
 } from 'react-bootstrap';
 import Router from 'next/router';
-import fullName from '../../../utils/nameUtil';
+import FullName from '../../../utils/nameUtil';
 import Layout from '../../../components/Layout';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 
@@ -20,7 +20,7 @@ const EditProfile = ({ user }) => {
       email: values.email,
       firstName: values.firstName,
       lastName: values.lastName,
-      name: fullName(values.firstName, values.lastName),
+      name: FullName(values.firstName, values.lastName),
       affiliation: values.affiliation,
       slug: values.email.replace(/[*+~.()'"!:@]/g, '-'),
     };
