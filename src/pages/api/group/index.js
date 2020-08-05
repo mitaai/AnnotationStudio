@@ -15,7 +15,7 @@ const handler = nc()
         const updatedAt = createdAt;
         const { name } = req.body;
         const members = [{
-          id: ObjectID(token.id),
+          id: token.id,
           name: token.name,
           email: token.email,
           role: 'owner',

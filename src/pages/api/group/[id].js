@@ -4,8 +4,7 @@ import jwt from 'next-auth/jwt';
 import middleware from '../../../middlewares/middleware';
 
 const secret = process.env.AUTH_SECRET;
-const fakeUserId = ObjectID('7b639ae33efb36eaf6447c55');
-
+const fakeUserId = '7b639ae33efb36eaf6447c55';
 const handler = nc()
   .use(middleware)
   .get(
@@ -17,7 +16,7 @@ const handler = nc()
           .findOne(
             {
               _id: ObjectID(req.query.id),
-              'members.id': ObjectID(token.id),
+              'members.id': token.id,
             },
             (err, doc) => {
               if (doc) {
@@ -49,15 +48,15 @@ const handler = nc()
       const token = await jwt.getToken({ req, secret });
       if (token && token.exp > 0) {
         const memberQuery = (process.env.NODE_ENV === 'development')
-          ? [{ 'members.id': ObjectID(token.id) }, { 'members.id': fakeUserId }]
-          : [{ 'members.id': ObjectID(token.id) }];
+          ? [{ 'members.id': token.id }, { 'members.id': fakeUserId }]
+          : [{ 'members.id': token.id }];
         const nameToUpdate = req.body.name
           ? { name: req.body.name }
           : {};
         let documentToUpdate = {};
         let documentById = {};
         if (req.body.updatedDocument) {
-          documentById = { 'documents.id': ObjectID(req.body.updatedDocument.id) };
+          documentById = { 'documents.id': req.body.updatedDocument.id };
           documentToUpdate = {
             'documents.$.slug': req.body.updatedDocument.slug,
             'documents.$.name': req.body.updatedDocument.name,
@@ -70,11 +69,21 @@ const handler = nc()
           ? { documents: req.body.addedDocument }
           : {};
         const memberToPull = req.body.removedUserId
-          ? { 'members.id': ObjectID(req.body.removedUserId) }
+          ? { members: { id: req.body.removedUserId } }
           : {};
         const documentToPull = req.body.removedDocumentId
-          ? { 'documents.id': ObjectID(req.body.removedDocumentId) }
+          ? { documents: { id: req.body.removedDocumentId } }
           : {};
+
+        const updateMethods = {};
+        const fieldsToSet = { ...nameToUpdate, ...documentToUpdate };
+        if (Object.keys(fieldsToSet).length !== 0) updateMethods.$set = fieldsToSet;
+        const fieldsToPush = { ...memberToPush, ...documentToPush };
+        if (Object.keys(fieldsToPush).length !== 0) updateMethods.$push = fieldsToPush;
+        const fieldsToPull = { ...memberToPull, ...documentToPull };
+        if (Object.keys(fieldsToPull).length !== 0) updateMethods.$pull = fieldsToPull;
+        updateMethods.$currentDate = { updatedAt: true };
+
         await req.db
           .collection('groups')
           .findOneAndUpdate(
@@ -83,14 +92,7 @@ const handler = nc()
               $or: memberQuery,
               ...documentById,
             },
-            {
-              $set: { ...nameToUpdate, ...documentToUpdate },
-              $push: { ...memberToPush, ...documentToPush },
-              $pull: { ...memberToPull, ...documentToPull },
-              $currentDate: {
-                updatedAt: true,
-              },
-            },
+            updateMethods,
             {
               returnOriginal: false,
             },
