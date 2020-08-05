@@ -37,16 +37,20 @@ const handler = nc()
         const groupToPush = req.body.addedGroup
           ? { groups: req.body.addedGroup }
           : {};
+        const groupToPull = req.body.removedGroupId
+          ? { groups: { id: req.body.removedGroupId } }
+          : {};
+        const updateMethods = {};
+        const fieldsToPush = { ...groupToPush };
+        if (Object.keys(fieldsToPush).length !== 0) updateMethods.$push = fieldsToPush;
+        const fieldsToPull = { ...groupToPull };
+        if (Object.keys(fieldsToPull).length !== 0) updateMethods.$pull = fieldsToPull;
+        updateMethods.$currentDate = { updatedAt: true };
         await req.db
           .collection('users')
           .findOneAndUpdate(
             { _id: ObjectID(req.query.id) },
-            {
-              $push: { ...groupToPush },
-              $currentDate: {
-                updatedAt: true,
-              },
-            },
+            updateMethods,
             {
               returnOriginal: false,
             },

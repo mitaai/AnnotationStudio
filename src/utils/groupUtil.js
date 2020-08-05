@@ -75,7 +75,42 @@ const AddUserToGroup = async (group, email) => {
       };
       return AddGroupToUser(groupToAdd, user);
     } return Promise.reject(Error(`Unable to add user to group: error ${res.status} received from server`));
-  } return Promise.reject(Error(`Could not add user with email ${email}: error ${user.error}.`));
+  } return Promise.reject(Error(`Unable to add user with email ${email}: error ${user.error}.`));
 };
 
-export { AddGroupToUser, AddUserToGroup };
+const RemoveGroupFromUser = async (group, user) => {
+  const removedGroupId = group.id;
+  const url = `/api/user/${user.id}`;
+  const body = { removedGroupId };
+  const res = await fetch(url, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (res.status === 200) {
+    Router.push({
+      pathname: `/groups/${group.id}/edit`,
+    });
+    return Promise.resolve(res.json());
+  } return Promise.reject(Error(`Unable to remove group from user: error ${res.status} received from server`));
+};
+
+const RemoveUserFromGroup = async (group, user) => {
+  const removedUserId = user.id;
+  const url = `/api/group/${group.id}`;
+  const body = { removedUserId };
+  const res = await fetch(url, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (res.status === 200) {
+    return RemoveGroupFromUser(group, user);
+  } return Promise.reject(Error(`Unable to remove user from group: error ${res.status} received from server`));
+};
+
+export { AddGroupToUser, AddUserToGroup, RemoveUserFromGroup };

@@ -9,7 +9,7 @@ import Layout from '../../../components/Layout';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import GroupRoleSummaries from '../../../components/GroupRoleSummaries';
 import GroupRoleBadge from '../../../components/GroupRoleBadge';
-import { AddUserToGroup } from '../../../utils/groupUtil';
+import { AddUserToGroup, RemoveUserFromGroup } from '../../../utils/groupUtil';
 
 
 const EditGroup = ({ group }) => {
@@ -65,7 +65,12 @@ const EditGroup = ({ group }) => {
                           </td>
                           <td>
                             {member.role !== 'owner' && (
-                              <Button variant="outline-danger" className="btn-sm">
+                              <Button
+                                variant="outline-danger"
+                                className="btn-sm"
+                                type="button"
+                                onClick={() => RemoveUserFromGroup(group, member)}
+                              >
                                 Remove
                               </Button>
                             )}
