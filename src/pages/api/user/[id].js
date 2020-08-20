@@ -71,7 +71,6 @@ const handler = nc()
             },
             (err, doc) => {
               if (err) throw err;
-              // console.log(doc);
               res.status(200).json(doc);
             },
           );

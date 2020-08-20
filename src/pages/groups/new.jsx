@@ -29,10 +29,10 @@ const NewGroup = () => {
         name,
         ownerName: result.ops[0].members[0].name,
         memberCount: 1,
+        role: 'owner',
       };
       const user = {
-        userId: result.ops[0].members[0].id,
-        role: 'owner',
+        id: result.ops[0].members[0].id,
       };
       return AddGroupToUser(group, user);
     }

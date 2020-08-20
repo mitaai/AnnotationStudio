@@ -56,11 +56,11 @@ const AddGroupToUser = async (group, user) => {
     const result = await res.json();
     if (role === 'owner') {
       Router.push({
-        pathname: `/groups/${group.id}`,
+        pathname: `/groups/${group.id}/edit`,
       });
     } else {
       Router.push({
-        pathname: `/groups/${group.id}/edit`,
+        pathname: `/groups/${group.id}`,
       });
     }
     return Promise.resolve(result);
