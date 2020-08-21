@@ -27,7 +27,7 @@ const UpdateMemberCounts = async (group) => {
   );
 };
 
-const AddGroupToUser = async (group, user) => {
+const AddGroupToUser = async (group, user, isNewGroup) => {
   const url = `/api/user/${user.id}`;
   const {
     id,
@@ -54,8 +54,11 @@ const AddGroupToUser = async (group, user) => {
   });
   if (res.status === 200) {
     const result = await res.json();
+    let query = {};
+    if (isNewGroup) query = { alert: 'newGroup' };
     Router.push({
       pathname: `/groups/${group.id}/edit`,
+      query,
     });
     return Promise.resolve(result);
   }
