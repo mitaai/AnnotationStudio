@@ -176,7 +176,28 @@ const DeleteGroupFromId = async (id) => {
   } return Promise.reject(Error(`Unable to find group by ID: error ${res.status} received from server`));
 };
 
+const ChangeUserRole = async (group, member, role) => {
+  // 1. Change user's role in group
+  const url = `/api/group/${group.id}`;
+  const body = { memberToChangeRoleId: member.id, role };
+  const res = await fetch(url, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (res.status === 200) {
+    console.log(res);
+  }
+  // 2. Update user's role in user's group object
+};
 
 export {
-  AddGroupToUser, AddUserToGroup, DeleteGroup, DeleteGroupFromId, RemoveUserFromGroup,
+  AddGroupToUser,
+  AddUserToGroup,
+  ChangeUserRole,
+  DeleteGroup,
+  DeleteGroupFromId,
+  RemoveUserFromGroup,
 };

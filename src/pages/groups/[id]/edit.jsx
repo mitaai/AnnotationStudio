@@ -9,7 +9,9 @@ import Layout from '../../../components/Layout';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import GroupRoleSummaries from '../../../components/GroupRoleSummaries';
 import GroupRoleBadge from '../../../components/GroupRoleBadge';
-import { AddUserToGroup, DeleteGroup, RemoveUserFromGroup } from '../../../utils/groupUtil';
+import {
+  AddUserToGroup, ChangeUserRole, DeleteGroup, RemoveUserFromGroup,
+} from '../../../utils/groupUtil';
 
 
 const EditGroup = ({ group }) => {
@@ -57,8 +59,18 @@ const EditGroup = ({ group }) => {
                                 {member.role}
                               </Dropdown.Toggle>
                               <Dropdown.Menu>
-                                <Dropdown.Item disabled={member.role === 'member'} href="#/action-1">member</Dropdown.Item>
-                                <Dropdown.Item disabled={member.role === 'manager'} href="#/action-2">manager</Dropdown.Item>
+                                <Dropdown.Item
+                                  disabled={member.role === 'member'}
+                                  onClick={() => { ChangeUserRole(group, member, 'member'); }}
+                                >
+                                  member
+                                </Dropdown.Item>
+                                <Dropdown.Item
+                                  disabled={member.role === 'manager'}
+                                  onClick={() => { ChangeUserRole(group, member, 'manager'); }}
+                                >
+                                  manager
+                                </Dropdown.Item>
                               </Dropdown.Menu>
                             </Dropdown>
                             )}

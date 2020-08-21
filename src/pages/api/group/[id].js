@@ -62,6 +62,14 @@ const handler = nc()
             'documents.$.name': req.body.updatedDocument.name,
           };
         }
+        let memberToChangeRole = {};
+        let memberById = {};
+        if (req.body.memberToChangeRoleId) {
+          memberById = { 'members.id': req.body.memberToChangeRoleId };
+          memberToChangeRole = {
+            'members.$.role': req.body.role,
+          };
+        }
         const memberToPush = req.body.addedUser
           ? { members: req.body.addedUser }
           : {};
@@ -76,7 +84,7 @@ const handler = nc()
           : {};
 
         const updateMethods = {};
-        const fieldsToSet = { ...nameToUpdate, ...documentToUpdate };
+        const fieldsToSet = { ...nameToUpdate, ...documentToUpdate, ...memberToChangeRole };
         if (Object.keys(fieldsToSet).length !== 0) updateMethods.$set = fieldsToSet;
         const fieldsToPush = { ...memberToPush, ...documentToPush };
         if (Object.keys(fieldsToPush).length !== 0) updateMethods.$push = fieldsToPush;
@@ -91,6 +99,7 @@ const handler = nc()
               _id: ObjectID(req.query.id),
               $or: memberQuery,
               ...documentById,
+              ...memberById,
             },
             updateMethods,
             {
