@@ -9,7 +9,7 @@ import Layout from '../../../components/Layout';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import GroupRoleSummaries from '../../../components/GroupRoleSummaries';
 import GroupRoleBadge from '../../../components/GroupRoleBadge';
-import { AddUserToGroup, RemoveUserFromGroup } from '../../../utils/groupUtil';
+import { AddUserToGroup, DeleteGroup, RemoveUserFromGroup } from '../../../utils/groupUtil';
 
 
 const EditGroup = ({ group }) => {
@@ -31,7 +31,7 @@ const EditGroup = ({ group }) => {
               {group.name}
             </Card.Header>
             <Card.Body>
-              <Row fluid>
+              <Row fluid="true">
                 <Col lg={7}>
                   <Table striped bordered hover variant="light" size="sm">
                     <thead>
@@ -44,7 +44,7 @@ const EditGroup = ({ group }) => {
                     </thead>
                     <tbody>
                       {group.members.map((member) => (
-                        <tr>
+                        <tr key={member.email}>
                           <td>{member.name}</td>
                           <td>{member.email}</td>
                           <td>
@@ -154,7 +154,14 @@ const EditGroup = ({ group }) => {
                     become inaccessible to group members.
                   </p>
                   {roleInGroup(session) === 'owner' && (
-                    <Button variant="outline-danger">
+                    <Button
+                      variant="outline-danger"
+                      type="button"
+                      onClick={() => {
+                        // Put modal here for confirmation
+                        DeleteGroup(group);
+                      }}
+                    >
                       <TrashFill className="align-text-bottom mr-1" />
                       Delete this group
                     </Button>

@@ -1,4 +1,5 @@
-import { useSession } from 'next-auth/client';
+/* eslint-disable jsx-a11y/anchor-is-valid */
+import { useSession, getSession } from 'next-auth/client';
 import Link from 'next/link';
 import {
   Button, ButtonGroup, Card, Table,
@@ -11,6 +12,7 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import GroupRoleSummaries from '../../components/GroupRoleSummaries';
 import GroupRoleBadge from '../../components/GroupRoleBadge';
 import { FirstNameLastInitial } from '../../utils/nameUtil';
+import { DeleteGroupFromId } from '../../utils/groupUtil';
 
 const GroupList = () => {
   const [session, loading] = useSession();
@@ -43,10 +45,10 @@ const GroupList = () => {
                 </thead>
                 <tbody>
                   {session.user.groups.map((value) => (
-                    <tr>
+                    <tr key={value.id}>
                       <td>
                         <Link href={`/groups/${value.id}`}>
-                          {value.name}
+                          <a title={value.name}>{value.name}</a>
                         </Link>
                       </td>
                       <td><GroupRoleBadge groupRole={value.role} /></td>
@@ -60,7 +62,15 @@ const GroupList = () => {
                             Manage
                           </Button>
                           {value.role === 'owner' && (
-                            <Button variant="outline-danger">
+                            <Button
+                              variant="outline-danger"
+                              type="button"
+                              onClick={() => {
+                                // Modal to confrim delete
+                                DeleteGroupFromId(value.id).then(async () => getSession());
+                                // State update
+                              }}
+                            >
                               <TrashFill className="align-text-bottom mr-1" />
                               Delete
                             </Button>

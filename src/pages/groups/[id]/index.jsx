@@ -1,4 +1,4 @@
-import { useSession } from 'next-auth/client';
+import { useSession, getSession } from 'next-auth/client';
 import {
   Button, ButtonGroup, Card, Table,
 } from 'react-bootstrap';
@@ -9,6 +9,7 @@ import Layout from '../../../components/Layout';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import GroupRoleSummaries from '../../../components/GroupRoleSummaries';
 import GroupRoleBadge from '../../../components/GroupRoleBadge';
+import { DeleteGroup } from '../../../utils/groupUtil';
 
 const ViewGroup = ({ group }) => {
   const [session, loading] = useSession();
@@ -37,7 +38,7 @@ const ViewGroup = ({ group }) => {
                 </thead>
                 <tbody>
                   {group.members.map((member) => (
-                    <tr>
+                    <tr key={member.email}>
                       <td>{member.name}</td>
                       <td>{member.email}</td>
                       <td><GroupRoleBadge groupRole={member.role} /></td>
@@ -52,7 +53,15 @@ const ViewGroup = ({ group }) => {
                     Manage this group
                   </Button>
                   {roleInGroup(session) === 'owner' && (
-                    <Button variant="outline-danger">
+                    <Button
+                      variant="outline-danger"
+                      type="button"
+                      onClick={() => {
+                        // Modal to confrim delete
+                        DeleteGroup(group).then(async () => getSession());
+                        // State update
+                      }}
+                    >
                       <TrashFill className="align-text-bottom mr-1" />
                       Delete this group
                     </Button>

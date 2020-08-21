@@ -54,15 +54,9 @@ const AddGroupToUser = async (group, user) => {
   });
   if (res.status === 200) {
     const result = await res.json();
-    if (role === 'owner') {
-      Router.push({
-        pathname: `/groups/${group.id}/edit`,
-      });
-    } else {
-      Router.push({
-        pathname: `/groups/${group.id}`,
-      });
-    }
+    Router.push({
+      pathname: `/groups/${group.id}/edit`,
+    });
     return Promise.resolve(result);
   }
   return Promise.reject(Error(`Unable to add group to user: error ${res.status} received from server`));
@@ -104,7 +98,7 @@ const AddUserToGroup = async (group, email) => {
   } return Promise.reject(Error(`Unable to add user with email ${email}: error ${user.error}.`));
 };
 
-const RemoveGroupFromUser = async (group, user) => {
+const RemoveGroupFromUser = async (group, user, groupDeletion) => {
   const removedGroupId = group.id;
   const url = `/api/user/${user.id}`;
   const body = { removedGroupId };
@@ -116,9 +110,11 @@ const RemoveGroupFromUser = async (group, user) => {
     },
   });
   if (res.status === 200) {
-    Router.push({
-      pathname: `/groups/${group.id}/edit`,
-    });
+    if (!groupDeletion) {
+      Router.push({
+        pathname: `/groups/${group.id}/edit`,
+      });
+    }
     return Promise.resolve(res.json());
   } return Promise.reject(Error(`Unable to remove group from user: error ${res.status} received from server`));
 };
@@ -140,4 +136,44 @@ const RemoveUserFromGroup = async (group, user) => {
   } return Promise.reject(Error(`Unable to remove user from group: error ${res.status} received from server`));
 };
 
-export { AddGroupToUser, AddUserToGroup, RemoveUserFromGroup };
+const DeleteGroup = async (group) => {
+  const { members } = group;
+  const url = `/api/group/${group.id}`;
+  const res = await fetch(url, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (res.status === 200) {
+    Router.push({
+      pathname: '/groups',
+      query: {
+        alert: 'deletedGroup',
+      },
+    }, '/groups');
+    return Promise.all(
+      members.map(async (member) => RemoveGroupFromUser(group, member, true)),
+    );
+  } return Promise.reject(Error(`Unable to delete group: error ${res.status} received from server`));
+};
+
+const DeleteGroupFromId = async (id) => {
+  const url = `/api/group/${id}`;
+  const res = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (res.status === 200) {
+    const result = await res.json();
+    const group = { id, name: result.name, members: result.members };
+    return DeleteGroup(group);
+  } return Promise.reject(Error(`Unable to find group by ID: error ${res.status} received from server`));
+};
+
+
+export {
+  AddGroupToUser, AddUserToGroup, DeleteGroup, DeleteGroupFromId, RemoveUserFromGroup,
+};

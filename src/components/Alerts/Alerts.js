@@ -12,6 +12,10 @@ function getData(alertName) {
       text: 'Profile updated.',
       variant: 'success',
     },
+    deletedGroup: {
+      text: 'You have successfully deleted the group.',
+      variant: 'success',
+    },
   };
   return alerts[alertName];
 }
