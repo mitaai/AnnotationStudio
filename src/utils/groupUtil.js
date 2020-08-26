@@ -54,7 +54,7 @@ const AddGroupToUser = async (group, user, isNewGroup) => {
   });
   if (res.status === 200) {
     const result = await res.json();
-    let query = {};
+    let query = { alert: 'addUser' };
     if (isNewGroup) query = { alert: 'newGroup' };
     Router.push({
       pathname: `/groups/${group.id}/edit`,
@@ -116,6 +116,9 @@ const RemoveGroupFromUser = async (group, user, groupDeletion) => {
     if (!groupDeletion) {
       Router.push({
         pathname: `/groups/${group.id}/edit`,
+        query: {
+          alert: 'removeUser',
+        },
       });
     }
     return Promise.resolve(res.json());

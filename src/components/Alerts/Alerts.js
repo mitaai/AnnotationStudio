@@ -24,6 +24,14 @@ function getData(alertName) {
       text: 'User\'s role changed successfully.',
       variant: 'success',
     },
+    removeUser: {
+      text: 'User successfully removed from group.',
+      variant: 'success',
+    },
+    addUser: {
+      text: 'User successfully added to group.',
+      variant: 'success',
+    },
   };
   return alerts[alertName];
 }
