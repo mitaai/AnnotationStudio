@@ -1,4 +1,5 @@
 import { useSession } from 'next-auth/client';
+import { useState } from 'react';
 import {
   Button, Card, Col, Dropdown, FormControl, InputGroup, Row, Table, Form,
 } from 'react-bootstrap';
@@ -7,6 +8,7 @@ import * as yup from 'yup';
 import { Formik } from 'formik';
 import Layout from '../../../components/Layout';
 import LoadingSpinner from '../../../components/LoadingSpinner';
+import ConfirmationDialog from '../../../components/ConfirmationDialog';
 import GroupRoleSummaries from '../../../components/GroupRoleSummaries';
 import GroupRoleBadge from '../../../components/GroupRoleBadge';
 import {
@@ -16,6 +18,10 @@ import {
 
 const EditGroup = ({ group }) => {
   const [session, loading] = useSession();
+
+  const [showModal, setShowModal] = useState(false);
+  const handleCloseModal = () => setShowModal(false);
+  const handleShowModal = () => setShowModal(true);
 
   const roleInGroup = (currentSession) => currentSession.user.groups.find((o) => Object.entries(o).some(([k, value]) => k === 'id' && value === group.id)).role;
 
@@ -166,17 +172,27 @@ const EditGroup = ({ group }) => {
                     become inaccessible to group members.
                   </p>
                   {roleInGroup(session) === 'owner' && (
-                    <Button
-                      variant="outline-danger"
-                      type="button"
-                      onClick={() => {
-                        // Put modal here for confirmation
-                        DeleteGroup(group);
-                      }}
-                    >
-                      <TrashFill className="align-text-bottom mr-1" />
-                      Delete this group
-                    </Button>
+                    <>
+                      <Button
+                        variant="outline-danger"
+                        type="button"
+                        onClick={handleShowModal}
+                      >
+                        <TrashFill className="align-text-bottom mr-1" />
+                        Delete this group
+                      </Button>
+                      <ConfirmationDialog
+                        value={group}
+                        type="deleteGroup"
+                        handleCloseModal={handleCloseModal}
+                        show={showModal}
+                        onClick={(event) => {
+                          event.target.setAttribute('disabled', 'true');
+                          DeleteGroup(group);
+                          handleCloseModal();
+                        }}
+                      />
+                    </>
                   )}
                 </Col>
               </Row>

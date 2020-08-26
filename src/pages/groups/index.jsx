@@ -1,5 +1,6 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import { useSession, getSession } from 'next-auth/client';
+import { useSession } from 'next-auth/client';
+import { useState } from 'react';
 import Link from 'next/link';
 import {
   Button, ButtonGroup, Card, Table,
@@ -9,6 +10,7 @@ import {
 } from 'react-bootstrap-icons';
 import Layout from '../../components/Layout';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import ConfirmationDialog from '../../components/ConfirmationDialog';
 import GroupRoleSummaries from '../../components/GroupRoleSummaries';
 import GroupRoleBadge from '../../components/GroupRoleBadge';
 import { FirstNameLastInitial } from '../../utils/nameUtil';
@@ -16,6 +18,12 @@ import { DeleteGroupFromId } from '../../utils/groupUtil';
 
 const GroupList = ({ query }) => {
   const [session, loading] = useSession();
+
+  const [showModal, setShowModal] = useState('');
+  const handleCloseModal = () => setShowModal('');
+  const handleShowModal = (event) => {
+    setShowModal(event.target.getAttribute('data-key'));
+  };
 
   return (
     <Layout>
@@ -64,17 +72,28 @@ const GroupList = ({ query }) => {
                                 Manage
                               </Button>
                               {value.role === 'owner' && (
-                                <Button
-                                  variant="outline-danger"
-                                  type="button"
-                                  onClick={() => {
-                                    // Modal to confrim delete
-                                    DeleteGroupFromId(value.id).then(async () => getSession());
-                                  }}
-                                >
-                                  <TrashFill className="align-text-bottom mr-1" />
-                                  Delete
-                                </Button>
+                                <>
+                                  <Button
+                                    variant="outline-danger"
+                                    type="button"
+                                    onClick={handleShowModal}
+                                    data-key={value.id}
+                                  >
+                                    <TrashFill className="align-text-bottom mr-1" />
+                                    Delete
+                                  </Button>
+                                  <ConfirmationDialog
+                                    value={value}
+                                    type="deleteGroup"
+                                    handleCloseModal={handleCloseModal}
+                                    show={showModal === value.id}
+                                    onClick={(event) => {
+                                      event.target.setAttribute('disabled', 'true');
+                                      DeleteGroupFromId(value.id);
+                                      handleCloseModal();
+                                    }}
+                                  />
+                                </>
                               )}
                             </ButtonGroup>
                             )}
