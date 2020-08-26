@@ -24,8 +24,7 @@ const ConfirmationDialog = ({
     <Modal.Body>
       <p>
         <strong>
-          Are you sure you want to
-          delete this group permanently?
+          Are you sure you want to delete this group permanently?
         </strong>
         This action cannot be undone.
       </p>
