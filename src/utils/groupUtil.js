@@ -212,6 +212,45 @@ const ChangeUserRole = async (group, member, role) => {
   } return Promise.reject(Error(`Unable to change user's role: error ${res.status} received from server`));
 };
 
+const RenameGroupInMember = async (group, member, newName) => {
+  const url = `/api/user/${member.id}`;
+  const body = { updatedGroupId: group.id, groupName: newName };
+  const res = await fetch(url, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (res.status === 200) {
+    const response = res.json();
+    return Promise.resolve(response);
+  } return Promise.reject(Error(`Unable to update user: error ${res.status} received from server`));
+};
+
+const RenameGroup = async (group, newName) => {
+  const { members } = group;
+  const url = `/api/group/${group.id}`;
+  const body = { name: newName };
+  const res = await fetch(url, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (res.status === 200) {
+    const query = { alert: 'renameGroup' };
+    Router.push({
+      pathname: `/groups/${group.id}/edit`,
+      query,
+    });
+    return Promise.all(
+      members.map(async (member) => RenameGroupInMember(group, member, newName)),
+    );
+  } return Promise.reject(Error(`Unable to update user: error ${res.status} received from server`));
+};
+
 export {
   AddGroupToUser,
   AddUserToGroup,
@@ -219,4 +258,5 @@ export {
   DeleteGroup,
   DeleteGroupFromId,
   RemoveUserFromGroup,
+  RenameGroup,
 };

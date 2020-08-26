@@ -54,6 +54,11 @@ const handler = nc()
               'groups.$.role': req.body.role,
             };
           }
+          if (req.body.groupName) {
+            groupToUpdate = {
+              'groups.$.name': req.body.groupName,
+            };
+          }
         }
         const updateMethods = {};
         const fieldsToPush = { ...groupToPush };

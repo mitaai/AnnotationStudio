@@ -32,6 +32,10 @@ function getData(alertName) {
       text: 'User successfully added to group.',
       variant: 'success',
     },
+    renameGroup: {
+      text: 'Group successfully renamed.',
+      variant: 'success',
+    },
   };
   return alerts[alertName];
 }

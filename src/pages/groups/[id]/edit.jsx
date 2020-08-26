@@ -1,9 +1,18 @@
 import { useSession } from 'next-auth/client';
+import { Pencil, TrashFill } from 'react-bootstrap-icons';
 import { useState } from 'react';
 import {
-  Button, Card, Col, Dropdown, FormControl, InputGroup, Row, Table, Form,
+  Button,
+  Card,
+  Col,
+  Dropdown,
+  FormControl,
+  InputGroup,
+  Row,
+  Table,
+  Form,
 } from 'react-bootstrap';
-import { TrashFill } from 'react-bootstrap-icons';
+
 import * as yup from 'yup';
 import { Formik } from 'formik';
 import Layout from '../../../components/Layout';
@@ -12,16 +21,21 @@ import ConfirmationDialog from '../../../components/ConfirmationDialog';
 import GroupRoleSummaries from '../../../components/GroupRoleSummaries';
 import GroupRoleBadge from '../../../components/GroupRoleBadge';
 import {
-  AddUserToGroup, ChangeUserRole, DeleteGroup, RemoveUserFromGroup,
+  AddUserToGroup,
+  ChangeUserRole,
+  DeleteGroup,
+  RemoveUserFromGroup,
+  RenameGroup,
 } from '../../../utils/groupUtil';
 
 
 const EditGroup = ({ group }) => {
   const [session, loading] = useSession();
 
-  const [showModal, setShowModal] = useState(false);
-  const handleCloseModal = () => setShowModal(false);
-  const handleShowModal = () => setShowModal(true);
+  const [state, setState] = useState({ showModal: false, editingGroupName: false });
+  const handleCloseModal = () => setState({ ...state, showModal: false });
+  const handleShowModal = () => setState({ ...state, showModal: true });
+  const editGroupName = () => setState({ ...state, editingGroupName: true });
 
   const roleInGroup = (currentSession) => currentSession.user.groups.find((o) => Object.entries(o).some(([k, value]) => k === 'id' && value === group.id)).role;
 
@@ -34,9 +48,75 @@ const EditGroup = ({ group }) => {
         {session && !loading && (roleInGroup(session) === 'owner' || roleInGroup(session) === 'manager') && (
           <>
             <Card.Header>
-              Manage Group:
-              {' '}
-              {group.name}
+              {!state.editingGroupName && (
+                <>
+                  Manage Group:
+                  {' '}
+                  {group.name}
+                  <Button
+                    type="button"
+                    variant="link"
+                    className="mb-1"
+                    title="Edit name"
+                    size="sm"
+                    onClick={editGroupName}
+                  >
+                    <Pencil />
+                  </Button>
+                </>
+              )}
+              {state.editingGroupName && (
+                <Formik
+                  key="groupNameEditor"
+                  validationSchema={yup.object({
+                    groupName: yup.string().required('Group must have a name'),
+                  })}
+                  onSubmit={(values, actions) => {
+                    setTimeout(() => {
+                      RenameGroup(group, values.groupName);
+                      actions.setSubmitting(false);
+                    }, 1000);
+                  }}
+                  initialValues={{
+                    groupName: group.name,
+                  }}
+                >
+                  {(props) => (
+                    <Form noValidate onSubmit={props.handleSubmit}>
+                      <Form.Group controlId="formeditGroupName">
+                        <InputGroup
+                          className="mb-n3"
+                        >
+                          <FormControl
+                            placeholder="Edit group name"
+                            aria-label="Edit group name"
+                            name="groupName"
+                            value={props.values.groupName}
+                            onChange={props.handleChange}
+                            onBlur={props.handleBlur}
+                            isValid={props.touched.groupName && !props.errors.groupName}
+                            isInvalid={!!props.errors.groupName}
+                          />
+                          <InputGroup.Append>
+                            <Button
+                              variant="outline-primary"
+                              type="submit"
+                              className="rounded-right"
+                              disabled={props.isSubmitting || props.errors.groupName || props.values.groupName === ''}
+                              data-testid="newgroup-submit-button"
+                            >
+                              Save
+                            </Button>
+                          </InputGroup.Append>
+                          <Form.Control.Feedback type="invalid" className="w-100">
+                            {props.errors.groupName}
+                          </Form.Control.Feedback>
+                        </InputGroup>
+                      </Form.Group>
+                    </Form>
+                  )}
+                </Formik>
+              )}
             </Card.Header>
             <Card.Body>
               <Row fluid="true">
@@ -113,6 +193,7 @@ const EditGroup = ({ group }) => {
                       their email here.
                     </p>
                     <Formik
+                      key="addByEmail"
                       validationSchema={yup.object({
                         email: yup.string().required().email(),
                       })}
@@ -185,7 +266,7 @@ const EditGroup = ({ group }) => {
                         value={group}
                         type="deleteGroup"
                         handleCloseModal={handleCloseModal}
-                        show={showModal}
+                        show={state.showModal}
                         onClick={(event) => {
                           event.target.setAttribute('disabled', 'true');
                           DeleteGroup(group);
