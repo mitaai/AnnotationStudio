@@ -156,6 +156,7 @@ const DeleteGroup = async (group) => {
       pathname: '/groups',
       query: {
         alert: 'deletedGroup',
+        deletedGroupId: group.id,
       },
     }, '/groups');
     return Promise.all(

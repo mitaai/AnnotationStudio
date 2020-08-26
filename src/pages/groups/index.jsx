@@ -14,7 +14,7 @@ import GroupRoleBadge from '../../components/GroupRoleBadge';
 import { FirstNameLastInitial } from '../../utils/nameUtil';
 import { DeleteGroupFromId } from '../../utils/groupUtil';
 
-const GroupList = () => {
+const GroupList = ({ query }) => {
   const [session, loading] = useSession();
 
   return (
@@ -44,42 +44,45 @@ const GroupList = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {session.user.groups.map((value) => (
-                    <tr key={value.id}>
-                      <td>
-                        <Link href={`/groups/${value.id}`}>
-                          <a title={value.name}>{value.name}</a>
-                        </Link>
-                      </td>
-                      <td><GroupRoleBadge groupRole={value.role} /></td>
-                      <td>{FirstNameLastInitial(value.ownerName)}</td>
-                      <td>{value.memberCount}</td>
-                      <td>
-                        {(value.role === 'owner' || value.role === 'manager') && (
-                        <ButtonGroup>
-                          <Button variant="outline-primary" href={`/groups/${value.id}/edit`}>
-                            <PencilSquare className="align-text-bottom mr-1" />
-                            Manage
-                          </Button>
-                          {value.role === 'owner' && (
-                            <Button
-                              variant="outline-danger"
-                              type="button"
-                              onClick={() => {
-                                // Modal to confrim delete
-                                DeleteGroupFromId(value.id).then(async () => getSession());
-                                // State update
-                              }}
-                            >
-                              <TrashFill className="align-text-bottom mr-1" />
-                              Delete
-                            </Button>
-                          )}
-                        </ButtonGroup>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
+                  {session.user.groups.map((value) => {
+                    if (value.id !== query.deletedGroupId) {
+                      return (
+                        <tr key={value.id}>
+                          <td>
+                            <Link href={`/groups/${value.id}`}>
+                              <a title={value.name}>{value.name}</a>
+                            </Link>
+                          </td>
+                          <td><GroupRoleBadge groupRole={value.role} /></td>
+                          <td>{FirstNameLastInitial(value.ownerName)}</td>
+                          <td>{value.memberCount}</td>
+                          <td>
+                            {(value.role === 'owner' || value.role === 'manager') && (
+                            <ButtonGroup>
+                              <Button variant="outline-primary" href={`/groups/${value.id}/edit`}>
+                                <PencilSquare className="align-text-bottom mr-1" />
+                                Manage
+                              </Button>
+                              {value.role === 'owner' && (
+                                <Button
+                                  variant="outline-danger"
+                                  type="button"
+                                  onClick={() => {
+                                    // Modal to confrim delete
+                                    DeleteGroupFromId(value.id).then(async () => getSession());
+                                  }}
+                                >
+                                  <TrashFill className="align-text-bottom mr-1" />
+                                  Delete
+                                </Button>
+                              )}
+                            </ButtonGroup>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    } return null;
+                  })}
                 </tbody>
               </Table>
               )}
@@ -97,5 +100,11 @@ const GroupList = () => {
     </Layout>
   );
 };
+
+export async function getServerSideProps(context) {
+  return {
+    props: { query: context.query }, // will be passed to the page component as props
+  };
+}
 
 export default GroupList;
