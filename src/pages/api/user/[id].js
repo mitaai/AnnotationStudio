@@ -40,13 +40,18 @@ const handler = nc()
         const groupToPull = req.body.removedGroupId
           ? { groups: { id: req.body.removedGroupId } }
           : {};
-        let groupById;
-        let groupToUpdate;
+        let groupById = {};
+        let groupToUpdate = {};
         if (req.body.updatedGroupId) {
           groupById = { 'groups.id': req.body.updatedGroupId };
           if (req.body.memberCount) {
             groupToUpdate = {
               'groups.$.memberCount': req.body.memberCount,
+            };
+          }
+          if (req.body.role) {
+            groupToUpdate = {
+              'groups.$.role': req.body.role,
             };
           }
         }

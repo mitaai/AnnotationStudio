@@ -177,7 +177,6 @@ const DeleteGroupFromId = async (id) => {
 };
 
 const ChangeUserRole = async (group, member, role) => {
-  // 1. Change user's role in group
   const url = `/api/group/${group.id}`;
   const body = { memberToChangeRoleId: member.id, role };
   const res = await fetch(url, {
@@ -188,9 +187,25 @@ const ChangeUserRole = async (group, member, role) => {
     },
   });
   if (res.status === 200) {
-    console.log(res);
-  }
-  // 2. Update user's role in user's group object
+    const memberUrl = `/api/user/${member.id}`;
+    const memberBody = { updatedGroupId: group.id, role };
+    const memberRes = await fetch(memberUrl, {
+      method: 'PATCH',
+      body: JSON.stringify(memberBody),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    if (memberRes.status === 200) {
+      const response = memberRes.json();
+      const query = { alert: 'changeUserRole' };
+      Router.push({
+        pathname: `/groups/${group.id}/edit`,
+        query,
+      });
+      return Promise.resolve(response);
+    } return Promise.reject(Error(`Unable to update user: error ${memberRes.status} received from server`));
+  } return Promise.reject(Error(`Unable to change user's role: error ${res.status} received from server`));
 };
 
 export {

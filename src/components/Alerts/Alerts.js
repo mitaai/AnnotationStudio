@@ -20,6 +20,10 @@ function getData(alertName) {
       text: 'You have successfully deleted the group.',
       variant: 'success',
     },
+    changeUserRole: {
+      text: 'User\'s role changed successfully.',
+      variant: 'success',
+    },
   };
   return alerts[alertName];
 }
