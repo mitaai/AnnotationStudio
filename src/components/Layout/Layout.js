@@ -4,14 +4,14 @@ import Header from '../Header';
 import Footer from '../Footer';
 import Alerts from '../Alerts';
 
-function Layout({ children }) {
+function Layout({ children, type }) {
   return (
     <>
       <Head>
         <title>Annotation Studio</title>
         <link rel="icon" href="/favicon-32x32.png" />
       </Head>
-      <Header />
+      <Header type={type || 'normal'} />
       <main role="main" className="flex-shrink-0 p-3">
         <Container>
           <Alerts />

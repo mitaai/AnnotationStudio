@@ -4,7 +4,7 @@ import jwt from 'next-auth/jwt';
 import middleware from '../../../middlewares/middleware';
 
 const secret = process.env.AUTH_SECRET;
-const fakeUserId = '7b639ae33efb36eaf6447c55';
+
 const handler = nc()
   .use(middleware)
   .get(
@@ -47,9 +47,6 @@ const handler = nc()
     async (req, res) => {
       const token = await jwt.getToken({ req, secret });
       if (token && token.exp > 0) {
-        const memberQuery = (process.env.NODE_ENV === 'development')
-          ? [{ 'members.id': token.id }, { 'members.id': fakeUserId }]
-          : [{ 'members.id': token.id }];
         const nameToUpdate = req.body.name
           ? { name: req.body.name }
           : {};
@@ -97,7 +94,6 @@ const handler = nc()
           .findOneAndUpdate(
             {
               _id: ObjectID(req.query.id),
-              $or: memberQuery,
               ...documentById,
               ...memberById,
             },

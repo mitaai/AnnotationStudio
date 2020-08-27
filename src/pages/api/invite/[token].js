@@ -6,25 +6,16 @@ const secret = process.env.AUTH_SECRET;
 
 const handler = nc()
   .use(middleware)
-  .post(
+  .get(
     async (req, res) => {
-      const token = await jwt.getToken({ req, secret });
-      if (token && token.exp > 0) {
-        const createdAt = new Date(Date.now());
-        const updatedAt = createdAt;
-        const { name } = req.body;
-        const members = [{
-          id: token.id,
-          name: token.name,
-          email: token.email,
-          role: 'owner',
-        }];
-        const documents = [{}];
+      const jwtTok = await jwt.getToken({ req, secret });
+      if (jwtTok && jwtTok.exp > 0) {
+        const { token } = req.query;
         await req.db
-          .collection('groups')
-          .insertOne(
+          .collection('inviteTokens')
+          .findOne(
             {
-              name, members, documents, createdAt, updatedAt,
+              token,
             },
             (err, doc) => {
               if (err) throw err;

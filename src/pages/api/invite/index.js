@@ -1,5 +1,6 @@
 import nc from 'next-connect';
 import jwt from 'next-auth/jwt';
+import cryptoRandomString from 'crypto-random-string';
 import middleware from '../../../middlewares/middleware';
 
 const secret = process.env.AUTH_SECRET;
@@ -8,23 +9,17 @@ const handler = nc()
   .use(middleware)
   .post(
     async (req, res) => {
-      const token = await jwt.getToken({ req, secret });
-      if (token && token.exp > 0) {
+      const jwtTok = await jwt.getToken({ req, secret });
+      if (jwtTok && jwtTok.exp > 0) {
         const createdAt = new Date(Date.now());
         const updatedAt = createdAt;
-        const { name } = req.body;
-        const members = [{
-          id: token.id,
-          name: token.name,
-          email: token.email,
-          role: 'owner',
-        }];
-        const documents = [{}];
+        const token = cryptoRandomString({ length: 32, type: 'url-safe' });
+        const { group } = req.body;
         await req.db
-          .collection('groups')
+          .collection('inviteTokens')
           .insertOne(
             {
-              name, members, documents, createdAt, updatedAt,
+              token, group, createdAt, updatedAt,
             },
             (err, doc) => {
               if (err) throw err;
