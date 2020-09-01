@@ -226,6 +226,9 @@ const EditGroup = ({ group }) => {
                           {' '}
                           <button
                             type="button"
+                            className="btn btn-link"
+                            size="sm"
+                            style={{ padding: 0 }}
                             onClick={() => {
                               DeleteInviteToken(group).then(() => {
                                 router.push(
