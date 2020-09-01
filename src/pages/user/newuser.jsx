@@ -15,6 +15,7 @@ import { FullName } from '../../utils/nameUtil';
 import Layout from '../../components/Layout';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { AddUserToGroup } from '../../utils/groupUtil';
+import { StripQuery } from '../../utils/stringUtil';
 
 const NewUser = ({ groupId }) => {
   const [session] = useSession();
@@ -52,6 +53,13 @@ const NewUser = ({ groupId }) => {
         });
         AddUserToGroup({ id: groupId }, session.user.email, false).then(() => {
           pushToHome();
+        }).catch((err) => {
+          Router.push(
+            {
+              pathname: StripQuery(Router.asPath),
+              query: { error: err.message },
+            },
+          );
         });
       } else pushToHome();
     } else {

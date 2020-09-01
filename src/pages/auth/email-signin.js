@@ -7,6 +7,7 @@ import Router from 'next/router';
 import Layout from '../../components/Layout';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { AddUserToGroup } from '../../utils/groupUtil';
+import { StripQuery } from '../../utils/stringUtil';
 
 const SignIn = ({ props }) => {
   const [session, loading] = useSession();
@@ -48,6 +49,13 @@ const SignIn = ({ props }) => {
                     pathname: '/',
                     query: { alert: 'joinedGroup' },
                   });
+                }).catch((err) => {
+                  Router.push(
+                    {
+                      pathname: StripQuery(Router.asPath),
+                      query: { error: err.message },
+                    },
+                  );
                 });
               }}
             >

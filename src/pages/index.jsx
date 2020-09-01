@@ -5,6 +5,7 @@ import fetch from 'isomorphic-unfetch';
 import { useSession } from 'next-auth/client';
 import Layout from '../components/Layout';
 import { AddUserToGroup } from '../utils/groupUtil';
+import { StripQuery } from '../utils/stringUtil';
 
 export default function Home({ props }) {
   const [session, loading] = useSession();
@@ -20,14 +21,21 @@ export default function Home({ props }) {
             <Button
               className="mt-3"
               onClick={() => {
+                destroyCookie(null, 'ans_grouptoken', {
+                  path: '/',
+                });
                 AddUserToGroup({ id: groupId }, session.user.email, false).then(() => {
-                  destroyCookie(null, 'ans_grouptoken', {
-                    path: '/',
-                  });
                   Router.push({
                     pathname: '/',
                     query: { alert: 'joinedGroup' },
                   });
+                }).catch((err) => {
+                  Router.push(
+                    {
+                      pathname: StripQuery(Router.asPath),
+                      query: { error: err.message },
+                    },
+                  );
                 });
               }}
             >
