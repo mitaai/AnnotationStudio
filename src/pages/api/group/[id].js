@@ -86,6 +86,10 @@ const handler = nc()
           ? { inviteToken: req.body.inviteToken }
           : {};
 
+        const inviteTokenToUnset = req.body.tokenToRemove
+          ? { inviteToken: req.body.tokenToRemove }
+          : {};
+
         const updateMethods = {};
         const fieldsToSet = {
           ...nameToUpdate,
@@ -94,6 +98,10 @@ const handler = nc()
           ...inviteTokenToUpdate,
         };
         if (Object.keys(fieldsToSet).length !== 0) updateMethods.$set = fieldsToSet;
+        const fieldsToUnset = {
+          ...inviteTokenToUnset,
+        };
+        if (Object.keys(fieldsToUnset).length !== 0) updateMethods.$unset = fieldsToUnset;
         const fieldsToPush = { ...memberToPush, ...documentToPush };
         if (Object.keys(fieldsToPush).length !== 0) updateMethods.$push = fieldsToPush;
         const fieldsToPull = { ...memberToPull, ...documentToPull };

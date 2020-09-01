@@ -30,6 +30,7 @@ import {
   RemoveUserFromGroup,
   RenameGroup,
   GenerateInviteToken,
+  DeleteInviteToken,
 } from '../../../utils/groupUtil';
 
 
@@ -220,7 +221,33 @@ const EditGroup = ({ group }) => {
                       <>
                         <p>
                           Send this invite link to registered or
-                          new users to add them to the group.
+                          new users to add them to the group.  (If the link is not working,
+                          you can
+                          {' '}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              DeleteInviteToken(group).then(() => {
+                                router.push(
+                                  {
+                                    pathname: StripQuery(router.asPath),
+                                    query: { alert: 'deletedToken' },
+                                  },
+                                );
+                              }).catch((err) => {
+                                router.push(
+                                  {
+                                    pathname: StripQuery(router.asPath),
+                                    query: { error: err.message },
+                                  },
+                                );
+                              });
+                            }}
+                          >
+                            click here to remove it
+                          </button>
+                          , then generate a new one.
+                          The old link will no longer work.)
                         </p>
                         <InputGroup>
                           <FormControl
@@ -386,14 +413,16 @@ export async function getServerSideProps(context) {
     const {
       name,
       members,
+      inviteToken,
     } = foundGroup;
     const group = {
       id: context.params.id,
       name,
       members,
     };
-    group.inviteUrl = foundGroup.inviteToken
-      ? `${process.env.SITE}/auth/email-signin?callbackUrl=${process.env.SITE}&groupToken=${foundGroup.inviteToken}`
+    group.inviteToken = inviteToken || null;
+    group.inviteUrl = inviteToken
+      ? `${process.env.SITE}/auth/email-signin?callbackUrl=${process.env.SITE}&groupToken=${inviteToken}`
       : '';
     return {
       props: { group },

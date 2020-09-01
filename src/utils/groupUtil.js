@@ -293,12 +293,35 @@ const GenerateInviteToken = async (group) => {
   } return Promise.reject(Error(`Unable to generate token: error ${res.status} received from server`));
 };
 
+const DeleteInviteToken = async (group) => {
+  const { inviteToken } = group;
+  const url = `/api/invite/${inviteToken}`;
+  const res = await fetch(url, {
+    method: 'DELETE',
+  });
+  if (res.status === 200) {
+    const groupUrl = `/api/group/${group.id}`;
+    const body = { tokenToRemove: inviteToken };
+    const groupRes = await fetch(groupUrl, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    if (groupRes.status === 200) {
+      return Promise.resolve(groupRes.json());
+    } return Promise.reject(Error(`Unable to remove token from group: error ${groupRes.status} received from server`));
+  } return Promise.reject(Error(`Unable to delete token: error ${res.status} received from server`));
+};
+
 export {
   AddGroupToUser,
   AddUserToGroup,
   ChangeUserRole,
   DeleteGroup,
   DeleteGroupFromId,
+  DeleteInviteToken,
   GenerateInviteToken,
   RemoveUserFromGroup,
   RenameGroup,

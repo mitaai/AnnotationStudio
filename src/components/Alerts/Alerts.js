@@ -44,6 +44,10 @@ function getData(alertName) {
       text: 'Group invite token created successfully.',
       variant: 'success',
     },
+    deletedToken: {
+      text: 'Group invite token deleted successfully.',
+      variant: 'warning',
+    },
   };
   return alerts[alertName];
 }
