@@ -69,6 +69,9 @@ const AddGroupToUser = async (group, user, isNewGroup, existingUser) => {
 
 const AddUserToGroup = async (group, email, fromGroupEditPage) => {
   const user = await GetUserByEmail(email);
+  let alreadyInGroup = false;
+  alreadyInGroup = user.groups.some((userGroup) => (userGroup.id === group.id));
+  user.error = (alreadyInGroup === true) ? 'User is already in group' : undefined;
   if (!user.error) {
     const url = `/api/group/${group.id}`;
     const {
@@ -101,7 +104,7 @@ const AddUserToGroup = async (group, email, fromGroupEditPage) => {
       return AddGroupToUser(groupToAdd, user, false, fromGroupEditPage)
         .then(UpdateMemberCounts(result.value));
     } return Promise.reject(Error(`Unable to add user to group: error ${res.status} received from server`));
-  } return Promise.reject(Error(`Unable to add user with email ${email}: error ${user.error}.`));
+  } return Promise.reject(Error(`Unable to add user with email ${email}: ${user.error}.`));
 };
 
 const RemoveGroupFromUser = async (group, user, groupDeletion) => {

@@ -18,10 +18,10 @@ const handler = nc()
               if (doc) {
                 // eslint-disable-next-line no-underscore-dangle
                 const id = doc._id;
-                const { name } = doc;
+                const { name, groups } = doc;
                 if (err) throw err;
                 res.status(200).json({
-                  id, name,
+                  id, name, groups,
                 });
               } else {
                 res.status(404).json({ error: '404 Not Found' });

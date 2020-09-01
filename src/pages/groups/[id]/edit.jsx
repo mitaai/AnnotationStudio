@@ -14,14 +14,15 @@ import {
   Tooltip,
   Form,
 } from 'react-bootstrap';
-
 import * as yup from 'yup';
+import { useRouter } from 'next/router';
 import { Formik } from 'formik';
 import Layout from '../../../components/Layout';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import ConfirmationDialog from '../../../components/ConfirmationDialog';
 import GroupRoleSummaries from '../../../components/GroupRoleSummaries';
 import GroupRoleBadge from '../../../components/GroupRoleBadge';
+import { StripQuery } from '../../../utils/stringUtil';
 import {
   AddUserToGroup,
   ChangeUserRole,
@@ -34,6 +35,8 @@ import {
 
 const EditGroup = ({ group }) => {
   const [session, loading] = useSession();
+
+  const router = useRouter();
 
   const target = useRef(null);
   const [state, setState] = useState(
@@ -272,7 +275,14 @@ const EditGroup = ({ group }) => {
                       })}
                       onSubmit={(values, actions) => {
                         setTimeout(() => {
-                          AddUserToGroup(group, values.email, true);
+                          AddUserToGroup(group, values.email, true).catch((err) => {
+                            router.push(
+                              {
+                                pathname: StripQuery(router.asPath),
+                                query: { error: err.message },
+                              },
+                            );
+                          });
                           actions.setSubmitting(false);
                         }, 1000);
                       }}
@@ -373,7 +383,6 @@ export async function getServerSideProps(context) {
   });
   if (res.status === 200) {
     const foundGroup = await res.json();
-    console.log(foundGroup);
     const {
       name,
       members,

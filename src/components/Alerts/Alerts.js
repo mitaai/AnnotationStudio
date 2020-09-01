@@ -48,13 +48,21 @@ function getData(alertName) {
   return alerts[alertName];
 }
 
+function getError(error) {
+  return {
+    text: error,
+    variant: 'danger',
+  };
+}
+
 function Alerts() {
   const [show, setShow] = useState(true);
   const router = useRouter();
   let alertData;
   if (router && router.query) {
-    const { alert } = router.query;
-    alertData = getData(alert);
+    const { alert, error } = router.query;
+    if (alert) alertData = getData(alert);
+    if (error) alertData = getError(error);
   }
   return (
     <>
