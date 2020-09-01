@@ -1,4 +1,3 @@
-import { ObjectID } from 'mongodb';
 import jwt from 'next-auth/jwt';
 
 const secret = process.env.AUTH_SECRET;
@@ -73,7 +72,7 @@ const postDocument = async (req, res) => {
         .collection('documents')
         .insert(
           {
-            owner: ObjectID(token.user.id),
+            owner: token.user.id,
             createdAt: dateCreated,
             updatedAt: dateCreated,
             ...metadata,
