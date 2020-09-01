@@ -9,7 +9,7 @@ import Index from '../pages/index';
 test('renders header', async () => {
   let navElement;
   act(() => {
-    const { getAllByRole } = render(<Index />);
+    const { getAllByRole } = render(<Index props={{ groupId: '' }} />);
     [navElement] = getAllByRole('navigation');
   });
   await wait(() => {
@@ -20,7 +20,7 @@ test('renders header', async () => {
 test('renders footer', async () => {
   let footerElem;
   act(() => {
-    const { getByRole } = render(<Index />);
+    const { getByRole } = render(<Index props={{ groupId: '' }} />);
     footerElem = getByRole('contentinfo');
   });
   await wait(() => {

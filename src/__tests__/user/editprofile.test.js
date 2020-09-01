@@ -3,7 +3,7 @@
  */
 
 import { render, wait } from '@testing-library/react';
-import EditProfile from '../pages/user/[slug]/editprofile';
+import EditProfile from '../../pages/user/[slug]/editprofile';
 
 test('renders edit profile card', async () => {
   const { getByText } = render(<EditProfile user={{

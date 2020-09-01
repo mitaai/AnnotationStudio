@@ -12,8 +12,55 @@ function getData(alertName) {
       text: 'Profile updated.',
       variant: 'success',
     },
+    newGroup: {
+      text: 'Group created successfully.',
+      variant: 'success',
+    },
+    deletedGroup: {
+      text: 'You have successfully deleted the group.',
+      variant: 'warning',
+    },
+    changeUserRole: {
+      text: 'User\'s role changed successfully.',
+      variant: 'success',
+    },
+    removeUser: {
+      text: 'User successfully removed from group.',
+      variant: 'warning',
+    },
+    addUser: {
+      text: 'User successfully added to group.',
+      variant: 'success',
+    },
+    renameGroup: {
+      text: 'Group successfully renamed.',
+      variant: 'success',
+    },
+    joinedGroup: {
+      text: 'Group successfully joined.',
+      variant: 'success',
+    },
+    leftGroup: {
+      text: 'You have successfully left the group.',
+      variant: 'warning',
+    },
+    createdToken: {
+      text: 'Group invite token created successfully.',
+      variant: 'success',
+    },
+    deletedToken: {
+      text: 'Group invite token deleted successfully.',
+      variant: 'warning',
+    },
   };
   return alerts[alertName];
+}
+
+function getError(error) {
+  return {
+    text: error,
+    variant: 'danger',
+  };
 }
 
 function Alerts() {
@@ -21,8 +68,9 @@ function Alerts() {
   const router = useRouter();
   let alertData;
   if (router && router.query) {
-    const { alert } = router.query;
-    alertData = getData(alert);
+    const { alert, error } = router.query;
+    if (alert) alertData = getData(alert);
+    if (error) alertData = getError(error);
   }
   return (
     <>

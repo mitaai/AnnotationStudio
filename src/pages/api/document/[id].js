@@ -16,7 +16,7 @@ const handler = nc()
           .findOne(
             {
               _id: ObjectID(req.query.id),
-              $or: [{ 'groups.members.id': ObjectID(token.id) }, { owner: ObjectID(token.id) }],
+              $or: [{ 'groups.members.id': token.id }, { owner: token.id }],
             },
             (err, doc) => {
               if (doc) {
@@ -148,14 +148,14 @@ const handler = nc()
           ? { groups: req.body.addedGroup }
           : {};
         const groupToPull = req.body.removedGroupId
-          ? { 'groups.id': ObjectID(req.body.removedGroupId) }
+          ? { groups: { id: req.body.removedGroupId } }
           : {};
         let groupById = {};
         let groupFieldsToSet = {};
         let memberToPush = {};
         let memberToPull = {};
         if (req.body.updatedGroup) {
-          groupById = { 'groups.id': ObjectID(req.body.updatedGroup.id) };
+          groupById = { 'groups.id': req.body.updatedGroup.id };
           if (req.body.updatedGroup.name) {
             groupFieldsToSet = { 'groups.$.name': req.body.updatedGroup.name };
           }
@@ -163,7 +163,7 @@ const handler = nc()
             memberToPush = { 'groups.$.members': req.body.addedUser };
           }
           if (req.body.removedUserId) {
-            memberToPull = { 'groups.$.members.id': ObjectID(req.body.removedUserId) };
+            memberToPull = { 'groups.$.members.id': req.body.removedUserId };
           }
         }
         await req.db
@@ -171,7 +171,7 @@ const handler = nc()
           .findOneAndUpdate(
             {
               _id: ObjectID(req.query.id),
-              owner: ObjectID(token.id),
+              owner: token.id,
               ...groupById,
             },
             {
