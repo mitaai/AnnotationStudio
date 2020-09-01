@@ -40,6 +40,7 @@
     "react-bootstrap-icons": "^1.0.3-alpha5",
     "react-dom": "^16.13.1",
     "sass": "^1.26.10",
+    "shortid": "^2.2.15",
     "swr": "^0.2.3",
     "typeorm": "^0.2.24",
     "typescript": "^3.9.5",
@@ -47,11 +48,13 @@
     "yup": "^0.29.1"
   },
   "devDependencies": {
+    "@shelf/jest-mongodb": "^1.2.1",
     "@testing-library/jest-dom": "^5.11.0",
     "@testing-library/react": "^9.4.0",
     "@testing-library/react-hooks": "^3.3.0",
     "@types/mongodb": "^3.5.25",
     "babel-jest": "^25.1.0",
+    "cookie": "^0.4.1",
     "eslint-config-airbnb": "^18.2.0",
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-jest": "^23.17.1",
@@ -62,7 +65,8 @@
     "identity-obj-proxy": "^3.0.0",
     "jest": "^25.1.0",
     "jest-fetch-mock": "^3.0.3",
-    "react-test-renderer": "^16.12.0"
+    "react-test-renderer": "^16.12.0",
+    "test-listen": "^1.1.0"
   },
   "peerOptionalDependencies": {
     "mongodb": "^3.6.0"

@@ -1,3 +1,7 @@
+/**
+ * @jest-environment jsdom
+ */
+
 import { act } from 'react-dom/test-utils';
 import { render, wait } from '@testing-library/react';
 import Index from '../pages/index';
