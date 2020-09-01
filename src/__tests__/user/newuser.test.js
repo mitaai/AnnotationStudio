@@ -1,5 +1,5 @@
 import { render, wait } from '@testing-library/react';
-import NewUser from '../pages/user/newuser';
+import NewUser from '../../pages/user/newuser';
 
 test('renders registration card', async () => {
   const { getByText } = render(<NewUser />);

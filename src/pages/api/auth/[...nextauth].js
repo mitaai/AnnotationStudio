@@ -51,6 +51,7 @@ const options = {
 
   pages: {
     newUser: '/user/newuser',
+    signIn: '/auth/email-signin',
   },
 
   callbacks: {
@@ -76,6 +77,7 @@ const options = {
       if (res.status === 200) {
         const user = await res.json();
         session.user.name = user.name;
+        session.user.groups = user.groups;
       } else {
         return Promise.reject();
       }

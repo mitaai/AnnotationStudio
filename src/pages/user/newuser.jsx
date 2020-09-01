@@ -1,28 +1,40 @@
+/* eslint-disable camelcase */
+import { parseCookies, destroyCookie } from 'nookies';
 import { useState } from 'react';
 import { useSession, getSession } from 'next-auth/client';
-import fetch from 'unfetch';
+import fetch from 'isomorphic-unfetch';
 import { Formik } from 'formik';
 import * as yup from 'yup';
 import {
-  Button, Card, Col, Form, Row, Spinner,
+  Button, Card, Col, Form, Row,
 } from 'react-bootstrap';
 import Feedback from 'react-bootstrap/Feedback';
 import Link from 'next/link';
 import Router from 'next/router';
-import fullName from '../../utils/nameUtil';
+import { FullName } from '../../utils/nameUtil';
 import Layout from '../../components/Layout';
+import LoadingSpinner from '../../components/LoadingSpinner';
+import { AddUserToGroup } from '../../utils/groupUtil';
+import { StripQuery } from '../../utils/stringUtil';
 
-const NewUser = () => {
+const NewUser = ({ groupId }) => {
   const [session] = useSession();
 
   const [errorMsg, setErrorMsg] = useState('');
+
+  const pushToHome = () => {
+    Router.push({
+      pathname: '/',
+      query: { alert: 'completeRegistration' },
+    });
+  };
 
   const submitHandler = async (values) => {
     const body = {
       email: session.user.email,
       firstName: values.firstName,
       lastName: values.lastName,
-      name: fullName(values.firstName, values.lastName),
+      name: FullName(values.firstName, values.lastName),
       affiliation: values.affiliation,
       slug: session.user.email.replace(/[*+~.()'"!:@]/g, '-'),
     };
@@ -35,10 +47,21 @@ const NewUser = () => {
     if (res.status === 200) {
       await res.json();
       getSession();
-      Router.push({
-        pathname: '/',
-        query: { alert: 'completeRegistration' },
-      });
+      if (groupId !== '') {
+        destroyCookie(null, 'ans_grouptoken', {
+          path: '/',
+        });
+        AddUserToGroup({ id: groupId }, session.user.email).then(() => {
+          pushToHome();
+        }).catch((err) => {
+          Router.push(
+            {
+              pathname: StripQuery(Router.asPath),
+              query: { error: err.message },
+            },
+          );
+        });
+      } else pushToHome();
     } else {
       setErrorMsg(await res.text());
     }
@@ -58,17 +81,19 @@ const NewUser = () => {
       <Col lg="8" className="mx-auto">
         <Card>
           {!session && (
-            <Card.Body className="text-center">
-              <Spinner animation="border" role="status">
-                <span className="sr-only">Loading...</span>
-              </Spinner>
-            </Card.Body>
+            <LoadingSpinner />
           )}
           {session && (
             <Card.Body>
               <Card.Title>Welcome to Annotation Studio</Card.Title>
               <Card.Text>
                 Please fill out the following form to complete your registration.
+                {groupId && groupId !== '' && (
+                  <>
+                    {' '}
+                    On submit, you will be automatically added to the group that invited you.
+                  </>
+                )}
               </Card.Text>
 
               <Formik
@@ -98,7 +123,7 @@ const NewUser = () => {
                       </Col>
                     </Form.Group>
 
-                    <Form.Group as={Row} controlId="validationFormik01">
+                    <Form.Group as={Row} controlId="formPlaintextFirstName">
                       <Form.Label column lg="4">
                         First Name
                       </Form.Label>
@@ -119,7 +144,7 @@ const NewUser = () => {
                       </Col>
                     </Form.Group>
 
-                    <Form.Group as={Row} controlId="validationFormik02">
+                    <Form.Group as={Row} controlId="formPlaintextLastName">
                       <Form.Label column lg="4">
                         Last Name
                       </Form.Label>
@@ -140,7 +165,7 @@ const NewUser = () => {
                       </Col>
                     </Form.Group>
 
-                    <Form.Group as={Row} controlId="validationFormik03">
+                    <Form.Group as={Row} controlId="formPlaintextAffiliation">
                       <Form.Label column lg="4">
                         Affiliation
                       </Form.Label>
@@ -157,7 +182,7 @@ const NewUser = () => {
                         />
                       </Col>
                     </Form.Group>
-                    <Form.Group>
+                    <Form.Group controlId="formCheckboxTos">
                       <Form.Check type="checkbox">
                         <Form.Check.Input
                           required
@@ -201,6 +226,26 @@ const NewUser = () => {
       </Col>
     </Layout>
   );
+};
+
+NewUser.getInitialProps = async (context) => {
+  const cookies = parseCookies(context);
+  const { ans_grouptoken } = cookies;
+  let groupId = '';
+  if (ans_grouptoken) {
+    const url = `${process.env.SITE}/api/invite/${ans_grouptoken}`;
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    if (res.status === 200) {
+      const result = await res.json();
+      groupId = result.group;
+    }
+  }
+  return { groupId };
 };
 
 export default NewUser;
