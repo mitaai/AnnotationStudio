@@ -107,7 +107,7 @@ const AddUserToGroup = async (group, email, fromGroupEditPage) => {
   } return Promise.reject(Error(`Unable to add user with email ${email}: ${user.error}.`));
 };
 
-const RemoveGroupFromUser = async (group, user, groupDeletion) => {
+const RemoveGroupFromUser = async (group, user) => {
   const removedGroupId = group.id;
   const url = `/api/user/${user.id}`;
   const body = { removedGroupId };
@@ -119,14 +119,6 @@ const RemoveGroupFromUser = async (group, user, groupDeletion) => {
     },
   });
   if (res.status === 200) {
-    if (!groupDeletion) {
-      Router.push({
-        pathname: `/groups/${group.id}/edit`,
-        query: {
-          alert: 'removeUser',
-        },
-      });
-    }
     return Promise.resolve(res.json());
   } return Promise.reject(Error(`Unable to remove group from user: error ${res.status} received from server`));
 };

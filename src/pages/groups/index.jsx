@@ -6,15 +6,17 @@ import {
   Button, ButtonGroup, Card, Table,
 } from 'react-bootstrap';
 import {
-  PencilSquare, TrashFill, Plus,
+  PencilSquare, TrashFill, Plus, BoxArrowRight,
 } from 'react-bootstrap-icons';
+import Router from 'next/router';
 import Layout from '../../components/Layout';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ConfirmationDialog from '../../components/ConfirmationDialog';
 import GroupRoleSummaries from '../../components/GroupRoleSummaries';
 import GroupRoleBadge from '../../components/GroupRoleBadge';
 import { FirstNameLastInitial } from '../../utils/nameUtil';
-import { DeleteGroupFromId } from '../../utils/groupUtil';
+import { DeleteGroupFromId, RemoveUserFromGroup } from '../../utils/groupUtil';
+import { GetUserByEmail } from '../../utils/userUtil';
 
 const GroupList = ({ query }) => {
   const [session, loading] = useSession();
@@ -65,12 +67,40 @@ const GroupList = ({ query }) => {
                           <td>{FirstNameLastInitial(value.ownerName)}</td>
                           <td>{value.memberCount}</td>
                           <td>
-                            {(value.role === 'owner' || value.role === 'manager') && (
                             <ButtonGroup>
-                              <Button variant="outline-primary" href={`/groups/${value.id}/edit`}>
-                                <PencilSquare className="align-text-bottom mr-1" />
-                                Manage
-                              </Button>
+                              {(value.role === 'owner' || value.role === 'manager') && (
+                                <Button variant="outline-primary" href={`/groups/${value.id}/edit`}>
+                                  <PencilSquare className="align-text-bottom mr-1" />
+                                  Manage
+                                </Button>
+                              )}
+                              {(value.role === 'member' || value.role === 'manager') && (
+                                <Button
+                                  variant="outline-danger"
+                                  onClick={async () => {
+                                    const user = await GetUserByEmail(session.user.email);
+                                    RemoveUserFromGroup(value, user).then(() => {
+                                      Router.push({
+                                        pathname: '/groups',
+                                        query: {
+                                          alert: 'leftGroup',
+                                          deletedGroupId: value.id,
+                                        },
+                                      });
+                                    }).catch((err) => {
+                                      Router.push({
+                                        pathname: '/groups',
+                                        query: {
+                                          error: err.message,
+                                        },
+                                      });
+                                    });
+                                  }}
+                                >
+                                  <BoxArrowRight className="align-text-bottom mr-1" />
+                                  Leave
+                                </Button>
+                              )}
                               {value.role === 'owner' && (
                                 <>
                                   <Button
@@ -96,7 +126,6 @@ const GroupList = ({ query }) => {
                                 </>
                               )}
                             </ButtonGroup>
-                            )}
                           </td>
                         </tr>
                       );

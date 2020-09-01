@@ -18,7 +18,7 @@ function getData(alertName) {
     },
     deletedGroup: {
       text: 'You have successfully deleted the group.',
-      variant: 'success',
+      variant: 'warning',
     },
     changeUserRole: {
       text: 'User\'s role changed successfully.',
@@ -26,7 +26,7 @@ function getData(alertName) {
     },
     removeUser: {
       text: 'User successfully removed from group.',
-      variant: 'success',
+      variant: 'warning',
     },
     addUser: {
       text: 'User successfully added to group.',
@@ -39,6 +39,10 @@ function getData(alertName) {
     joinedGroup: {
       text: 'Group successfully joined.',
       variant: 'success',
+    },
+    leftGroup: {
+      text: 'You have successfully left the group.',
+      variant: 'warning',
     },
     createdToken: {
       text: 'Group invite token created successfully.',

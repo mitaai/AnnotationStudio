@@ -189,7 +189,21 @@ const EditGroup = ({ group }) => {
                                 variant="outline-danger"
                                 className="btn-sm"
                                 type="button"
-                                onClick={() => RemoveUserFromGroup(group, member)}
+                                onClick={() => RemoveUserFromGroup(group, member).then(() => {
+                                  router.push({
+                                    pathname: `/groups/${group.id}/edit`,
+                                    query: {
+                                      alert: 'removeUser',
+                                    },
+                                  });
+                                }).catch((err) => {
+                                  router.push({
+                                    pathname: `/groups/${group.id}/edit`,
+                                    query: {
+                                      error: err.message,
+                                    },
+                                  });
+                                })}
                               >
                                 Remove
                               </Button>

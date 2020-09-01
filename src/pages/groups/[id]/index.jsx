@@ -1,17 +1,19 @@
 import { useSession } from 'next-auth/client';
 import { useState } from 'react';
+import Router from 'next/router';
 import {
   Button, ButtonGroup, Card, Table,
 } from 'react-bootstrap';
 import {
-  PencilSquare, TrashFill,
+  PencilSquare, TrashFill, BoxArrowRight,
 } from 'react-bootstrap-icons';
 import Layout from '../../../components/Layout';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import ConfirmationDialog from '../../../components/ConfirmationDialog';
 import GroupRoleSummaries from '../../../components/GroupRoleSummaries';
 import GroupRoleBadge from '../../../components/GroupRoleBadge';
-import { DeleteGroup } from '../../../utils/groupUtil';
+import { DeleteGroup, RemoveUserFromGroup } from '../../../utils/groupUtil';
+import { GetUserByEmail } from '../../../utils/userUtil';
 
 const ViewGroup = ({ group }) => {
   const [session, loading] = useSession();
@@ -52,37 +54,63 @@ const ViewGroup = ({ group }) => {
                   ))}
                 </tbody>
               </Table>
-              {(roleInGroup(session) === 'owner' || roleInGroup(session) === 'manager') && (
-                <ButtonGroup>
+              <ButtonGroup>
+                {(roleInGroup(session) === 'owner' || roleInGroup(session) === 'manager') && (
                   <Button variant="outline-primary" href={`${group.id}/edit`}>
                     <PencilSquare className="align-text-bottom mr-1" />
                     Manage this group
                   </Button>
-                  {roleInGroup(session) === 'owner' && (
-                    <>
-                      <Button
-                        variant="outline-danger"
-                        type="button"
-                        onClick={handleShowModal}
-                      >
-                        <TrashFill className="align-text-bottom mr-1" />
-                        Delete this group
-                      </Button>
-                      <ConfirmationDialog
-                        value={group}
-                        type="deleteGroup"
-                        handleCloseModal={handleCloseModal}
-                        show={showModal}
-                        onClick={(event) => {
-                          event.target.setAttribute('disabled', 'true');
-                          DeleteGroup(group);
-                          handleCloseModal();
-                        }}
-                      />
-                    </>
-                  )}
-                </ButtonGroup>
-              )}
+                )}
+                {(roleInGroup(session) === 'member' || roleInGroup(session) === 'manager') && (
+                  <Button
+                    variant="outline-danger"
+                    onClick={async () => {
+                      const user = await GetUserByEmail(session.user.email);
+                      RemoveUserFromGroup(group, user).then(() => {
+                        Router.push({
+                          pathname: '/groups',
+                          query: {
+                            alert: 'leftGroup',
+                          },
+                        });
+                      }).catch((err) => {
+                        Router.push({
+                          pathname: `/groups/${group.id}`,
+                          query: {
+                            error: err.message,
+                          },
+                        });
+                      });
+                    }}
+                  >
+                    <BoxArrowRight className="align-text-bottom mr-1" />
+                    Leave this group
+                  </Button>
+                )}
+                {roleInGroup(session) === 'owner' && (
+                <>
+                  <Button
+                    variant="outline-danger"
+                    type="button"
+                    onClick={handleShowModal}
+                  >
+                    <TrashFill className="align-text-bottom mr-1" />
+                    Delete this group
+                  </Button>
+                  <ConfirmationDialog
+                    value={group}
+                    type="deleteGroup"
+                    handleCloseModal={handleCloseModal}
+                    show={showModal}
+                    onClick={(event) => {
+                      event.target.setAttribute('disabled', 'true');
+                      DeleteGroup(group);
+                      handleCloseModal();
+                    }}
+                  />
+                </>
+                )}
+              </ButtonGroup>
             </Card.Body>
           </>
         )}
