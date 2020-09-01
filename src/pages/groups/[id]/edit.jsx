@@ -95,7 +95,17 @@ const EditGroup = ({ group }) => {
                   })}
                   onSubmit={(values, actions) => {
                     setTimeout(() => {
-                      RenameGroup(group, values.groupName);
+                      RenameGroup(group, values.groupName).then(() => {
+                        router.push({
+                          pathname: `/groups/${group.id}/edit`,
+                          query: { alert: 'renameGroup' },
+                        });
+                      }).catch((err) => {
+                        router.push({
+                          pathname: `/groups/${group.id}/edit`,
+                          query: { error: err.message },
+                        });
+                      });
                       actions.setSubmitting(false);
                     }, 1000);
                   }}
@@ -169,13 +179,37 @@ const EditGroup = ({ group }) => {
                               <Dropdown.Menu>
                                 <Dropdown.Item
                                   disabled={member.role === 'member'}
-                                  onClick={() => { ChangeUserRole(group, member, 'member'); }}
+                                  onClick={() => {
+                                    ChangeUserRole(group, member, 'member').then(() => {
+                                      router.push({
+                                        pathname: `/groups/${group.id}/edit`,
+                                        query: { alert: 'changeUserRole' },
+                                      });
+                                    }).catch((err) => {
+                                      router.push({
+                                        pathname: `/groups/${group.id}/edit`,
+                                        query: { error: err.message },
+                                      });
+                                    });
+                                  }}
                                 >
                                   member
                                 </Dropdown.Item>
                                 <Dropdown.Item
                                   disabled={member.role === 'manager'}
-                                  onClick={() => { ChangeUserRole(group, member, 'manager'); }}
+                                  onClick={() => {
+                                    ChangeUserRole(group, member, 'manager').then(() => {
+                                      router.push({
+                                        pathname: `/groups/${group.id}/edit`,
+                                        query: { alert: 'changeUserRole' },
+                                      });
+                                    }).catch((err) => {
+                                      router.push({
+                                        pathname: `/groups/${group.id}/edit`,
+                                        query: { error: err.message },
+                                      });
+                                    });
+                                  }}
                                 >
                                   manager
                                 </Dropdown.Item>
@@ -224,7 +258,17 @@ const EditGroup = ({ group }) => {
                           variant="outline-secondary"
                           onClick={(event) => {
                             event.target.setAttribute('disabled', 'true');
-                            GenerateInviteToken(group);
+                            GenerateInviteToken(group).then(() => {
+                              router.push({
+                                pathname: `/groups/${group.id}/edit`,
+                                query: { alert: 'createdToken' },
+                              });
+                            }).catch((err) => {
+                              router.push({
+                                pathname: `/groups/${group.id}/edit`,
+                                query: { error: err.message },
+                              });
+                            });
                           }}
                         >
                           Generate
@@ -319,10 +363,15 @@ const EditGroup = ({ group }) => {
                       })}
                       onSubmit={(values, actions) => {
                         setTimeout(() => {
-                          AddUserToGroup(group, values.email, true).catch((err) => {
+                          AddUserToGroup(group, values.email).then(() => {
+                            router.push({
+                              pathname: `/groups/${group.id}/edit`,
+                              query: { alert: 'addUser' },
+                            });
+                          }).catch((err) => {
                             router.push(
                               {
-                                pathname: StripQuery(router.asPath),
+                                pathname: `/groups/${group.id}/edit`,
                                 query: { error: err.message },
                               },
                             );
@@ -396,7 +445,22 @@ const EditGroup = ({ group }) => {
                         show={state.showModal}
                         onClick={(event) => {
                           event.target.setAttribute('disabled', 'true');
-                          DeleteGroup(group);
+                          DeleteGroup(group).then(() => {
+                            router.push({
+                              pathname: '/groups',
+                              query: {
+                                alert: 'deletedGroup',
+                                deletedGroupId: group.id,
+                              },
+                            }, '/groups');
+                          }).catch((err) => {
+                            router.push({
+                              pathname: '/groups',
+                              query: {
+                                error: err.message,
+                              },
+                            }, '/groups');
+                          });
                           handleCloseModal();
                         }}
                       />

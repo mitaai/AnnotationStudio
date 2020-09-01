@@ -86,14 +86,14 @@ const GroupList = ({ query }) => {
                                           alert: 'leftGroup',
                                           deletedGroupId: value.id,
                                         },
-                                      });
+                                      }, '/groups');
                                     }).catch((err) => {
                                       Router.push({
                                         pathname: '/groups',
                                         query: {
                                           error: err.message,
                                         },
-                                      });
+                                      }, '/groups');
                                     });
                                   }}
                                 >
@@ -119,7 +119,22 @@ const GroupList = ({ query }) => {
                                     show={showModal === value.id}
                                     onClick={(event) => {
                                       event.target.setAttribute('disabled', 'true');
-                                      DeleteGroupFromId(value.id);
+                                      DeleteGroupFromId(value.id).then(() => {
+                                        Router.push({
+                                          pathname: '/groups',
+                                          query: {
+                                            alert: 'deletedGroup',
+                                            deletedGroupId: value.id,
+                                          },
+                                        }, '/groups');
+                                      }).catch((err) => {
+                                        Router.push({
+                                          pathname: '/groups',
+                                          query: {
+                                            error: err.message,
+                                          },
+                                        }, '/groups');
+                                      });
                                       handleCloseModal();
                                     }}
                                   />

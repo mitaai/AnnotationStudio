@@ -51,7 +51,7 @@ const NewUser = ({ groupId }) => {
         destroyCookie(null, 'ans_grouptoken', {
           path: '/',
         });
-        AddUserToGroup({ id: groupId }, session.user.email, false).then(() => {
+        AddUserToGroup({ id: groupId }, session.user.email).then(() => {
           pushToHome();
         }).catch((err) => {
           Router.push(

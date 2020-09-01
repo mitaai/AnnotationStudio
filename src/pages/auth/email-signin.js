@@ -44,7 +44,7 @@ const SignIn = ({ props }) => {
             <Button
               className="mt-3"
               onClick={() => {
-                AddUserToGroup({ id: groupId }, session.user.email, false).then(() => {
+                AddUserToGroup({ id: groupId }, session.user.email).then(() => {
                   Router.push({
                     pathname: '/',
                     query: { alert: 'joinedGroup' },

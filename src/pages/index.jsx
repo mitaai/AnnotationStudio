@@ -24,7 +24,7 @@ export default function Home({ props }) {
                 destroyCookie(null, 'ans_grouptoken', {
                   path: '/',
                 });
-                AddUserToGroup({ id: groupId }, session.user.email, false).then(() => {
+                AddUserToGroup({ id: groupId }, session.user.email).then(() => {
                   Router.push({
                     pathname: '/',
                     query: { alert: 'joinedGroup' },

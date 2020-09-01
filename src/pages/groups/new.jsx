@@ -5,6 +5,7 @@ import {
   Button, Card, Col, Form, Row,
 } from 'react-bootstrap';
 import * as yup from 'yup';
+import Router from 'next/router';
 import { AddGroupToUser } from '../../utils/groupUtil';
 import Layout from '../../components/Layout';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -34,7 +35,12 @@ const NewGroup = () => {
       const user = {
         id: result.ops[0].members[0].id,
       };
-      return AddGroupToUser(group, user, true, false);
+      return AddGroupToUser(group, user).then(() => {
+        Router.push({
+          pathname: `/groups/${group.id}/edit`,
+          query: { alert: 'newGroup' },
+        });
+      });
     }
     return Promise.reject(Error(`Unable to create group: error ${res.status} received from server`));
   };
@@ -57,7 +63,12 @@ const NewGroup = () => {
               <Formik
                 onSubmit={(values, actions) => {
                   setTimeout(() => {
-                    createGroup(values);
+                    createGroup(values).catch((err) => {
+                      Router.push({
+                        pathname: '/groups',
+                        query: { error: err.message },
+                      }, '/groups');
+                    });
                     actions.setSubmitting(false);
                   }, 1000);
                 }}

@@ -72,14 +72,14 @@ const ViewGroup = ({ group }) => {
                           query: {
                             alert: 'leftGroup',
                           },
-                        });
+                        }, '/groups');
                       }).catch((err) => {
                         Router.push({
                           pathname: `/groups/${group.id}`,
                           query: {
                             error: err.message,
                           },
-                        });
+                        }, '/groups');
                       });
                     }}
                   >
@@ -104,7 +104,22 @@ const ViewGroup = ({ group }) => {
                     show={showModal}
                     onClick={(event) => {
                       event.target.setAttribute('disabled', 'true');
-                      DeleteGroup(group);
+                      DeleteGroup(group).then(() => {
+                        Router.push({
+                          pathname: '/groups',
+                          query: {
+                            alert: 'deletedGroup',
+                            deletedGroupId: group.id,
+                          },
+                        }, '/groups');
+                      }).catch((err) => {
+                        Router.push({
+                          pathname: '/groups',
+                          query: {
+                            error: err.message,
+                          },
+                        }, '/groups');
+                      });
                       handleCloseModal();
                     }}
                   />

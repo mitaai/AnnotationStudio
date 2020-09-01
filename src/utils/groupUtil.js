@@ -1,5 +1,4 @@
 import fetch from 'unfetch';
-import Router from 'next/router';
 import { GetUserByEmail } from './userUtil';
 
 const UpdateMemberCounts = async (group) => {
@@ -21,13 +20,15 @@ const UpdateMemberCounts = async (group) => {
           'Content-Type': 'application/json',
         },
       });
-      if (res.status !== 200) { return Promise.reject(Error(`Unable to update member counts: error ${res.status} received from server`)); }
-      return Promise.resolve(res.json());
+      if (res.status === 200) {
+        const response = res.json();
+        return Promise.resolve(response);
+      } return Promise.reject(Error(`Unable to update member counts: error ${res.status} received from server`));
     }),
   );
 };
 
-const AddGroupToUser = async (group, user, isNewGroup, existingUser) => {
+const AddGroupToUser = async (group, user) => {
   const url = `/api/user/${user.id}`;
   const {
     id,
@@ -53,21 +54,13 @@ const AddGroupToUser = async (group, user, isNewGroup, existingUser) => {
     },
   });
   if (res.status === 200) {
-    const result = await res.json();
-    let query = { alert: 'addUser' };
-    if (isNewGroup) query = { alert: 'newGroup' };
-    if (isNewGroup || existingUser) {
-      Router.push({
-        pathname: `/groups/${group.id}/edit`,
-        query,
-      });
-    }
-    return Promise.resolve(result);
+    const response = await res.json();
+    return Promise.resolve(response);
   }
   return Promise.reject(Error(`Unable to add group to user: error ${res.status} received from server`));
 };
 
-const AddUserToGroup = async (group, email, fromGroupEditPage) => {
+const AddUserToGroup = async (group, email) => {
   const user = await GetUserByEmail(email);
   let alreadyInGroup = false;
   alreadyInGroup = user.groups.some((userGroup) => (userGroup.id === group.id));
@@ -91,18 +84,18 @@ const AddUserToGroup = async (group, email, fromGroupEditPage) => {
       },
     });
     if (res.status === 200) {
-      const result = await res.json();
-      const memberCount = result.value.members.length;
-      const ownerName = result.value.members.filter((member) => member.role === 'owner')[0].name;
+      const response = await res.json();
+      const memberCount = response.value.members.length;
+      const ownerName = response.value.members.filter((member) => member.role === 'owner')[0].name;
       const groupToAdd = {
         id: group.id,
-        name: result.value.name,
+        name: response.value.name,
         memberCount,
         ownerName,
         role: 'member',
       };
-      return AddGroupToUser(groupToAdd, user, false, fromGroupEditPage)
-        .then(UpdateMemberCounts(result.value));
+      return AddGroupToUser(groupToAdd, user, false)
+        .then(UpdateMemberCounts(response.value));
     } return Promise.reject(Error(`Unable to add user to group: error ${res.status} received from server`));
   } return Promise.reject(Error(`Unable to add user with email ${email}: ${user.error}.`));
 };
@@ -119,7 +112,8 @@ const RemoveGroupFromUser = async (group, user) => {
     },
   });
   if (res.status === 200) {
-    return Promise.resolve(res.json());
+    const response = res.json();
+    return Promise.resolve(response);
   } return Promise.reject(Error(`Unable to remove group from user: error ${res.status} received from server`));
 };
 
@@ -135,8 +129,8 @@ const RemoveUserFromGroup = async (group, user) => {
     },
   });
   if (res.status === 200) {
-    const result = await res.json();
-    return RemoveGroupFromUser(group, user).then(UpdateMemberCounts(result.value));
+    const response = await res.json();
+    return RemoveGroupFromUser(group, user).then(UpdateMemberCounts(response.value));
   } return Promise.reject(Error(`Unable to remove user from group: error ${res.status} received from server`));
 };
 
@@ -150,13 +144,6 @@ const DeleteGroup = async (group) => {
     },
   });
   if (res.status === 200) {
-    Router.push({
-      pathname: '/groups',
-      query: {
-        alert: 'deletedGroup',
-        deletedGroupId: group.id,
-      },
-    }, '/groups');
     return Promise.all(
       members.map(async (member) => RemoveGroupFromUser(group, member, true)),
     );
@@ -172,8 +159,8 @@ const DeleteGroupFromId = async (id) => {
     },
   });
   if (res.status === 200) {
-    const result = await res.json();
-    const group = { id, name: result.name, members: result.members };
+    const response = await res.json();
+    const group = { id, name: response.name, members: response.members };
     return DeleteGroup(group);
   } return Promise.reject(Error(`Unable to find group by ID: error ${res.status} received from server`));
 };
@@ -200,11 +187,6 @@ const ChangeUserRole = async (group, member, role) => {
     });
     if (memberRes.status === 200) {
       const response = memberRes.json();
-      const query = { alert: 'changeUserRole' };
-      Router.push({
-        pathname: `/groups/${group.id}/edit`,
-        query,
-      });
       return Promise.resolve(response);
     } return Promise.reject(Error(`Unable to update user: error ${memberRes.status} received from server`));
   } return Promise.reject(Error(`Unable to change user's role: error ${res.status} received from server`));
@@ -238,11 +220,6 @@ const RenameGroup = async (group, newName) => {
     },
   });
   if (res.status === 200) {
-    const query = { alert: 'renameGroup' };
-    Router.push({
-      pathname: `/groups/${group.id}/edit`,
-      query,
-    });
     return Promise.all(
       members.map(async (member) => RenameGroupInMember(group, member, newName)),
     );
@@ -275,12 +252,8 @@ const GenerateInviteToken = async (group) => {
       },
     });
     if (groupRes.status === 200) {
-      const query = { alert: 'createdToken' };
-      Router.push({
-        pathname: `/groups/${id}/edit`,
-        query,
-      });
-      return Promise.resolve(response);
+      const groupResponse = groupRes.json();
+      return Promise.resolve(groupResponse);
     } return Promise.reject(Error(`Unable to add token to group: error ${res.status} received from server`));
   } return Promise.reject(Error(`Unable to generate token: error ${res.status} received from server`));
 };
@@ -302,7 +275,8 @@ const DeleteInviteToken = async (group) => {
       },
     });
     if (groupRes.status === 200) {
-      return Promise.resolve(groupRes.json());
+      const groupResponse = groupRes.json();
+      return Promise.resolve(groupResponse);
     } return Promise.reject(Error(`Unable to remove token from group: error ${groupRes.status} received from server`));
   } return Promise.reject(Error(`Unable to delete token: error ${res.status} received from server`));
 };
