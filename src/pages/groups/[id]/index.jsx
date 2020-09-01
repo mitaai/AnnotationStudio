@@ -35,8 +35,8 @@ const ViewGroup = ({ group }) => {
             <Card.Header>
               {group.name}
             </Card.Header>
-            <Card.Body>
-              <Table striped bordered hover variant="light">
+            <Card.Body data-testid="groupview-card-body">
+              <Table striped bordered hover variant="light" data-testid="groupview-members-table">
                 <thead>
                   <tr>
                     <th>Member</th>
@@ -54,7 +54,7 @@ const ViewGroup = ({ group }) => {
                   ))}
                 </tbody>
               </Table>
-              <ButtonGroup>
+              <ButtonGroup data-testid="groupview-button-group">
                 {(roleInGroup(session) === 'owner' || roleInGroup(session) === 'manager') && (
                   <Button variant="outline-primary" href={`${group.id}/edit`}>
                     <PencilSquare className="align-text-bottom mr-1" />

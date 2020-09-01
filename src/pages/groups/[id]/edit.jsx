@@ -150,10 +150,10 @@ const EditGroup = ({ group }) => {
                 </Formik>
               )}
             </Card.Header>
-            <Card.Body>
+            <Card.Body data-testid="groupedit-card-body">
               <Row fluid="true">
                 <Col lg={7}>
-                  <Table striped bordered hover variant="light" size="sm">
+                  <Table striped bordered hover variant="light" size="sm" data-testid="groupedit-members-table">
                     <thead>
                       <tr>
                         <th>Member</th>
@@ -434,6 +434,7 @@ const EditGroup = ({ group }) => {
                         variant="outline-danger"
                         type="button"
                         onClick={handleShowModal}
+                        data-testid="groupedit-delete-button"
                       >
                         <TrashFill className="align-text-bottom mr-1" />
                         Delete this group

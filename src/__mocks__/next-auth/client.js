@@ -6,9 +6,11 @@ function useSession() {
       user: {
         name: 'Test User',
         email: 'test@email.com',
-        groups: [],
+        groups: [{
+          id: 'abcd1234', name: 'Test Group', ownerName: 'Test User', memberCount: 2, role: 'owner',
+        }],
       },
-      expires: '2081-10-05T14:48:00.000',
+      expires: '2881-10-05T14:48:00.000',
     },
   ];
 }
