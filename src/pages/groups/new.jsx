@@ -34,7 +34,7 @@ const NewGroup = () => {
       const user = {
         id: result.ops[0].members[0].id,
       };
-      return AddGroupToUser(group, user, true);
+      return AddGroupToUser(group, user, true, false);
     }
     return Promise.reject(Error(`Unable to create group: error ${res.status} received from server`));
   };

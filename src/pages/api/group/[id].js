@@ -24,6 +24,7 @@ const handler = nc()
                   name,
                   members,
                   documents,
+                  inviteToken,
                   createdAt,
                   updatedAt,
                 } = doc;
@@ -32,6 +33,7 @@ const handler = nc()
                   name,
                   members,
                   documents,
+                  inviteToken,
                   createdAt,
                   updatedAt,
                 });
@@ -80,8 +82,17 @@ const handler = nc()
           ? { documents: { id: req.body.removedDocumentId } }
           : {};
 
+        const inviteTokenToUpdate = req.body.inviteToken
+          ? { inviteToken: req.body.inviteToken }
+          : {};
+
         const updateMethods = {};
-        const fieldsToSet = { ...nameToUpdate, ...documentToUpdate, ...memberToChangeRole };
+        const fieldsToSet = {
+          ...nameToUpdate,
+          ...documentToUpdate,
+          ...memberToChangeRole,
+          ...inviteTokenToUpdate,
+        };
         if (Object.keys(fieldsToSet).length !== 0) updateMethods.$set = fieldsToSet;
         const fieldsToPush = { ...memberToPush, ...documentToPush };
         if (Object.keys(fieldsToPush).length !== 0) updateMethods.$push = fieldsToPush;

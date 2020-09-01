@@ -13,7 +13,7 @@ const handler = nc()
       if (jwtTok && jwtTok.exp > 0) {
         const createdAt = new Date(Date.now());
         const updatedAt = createdAt;
-        const token = cryptoRandomString({ length: 32, type: 'url-safe' });
+        const token = cryptoRandomString({ length: 32, type: 'base64' });
         const { group } = req.body;
         await req.db
           .collection('inviteTokens')

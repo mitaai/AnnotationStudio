@@ -27,7 +27,7 @@ const UpdateMemberCounts = async (group) => {
   );
 };
 
-const AddGroupToUser = async (group, user, isNewGroup) => {
+const AddGroupToUser = async (group, user, isNewGroup, existingUser) => {
   const url = `/api/user/${user.id}`;
   const {
     id,
@@ -56,16 +56,18 @@ const AddGroupToUser = async (group, user, isNewGroup) => {
     const result = await res.json();
     let query = { alert: 'addUser' };
     if (isNewGroup) query = { alert: 'newGroup' };
-    Router.push({
-      pathname: `/groups/${group.id}/edit`,
-      query,
-    });
+    if (isNewGroup || existingUser) {
+      Router.push({
+        pathname: `/groups/${group.id}/edit`,
+        query,
+      });
+    }
     return Promise.resolve(result);
   }
   return Promise.reject(Error(`Unable to add group to user: error ${res.status} received from server`));
 };
 
-const AddUserToGroup = async (group, email) => {
+const AddUserToGroup = async (group, email, fromGroupEditPage) => {
   const user = await GetUserByEmail(email);
   if (!user.error) {
     const url = `/api/group/${group.id}`;
@@ -96,7 +98,8 @@ const AddUserToGroup = async (group, email) => {
         ownerName,
         role: 'member',
       };
-      return AddGroupToUser(groupToAdd, user).then(UpdateMemberCounts(result.value));
+      return AddGroupToUser(groupToAdd, user, false, fromGroupEditPage)
+        .then(UpdateMemberCounts(result.value));
     } return Promise.reject(Error(`Unable to add user to group: error ${res.status} received from server`));
   } return Promise.reject(Error(`Unable to add user with email ${email}: error ${user.error}.`));
 };
@@ -251,12 +254,49 @@ const RenameGroup = async (group, newName) => {
   } return Promise.reject(Error(`Unable to update user: error ${res.status} received from server`));
 };
 
+const GenerateInviteToken = async (group) => {
+  const { id } = group;
+  const url = '/api/invite';
+  const body = { group: id };
+  const res = await fetch(url, {
+    method: 'POST',
+    body: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (res.status === 200) {
+    const response = await res.json();
+    if (!response.ops[0].token) {
+      return Promise.reject(Error(`Unable to add token to group: ${JSON.stringify(response)}`));
+    }
+    const groupUrl = `/api/group/${id}`;
+    const groupBody = { inviteToken: response.ops[0].token };
+    const groupRes = await fetch(groupUrl, {
+      method: 'PATCH',
+      body: JSON.stringify(groupBody),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    if (groupRes.status === 200) {
+      const query = { alert: 'createdToken' };
+      Router.push({
+        pathname: `/groups/${id}/edit`,
+        query,
+      });
+      return Promise.resolve(response);
+    } return Promise.reject(Error(`Unable to add token to group: error ${res.status} received from server`));
+  } return Promise.reject(Error(`Unable to generate token: error ${res.status} received from server`));
+};
+
 export {
   AddGroupToUser,
   AddUserToGroup,
   ChangeUserRole,
   DeleteGroup,
   DeleteGroupFromId,
+  GenerateInviteToken,
   RemoveUserFromGroup,
   RenameGroup,
 };

@@ -1,6 +1,8 @@
+/* eslint-disable camelcase */
+import { parseCookies, destroyCookie } from 'nookies';
 import { useState } from 'react';
 import { useSession, getSession } from 'next-auth/client';
-import fetch from 'unfetch';
+import fetch from 'isomorphic-unfetch';
 import { Formik } from 'formik';
 import * as yup from 'yup';
 import {
@@ -12,11 +14,19 @@ import Router from 'next/router';
 import { FullName } from '../../utils/nameUtil';
 import Layout from '../../components/Layout';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import { AddUserToGroup } from '../../utils/groupUtil';
 
-const NewUser = () => {
+const NewUser = ({ groupId }) => {
   const [session] = useSession();
 
   const [errorMsg, setErrorMsg] = useState('');
+
+  const pushToHome = () => {
+    Router.push({
+      pathname: '/',
+      query: { alert: 'completeRegistration' },
+    });
+  };
 
   const submitHandler = async (values) => {
     const body = {
@@ -36,10 +46,14 @@ const NewUser = () => {
     if (res.status === 200) {
       await res.json();
       getSession();
-      Router.push({
-        pathname: '/',
-        query: { alert: 'completeRegistration' },
-      });
+      if (groupId !== '') {
+        destroyCookie(null, 'ans_grouptoken', {
+          path: '/',
+        });
+        AddUserToGroup({ id: groupId }, session.user.email, false).then(() => {
+          pushToHome();
+        });
+      } else pushToHome();
     } else {
       setErrorMsg(await res.text());
     }
@@ -66,6 +80,12 @@ const NewUser = () => {
               <Card.Title>Welcome to Annotation Studio</Card.Title>
               <Card.Text>
                 Please fill out the following form to complete your registration.
+                {groupId && groupId !== '' && (
+                  <>
+                    {' '}
+                    On submit, you will be automatically added to the group that invited you.
+                  </>
+                )}
               </Card.Text>
 
               <Formik
@@ -198,6 +218,26 @@ const NewUser = () => {
       </Col>
     </Layout>
   );
+};
+
+NewUser.getInitialProps = async (context) => {
+  const cookies = parseCookies(context);
+  const { ans_grouptoken } = cookies;
+  let groupId = '';
+  if (ans_grouptoken) {
+    const url = `${process.env.SITE}/api/invite/${ans_grouptoken}`;
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    if (res.status === 200) {
+      const result = await res.json();
+      groupId = result.group;
+    }
+  }
+  return { groupId };
 };
 
 export default NewUser;

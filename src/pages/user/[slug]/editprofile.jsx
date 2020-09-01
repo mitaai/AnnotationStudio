@@ -6,7 +6,7 @@ import {
   Button, Card, Col, Form, Row,
 } from 'react-bootstrap';
 import Router from 'next/router';
-import FullName from '../../../utils/nameUtil';
+import { FullName } from '../../../utils/nameUtil';
 import Layout from '../../../components/Layout';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 

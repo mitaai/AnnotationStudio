@@ -36,6 +36,14 @@ function getData(alertName) {
       text: 'Group successfully renamed.',
       variant: 'success',
     },
+    joinedGroup: {
+      text: 'Group successfully joined.',
+      variant: 'success',
+    },
+    createdToken: {
+      text: 'Group invite token created successfully.',
+      variant: 'success',
+    },
   };
   return alerts[alertName];
 }

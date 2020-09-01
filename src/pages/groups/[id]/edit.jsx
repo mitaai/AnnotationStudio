@@ -1,6 +1,6 @@
 import { useSession } from 'next-auth/client';
 import { Pencil, TrashFill } from 'react-bootstrap-icons';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import {
   Button,
   Card,
@@ -8,8 +8,10 @@ import {
   Dropdown,
   FormControl,
   InputGroup,
+  Overlay,
   Row,
   Table,
+  Tooltip,
   Form,
 } from 'react-bootstrap';
 
@@ -26,16 +28,32 @@ import {
   DeleteGroup,
   RemoveUserFromGroup,
   RenameGroup,
+  GenerateInviteToken,
 } from '../../../utils/groupUtil';
 
 
 const EditGroup = ({ group }) => {
   const [session, loading] = useSession();
 
-  const [state, setState] = useState({ showModal: false, editingGroupName: false });
+  const target = useRef(null);
+  const [state, setState] = useState(
+    { showModal: false, editingGroupName: false, showTooltip: false },
+  );
   const handleCloseModal = () => setState({ ...state, showModal: false });
   const handleShowModal = () => setState({ ...state, showModal: true });
   const editGroupName = () => setState({ ...state, editingGroupName: true });
+  const handleShowTooltip = () => setState({ ...state, showTooltip: true });
+  const handleHideTooltip = () => setState({ ...state, showTooltip: false });
+
+  const copyInviteUrl = () => {
+    if (typeof navigator !== 'undefined') {
+      // eslint-disable-next-line no-undef
+      navigator.clipboard.writeText(group.inviteUrl);
+      handleShowTooltip();
+      target.current.focus();
+      target.current.select();
+    }
+  };
 
   const roleInGroup = (currentSession) => currentSession.user.groups.find((o) => Object.entries(o).some(([k, value]) => k === 'id' && value === group.id)).role;
 
@@ -181,10 +199,65 @@ const EditGroup = ({ group }) => {
                 <Col>
                   <Row>
                     <h6>Invite link</h6>
-                    <p>Generate an invite link to send to registered or new users.</p>
-                    <Button variant="outline-secondary">
-                      Generate
-                    </Button>
+                    {group.inviteUrl === '' && (
+                      <>
+                        <p>Generate an invite link to send to registered or new users.</p>
+                        <Button
+                          variant="outline-secondary"
+                          onClick={(event) => {
+                            event.target.setAttribute('disabled', 'true');
+                            GenerateInviteToken(group);
+                          }}
+                        >
+                          Generate
+                        </Button>
+                      </>
+                    )}
+                    {group.inviteUrl !== '' && (
+                      <>
+                        <p>
+                          Send this invite link to registered or
+                          new users to add them to the group.
+                        </p>
+                        <InputGroup>
+                          <FormControl
+                            placeholder="Group invite link"
+                            aria-label="Group invite link"
+                            type="text"
+                            name="inviteUrl"
+                            ref={target}
+                            value={group.inviteUrl}
+                            onClick={copyInviteUrl}
+                            readOnly
+                          />
+                          <InputGroup.Append>
+                            <Button
+                              variant="outline-secondary"
+                              type="button"
+                              className="rounded-right"
+                              onClick={copyInviteUrl}
+                            >
+                              Copy
+                            </Button>
+                            <Overlay
+                              target={target.current}
+                              show={state.showTooltip}
+                              placement="top"
+                              rootClose
+                              onHide={handleHideTooltip}
+                              rootCloseEvent="click"
+                            >
+                              {(props) => (
+                                // eslint-disable-next-line react/jsx-props-no-spreading
+                                <Tooltip id="overlay-example" {...props}>
+                                  Copied!
+                                </Tooltip>
+                              )}
+                            </Overlay>
+                          </InputGroup.Append>
+                        </InputGroup>
+                      </>
+                    )}
                   </Row>
                   <Row>
                     <h6 className="mt-3">Add registered user</h6>
@@ -199,7 +272,7 @@ const EditGroup = ({ group }) => {
                       })}
                       onSubmit={(values, actions) => {
                         setTimeout(() => {
-                          AddUserToGroup(group, values.email);
+                          AddUserToGroup(group, values.email, true);
                           actions.setSubmitting(false);
                         }, 1000);
                       }}
@@ -300,6 +373,7 @@ export async function getServerSideProps(context) {
   });
   if (res.status === 200) {
     const foundGroup = await res.json();
+    console.log(foundGroup);
     const {
       name,
       members,
@@ -309,6 +383,9 @@ export async function getServerSideProps(context) {
       name,
       members,
     };
+    group.inviteUrl = foundGroup.inviteToken
+      ? `${process.env.SITE}/auth/email-signin?callbackUrl=${process.env.SITE}&groupToken=${foundGroup.inviteToken}`
+      : '';
     return {
       props: { group },
     };
