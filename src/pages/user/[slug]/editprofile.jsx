@@ -16,11 +16,12 @@ const EditProfile = ({ user }) => {
   const [errorMsg, setErrorMsg] = useState('');
 
   const submitHandler = async (values) => {
+    const newName = FullName(values.firstName, values.lastName);
     const body = {
       email: values.email,
       firstName: values.firstName,
       lastName: values.lastName,
-      name: FullName(values.firstName, values.lastName),
+      name: newName,
       affiliation: values.affiliation,
       slug: values.email.replace(/[*+~.()'"!:@]/g, '-'),
     };
@@ -31,7 +32,23 @@ const EditProfile = ({ user }) => {
       body: JSON.stringify(body),
     });
     if (res.status === 200) {
-      await res.json();
+      const result = await res.json();
+      const { groups, _id } = result.value;
+      if (groups && groups.length > 0) {
+        groups.map(async (group) => {
+          const url = `/api/group/${group.id}`;
+          const groupBody = { memberToChangeNameId: _id, memberName: newName };
+          // eslint-disable-next-line no-undef
+          const groupRes = await fetch(url, {
+            method: 'PATCH',
+            body: JSON.stringify(groupBody),
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+          return groupRes.json();
+        });
+      }
       getSession();
       Router.push({
         pathname: '/',

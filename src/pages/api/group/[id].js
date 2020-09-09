@@ -69,6 +69,13 @@ const handler = nc()
             'members.$.role': req.body.role,
           };
         }
+        let memberToChangeName = {};
+        if (req.body.memberToChangeNameId) {
+          memberById = { 'members.id': req.body.memberToChangeNameId };
+          memberToChangeName = {
+            'members.$.name': req.body.memberName,
+          };
+        }
         const memberToPush = req.body.addedUser
           ? { members: req.body.addedUser }
           : {};
@@ -95,6 +102,7 @@ const handler = nc()
           ...nameToUpdate,
           ...documentToUpdate,
           ...memberToChangeRole,
+          ...memberToChangeName,
           ...inviteTokenToUpdate,
         };
         if (Object.keys(fieldsToSet).length !== 0) updateMethods.$set = fieldsToSet;
