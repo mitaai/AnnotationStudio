@@ -18,6 +18,7 @@
     "seed": "seed -u --db-name ${DBNAME=as4} --replace-id ./src/seeds"
   },
   "dependencies": {
+    "@sindresorhus/slugify": "^1.1.0",
     "bootstrap": "^4.5.0",
     "crypto-random-string": "^3.2.0",
     "eslint": "^6.8.0",
