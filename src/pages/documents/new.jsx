@@ -7,8 +7,9 @@ import {
 import * as yup from 'yup';
 import { slugify } from '@sindresorhus/slugify';
 import cryptoRandomString from 'crypto-random-string';
-import Router from 'next/router';
+import { Dropdown } from 'semantic-ui-react';
 import Layout from '../../components/Layout';
+import SemanticField from '../../components/SemanticField';
 import DocumentMetadata from '../../components/DocumentMetadata';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
@@ -77,6 +78,7 @@ const NewDocument = () => {
                   validationSchema={schema}
                   initialValues={{
                     resourceType: 'Book',
+                    groups: [''],
                   }}
                 >
                   {(props) => (
@@ -98,7 +100,9 @@ const NewDocument = () => {
                                   value={props.values.resourceType}
                                 >
                                   {resourceTypeList.map(
-                                    ((resourceType) => (<option>{resourceType}</option>)),
+                                    ((resourceType) => (
+                                      <option key={resourceType}>{resourceType}</option>
+                                    )),
                                   )}
                                 </Form.Control>
                               </Form.Group>
@@ -120,13 +124,24 @@ const NewDocument = () => {
                             </Card.Header>
                             <Card.Body>
                               {session.user.groups && session.user.groups.length > 0 && (
-                                <Row>
+                                <Row className="mb-3">
                                   <Col>
-                                    {session.user.groups.map((group) => (
-                                      <>
-                                        {group.name}
-                                      </>
-                                    ))}
+                                    <SemanticField
+                                      name="groups"
+                                      component={Dropdown}
+                                      placeholder="Select a group or groups"
+                                      fluid
+                                      multiple
+                                      search
+                                      selection
+                                      options={
+                                        session.user.groups.map((group) => ({
+                                          key: group.id,
+                                          value: group.id,
+                                          text: group.name,
+                                        }))
+                                      }
+                                    />
                                   </Col>
                                 </Row>
                               )}
