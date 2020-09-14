@@ -70,9 +70,9 @@ const postDocument = async (req, res) => {
     } else {
       await req.db
         .collection('documents')
-        .insert(
+        .insertOne(
           {
-            owner: token.user.id,
+            owner: token.id,
             createdAt: dateCreated,
             updatedAt: dateCreated,
             ...metadata,
