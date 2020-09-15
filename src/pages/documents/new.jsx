@@ -3,20 +3,8 @@ import fetch from 'unfetch';
 import { Formik, Field } from 'formik';
 import { useSession } from 'next-auth/client';
 import {
-  Button, Card, Col, Form, FormCheck, Row, Table,
+  Button, Card, Col, Form, Row,
 } from 'react-bootstrap';
-import {
-  ArchiveFill,
-  ChatLeftTextFill,
-  Check,
-  EyeFill,
-  Globe,
-  PencilFill,
-  PencilSquare,
-  PeopleFill,
-  PersonFill,
-  X,
-} from 'react-bootstrap-icons';
 import * as yup from 'yup';
 import slugify from '@sindresorhus/slugify';
 import cryptoRandomString from 'crypto-random-string';
@@ -26,13 +14,11 @@ import Layout from '../../components/Layout';
 import SemanticField from '../../components/SemanticField';
 import DocumentMetadata from '../../components/DocumentMetadata';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import DocumentStatusSelect from '../../components/DocumentStatusSelect';
 
 const NewDocument = () => {
   const [session] = useSession();
   const [errors, setErrors] = useState([]);
-
-  const GreenCheck = () => <Check style={{ color: 'green', fontSize: '1.5rem' }} />;
-  const RedX = () => <X style={{ color: 'red', fontSize: '1.5rem' }} />;
 
   const createDocument = async (values) => {
     const slug = `${slugify(values.title)}-${cryptoRandomString({ length: 5, type: 'hex' })}`;
@@ -86,6 +72,7 @@ const NewDocument = () => {
                   onSubmit={(values, actions) => {
                     setTimeout(() => {
                       createDocument(values)
+                        .then(setErrors([]))
                         .catch((err) => {
                           setErrors([err.message]);
                         });
@@ -112,7 +99,13 @@ const NewDocument = () => {
                             </Card.Header>
                             <Card.Body>
                               <Field name="text">
-                                {({ field }) => <QuillNoSSRWrapper theme="snow" value={field.value} onChange={field.onChange(field.name)} />}
+                                {({ field }) => (
+                                  <QuillNoSSRWrapper
+                                    theme="snow"
+                                    value={field.value}
+                                    onChange={field.onChange(field.name)}
+                                  />
+                                )}
                               </Field>
                             </Card.Body>
                           </Card>
@@ -188,141 +181,7 @@ const NewDocument = () => {
                               <Card.Title>Status</Card.Title>
                             </Card.Header>
                             <Card.Body>
-                              <Row>
-                                <Col>
-                                  <Form.Group>
-                                    <Form.Check
-                                      name="status"
-                                      id="draft"
-                                    >
-                                      <FormCheck.Input
-                                        name="status"
-                                        type="radio"
-                                        value="draft"
-                                        as={Field}
-                                      />
-                                      <FormCheck.Label>
-                                        <PencilFill className="mb-1" />
-                                        {' '}
-                                        Draft
-                                      </FormCheck.Label>
-                                    </Form.Check>
-                                    <Form.Check
-                                      name="status"
-                                      id="published"
-                                    >
-                                      <FormCheck.Input
-                                        name="status"
-                                        type="radio"
-                                        value="published"
-                                        as={Field}
-                                      />
-                                      <FormCheck.Label>
-                                        <ChatLeftTextFill className="mb-1" />
-                                        {' '}
-                                        Published
-                                      </FormCheck.Label>
-                                    </Form.Check>
-                                    <Form.Check
-                                      name="status"
-                                      id="archived"
-                                    >
-                                      <FormCheck.Input
-                                        name="status"
-                                        type="radio"
-                                        value="archived"
-                                        as={Field}
-                                      />
-                                      <FormCheck.Label>
-                                        <ArchiveFill className="mb-1" />
-                                        {' '}
-                                        Archived
-                                      </FormCheck.Label>
-                                    </Form.Check>
-                                    <Form.Check
-                                      name="status"
-                                      id="public"
-                                    >
-                                      <FormCheck.Input
-                                        name="status"
-                                        type="radio"
-                                        value="public"
-                                        as={Field}
-                                      />
-                                      <FormCheck.Label>
-                                        <Globe className="mb-1" />
-                                        {' '}
-                                        Public
-                                      </FormCheck.Label>
-                                    </Form.Check>
-                                  </Form.Group>
-                                </Col>
-                                <Col xs="auto">
-                                  <Table
-                                    size="sm"
-                                    bordered
-                                    className="text-center"
-                                    role="table"
-                                  >
-                                    <thead>
-                                      <tr>
-                                        <th>
-                                          {' '}
-                                        </th>
-                                        <th>
-                                          <EyeFill />
-                                          {' '}
-                                          View
-                                        </th>
-                                        <th>
-                                          <PencilSquare />
-                                          {' '}
-                                          Edit
-                                        </th>
-                                        <th>
-                                          <ChatLeftTextFill />
-                                          {' '}
-                                          Annotate
-                                        </th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      <tr>
-                                        <td>
-                                          <PersonFill />
-                                          {' '}
-                                          Me
-                                        </td>
-                                        <td><GreenCheck /></td>
-                                        <td>{(props.values.status === 'draft') ? (<GreenCheck />) : (<RedX />)}</td>
-                                        <td>{(props.values.status === 'published') ? (<GreenCheck />) : (<RedX />)}</td>
-                                      </tr>
-                                      {!(props.values.groups.length === 1 && props.values.groups[0] === '') && (
-                                        <tr>
-                                          <td>
-                                            <PeopleFill />
-                                            {' '}
-                                            Groups
-                                          </td>
-                                          <td>{(props.values.status === 'draft') ? (<RedX />) : (<GreenCheck />)}</td>
-                                          <td><RedX /></td>
-                                          <td>{(props.values.status === 'published') ? (<GreenCheck />) : (<RedX />)}</td>
-                                        </tr>
-                                      )}
-                                      <tr>
-                                        <td>
-                                          <Globe />
-                                          {' '}
-                                          Public
-                                        </td>
-                                        <td>{(props.values.status === 'public') ? (<GreenCheck />) : (<RedX />)}</td>
-                                        <td><RedX /></td>
-                                        <td><RedX /></td>
-                                      </tr>
-                                    </tbody>
-                                  </Table>
-                                </Col>
-                              </Row>
+                              <DocumentStatusSelect values={props.values} />
                               <Row>
                                 <Col>
                                   <Button
