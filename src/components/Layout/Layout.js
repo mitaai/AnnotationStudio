@@ -4,7 +4,7 @@ import Header from '../Header';
 import Footer from '../Footer';
 import Alerts from '../Alerts';
 
-function Layout({ children, type }) {
+function Layout({ children, type, alerts }) {
   return (
     <>
       <Head>
@@ -14,7 +14,7 @@ function Layout({ children, type }) {
       <Header type={type || 'normal'} />
       <main role="main" className="flex-shrink-0 p-3">
         <Container>
-          <Alerts />
+          {alerts && (<Alerts alerts={alerts} />)}
           {children}
         </Container>
       </main>
