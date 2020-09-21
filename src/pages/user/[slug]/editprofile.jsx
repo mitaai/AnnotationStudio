@@ -1,11 +1,10 @@
 import { useState } from 'react';
-import { useSession, getSession } from 'next-auth/client';
+import { useSession } from 'next-auth/client';
 import { Formik } from 'formik';
 import * as yup from 'yup';
 import {
   Button, Card, Col, Form, Row,
 } from 'react-bootstrap';
-import Router from 'next/router';
 import { FullName } from '../../../utils/nameUtil';
 import Layout from '../../../components/Layout';
 import LoadingSpinner from '../../../components/LoadingSpinner';
@@ -13,7 +12,7 @@ import LoadingSpinner from '../../../components/LoadingSpinner';
 const EditProfile = ({ user }) => {
   const [session, loading] = useSession();
 
-  const [errorMsg, setErrorMsg] = useState('');
+  const [alerts, setAlerts] = useState([]);
 
   const submitHandler = async (values) => {
     const newName = FullName(values.firstName, values.lastName);
@@ -49,15 +48,9 @@ const EditProfile = ({ user }) => {
           return groupRes.json();
         });
       }
-      getSession();
-      Router.push({
-        pathname: '/',
-        query: {
-          alert: 'profileEdited',
-        },
-      });
+      setAlerts([...alerts, { text: 'Profile updated successfully.', variant: 'success' }]);
     } else {
-      setErrorMsg(await res.text());
+      setAlerts([...alerts, { text: await res.text(), variant: 'danger' }]);
     }
   };
 
@@ -68,7 +61,7 @@ const EditProfile = ({ user }) => {
   });
 
   return (
-    <Layout>
+    <Layout alerts={alerts}>
       <Col lg="8" className="mx-auto">
         <Card>
           {!session && loading && (
@@ -90,7 +83,6 @@ const EditProfile = ({ user }) => {
               >
                 {(props) => (
                   <Form onSubmit={props.handleSubmit} noValidate>
-                    {errorMsg ? <p style={{ color: 'red' }}>{errorMsg}</p> : null}
                     <Form.Group as={Row} controlId="formPlaintextEmail">
                       <Form.Label column lg="4">
                         Email
@@ -164,7 +156,7 @@ const EditProfile = ({ user }) => {
                         <Button
                           variant="primary"
                           type="submit"
-                          disabled={props.isSubmitting || props.submitCount >= 1}
+                          disabled={props.isSubmitting}
                           data-testid="editprofile-submit-button"
                         >
                           Submit

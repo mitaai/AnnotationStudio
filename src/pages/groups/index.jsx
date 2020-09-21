@@ -18,8 +18,9 @@ import { FirstNameLastInitial } from '../../utils/nameUtil';
 import { DeleteGroupFromId, RemoveUserFromGroup } from '../../utils/groupUtil';
 import { GetUserByEmail } from '../../utils/userUtil';
 
-const GroupList = ({ query }) => {
+const GroupList = ({ query, initAlerts }) => {
   const [session, loading] = useSession();
+  const [alerts, setAlerts] = useState(initAlerts);
 
   const [showModal, setShowModal] = useState('');
   const handleCloseModal = () => setShowModal('');
@@ -28,7 +29,7 @@ const GroupList = ({ query }) => {
   };
 
   return (
-    <Layout>
+    <Layout alerts={alerts}>
       <Card>
         {!session && loading && (
           <LoadingSpinner />
@@ -83,17 +84,16 @@ const GroupList = ({ query }) => {
                                       Router.push({
                                         pathname: '/groups',
                                         query: {
-                                          alert: 'leftGroup',
                                           deletedGroupId: value.id,
                                         },
-                                      }, '/groups');
+                                      }, '/groups').then(() => {
+                                        setAlerts([...alerts, {
+                                          text: 'You have successfully left the group.',
+                                          variant: 'warning',
+                                        }]);
+                                      });
                                     }).catch((err) => {
-                                      Router.push({
-                                        pathname: '/groups',
-                                        query: {
-                                          error: err.message,
-                                        },
-                                      }, '/groups');
+                                      setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
                                     });
                                   }}
                                 >
@@ -123,17 +123,16 @@ const GroupList = ({ query }) => {
                                         Router.push({
                                           pathname: '/groups',
                                           query: {
-                                            alert: 'deletedGroup',
                                             deletedGroupId: value.id,
                                           },
-                                        }, '/groups');
+                                        }, '/groups').then(() => {
+                                          setAlerts([...alerts, {
+                                            text: 'You have successfully deleted the group.',
+                                            variant: 'warning',
+                                          }]);
+                                        });
                                       }).catch((err) => {
-                                        Router.push({
-                                          pathname: '/groups',
-                                          query: {
-                                            error: err.message,
-                                          },
-                                        }, '/groups');
+                                        setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
                                       });
                                       handleCloseModal();
                                     }}
@@ -165,8 +164,22 @@ const GroupList = ({ query }) => {
 };
 
 export async function getServerSideProps(context) {
+  const { alert } = context.query;
+  let initAlerts = [];
+  if (alert === 'leftGroup') {
+    initAlerts = [{
+      text: 'You have successfully left the group.',
+      variant: 'warning',
+    }];
+  } else if (alert === 'deletedGroup') {
+    initAlerts = [{
+      text: 'You have successfully deleted the group.',
+      variant: 'warning',
+    }];
+  }
+
   return {
-    props: { query: context.query }, // will be passed to the page component as props
+    props: { query: context.query, initAlerts },
   };
 }
 

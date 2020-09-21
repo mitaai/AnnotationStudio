@@ -1,5 +1,5 @@
 import { setCookie } from 'nookies';
-import React from 'react';
+import React, { useState } from 'react';
 import fetch from 'isomorphic-unfetch';
 import { csrfToken, useSession } from 'next-auth/client';
 import { Button, Card, Form } from 'react-bootstrap';
@@ -7,15 +7,16 @@ import Router from 'next/router';
 import Layout from '../../components/Layout';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { AddUserToGroup } from '../../utils/groupUtil';
-import { StripQuery } from '../../utils/stringUtil';
 
 const SignIn = ({ props }) => {
   const [session, loading] = useSession();
+  const [alerts, setAlerts] = useState([]);
 
   const { csrfToken, groupId } = props; // eslint-disable-line no-shadow
   return (
     <Layout
       type="signin"
+      alerts={alerts}
     >
       {!session && loading && (
         <LoadingSpinner />
@@ -50,12 +51,7 @@ const SignIn = ({ props }) => {
                     query: { alert: 'joinedGroup' },
                   });
                 }).catch((err) => {
-                  Router.push(
-                    {
-                      pathname: StripQuery(Router.asPath),
-                      query: { error: err.message },
-                    },
-                  );
+                  setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
                 });
               }}
             >

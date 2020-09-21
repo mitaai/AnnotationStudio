@@ -21,7 +21,7 @@ const UpdateMemberCounts = async (group) => {
         },
       });
       if (res.status === 200) {
-        const response = res.json();
+        const response = await res.json();
         return Promise.resolve(response);
       } return Promise.reject(Error(`Unable to update member counts: error ${res.status} received from server`));
     }),
@@ -252,7 +252,7 @@ const GenerateInviteToken = async (group) => {
       },
     });
     if (groupRes.status === 200) {
-      const groupResponse = groupRes.json();
+      const groupResponse = await groupRes.json();
       return Promise.resolve(groupResponse);
     } return Promise.reject(Error(`Unable to add token to group: error ${res.status} received from server`));
   } return Promise.reject(Error(`Unable to generate token: error ${res.status} received from server`));

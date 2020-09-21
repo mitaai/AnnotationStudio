@@ -22,7 +22,6 @@ import LoadingSpinner from '../../../components/LoadingSpinner';
 import ConfirmationDialog from '../../../components/ConfirmationDialog';
 import GroupRoleSummaries from '../../../components/GroupRoleSummaries';
 import GroupRoleBadge from '../../../components/GroupRoleBadge';
-import { StripQuery } from '../../../utils/stringUtil';
 import {
   AddUserToGroup,
   ChangeUserRole,
@@ -34,15 +33,25 @@ import {
 } from '../../../utils/groupUtil';
 
 
-const EditGroup = ({ group }) => {
+const EditGroup = ({
+  group,
+  initAlerts,
+  baseUrl,
+}) => {
   const [session, loading] = useSession();
+  const [alerts, setAlerts] = useState(initAlerts || []);
 
   const router = useRouter();
 
   const target = useRef(null);
-  const [state, setState] = useState(
-    { showModal: false, editingGroupName: false, showTooltip: false },
-  );
+  const [state, setState] = useState({
+    showModal: false,
+    editingGroupName: false,
+    showTooltip: false,
+    groupName: group.name,
+    inviteUrl: group.inviteUrl,
+    members: group.members,
+  });
   const handleCloseModal = () => setState({ ...state, showModal: false });
   const handleShowModal = () => setState({ ...state, showModal: true });
   const editGroupName = () => setState({ ...state, editingGroupName: true });
@@ -52,17 +61,23 @@ const EditGroup = ({ group }) => {
   const copyInviteUrl = () => {
     if (typeof navigator !== 'undefined') {
       // eslint-disable-next-line no-undef
-      navigator.clipboard.writeText(group.inviteUrl);
+      navigator.clipboard.writeText(state.inviteUrl);
       handleShowTooltip();
       target.current.focus();
       target.current.select();
     }
   };
 
-  const roleInGroup = (currentSession) => currentSession.user.groups.find((o) => Object.entries(o).some(([k, value]) => k === 'id' && value === group.id)).role;
+  const roleInGroup = (currentSession) => {
+    const groupInSession = currentSession.user.groups.find((o) => Object.entries(o).some(([k, value]) => k === 'id' && value === group.id));
+    const memberInGroup = group.members.find((o) => Object.entries(o).some(([k, value]) => k === 'id' && value === currentSession.user.id));
+    if (groupInSession || memberInGroup) {
+      return groupInSession ? groupInSession.role : memberInGroup.role;
+    } return 'unauthorized';
+  };
 
   return (
-    <Layout>
+    <Layout alerts={alerts}>
       <Card>
         {!session && loading && (
           <LoadingSpinner />
@@ -74,7 +89,7 @@ const EditGroup = ({ group }) => {
                 <>
                   Manage Group:
                   {' '}
-                  {group.name}
+                  {state.groupName}
                   <Button
                     type="button"
                     variant="link"
@@ -96,21 +111,21 @@ const EditGroup = ({ group }) => {
                   onSubmit={(values, actions) => {
                     setTimeout(() => {
                       RenameGroup(group, values.groupName).then(() => {
-                        router.push({
-                          pathname: `/groups/${group.id}/edit`,
-                          query: { alert: 'renameGroup' },
+                        setAlerts([...alerts, {
+                          text: 'Group successfully renamed.',
+                          variant: 'success',
+                        }]);
+                        setState({
+                          ...state, editingGroupName: false, groupName: values.groupName,
                         });
                       }).catch((err) => {
-                        router.push({
-                          pathname: `/groups/${group.id}/edit`,
-                          query: { error: err.message },
-                        });
+                        setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
                       });
                       actions.setSubmitting(false);
                     }, 1000);
                   }}
                   initialValues={{
-                    groupName: group.name,
+                    groupName: state.groupName,
                   }}
                 >
                   {(props) => (
@@ -163,7 +178,7 @@ const EditGroup = ({ group }) => {
                       </tr>
                     </thead>
                     <tbody>
-                      {group.members.map((member) => (
+                      {state.members.map((member, idx) => (
                         <tr key={member.email}>
                           <td>{member.name}</td>
                           <td>{member.email}</td>
@@ -181,15 +196,16 @@ const EditGroup = ({ group }) => {
                                   disabled={member.role === 'member'}
                                   onClick={() => {
                                     ChangeUserRole(group, member, 'member').then(() => {
-                                      router.push({
-                                        pathname: `/groups/${group.id}/edit`,
-                                        query: { alert: 'changeUserRole' },
-                                      });
+                                      const newArray = [...state.members];
+                                      const newMember = { ...member, role: 'member' };
+                                      newArray[idx] = newMember;
+                                      setState({ ...state, members: newArray });
+                                      setAlerts([...alerts, {
+                                        text: 'User\'s role changed successfully.',
+                                        variant: 'success',
+                                      }]);
                                     }).catch((err) => {
-                                      router.push({
-                                        pathname: `/groups/${group.id}/edit`,
-                                        query: { error: err.message },
-                                      });
+                                      setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
                                     });
                                   }}
                                 >
@@ -199,15 +215,16 @@ const EditGroup = ({ group }) => {
                                   disabled={member.role === 'manager'}
                                   onClick={() => {
                                     ChangeUserRole(group, member, 'manager').then(() => {
-                                      router.push({
-                                        pathname: `/groups/${group.id}/edit`,
-                                        query: { alert: 'changeUserRole' },
-                                      });
+                                      const newArray = [...state.members];
+                                      const newMember = { ...member, role: 'manager' };
+                                      newArray[idx] = newMember;
+                                      setState({ ...state, members: newArray });
+                                      setAlerts([...alerts, {
+                                        text: 'User\'s role changed successfully.',
+                                        variant: 'success',
+                                      }]);
                                     }).catch((err) => {
-                                      router.push({
-                                        pathname: `/groups/${group.id}/edit`,
-                                        query: { error: err.message },
-                                      });
+                                      setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
                                     });
                                   }}
                                 >
@@ -224,19 +241,14 @@ const EditGroup = ({ group }) => {
                                 className="btn-sm"
                                 type="button"
                                 onClick={() => RemoveUserFromGroup(group, member).then(() => {
-                                  router.push({
-                                    pathname: `/groups/${group.id}/edit`,
-                                    query: {
-                                      alert: 'removeUser',
-                                    },
-                                  });
+                                  const members = state.members.filter((val, i) => i !== idx);
+                                  setState({ ...state, members });
+                                  setAlerts([...alerts, {
+                                    text: 'User successfully removed from group.',
+                                    variant: 'warning',
+                                  }]);
                                 }).catch((err) => {
-                                  router.push({
-                                    pathname: `/groups/${group.id}/edit`,
-                                    query: {
-                                      error: err.message,
-                                    },
-                                  });
+                                  setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
                                 })}
                               >
                                 Remove
@@ -251,23 +263,22 @@ const EditGroup = ({ group }) => {
                 <Col>
                   <Row>
                     <h6>Invite link</h6>
-                    {group.inviteUrl === '' && (
+                    {state.inviteUrl === '' && (
                       <>
                         <p>Generate an invite link to send to registered or new users.</p>
                         <Button
                           variant="outline-secondary"
                           onClick={(event) => {
                             event.target.setAttribute('disabled', 'true');
-                            GenerateInviteToken(group).then(() => {
-                              router.push({
-                                pathname: `/groups/${group.id}/edit`,
-                                query: { alert: 'createdToken' },
-                              });
+                            GenerateInviteToken(group).then((data) => {
+                              const inviteUrl = `${baseUrl}/auth/email-signin?callbackUrl=${baseUrl}&groupToken=${data.value.inviteToken}`;
+                              setState({ ...state, inviteUrl });
+                              setAlerts([...alerts, {
+                                text: 'Group invite token created successfully.',
+                                variant: 'success',
+                              }]);
                             }).catch((err) => {
-                              router.push({
-                                pathname: `/groups/${group.id}/edit`,
-                                query: { error: err.message },
-                              });
+                              setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
                             });
                           }}
                         >
@@ -275,7 +286,7 @@ const EditGroup = ({ group }) => {
                         </Button>
                       </>
                     )}
-                    {group.inviteUrl !== '' && (
+                    {state.inviteUrl !== '' && (
                       <>
                         <p>
                           Send this invite link to registered or
@@ -289,19 +300,13 @@ const EditGroup = ({ group }) => {
                             style={{ padding: 0 }}
                             onClick={() => {
                               DeleteInviteToken(group).then(() => {
-                                router.push(
-                                  {
-                                    pathname: StripQuery(router.asPath),
-                                    query: { alert: 'deletedToken' },
-                                  },
-                                );
+                                setState({ ...state, inviteUrl: '' });
+                                setAlerts([...alerts, {
+                                  text: 'Group invite token deleted successfully.',
+                                  variant: 'warning',
+                                }]);
                               }).catch((err) => {
-                                router.push(
-                                  {
-                                    pathname: StripQuery(router.asPath),
-                                    query: { error: err.message },
-                                  },
-                                );
+                                setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
                               });
                             }}
                           >
@@ -317,7 +322,7 @@ const EditGroup = ({ group }) => {
                             type="text"
                             name="inviteUrl"
                             ref={target}
-                            value={group.inviteUrl}
+                            value={state.inviteUrl}
                             onClick={copyInviteUrl}
                             readOnly
                           />
@@ -363,18 +368,20 @@ const EditGroup = ({ group }) => {
                       })}
                       onSubmit={(values, actions) => {
                         setTimeout(() => {
-                          AddUserToGroup(group, values.email).then(() => {
-                            router.push({
-                              pathname: `/groups/${group.id}/edit`,
-                              query: { alert: 'addUser' },
-                            });
+                          AddUserToGroup(group, values.email).then((data) => {
+                            const { _id, name } = data.value;
+                            const { email } = values;
+                            const member = {
+                              name, email, id: _id, role: 'member',
+                            };
+                            setState({ ...state, members: [...state.members, member] });
+                            setAlerts([...alerts, {
+                              text: 'User successfully added to group.',
+                              variant: 'success',
+                            }]);
+                            actions.resetForm();
                           }).catch((err) => {
-                            router.push(
-                              {
-                                pathname: `/groups/${group.id}/edit`,
-                                query: { error: err.message },
-                              },
-                            );
+                            setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
                           });
                           actions.setSubmitting(false);
                         }, 1000);
@@ -455,12 +462,7 @@ const EditGroup = ({ group }) => {
                               },
                             }, '/groups');
                           }).catch((err) => {
-                            router.push({
-                              pathname: '/groups',
-                              query: {
-                                error: err.message,
-                              },
-                            }, '/groups');
+                            setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
                           });
                           handleCloseModal();
                         }}
@@ -479,7 +481,17 @@ const EditGroup = ({ group }) => {
 };
 
 export async function getServerSideProps(context) {
-  const { id } = context.params;
+  const { params, query } = context;
+  const { id } = params;
+  const { alert } = query;
+  let initAlerts = [];
+
+  if (alert === 'newGroup') {
+    initAlerts = [{
+      text: 'Group created successfully.',
+      variant: 'success',
+    }];
+  }
 
   const url = `${process.env.SITE}/api/group/${id}`;
   // eslint-disable-next-line no-undef
@@ -507,7 +519,9 @@ export async function getServerSideProps(context) {
       ? `${process.env.SITE}/auth/email-signin?callbackUrl=${process.env.SITE}&groupToken=${inviteToken}`
       : '';
     return {
-      props: { group },
+      props: {
+        group, initAlerts, baseUrl: process.env.SITE,
+      },
     };
   }
   return {
