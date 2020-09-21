@@ -68,7 +68,13 @@ const EditGroup = ({
     }
   };
 
-  const roleInGroup = (currentSession) => currentSession.user.groups.find((o) => Object.entries(o).some(([k, value]) => k === 'id' && value === group.id)).role;
+  const roleInGroup = (currentSession) => {
+    const groupInSession = currentSession.user.groups.find((o) => Object.entries(o).some(([k, value]) => k === 'id' && value === group.id));
+    const memberInGroup = group.members.find((o) => Object.entries(o).some(([k, value]) => k === 'id' && value === currentSession.user.id));
+    if (groupInSession || memberInGroup) {
+      return groupInSession ? groupInSession.role : memberInGroup.role;
+    } return 'unauthorized';
+  };
 
   return (
     <Layout alerts={alerts}>
@@ -513,7 +519,9 @@ export async function getServerSideProps(context) {
       ? `${process.env.SITE}/auth/email-signin?callbackUrl=${process.env.SITE}&groupToken=${inviteToken}`
       : '';
     return {
-      props: { group, initAlerts, baseUrl: process.env.SITE },
+      props: {
+        group, initAlerts, baseUrl: process.env.SITE,
+      },
     };
   }
   return {

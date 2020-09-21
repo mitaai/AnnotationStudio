@@ -84,10 +84,14 @@ const GroupList = ({ query, initAlerts }) => {
                                       Router.push({
                                         pathname: '/groups',
                                         query: {
-                                          alert: 'leftGroup',
                                           deletedGroupId: value.id,
                                         },
-                                      }, '/groups');
+                                      }, '/groups').then(() => {
+                                        setAlerts([...alerts, {
+                                          text: 'You have successfully left the group.',
+                                          variant: 'warning',
+                                        }]);
+                                      });
                                     }).catch((err) => {
                                       setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
                                     });
@@ -119,10 +123,14 @@ const GroupList = ({ query, initAlerts }) => {
                                         Router.push({
                                           pathname: '/groups',
                                           query: {
-                                            alert: 'deletedGroup',
                                             deletedGroupId: value.id,
                                           },
-                                        }, '/groups');
+                                        }, '/groups').then(() => {
+                                          setAlerts([...alerts, {
+                                            text: 'You have successfully deleted the group.',
+                                            variant: 'warning',
+                                          }]);
+                                        });
                                       }).catch((err) => {
                                         setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
                                       });
@@ -163,7 +171,7 @@ export async function getServerSideProps(context) {
       text: 'You have successfully left the group.',
       variant: 'warning',
     }];
-  } else if (alert === 'deleteGroup') {
+  } else if (alert === 'deletedGroup') {
     initAlerts = [{
       text: 'You have successfully deleted the group.',
       variant: 'warning',
