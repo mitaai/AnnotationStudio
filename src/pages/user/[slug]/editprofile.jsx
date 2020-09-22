@@ -34,7 +34,7 @@ const EditProfile = ({ user }) => {
       const result = await res.json();
       const { groups, _id } = result.value;
       if (groups && groups.length > 0) {
-        groups.map(async (group) => {
+        return Promise.all(groups.map(async (group) => {
           const url = `/api/group/${group.id}`;
           const groupBody = { memberToChangeNameId: _id, memberName: newName };
           // eslint-disable-next-line no-undef
@@ -45,13 +45,36 @@ const EditProfile = ({ user }) => {
               'Content-Type': 'application/json',
             },
           });
-          return groupRes.json();
+          if (groupRes.status === 200) {
+            const groupResult = await groupRes.json();
+            if (group.role === 'owner' && groupResult.value.members) {
+              try {
+                return Promise.all(groupResult.value.members.map(async (member) => {
+                  const memberUrl = `/api/user/${member.id}`;
+                  const memberBody = { updatedGroupId: group.id, ownerName: newName };
+                  // eslint-disable-next-line no-undef
+                  const memberRes = await fetch(memberUrl, {
+                    method: 'PATCH',
+                    body: JSON.stringify(memberBody),
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                  });
+                  if (memberRes.status === 200) return Promise.resolve(memberRes.json());
+                  return Promise.reject(Error(`Error: received code ${memberRes.status} from server`));
+                }));
+              } catch (err) {
+                return Promise.reject(err.message);
+              }
+            } return Promise.resolve(groupResult);
+          } return Promise.reject(Error(`Error: received code ${groupRes.status} from server`));
+        })).catch((err) => {
+          setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
         });
       }
-      setAlerts([...alerts, { text: 'Profile updated successfully.', variant: 'success' }]);
-    } else {
-      setAlerts([...alerts, { text: await res.text(), variant: 'danger' }]);
+      return Promise.resolve(result);
     }
+    return Promise.reject(Error(await res.text()));
   };
 
   const schema = yup.object({
@@ -73,7 +96,13 @@ const EditProfile = ({ user }) => {
               <Formik
                 onSubmit={(values, actions) => {
                   setTimeout(() => {
-                    submitHandler(values);
+                    submitHandler(values)
+                      .then(() => {
+                        setAlerts([...alerts, { text: 'Profile updated successfully.', variant: 'success' }]);
+                      })
+                      .catch((err) => {
+                        setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+                      });
                     actions.setSubmitting(false);
                   }, 1000);
                 }}

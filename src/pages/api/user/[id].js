@@ -59,6 +59,11 @@ const handler = nc()
               'groups.$.name': req.body.groupName,
             };
           }
+          if (req.body.ownerName) {
+            groupToUpdate = {
+              'groups.$.ownerName': req.body.ownerName,
+            };
+          }
         }
         const updateMethods = {};
         const fieldsToPush = { ...groupToPush };
