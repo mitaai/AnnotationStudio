@@ -12,10 +12,10 @@ const handler = nc()
       if (token && token.exp > 0) {
         const createdAt = new Date(Date.now());
         const updatedAt = createdAt;
-        const { name } = req.body;
+        const { name, ownerName } = req.body;
         const members = [{
           id: token.id,
-          name: token.name,
+          name: ownerName || token.name,
           email: token.email,
           role: 'owner',
         }];

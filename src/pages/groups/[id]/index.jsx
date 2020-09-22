@@ -18,6 +18,7 @@ import { GetUserByEmail } from '../../../utils/userUtil';
 const ViewGroup = ({ group }) => {
   const [session, loading] = useSession();
 
+  const [alerts, setAlerts] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const handleCloseModal = () => setShowModal(false);
   const handleShowModal = () => setShowModal(true);
@@ -71,15 +72,11 @@ const ViewGroup = ({ group }) => {
                           pathname: '/groups',
                           query: {
                             alert: 'leftGroup',
+                            deletedGroupId: group.id,
                           },
                         }, '/groups');
                       }).catch((err) => {
-                        Router.push({
-                          pathname: `/groups/${group.id}`,
-                          query: {
-                            error: err.message,
-                          },
-                        }, '/groups');
+                        setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
                       });
                     }}
                   >
@@ -113,12 +110,7 @@ const ViewGroup = ({ group }) => {
                           },
                         }, '/groups');
                       }).catch((err) => {
-                        Router.push({
-                          pathname: '/groups',
-                          query: {
-                            error: err.message,
-                          },
-                        }, '/groups');
+                        setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
                       });
                       handleCloseModal();
                     }}

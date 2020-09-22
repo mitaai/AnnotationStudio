@@ -15,17 +15,20 @@ import { FullName } from '../../utils/nameUtil';
 import Layout from '../../components/Layout';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { AddUserToGroup } from '../../utils/groupUtil';
-import { StripQuery } from '../../utils/stringUtil';
 
 const NewUser = ({ groupId }) => {
   const [session] = useSession();
 
-  const [errorMsg, setErrorMsg] = useState('');
+  const [alerts, setAlerts] = useState([]);
 
   const pushToHome = () => {
     Router.push({
       pathname: '/',
       query: { alert: 'completeRegistration' },
+    }).then(() => {
+      destroyCookie(null, 'ans_grouptoken', {
+        path: '/',
+      });
     });
   };
 
@@ -54,16 +57,11 @@ const NewUser = ({ groupId }) => {
         AddUserToGroup({ id: groupId }, session.user.email).then(() => {
           pushToHome();
         }).catch((err) => {
-          Router.push(
-            {
-              pathname: StripQuery(Router.asPath),
-              query: { error: err.message },
-            },
-          );
+          setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
         });
       } else pushToHome();
     } else {
-      setErrorMsg(await res.text());
+      setAlerts([...alerts, { text: res.text(), variant: 'danger' }]);
     }
   };
 
@@ -77,7 +75,7 @@ const NewUser = ({ groupId }) => {
   });
 
   return (
-    <Layout>
+    <Layout alerts={alerts}>
       <Col lg="8" className="mx-auto">
         <Card>
           {!session && (
@@ -113,7 +111,6 @@ const NewUser = ({ groupId }) => {
               >
                 {(props) => (
                   <Form onSubmit={props.handleSubmit} noValidate>
-                    {errorMsg ? <p style={{ color: 'red' }}>{errorMsg}</p> : null}
                     <Form.Group as={Row} controlId="formPlaintextEmail">
                       <Form.Label column lg="4">
                         Email

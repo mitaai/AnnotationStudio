@@ -1,6 +1,7 @@
 import fetch from 'unfetch';
 import { Formik } from 'formik';
 import { useSession } from 'next-auth/client';
+import { useState } from 'react';
 import {
   Button, Card, Col, Form, Row,
 } from 'react-bootstrap';
@@ -12,13 +13,15 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 
 const NewGroup = () => {
   const [session] = useSession();
+  const [alerts, setAlerts] = useState([]);
 
   const createGroup = async (values) => {
     const url = '/api/group';
     const { name } = values;
+    const ownerName = session.user.name;
     const res = await fetch(url, {
       method: 'POST',
-      body: JSON.stringify({ name }),
+      body: JSON.stringify({ name, ownerName }),
       headers: {
         'Content-Type': 'application/json',
       },
@@ -28,7 +31,7 @@ const NewGroup = () => {
       const group = {
         id: result.insertedId,
         name,
-        ownerName: result.ops[0].members[0].name,
+        ownerName: session.user.name || result.ops[0].members[0].name,
         memberCount: 1,
         role: 'owner',
       };
@@ -50,7 +53,7 @@ const NewGroup = () => {
   });
 
   return (
-    <Layout>
+    <Layout alerts={alerts}>
       <Col lg="8" className="mx-auto">
         <Card>
           {!session && (
@@ -64,10 +67,7 @@ const NewGroup = () => {
                 onSubmit={(values, actions) => {
                   setTimeout(() => {
                     createGroup(values).catch((err) => {
-                      Router.push({
-                        pathname: '/groups',
-                        query: { error: err.message },
-                      }, '/groups');
+                      setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
                     });
                     actions.setSubmitting(false);
                   }, 1000);
