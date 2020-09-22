@@ -18,9 +18,10 @@ const NewGroup = () => {
   const createGroup = async (values) => {
     const url = '/api/group';
     const { name } = values;
+    const ownerName = session.user.name;
     const res = await fetch(url, {
       method: 'POST',
-      body: JSON.stringify({ name }),
+      body: JSON.stringify({ name, ownerName }),
       headers: {
         'Content-Type': 'application/json',
       },
@@ -30,7 +31,7 @@ const NewGroup = () => {
       const group = {
         id: result.insertedId,
         name,
-        ownerName: result.ops[0].members[0].name,
+        ownerName: session.user.name || result.ops[0].members[0].name,
         memberCount: 1,
         role: 'owner',
       };
