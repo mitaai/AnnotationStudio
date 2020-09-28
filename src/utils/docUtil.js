@@ -17,7 +17,7 @@ const getDocumentsByUser = async (id) => {
   } return Promise.reject(Error(`Unable to retrieve documents: error ${res.status} received from server`));
 };
 
-const getDocumentsByGroup = async (groups) => {
+const getSharedDocumentsByGroup = async (groups) => {
   const url = '/api/documents';
   const body = { groupIds: groups.map((group) => group.id) };
   const res = await fetch(url, {
@@ -30,11 +30,11 @@ const getDocumentsByGroup = async (groups) => {
   if (res.status === 200) {
     const response = await res.json();
     const { documents } = response;
-    return Promise.resolve(documents);
+    return Promise.resolve(documents.filter((document) => document.state !== 'draft'));
   } return Promise.reject(Error(`Unable to retrieve documents: error ${res.status} received from server`));
 };
 
 export {
   getDocumentsByUser,
-  getDocumentsByGroup,
+  getSharedDocumentsByGroup,
 };

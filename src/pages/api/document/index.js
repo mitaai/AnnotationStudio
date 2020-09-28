@@ -10,10 +10,11 @@ const handler = nc()
     const token = await jwt.getToken({ req, secret });
     if (token && token.exp > 0) {
       const dateCreated = new Date(Date.now());
+      let { groups } = req.body;
+      groups = groups.filter((group) => group !== '');
       const {
         title,
         slug,
-        groups,
         resourceType,
         authors,
         publisher,
