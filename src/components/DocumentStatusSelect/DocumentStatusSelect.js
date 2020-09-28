@@ -18,20 +18,24 @@ import {
 const GreenCheck = () => <Check style={{ color: 'green', fontSize: '1.5rem' }} />;
 const RedX = () => <X style={{ color: 'red', fontSize: '1.5rem' }} />;
 
-const DocumentStatusSelect = ({
+const DocumentstateSelect = ({
   values,
+  onChange,
+  onBlur,
 }) => (
   <Row>
     <Col>
       <Form.Group>
         <Form.Check
-          name="status"
+          name="state"
           id="draft"
         >
           <FormCheck.Input
-            name="status"
+            name="state"
             type="radio"
             value="draft"
+            onChange={onChange}
+            onBlur={onBlur}
             as={Field}
           />
           <FormCheck.Label>
@@ -41,13 +45,15 @@ const DocumentStatusSelect = ({
           </FormCheck.Label>
         </Form.Check>
         <Form.Check
-          name="status"
+          name="state"
           id="published"
         >
           <FormCheck.Input
-            name="status"
+            name="state"
             type="radio"
             value="published"
+            onChange={onChange}
+            onBlur={onBlur}
             as={Field}
           />
           <FormCheck.Label>
@@ -57,13 +63,15 @@ const DocumentStatusSelect = ({
           </FormCheck.Label>
         </Form.Check>
         <Form.Check
-          name="status"
+          name="state"
           id="archived"
         >
           <FormCheck.Input
-            name="status"
+            name="state"
             type="radio"
             value="archived"
+            onChange={onChange}
+            onBlur={onBlur}
             as={Field}
           />
           <FormCheck.Label>
@@ -73,13 +81,15 @@ const DocumentStatusSelect = ({
           </FormCheck.Label>
         </Form.Check>
         <Form.Check
-          name="status"
+          name="state"
           id="public"
         >
           <FormCheck.Input
-            name="status"
+            name="state"
             type="radio"
             value="public"
+            onChange={onChange}
+            onBlur={onBlur}
             as={Field}
           />
           <FormCheck.Label>
@@ -127,8 +137,8 @@ const DocumentStatusSelect = ({
               Me
             </td>
             <td><GreenCheck /></td>
-            <td>{(values.status === 'draft') ? (<GreenCheck />) : (<RedX />)}</td>
-            <td>{(values.status === 'published') ? (<GreenCheck />) : (<RedX />)}</td>
+            <td>{(values.state === 'draft') ? (<GreenCheck />) : (<RedX />)}</td>
+            <td>{(values.state === 'published') ? (<GreenCheck />) : (<RedX />)}</td>
           </tr>
           {!(values.groups.length === 1 && values.groups[0] === '') && (
             <tr>
@@ -137,9 +147,9 @@ const DocumentStatusSelect = ({
                 {' '}
                 Groups
               </td>
-              <td>{(values.status === 'draft') ? (<RedX />) : (<GreenCheck />)}</td>
+              <td>{(values.state === 'draft') ? (<RedX />) : (<GreenCheck />)}</td>
               <td><RedX /></td>
-              <td>{(values.status === 'published') ? (<GreenCheck />) : (<RedX />)}</td>
+              <td>{(values.state === 'published') ? (<GreenCheck />) : (<RedX />)}</td>
             </tr>
           )}
           <tr>
@@ -148,7 +158,7 @@ const DocumentStatusSelect = ({
               {' '}
               Public
             </td>
-            <td>{(values.status === 'public') ? (<GreenCheck />) : (<RedX />)}</td>
+            <td>{(values.state === 'public') ? (<GreenCheck />) : (<RedX />)}</td>
             <td><RedX /></td>
             <td><RedX /></td>
           </tr>
@@ -158,4 +168,4 @@ const DocumentStatusSelect = ({
   </Row>
 );
 
-export default DocumentStatusSelect;
+export default DocumentstateSelect;

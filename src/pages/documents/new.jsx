@@ -181,7 +181,11 @@ const NewDocument = () => {
                               <Card.Title>Status</Card.Title>
                             </Card.Header>
                             <Card.Body>
-                              <DocumentStatusSelect values={props.values} />
+                              <DocumentStatusSelect
+                                values={props.values}
+                                onChange={props.handleChange}
+                                onBlur={props.handleBlur}
+                              />
                               <Row>
                                 <Col>
                                   <Button
