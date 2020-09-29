@@ -447,8 +447,8 @@ const EditGroup = ({
                         Delete this group
                       </Button>
                       <ConfirmationDialog
-                        value={group}
-                        type="deleteGroup"
+                        name={group.name}
+                        type="group"
                         handleCloseModal={handleCloseModal}
                         show={state.showModal}
                         onClick={(event) => {

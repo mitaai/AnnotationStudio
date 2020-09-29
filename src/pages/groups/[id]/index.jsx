@@ -95,8 +95,8 @@ const ViewGroup = ({ group }) => {
                     Delete this group
                   </Button>
                   <ConfirmationDialog
-                    value={group}
-                    type="deleteGroup"
+                    name={group.name}
+                    type="group"
                     handleCloseModal={handleCloseModal}
                     show={showModal}
                     onClick={(event) => {

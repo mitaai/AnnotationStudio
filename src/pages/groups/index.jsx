@@ -115,8 +115,8 @@ const GroupList = ({ query, initAlerts }) => {
                               Delete
                             </Button>
                             <ConfirmationDialog
-                              value={group}
-                              type="deleteGroup"
+                              name={group.name}
+                              type="group"
                               handleCloseModal={handleCloseModal}
                               show={showModal === group.id}
                               onClick={(event) => {
