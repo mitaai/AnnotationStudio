@@ -72,6 +72,22 @@ const DocumentForm = ({
     groups: [''],
     state: 'draft',
   };
+  const quillModules = {
+    toolbar: [
+      [{ header: [1, 2, false] }],
+      ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+      [{ list: 'ordered' }, { list: 'bullet' }, { indent: '-1' }, { indent: '+1' }],
+      ['link', 'image'],
+      ['clean'],
+    ],
+  };
+
+  const quillFormats = [
+    'header',
+    'bold', 'italic', 'underline', 'strike', 'blockquote',
+    'list', 'bullet', 'indent',
+    'link', 'image',
+  ];
 
   const schema = yup.object({
     title: yup.string().required('Required'),
@@ -130,6 +146,8 @@ const DocumentForm = ({
                     {({ field }) => (
                       <QuillNoSSRWrapper
                         theme="snow"
+                        modules={quillModules}
+                        formats={quillFormats}
                         value={field.value}
                         onChange={field.onChange(field.name)}
                       />
