@@ -8,7 +8,7 @@ import {
   ButtonGroup,
   Button,
 } from 'react-bootstrap';
-import Layout from '../../components/Layout';
+import Layout from '../../../components/Layout';
 
 export default function DocumentPage() {
   const router = useRouter();
