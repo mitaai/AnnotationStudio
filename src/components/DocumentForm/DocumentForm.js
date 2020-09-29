@@ -56,7 +56,7 @@ const DocumentForm = ({
       const result = await res.json();
       return Promise.resolve(result);
     }
-    return Promise.reject(Error(`Unable to create document: error ${res.status} received from server`));
+    return Promise.reject(Error(`Unable to edit document: error ${res.status} received from server`));
   };
 
   const getInitialValues = (mode === 'edit' && data) ? data : {
