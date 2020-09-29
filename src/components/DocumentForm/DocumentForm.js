@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
+import { useRouter } from 'next/router';
 import fetch from 'unfetch';
 import { Formik, Field } from 'formik';
 import {
-  Button, Card, Col, Form, Row,
+  Button, ButtonGroup, Card, Col, Form, Row,
 } from 'react-bootstrap';
 import * as yup from 'yup';
 import slugify from '@sindresorhus/slugify';
@@ -15,8 +16,11 @@ import DocumentStatusSelect from '../DocumentStatusSelect';
 
 const DocumentForm = ({
   session,
+  mode,
+  data,
 }) => {
   const [errors, setErrors] = useState([]);
+  const router = useRouter();
 
   const createDocument = async (values) => {
     const slug = `${slugify(values.title)}-${cryptoRandomString({ length: 5, type: 'hex' })}`;
@@ -36,6 +40,32 @@ const DocumentForm = ({
       return Promise.resolve(result);
     }
     return Promise.reject(Error(`Unable to create document: error ${res.status} received from server`));
+  };
+
+  const editDocument = async (values) => {
+    const { id } = data;
+    const patchUrl = `/api/document/${id}`;
+    const res = await fetch(patchUrl, {
+      method: 'PATCH',
+      body: JSON.stringify(values),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    if (res.status === 200) {
+      const result = await res.json();
+      return Promise.resolve(result);
+    }
+    return Promise.reject(Error(`Unable to create document: error ${res.status} received from server`));
+  };
+
+  const getInitialValues = (mode === 'edit' && data) ? data : {
+    text: '',
+    resourceType: 'Book',
+    rightsStatus: 'Copyrighted',
+    title: '',
+    groups: [''],
+    state: 'draft',
   };
 
   const schema = yup.object({
@@ -59,9 +89,13 @@ const DocumentForm = ({
   return (
     <Formik
       onSubmit={(values, actions) => {
+        const submitFunction = mode === 'edit' ? editDocument : createDocument;
         setTimeout(() => {
-          createDocument(values)
-            .then(setErrors([]))
+          submitFunction(values)
+            .then(() => {
+              setErrors([]);
+              router.push('/documents');
+            })
             .catch((err) => {
               setErrors([err.message]);
             });
@@ -69,14 +103,8 @@ const DocumentForm = ({
         }, 1000);
       }}
       validationSchema={schema}
-      initialValues={{
-        text: '',
-        resourceType: 'Book',
-        rightsStatus: 'Copyrighted',
-        title: '',
-        groups: [''],
-        state: 'draft',
-      }}
+      initialValues={getInitialValues}
+      enableReinitialize
     >
       {(props) => (
         <Form onSubmit={props.handleSubmit} noValidate className="pt-2">
@@ -174,29 +202,40 @@ const DocumentForm = ({
                     values={props.values}
                     onChange={props.handleChange}
                     onBlur={props.handleBlur}
-                    initialValues={props.initialValues}
                   />
-                  <Row>
-                    <Col>
-                      <Button
-                        variant="primary"
-                        type="submit"
-                        disabled={props.isSubmitting}
-                        data-testid="newdoc-submit-button"
-                      >
-                        Create Document
-                      </Button>
-                    </Col>
-                  </Row>
-                  <Row className="mt-3">
-                    <Col>
-                      <pre>
-                        {errors !== [] && errors.map((error) => JSON.stringify(error))}
-                      </pre>
-                    </Col>
-                  </Row>
+                  {errors && errors.length > 0 && (
+                    <Row className="mt-3">
+                      <Col>
+                        <pre>
+                          {errors.map((error) => JSON.stringify(error))}
+                        </pre>
+                      </Col>
+                    </Row>
+                  )}
                 </Card.Body>
               </Card>
+              <Row className="mt-3 text-right">
+                <Col>
+                  <ButtonGroup>
+                    {mode === 'edit' && (
+                      <Button
+                        href="/documents"
+                        variant="outline-secondary"
+                      >
+                        Cancel
+                      </Button>
+                    )}
+                    <Button
+                      variant={mode === 'edit' ? 'success' : 'primary'}
+                      type="submit"
+                      disabled={props.isSubmitting}
+                      data-testid="documentform-submit-button"
+                    >
+                      {mode === 'edit' ? (<>Save Changes</>) : (<>Create Document</>)}
+                    </Button>
+                  </ButtonGroup>
+                </Col>
+              </Row>
             </Col>
           </Form.Row>
         </Form>
