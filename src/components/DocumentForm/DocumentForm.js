@@ -219,7 +219,8 @@ const DocumentForm = ({
                   <ButtonGroup>
                     {mode === 'edit' && (
                       <Button
-                        href="/documents"
+                        type="button"
+                        onClick={() => router.back()}
                         variant="outline-secondary"
                       >
                         Cancel
