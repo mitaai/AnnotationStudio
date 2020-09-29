@@ -113,7 +113,7 @@ const DocumentList = ({
                 <td>
                   {document.owner === userId && (
                     <ButtonGroup>
-                      <Button variant="outline-primary">
+                      <Button variant="outline-primary" href={`documents/${document.slug}/edit`}>
                         <PencilSquare className="align-text-bottom mr-1" />
                         Edit
                       </Button>
