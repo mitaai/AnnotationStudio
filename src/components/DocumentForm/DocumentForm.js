@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import fetch from 'unfetch';
 import { Formik, Field } from 'formik';
 import {
-  Button, ButtonGroup, Card, Col, Form, Row,
+  Button, Container, Card, Col, Form, Row,
 } from 'react-bootstrap';
 import * as yup from 'yup';
 import slugify from '@sindresorhus/slugify';
@@ -13,6 +13,8 @@ import QuillNoSSRWrapper from '../QuillNoSSRWrapper';
 import SemanticField from '../SemanticField';
 import DocumentMetadata from '../DocumentMetadata';
 import DocumentStatusSelect from '../DocumentStatusSelect';
+import { deleteDocumentById } from '../../utils/docUtil';
+import ConfirmationDialog from '../ConfirmationDialog';
 
 const DocumentForm = ({
   session,
@@ -21,6 +23,9 @@ const DocumentForm = ({
 }) => {
   const [errors, setErrors] = useState([]);
   const router = useRouter();
+  const [showModal, setShowModal] = useState(false);
+  const handleCloseModal = () => setShowModal(false);
+  const handleShowModal = () => setShowModal(true);
 
   const createDocument = async (values) => {
     const slug = `${slugify(values.title)}-${cryptoRandomString({ length: 5, type: 'hex' })}`;
@@ -220,17 +225,48 @@ const DocumentForm = ({
                   )}
                 </Card.Body>
               </Card>
-              <Row className="mt-3 text-right">
+              <Row className="mt-3">
                 <Col>
-                  <ButtonGroup>
+                  <Container style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Button
+                      type="button"
+                      onClick={() => router.back()}
+                      variant="outline-secondary"
+                    >
+                      Cancel
+                    </Button>
                     {mode === 'edit' && (
-                      <Button
-                        type="button"
-                        onClick={() => router.back()}
-                        variant="outline-secondary"
-                      >
-                        Cancel
-                      </Button>
+                      <>
+                        <Button
+                          variant="outline-danger"
+                          type="button"
+                          onClick={handleShowModal}
+                          data-testid="documentedit-delete-button"
+                        >
+                          Delete Document
+                        </Button>
+                        <ConfirmationDialog
+                          name={data.title}
+                          type="document"
+                          handleCloseModal={handleCloseModal}
+                          show={showModal}
+                          onClick={(event) => {
+                            event.target.setAttribute('disabled', 'true');
+                            deleteDocumentById(data.id).then(() => {
+                              router.push({
+                                pathname: '/documents',
+                                query: {
+                                  alert: 'deletedDocument',
+                                  tab: 'mine',
+                                },
+                              });
+                            }).catch((err) => {
+                              setErrors([err.message]);
+                            });
+                            handleCloseModal();
+                          }}
+                        />
+                      </>
                     )}
                     <Button
                       variant={mode === 'edit' ? 'success' : 'primary'}
@@ -240,7 +276,7 @@ const DocumentForm = ({
                     >
                       {mode === 'edit' ? (<>Save Changes</>) : (<>Create Document</>)}
                     </Button>
-                  </ButtonGroup>
+                  </Container>
                 </Col>
               </Row>
             </Col>

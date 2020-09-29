@@ -113,12 +113,17 @@ DocumentsIndex.getInitialProps = async (context) => {
   const { tab, alert } = context.query;
   let props = {};
   if (tab) props = { ...props, tab };
-  if (alert && (alert === 'editedDocument' || alert === 'createdDocument')) {
+  if (alert && ['editedDocument', 'createdDocument', 'deletedDocument'].includes(alert)) {
+    let text = '';
+    switch (alert) {
+      case 'editedDocument': text = 'Document edited successfully.'; break;
+      case 'createdDocument': text = 'Document created successfully.'; break;
+      case 'deletedDocument': text = 'Document deleted successfully.'; break;
+      default: text = '';
+    }
     const initAlert = {
-      text: (alert === 'editedDocument')
-        ? 'Document edited successfully.'
-        : 'Document created successfully.',
-      variant: 'success',
+      text,
+      variant: alert === 'deletedDocument' ? 'warning' : 'success',
     };
     props = { ...props, initAlert };
   }
