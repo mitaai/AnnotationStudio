@@ -8,12 +8,15 @@ import DocumentList from '../../components/DocumentList';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { getSharedDocumentsByGroup, getDocumentsByUser } from '../../utils/docUtil';
 
-const DocumentsIndex = () => {
+const DocumentsIndex = ({
+  props,
+}) => {
+  const { tab, initAlert } = props;
   const [session, loading] = useSession();
-  const [key, setKey] = useState('shared');
+  const [key, setKey] = tab ? useState(tab) : useState('shared');
   const [listLoading, setListLoading] = useState(true);
   const [documents, setDocuments] = useState([]);
-  const [alerts, setAlerts] = useState([]);
+  const [alerts, setAlerts] = initAlert ? useState([initAlert]) : useState([]);
 
   useEffect(() => {
     async function fetchData() {
@@ -98,6 +101,22 @@ const DocumentsIndex = () => {
       )}
     </Layout>
   );
+};
+
+DocumentsIndex.getInitialProps = async (context) => {
+  const { tab, alert } = context.query;
+  let props = {};
+  if (tab) props = { ...props, tab };
+  if (alert && (alert === 'editedDocument' || alert === 'createdDocument')) {
+    const initAlert = {
+      text: (alert === 'editedDocument')
+        ? 'Document edited successfully.'
+        : 'Document created successfully.',
+      variant: 'success',
+    };
+    props = { ...props, initAlert };
+  }
+  return { props };
 };
 
 export default DocumentsIndex;

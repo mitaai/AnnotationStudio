@@ -94,7 +94,13 @@ const DocumentForm = ({
           submitFunction(values)
             .then(() => {
               setErrors([]);
-              router.push('/documents');
+              router.push({
+                pathname: '/documents',
+                query: {
+                  tab: 'mine',
+                  alert: (mode === 'edit') ? 'editedDocument' : 'createdDocument',
+                },
+              });
             })
             .catch((err) => {
               setErrors([err.message]);
