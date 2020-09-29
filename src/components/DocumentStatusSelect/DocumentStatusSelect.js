@@ -1,4 +1,4 @@
-import { Field } from 'formik';
+import { Field, ErrorMessage } from 'formik';
 import {
   ArchiveFill,
   ChatLeftTextFill,
@@ -98,6 +98,7 @@ const DocumentstateSelect = ({
             Public
           </FormCheck.Label>
         </Form.Check>
+        <ErrorMessage name="state" />
       </Form.Group>
     </Col>
     <Col xs="auto">
