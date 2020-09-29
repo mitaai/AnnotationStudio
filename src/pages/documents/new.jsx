@@ -19,7 +19,7 @@ const NewDocument = () => {
             <>
               <Card.Header><Card.Title>Create a new document</Card.Title></Card.Header>
               <Card.Body>
-                <DocumentForm type="new" session={session} />
+                <DocumentForm mode="new" session={session} />
               </Card.Body>
             </>
           )}
