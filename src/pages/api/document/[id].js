@@ -196,6 +196,25 @@ const handler = nc()
           );
       } else res.status(403).json({ error: '403 Invalid or expired token' });
     },
+  )
+  .delete(
+    async (req, res) => {
+      const token = await jwt.getToken({ req, secret });
+      if (token && token.exp > 0) {
+        await req.db
+          .collection('documents')
+          .findOneAndDelete(
+            {
+              _id: ObjectID(req.query.id),
+              owner: token.id,
+            },
+            (err, doc) => {
+              if (err) throw err;
+              res.status(200).json(doc);
+            },
+          );
+      } else res.status(403).json({ error: '403 Invalid or expired token' });
+    },
   );
 
 export default handler;

@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import {
@@ -14,14 +15,24 @@ import {
 import { format } from 'date-fns';
 import LoadingSpinner from '../LoadingSpinner';
 import { GetGroupNameById } from '../../utils/groupUtil';
+import { deleteDocumentById } from '../../utils/docUtil';
+import ConfirmationDialog from '../ConfirmationDialog';
 import { ucFirst } from '../../utils/stringUtil';
 
 const DocumentList = ({
   documents,
+  setDocuments,
   loading,
   userId,
+  alerts,
+  setAlerts,
 }) => {
   const [groupState, setGroupState] = useState({});
+  const [showModal, setShowModal] = useState('');
+  const handleCloseModal = () => setShowModal('');
+  const handleShowModal = (event) => {
+    setShowModal(event.target.getAttribute('data-key'));
+  };
 
   const getStateIcon = (state) => {
     switch (state) {
@@ -118,9 +129,36 @@ const DocumentList = ({
                         <PencilSquare className="align-text-bottom mr-1" />
                         Edit
                       </Button>
-                      <Button variant="outline-danger" alt="delete">
+                      <Button
+                        variant="outline-danger"
+                        type="button"
+                        onClick={(evt) => {
+                          handleShowModal(evt);
+                        }}
+                        data-key={document._id}
+                      >
                         <TrashFill className="align-text-bottom mr-1" />
+                        Delete
                       </Button>
+                      <ConfirmationDialog
+                        name={document.title}
+                        type="document"
+                        handleCloseModal={handleCloseModal}
+                        show={showModal === document._id}
+                        onClick={(event) => {
+                          event.target.setAttribute('disabled', 'true');
+                          deleteDocumentById(document._id).then(() => {
+                            setDocuments(documents.filter((d) => d._id !== document._id));
+                            setAlerts([...alerts, {
+                              text: 'You have successfully deleted the document.',
+                              variant: 'warning',
+                            }]);
+                          }).catch((err) => {
+                            setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+                          });
+                          handleCloseModal();
+                        }}
+                      />
                     </ButtonGroup>
                   )}
                 </td>

@@ -34,7 +34,22 @@ const getSharedDocumentsByGroup = async (groups) => {
   } return Promise.reject(Error(`Unable to retrieve documents: error ${res.status} received from server`));
 };
 
+const deleteDocumentById = async (id) => {
+  const url = `/api/document/${id}`;
+  const res = await fetch(url, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (res.status === 200) {
+    const result = await res.json();
+    return Promise.resolve(result);
+  } return Promise.reject(Error(`Unable to delete document: error ${res.status} received from server`));
+};
+
 export {
+  deleteDocumentById,
   getDocumentsByUser,
   getSharedDocumentsByGroup,
 };

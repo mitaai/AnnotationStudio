@@ -72,6 +72,9 @@ const DocumentsIndex = ({
               {Array.isArray(documents) && documents.length > 0 && (
                 <DocumentList
                   documents={documents}
+                  setDocuments={setDocuments}
+                  alerts={alerts}
+                  setAlerts={setAlerts}
                   loading={listLoading}
                   userId={session.user.id}
                 />
@@ -84,6 +87,9 @@ const DocumentsIndex = ({
               {Array.isArray(documents) && documents.length > 0 && (
                 <DocumentList
                   documents={documents}
+                  setDocuments={setDocuments}
+                  alerts={alerts}
+                  setAlerts={setAlerts}
                   loading={listLoading}
                   userId={session.user.id}
                 />
