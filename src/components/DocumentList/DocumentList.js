@@ -97,6 +97,7 @@ const DocumentList = ({
                       className="mr-1"
                       as={Button}
                       href={`/groups/${group}`}
+                      key={group}
                     >
                       {groupState[group]}
                     </Badge>
