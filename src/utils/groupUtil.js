@@ -281,6 +281,21 @@ const DeleteInviteToken = async (group) => {
   } return Promise.reject(Error(`Unable to delete token: error ${res.status} received from server`));
 };
 
+const GetGroupNameById = async (id) => {
+  const url = `/api/group/${id}`;
+  const res = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (res.status === 200) {
+    const response = await res.json();
+    const { name } = response;
+    return Promise.resolve(name);
+  } return Promise.reject(Error(`Unable to find group with id ${id}: error ${res.status} received from server`));
+};
+
 export {
   AddGroupToUser,
   AddUserToGroup,
@@ -289,6 +304,7 @@ export {
   DeleteGroupFromId,
   DeleteInviteToken,
   GenerateInviteToken,
+  GetGroupNameById,
   RemoveUserFromGroup,
   RenameGroup,
 };

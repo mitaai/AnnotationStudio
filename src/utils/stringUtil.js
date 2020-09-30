@@ -3,5 +3,7 @@ const StripQuery = (uri) => {
   return (stripped.lastIndexOf('#') !== -1) ? stripped.substring(0, stripped.lastIndexOf('#')) : stripped;
 };
 
+const ucFirst = (str) => str.charAt(0).toUpperCase() + str.slice(1);
+
 // eslint-disable-next-line import/prefer-default-export
-export { StripQuery };
+export { StripQuery, ucFirst };

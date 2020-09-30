@@ -166,6 +166,17 @@ const handler = nc()
             memberToPull = { 'groups.$.members.id': req.body.removedUserId };
           }
         }
+        const updateMethods = {};
+        if (Object.keys(fieldsToSet).length !== 0) updateMethods.$set = fieldsToSet;
+        if (Object.keys(groupFieldsToSet).length !== 0) {
+          updateMethods.$set = { ...updateMethods.$set, groupFieldsToSet };
+        }
+        const fieldsToPush = { ...memberToPush, ...groupToPush };
+        if (Object.keys(fieldsToPush).length !== 0) updateMethods.$push = fieldsToPush;
+        const fieldsToPull = { ...memberToPull, ...groupToPull };
+        if (Object.keys(fieldsToPull).length !== 0) updateMethods.$pull = fieldsToPull;
+        updateMethods.$currentDate = { updatedAt: true };
+
         await req.db
           .collection('documents')
           .findOneAndUpdate(
@@ -174,16 +185,28 @@ const handler = nc()
               owner: token.id,
               ...groupById,
             },
-            {
-              $set: { ...fieldsToSet, ...groupFieldsToSet },
-              $push: { ...memberToPush, ...groupToPush },
-              $pull: { ...memberToPull, ...groupToPull },
-              $currentDate: {
-                updatedAt: true,
-              },
-            },
+            updateMethods,
             {
               returnOriginal: false,
+            },
+            (err, doc) => {
+              if (err) throw err;
+              res.status(200).json(doc);
+            },
+          );
+      } else res.status(403).json({ error: '403 Invalid or expired token' });
+    },
+  )
+  .delete(
+    async (req, res) => {
+      const token = await jwt.getToken({ req, secret });
+      if (token && token.exp > 0) {
+        await req.db
+          .collection('documents')
+          .findOneAndDelete(
+            {
+              _id: ObjectID(req.query.id),
+              owner: token.id,
             },
             (err, doc) => {
               if (err) throw err;

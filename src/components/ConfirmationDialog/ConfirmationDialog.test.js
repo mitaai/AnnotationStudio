@@ -6,11 +6,11 @@ import { render } from '@testing-library/react';
 import ConfirmationDialog from './ConfirmationDialog';
 
 describe('confirmation dialog', () => {
-  test('renders with type = deleteGroup', async () => {
+  test('renders with type = group', async () => {
     const { findByText } = render(<ConfirmationDialog
-      type="deleteGroup"
+      type="group"
       show
-      value={{ name: 'fake group' }}
+      name="fake group"
       onClick={jest.fn()}
       handleCloseModal={jest.fn()}
     />);
