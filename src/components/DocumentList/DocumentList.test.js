@@ -26,7 +26,7 @@ describe('document list', () => {
       alerts={[]}
       setAlerts={jest.fn()}
     />);
-    const submitButton = await findByTestId('documents-table');
-    expect(submitButton).toBeInTheDocument();
+    const documentsTable = await findByTestId('documents-table');
+    expect(documentsTable).toBeInTheDocument();
   });
 });
