@@ -1,6 +1,7 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import { useSession } from 'next-auth/client';
-import { useState, useEffect } from 'react';
+import assert from 'assert';
+import { useState } from 'react';
 import Link from 'next/link';
 import {
   Button, ButtonGroup, Card, Table,
@@ -31,9 +32,20 @@ const GroupList = ({ query, initAlerts }) => {
   if (query.deletedGroupId && groups.some((g) => g.id === query.deletedGroupId)) {
     setGroups(groups.filter((g) => g.id !== query.deletedGroupId));
   }
+  const deepEqual = (a, b) => {
+    try {
+      assert.deepStrictEqual(a, b);
+    } catch (error) {
+      if (error.name === 'AssertionError') {
+        return false;
+      }
+      throw error;
+    }
+    return true;
+  };
 
-  useEffect(() => {
-    if (session) {
+  React.useEffect(() => {
+    if (session && !deepEqual(session.user.groups, groups)) {
       setGroups(session.user.groups);
     }
   }, [session]);
