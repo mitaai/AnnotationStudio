@@ -29,7 +29,7 @@ const DocumentMetadata = ({
     <>
       <Row>
         <Col>
-          <Form.Group controlId="documentAuthors">
+          <Form.Group controlId="documentAuthors" data-testid="authors-fields">
             <Form.Label>Author(s)</Form.Label>
             <FieldArray
               name="authors"
