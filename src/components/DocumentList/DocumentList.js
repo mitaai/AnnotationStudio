@@ -63,7 +63,7 @@ const DocumentList = ({
         <LoadingSpinner />
       )}
       {!loading && (
-        <Table striped bordered>
+        <Table striped bordered data-testid="documents-table">
           <thead>
             <tr>
               <th>

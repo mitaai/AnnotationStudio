@@ -26,8 +26,11 @@ const session = {
 
 // Mock document
 const document = {
+  _id: 'documenttestid',
   title: 'test',
   state: 'draft',
+  authors: [],
+  createdAt: '2881-10-05T14:48:00.000',
   owner: 'testestestest',
   groups: [],
 };
