@@ -20,7 +20,7 @@ const DocumentsIndex = ({
 
   useEffect(() => {
     async function fetchData() {
-      if (session) {
+      if (session && (session.user.groups || session.user.id)) {
         if (key === 'shared') {
           setDocuments(
             await getSharedDocumentsByGroup(session.user.groups)

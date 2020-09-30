@@ -1,6 +1,6 @@
 import nc from 'next-connect';
 import { testLambda } from '../../utils/lambdaTestUtil';
-import postDocument from '../../utils/dbUtil';
+import { postMethod } from '../../pages/api/document';
 import { expectJSONBodyMiddleware } from '../../middlewares/expectJSONBody';
 import {
   RequestInitMethod,
@@ -10,7 +10,7 @@ afterEach(jest.clearAllMocks);
 
 const url = '/api/document';
 const middleware = expectJSONBodyMiddleware;
-const docRoute = nc().post(postDocument);
+const docRoute = nc().post(postMethod);
 
 test('should be a function', () => {
   expect(docRoute).toBeInstanceOf(Function);
