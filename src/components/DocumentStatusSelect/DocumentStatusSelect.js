@@ -18,14 +18,14 @@ import {
 const GreenCheck = () => <Check style={{ color: 'green', fontSize: '1.5rem' }} />;
 const RedX = () => <X style={{ color: 'red', fontSize: '1.5rem' }} />;
 
-const DocumentstateSelect = ({
+const DocumentStatusSelect = ({
   values,
   onChange,
   onBlur,
 }) => (
   <Row>
     <Col>
-      <Form.Group>
+      <Form.Group data-testid="status-select-form">
         <Form.Check
           name="state"
           id="draft"
@@ -169,4 +169,4 @@ const DocumentstateSelect = ({
   </Row>
 );
 
-export default DocumentstateSelect;
+export default DocumentStatusSelect;
