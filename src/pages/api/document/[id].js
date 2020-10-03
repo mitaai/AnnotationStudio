@@ -99,6 +99,7 @@ const handler = nc()
       if (token && token.exp > 0) {
         const {
           title,
+          groups,
           slug,
           resourceType,
           authors,
@@ -123,6 +124,7 @@ const handler = nc()
         } = req.body;
         const fieldsToSet = {
           title,
+          groups,
           slug,
           resourceType,
           authors,
