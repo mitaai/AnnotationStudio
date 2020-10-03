@@ -12,8 +12,8 @@ import LoadingSpinner from '../../../components/LoadingSpinner';
 import ConfirmationDialog from '../../../components/ConfirmationDialog';
 import GroupRoleSummaries from '../../../components/GroupRoleSummaries';
 import GroupRoleBadge from '../../../components/GroupRoleBadge';
-import { DeleteGroup, RemoveUserFromGroup } from '../../../utils/groupUtil';
-import { GetUserByEmail } from '../../../utils/userUtil';
+import { deleteGroup, removeUserFromGroup } from '../../../utils/groupUtil';
+import { getUserByEmail } from '../../../utils/userUtil';
 
 const ViewGroup = ({ group }) => {
   const [session, loading] = useSession();
@@ -66,8 +66,8 @@ const ViewGroup = ({ group }) => {
                   <Button
                     variant="outline-danger"
                     onClick={async () => {
-                      const user = await GetUserByEmail(session.user.email);
-                      RemoveUserFromGroup(group, user).then(() => {
+                      const user = await getUserByEmail(session.user.email);
+                      removeUserFromGroup(group, user).then(() => {
                         Router.push({
                           pathname: '/groups',
                           query: {
@@ -101,7 +101,7 @@ const ViewGroup = ({ group }) => {
                     show={showModal}
                     onClick={(event) => {
                       event.target.setAttribute('disabled', 'true');
-                      DeleteGroup(group).then(() => {
+                      deleteGroup(group).then(() => {
                         Router.push({
                           pathname: '/groups',
                           query: {

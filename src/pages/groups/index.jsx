@@ -15,8 +15,8 @@ import ConfirmationDialog from '../../components/ConfirmationDialog';
 import GroupRoleSummaries from '../../components/GroupRoleSummaries';
 import GroupRoleBadge from '../../components/GroupRoleBadge';
 import { FirstNameLastInitial } from '../../utils/nameUtil';
-import { DeleteGroupFromId, RemoveUserFromGroup } from '../../utils/groupUtil';
-import { GetUserByEmail } from '../../utils/userUtil';
+import { deleteGroupFromId, removeUserFromGroup } from '../../utils/groupUtil';
+import { getUserByEmail } from '../../utils/userUtil';
 
 const GroupList = ({ query, initAlerts }) => {
   const [session, loading] = useSession();
@@ -99,8 +99,8 @@ const GroupList = ({ query, initAlerts }) => {
                           <Button
                             variant="outline-danger"
                             onClick={async () => {
-                              const user = await GetUserByEmail(session.user.email);
-                              RemoveUserFromGroup(group, user).then(() => {
+                              const user = await getUserByEmail(session.user.email);
+                              removeUserFromGroup(group, user).then(() => {
                                 setGroups(groups.filter((g) => g.id !== group.id));
                                 setAlerts([...alerts, {
                                   text: 'You have successfully left the group.',
@@ -133,7 +133,7 @@ const GroupList = ({ query, initAlerts }) => {
                               show={showModal === group.id}
                               onClick={(event) => {
                                 event.target.setAttribute('disabled', 'true');
-                                DeleteGroupFromId(group.id).then(() => {
+                                deleteGroupFromId(group.id).then(() => {
                                   setGroups(groups.filter((g) => g.id !== group.id));
                                   setAlerts([...alerts, {
                                     text: 'You have successfully deleted the group.',

@@ -23,13 +23,13 @@ import ConfirmationDialog from '../../../components/ConfirmationDialog';
 import GroupRoleSummaries from '../../../components/GroupRoleSummaries';
 import GroupRoleBadge from '../../../components/GroupRoleBadge';
 import {
-  AddUserToGroup,
-  ChangeUserRole,
-  DeleteGroup,
-  RemoveUserFromGroup,
-  RenameGroup,
-  GenerateInviteToken,
-  DeleteInviteToken,
+  addUserToGroup,
+  changeUserRole,
+  deleteGroup,
+  removeUserFromGroup,
+  renameGroup,
+  generateInviteToken,
+  deleteInviteToken,
 } from '../../../utils/groupUtil';
 
 
@@ -110,7 +110,7 @@ const EditGroup = ({
                   })}
                   onSubmit={(values, actions) => {
                     setTimeout(() => {
-                      RenameGroup(group, values.groupName).then(() => {
+                      renameGroup(group, values.groupName).then(() => {
                         setAlerts([...alerts, {
                           text: 'Group successfully renamed.',
                           variant: 'success',
@@ -195,7 +195,7 @@ const EditGroup = ({
                                 <Dropdown.Item
                                   disabled={member.role === 'member'}
                                   onClick={() => {
-                                    ChangeUserRole(group, member, 'member').then(() => {
+                                    changeUserRole(group, member, 'member').then(() => {
                                       const newArray = [...state.members];
                                       const newMember = { ...member, role: 'member' };
                                       newArray[idx] = newMember;
@@ -214,7 +214,7 @@ const EditGroup = ({
                                 <Dropdown.Item
                                   disabled={member.role === 'manager'}
                                   onClick={() => {
-                                    ChangeUserRole(group, member, 'manager').then(() => {
+                                    changeUserRole(group, member, 'manager').then(() => {
                                       const newArray = [...state.members];
                                       const newMember = { ...member, role: 'manager' };
                                       newArray[idx] = newMember;
@@ -240,7 +240,7 @@ const EditGroup = ({
                                 variant="outline-danger"
                                 className="btn-sm"
                                 type="button"
-                                onClick={() => RemoveUserFromGroup(group, member).then(() => {
+                                onClick={() => removeUserFromGroup(group, member).then(() => {
                                   const members = state.members.filter((val, i) => i !== idx);
                                   setState({ ...state, members });
                                   setAlerts([...alerts, {
@@ -270,7 +270,7 @@ const EditGroup = ({
                           variant="outline-secondary"
                           onClick={(event) => {
                             event.target.setAttribute('disabled', 'true');
-                            GenerateInviteToken(group).then((data) => {
+                            generateInviteToken(group).then((data) => {
                               const inviteUrl = `${baseUrl}/auth/email-signin?callbackUrl=${baseUrl}&groupToken=${data.value.inviteToken}`;
                               setState({ ...state, inviteUrl });
                               setAlerts([...alerts, {
@@ -299,7 +299,7 @@ const EditGroup = ({
                             size="sm"
                             style={{ padding: 0 }}
                             onClick={() => {
-                              DeleteInviteToken(group).then(() => {
+                              deleteInviteToken(group).then(() => {
                                 setState({ ...state, inviteUrl: '' });
                                 setAlerts([...alerts, {
                                   text: 'Group invite token deleted successfully.',
@@ -368,7 +368,7 @@ const EditGroup = ({
                       })}
                       onSubmit={(values, actions) => {
                         setTimeout(() => {
-                          AddUserToGroup(group, values.email).then((data) => {
+                          addUserToGroup(group, values.email).then((data) => {
                             const { _id, name } = data.value;
                             const { email } = values;
                             const member = {
@@ -453,7 +453,7 @@ const EditGroup = ({
                         show={state.showModal}
                         onClick={(event) => {
                           event.target.setAttribute('disabled', 'true');
-                          DeleteGroup(group).then(() => {
+                          deleteGroup(group).then(() => {
                             router.push({
                               pathname: '/groups',
                               query: {

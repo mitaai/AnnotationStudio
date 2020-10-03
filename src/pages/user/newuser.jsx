@@ -14,7 +14,7 @@ import Router from 'next/router';
 import { FullName } from '../../utils/nameUtil';
 import Layout from '../../components/Layout';
 import LoadingSpinner from '../../components/LoadingSpinner';
-import { AddUserToGroup } from '../../utils/groupUtil';
+import { addUserToGroup } from '../../utils/groupUtil';
 
 const NewUser = ({ groupId }) => {
   const [session] = useSession();
@@ -54,7 +54,7 @@ const NewUser = ({ groupId }) => {
         destroyCookie(null, 'ans_grouptoken', {
           path: '/',
         });
-        AddUserToGroup({ id: groupId }, session.user.email).then(() => {
+        addUserToGroup({ id: groupId }, session.user.email).then(() => {
           pushToHome();
         }).catch((err) => {
           setAlerts([...alerts, { text: err.message, variant: 'danger' }]);

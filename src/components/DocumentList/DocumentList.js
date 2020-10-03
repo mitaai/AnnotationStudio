@@ -14,7 +14,7 @@ import {
 } from 'react-bootstrap-icons';
 import { format } from 'date-fns';
 import LoadingSpinner from '../LoadingSpinner';
-import { GetGroupNameById } from '../../utils/groupUtil';
+import { getGroupNameById } from '../../utils/groupUtil';
 import { deleteDocumentById } from '../../utils/docUtil';
 import ConfirmationDialog from '../ConfirmationDialog';
 import { ucFirst } from '../../utils/stringUtil';
@@ -49,7 +49,7 @@ const DocumentList = ({
       const fetchGroupState = async () => {
         documents.map((document) => document.groups.map(async (group) => {
           if (!groupState[group]) {
-            setGroupState({ ...groupState, [group]: await GetGroupNameById(group) });
+            setGroupState({ ...groupState, [group]: await getGroupNameById(group) });
           }
         }));
       };

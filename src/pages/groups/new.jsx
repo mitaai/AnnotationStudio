@@ -7,7 +7,7 @@ import {
 } from 'react-bootstrap';
 import * as yup from 'yup';
 import Router from 'next/router';
-import { AddGroupToUser } from '../../utils/groupUtil';
+import { addGroupToUser } from '../../utils/groupUtil';
 import Layout from '../../components/Layout';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
@@ -38,7 +38,7 @@ const NewGroup = () => {
       const user = {
         id: result.ops[0].members[0].id,
       };
-      return AddGroupToUser(group, user).then(() => {
+      return addGroupToUser(group, user).then(() => {
         Router.push({
           pathname: `/groups/${group.id}/edit`,
           query: { alert: 'newGroup' },

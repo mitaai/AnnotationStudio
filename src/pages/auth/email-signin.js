@@ -6,7 +6,7 @@ import { Button, Card, Form } from 'react-bootstrap';
 import Router from 'next/router';
 import Layout from '../../components/Layout';
 import LoadingSpinner from '../../components/LoadingSpinner';
-import { AddUserToGroup } from '../../utils/groupUtil';
+import { addUserToGroup } from '../../utils/groupUtil';
 
 const SignIn = ({ props }) => {
   const [session, loading] = useSession();
@@ -45,7 +45,7 @@ const SignIn = ({ props }) => {
             <Button
               className="mt-3"
               onClick={() => {
-                AddUserToGroup({ id: groupId }, session.user.email).then(() => {
+                addUserToGroup({ id: groupId }, session.user.email).then(() => {
                   Router.push({
                     pathname: '/',
                     query: { alert: 'joinedGroup' },

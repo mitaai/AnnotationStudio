@@ -4,7 +4,7 @@ import { Button, Card } from 'react-bootstrap';
 import fetch from 'isomorphic-unfetch';
 import { useSession } from 'next-auth/client';
 import Layout from '../components/Layout';
-import { AddUserToGroup } from '../utils/groupUtil';
+import { addUserToGroup } from '../utils/groupUtil';
 
 export default function Home({
   initAlerts,
@@ -27,7 +27,7 @@ export default function Home({
                 destroyCookie(null, 'ans_grouptoken', {
                   path: '/',
                 });
-                AddUserToGroup({ id: groupId }, session.user.email).then(() => {
+                addUserToGroup({ id: groupId }, session.user.email).then(() => {
                   setAlerts([...alerts, { text: 'Group successfully joined', variant: 'success' }]);
                 }).catch((err) => {
                   setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
