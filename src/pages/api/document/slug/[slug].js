@@ -1,5 +1,6 @@
 import nc from 'next-connect';
 import jwt from 'next-auth/jwt';
+import GetUserByID from '../../../../utils/userUtil';
 import middleware from '../../../../middlewares/middleware';
 
 const secret = process.env.AUTH_SECRET;
@@ -10,12 +11,16 @@ const handler = nc()
     async (req, res) => {
       const token = await jwt.getToken({ req, secret });
       if (token && token.exp > 0) {
+        const userObj = await GetUserByID(token.id);
+        const userGroups = (userObj.groups && userObj.groups.length > 0)
+          ? userObj.groups.map((group) => group.id)
+          : [];
         await req.db
           .collection('documents')
           .findOne(
             {
               slug: req.query.slug,
-              $or: [{ 'groups.members.id': token.id }, { owner: token.id }],
+              $or: [{ groups: { $in: userGroups } }, { owner: token.id }],
             },
             (err, doc) => {
               if (doc) {

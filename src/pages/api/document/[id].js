@@ -12,11 +12,11 @@ const handler = nc()
   .get(
     async (req, res) => {
       const token = await jwt.getToken({ req, secret });
-      const userObj = await GetUserByID(token.id);
-      const userGroups = (userObj.groups && userObj.groups.length > 0)
-        ? userObj.groups.map((group) => group.id)
-        : [];
       if (token && token.exp > 0) {
+        const userObj = await GetUserByID(token.id);
+        const userGroups = (userObj.groups && userObj.groups.length > 0)
+          ? userObj.groups.map((group) => group.id)
+          : [];
         await req.db
           .collection('documents')
           .findOne(
