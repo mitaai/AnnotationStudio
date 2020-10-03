@@ -147,19 +147,18 @@ const handler = nc()
         const updateMethods = {};
         let groupById = {};
 
-        if (req.body.updatedGroup) {
-          groupById = { groups: req.body.updatedGroup.id };
-          const groupToPush = req.body.addedGroup
-            ? { groups: req.body.addedGroup }
-            : {};
-          const groupToPull = req.body.removedGroupId
-            ? { groups: { id: req.body.removedGroupId } }
-            : {};
-          const fieldsToPush = { ...groupToPush };
-          if (Object.keys(fieldsToPush).length !== 0) updateMethods.$push = fieldsToPush;
+        if (req.body.removedGroupId) {
+          groupById = { groups: req.body.removedGroupId };
+          const groupToPull = { groups: { id: req.body.removedGroupId } };
           const fieldsToPull = { ...groupToPull };
           if (Object.keys(fieldsToPull).length !== 0) updateMethods.$pull = fieldsToPull;
         }
+
+        const groupToPush = req.body.addedGroup
+          ? { groups: req.body.addedGroup }
+          : {};
+        const fieldsToPush = { ...groupToPush };
+        if (Object.keys(fieldsToPush).length !== 0) updateMethods.$push = fieldsToPush;
 
         if (Object.keys(fieldsToSet).length !== 0) updateMethods.$set = fieldsToSet;
         updateMethods.$currentDate = { updatedAt: true };
