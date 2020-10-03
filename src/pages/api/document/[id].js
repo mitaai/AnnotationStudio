@@ -11,12 +11,18 @@ const handler = nc()
     async (req, res) => {
       const token = await jwt.getToken({ req, secret });
       if (token && token.exp > 0) {
+        const userObj = await req.db
+          .collection('users')
+          .findOne({ _id: ObjectID(token.id) });
+        const userGroups = (userObj.groups && userObj.groups.length > 0)
+          ? userObj.groups.map((group) => group.id)
+          : [];
         await req.db
           .collection('documents')
           .findOne(
             {
               _id: ObjectID(req.query.id),
-              $or: [{ 'groups.members.id': token.id }, { owner: token.id }],
+              $or: [{ groups: { $in: userGroups } }, { owner: token.id }],
             },
             (err, doc) => {
               if (doc) {
@@ -93,6 +99,7 @@ const handler = nc()
       if (token && token.exp > 0) {
         const {
           title,
+          groups,
           slug,
           resourceType,
           authors,
@@ -117,6 +124,7 @@ const handler = nc()
         } = req.body;
         const fieldsToSet = {
           title,
+          groups,
           slug,
           resourceType,
           authors,
@@ -144,37 +152,23 @@ const handler = nc()
             delete fieldsToSet[key];
           }
         });
+        const updateMethods = {};
+        let groupById = {};
+
+        if (req.body.removedGroupId) {
+          groupById = { groups: req.body.removedGroupId };
+          const groupToPull = { groups: req.body.removedGroupId };
+          const fieldsToPull = { ...groupToPull };
+          if (Object.keys(fieldsToPull).length !== 0) updateMethods.$pull = fieldsToPull;
+        }
+
         const groupToPush = req.body.addedGroup
           ? { groups: req.body.addedGroup }
           : {};
-        const groupToPull = req.body.removedGroupId
-          ? { groups: { id: req.body.removedGroupId } }
-          : {};
-        let groupById = {};
-        let groupFieldsToSet = {};
-        let memberToPush = {};
-        let memberToPull = {};
-        if (req.body.updatedGroup) {
-          groupById = { 'groups.id': req.body.updatedGroup.id };
-          if (req.body.updatedGroup.name) {
-            groupFieldsToSet = { 'groups.$.name': req.body.updatedGroup.name };
-          }
-          if (req.body.addedUser) {
-            memberToPush = { 'groups.$.members': req.body.addedUser };
-          }
-          if (req.body.removedUserId) {
-            memberToPull = { 'groups.$.members.id': req.body.removedUserId };
-          }
-        }
-        const updateMethods = {};
-        if (Object.keys(fieldsToSet).length !== 0) updateMethods.$set = fieldsToSet;
-        if (Object.keys(groupFieldsToSet).length !== 0) {
-          updateMethods.$set = { ...updateMethods.$set, groupFieldsToSet };
-        }
-        const fieldsToPush = { ...memberToPush, ...groupToPush };
+        const fieldsToPush = { ...groupToPush };
         if (Object.keys(fieldsToPush).length !== 0) updateMethods.$push = fieldsToPush;
-        const fieldsToPull = { ...memberToPull, ...groupToPull };
-        if (Object.keys(fieldsToPull).length !== 0) updateMethods.$pull = fieldsToPull;
+
+        if (Object.keys(fieldsToSet).length !== 0) updateMethods.$set = fieldsToSet;
         updateMethods.$currentDate = { updatedAt: true };
 
         await req.db

@@ -96,23 +96,24 @@ const DocumentList = ({
                   </Link>
                 </td>
                 <td>
-                  {document.authors.join(', ')}
+                  {document.authors ? document.authors.join(', ') : (<Badge>[no author]</Badge>)}
                 </td>
                 <td>
                   {format(new Date(document.createdAt), 'MM/dd/yyyy')}
                 </td>
                 <td>
-                  {document.groups.sort().map((group) => (
-                    <Badge
-                      variant="info"
-                      className="mr-1"
-                      as={Button}
-                      href={`/groups/${group}`}
-                      key={group}
-                    >
-                      {groupState[group]}
-                    </Badge>
-                  ))}
+                  {(document.groups && document.groups.length > 0)
+                    ? document.groups.sort().map((group) => (
+                      <Badge
+                        variant="info"
+                        className="mr-1"
+                        as={Button}
+                        href={`/groups/${group}`}
+                        key={group}
+                      >
+                        {groupState[group]}
+                      </Badge>
+                    )) : (<Badge>[no groups]</Badge>)}
                 </td>
                 <td>
                   {getStateIcon(document.state)}
