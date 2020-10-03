@@ -149,7 +149,7 @@ const handler = nc()
 
         if (req.body.removedGroupId) {
           groupById = { groups: req.body.removedGroupId };
-          const groupToPull = { groups: { id: req.body.removedGroupId } };
+          const groupToPull = { groups: req.body.removedGroupId };
           const fieldsToPull = { ...groupToPull };
           if (Object.keys(fieldsToPull).length !== 0) updateMethods.$pull = fieldsToPull;
         }
