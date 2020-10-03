@@ -1,4 +1,6 @@
+/* eslint-disable no-underscore-dangle */
 import fetch from 'unfetch';
+import { getAllDocumentsByGroup } from './docUtil';
 import { GetUserByEmail } from './userUtil';
 
 const UpdateMemberCounts = async (group) => {
@@ -134,6 +136,31 @@ const RemoveUserFromGroup = async (group, user) => {
   } return Promise.reject(Error(`Unable to remove user from group: error ${res.status} received from server`));
 };
 
+const RemoveGroupFromDocuments = async (group) => {
+  const documents = await getAllDocumentsByGroup([group]);
+  return (Array.isArray(documents) && documents.length > 0)
+    ? Promise.all(
+      documents.map(async (document) => {
+        const url = `/api/document/${document._id}`;
+        const body = {
+          removedGroupId: group.id,
+        };
+        const res = await fetch(url, {
+          method: 'PATCH',
+          body: JSON.stringify(body),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        if (res.status === 200) {
+          const result = await res.json();
+          return Promise.resolve(result);
+        } return Promise.reject(Error(`Unable to remove group from documents: error ${res.status} receievd from server`));
+      }),
+    )
+    : Promise.resolve([]);
+};
+
 const DeleteGroup = async (group) => {
   const { members } = group;
   const url = `/api/group/${group.id}`;
@@ -144,9 +171,11 @@ const DeleteGroup = async (group) => {
     },
   });
   if (res.status === 200) {
-    return Promise.all(
-      members.map(async (member) => RemoveGroupFromUser(group, member, true)),
-    );
+    return RemoveGroupFromDocuments(group)
+      .then(Promise.all(
+        members.map(async (member) => RemoveGroupFromUser(group, member, true)),
+      ))
+      .catch((err) => Promise.reject(Error(err.message)));
   } return Promise.reject(Error(`Unable to delete group: error ${res.status} received from server`));
 };
 
