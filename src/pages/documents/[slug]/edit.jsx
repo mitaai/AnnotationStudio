@@ -7,10 +7,10 @@ import LoadingSpinner from '../../../components/LoadingSpinner';
 import DocumentForm from '../../../components/DocumentForm';
 
 const EditDocument = (props) => {
-  const { document } = props;
+  const { document, alerts } = props;
   const [session] = useSession();
   return (
-    <Layout>
+    <Layout alerts={alerts}>
       <Col lg="12" className="mx-auto">
         <Card>
           {!session && (
@@ -58,7 +58,9 @@ export async function getServerSideProps(context) {
     };
   }
   return {
-    props: { },
+    props: {
+      alerts: [{ text: `Received error code ${res.status} from server.`, variant: 'danger' }],
+    },
   };
 }
 
