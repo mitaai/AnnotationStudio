@@ -206,7 +206,7 @@ export default class Document extends React.Component {
       <>
         <div id="document-content-container" ref={this.myRef}>
           <span>hello</span>
-          <span>{this.props.htmltext}</span>
+          <span>{this.props.children}</span>
         </div>
         <Overlay id="annotate-document-overlay" target={this.state.target} show={this.state.show} placement="top">
           {(props) => (

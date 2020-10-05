@@ -1,8 +1,8 @@
 
+import { useState } from 'react';
 import { useRouter } from 'next/router';
 import $ from 'jquery';
 import {
-  Container,
   Row,
   Col,
   Card,
@@ -13,7 +13,9 @@ import {
   createTextQuoteSelector,
   highlightRange,
 } from 'apache-annotator/dom';
-import Layout from '../../components/Layout';
+import Layout2 from '../../components/Layout2';
+
+import AnnotationChannel from '../../components/AnnotationChannel';
 
 import Document from '../../components/Document';
 
@@ -23,64 +25,29 @@ export default function DocumentPage() {
   const { slug } = router.query;
   console.log(slug);
 
+  const [channel1Annotations, setChannel1Annotations] = useState([]);
+  const [channel2Annotations, setChannel2Annotations] = useState([]);
   return (
     <>
-      <Layout>
-        <Container>
-          <Row id="document-container">
-            <Col sm={8}>
-              <Card id="document-card-container">
-                <Card.Body>
-                  <Document annotateDocument={(mySelector) => { HighlightTextToAnnotate(mySelector); }} htmltext="is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum. is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum. is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum." />
-                </Card.Body>
-              </Card>
-            </Col>
-            <Col sm={4}>
-              <Card id="annotation-well-card-container">
-                <Card.Body>
-                  <Row id="annotation-well-header">
-                    <Col>
-                      <ButtonGroup size="sm">
-                        <Button variant="secondary">Mine</Button>
-                        <Button variant="light">Groups</Button>
-                      </ButtonGroup>
-                      <ButtonGroup size="sm">
-                        <Button variant="secondary">Whole Text</Button>
-                        <Button variant="light">Visible Text</Button>
-                      </ButtonGroup>
-                    </Col>
-                  </Row>
-                  <Row id="annotation-list-container">
-                    <Col>
-                      <Row>
-                        <Col>
-                          <Card>
-                            <Card.Body>This is some text within a card body.</Card.Body>
-                          </Card>
-                        </Col>
-                      </Row>
-                      <Row>
-                        <Col>
-                          <Card>
-                            <Card.Body>This is some text within a card body.</Card.Body>
-                          </Card>
-                        </Col>
-                      </Row>
-                      <Row>
-                        <Col>
-                          <Card>
-                            <Card.Body>This is some text within a card body.</Card.Body>
-                          </Card>
-                        </Col>
-                      </Row>
-                    </Col>
-                  </Row>
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
-        </Container>
-      </Layout>
+      <Layout2>
+        <Row id="document-container">
+          <Col sm={3}>
+            <AnnotationChannel side="left" />
+          </Col>
+          <Col sm={6}>
+            <Card id="document-card-container">
+              <Card.Body>
+                <Document annotateDocument={(mySelector) => { HighlightTextToAnnotate(mySelector); }}>
+                  is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard <strong>dummy</strong> text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum. is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum. is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+                </Document>
+              </Card.Body>
+            </Card>
+          </Col>
+          <Col sm={3}>
+            <AnnotationChannel side="right" />
+          </Col>
+        </Row>
+      </Layout2>
       <style jsx global>
         {`
           #annotations-header-label {
