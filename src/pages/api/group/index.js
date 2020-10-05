@@ -1,13 +1,12 @@
-import nc from 'next-connect';
 import jwt from 'next-auth/jwt';
-import middleware from '../../../middlewares/middleware';
+import { connectToDatabase } from '../../../utils/dbUtil';
 
 const secret = process.env.AUTH_SECRET;
 
-const handler = nc()
-  .use(middleware)
-  .post(
-    async (req, res) => {
+const handler = async (req, res) => {
+  const { method } = req;
+  if (method === 'POST') {
+    if (req.body.name) {
       const token = await jwt.getToken({ req, secret });
       if (token && token.exp > 0) {
         const createdAt = new Date(Date.now());
@@ -20,19 +19,18 @@ const handler = nc()
           role: 'owner',
         }];
         const documents = [{}];
-        await req.db
+        const { db } = await connectToDatabase();
+        const doc = await db
           .collection('groups')
           .insertOne(
             {
               name, members, documents, createdAt, updatedAt,
             },
-            (err, doc) => {
-              if (err) throw err;
-              res.status(200).json(doc);
-            },
           );
-      } else res.status(403).json({ error: '403 Invalid or expired token' });
-    },
-  );
+        res.status(200).json(doc);
+      } else res.status(403).end('Invalid or expired token');
+    } else res.status(400).end('Invalid request body');
+  } else res.status(405).end(`Method ${method} Not Allowed`);
+};
 
 export default handler;
