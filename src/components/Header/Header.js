@@ -13,7 +13,7 @@ function getEditProfileUrl(email) {
 }
 
 function Header({ type }) {
-  const [session] = useSession();
+  const [session, loading] = useSession();
   const router = useRouter();
   return (
     <header sticky="top">
@@ -30,7 +30,10 @@ function Header({ type }) {
                 Help
                 <BoxArrowUpRight className="align-text-bottom ml-1" />
               </Nav.Link>
-              {!session && (
+              {loading && (
+                <Nav.Link disabled>Loading...</Nav.Link>
+              )}
+              {!session && !loading && (
                 <Nav.Link href="/api/auth/signin" data-testid="nav-login-link" disabled={type === 'signin'}>
                   Log In
                   <BoxArrowInRight className="align-text-bottom ml-1" />
