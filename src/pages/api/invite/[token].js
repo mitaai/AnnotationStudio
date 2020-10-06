@@ -31,7 +31,7 @@ const handler = async (req, res) => {
           },
         );
       res.status(200).json(doc);
-    } else res.status(403).end('403 Invalid or expired token');
+    } else res.status(403).end('Invalid or expired token');
   } else res.status(405).end(`Method ${method} Not Allowed`);
 };
 

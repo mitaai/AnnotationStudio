@@ -83,8 +83,8 @@ const handler = async (req, res) => {
           sesiesNumber,
           notes,
         });
-      } else res.status(404).end('404 Not Found');
-    } else res.status(403).end('403 Invalid or expired token');
+      } else res.status(404).end('Not Found');
+    } else res.status(403).end('Invalid or expired token');
   } else res.status(405).end(`Method ${method} Not Allowed`);
 };
 
