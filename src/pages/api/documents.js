@@ -26,8 +26,7 @@ const handler = async (req, res) => {
             .find(condition)
             .toArray();
         }
-        if (arr.length > 0) res.status(200).json({ documents: arr });
-        else res.status(404).end('File Not Found');
+        res.status(200).json({ documents: arr });
       } else res.status(400).end('Bad request');
     } else res.status(403).end('Invalid or expired token');
   } else res.status(405).end(`Method ${method} Not Allowed`);
