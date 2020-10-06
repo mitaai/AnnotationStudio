@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
@@ -37,7 +38,7 @@ const DashboardDocumentList = ({
       }
     }
     fetchData();
-  }, [session, key]);
+  }, [key]);
 
 
   useEffect(() => {
@@ -74,7 +75,7 @@ const DashboardDocumentList = ({
       <ListGroup>
         {documents.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map(
           (document) => (
-            <ListGroup.Item>
+            <ListGroup.Item key={document.slug}>
               <Row>
                 <Col>
                   <Link href={`/documents/${document.slug}`}>{document.title}</Link>
@@ -97,7 +98,7 @@ const DashboardDocumentList = ({
             </ListGroup.Item>
           ),
         )}
-        <ListGroup.Item style={{ fontWeight: 'bold' }}>
+        <ListGroup.Item style={{ fontWeight: 'bold' }} key="all-docs">
           <Link href={`/documents?tab=${key}`}>
             {`See all ${key === 'shared' ? key : 'created'} documents...`}
           </Link>

@@ -29,7 +29,7 @@ const DashboardGroupList = ({
         {groups && groups.length > 0
           && groups.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map(
             (group) => (
-              <ListGroup.Item>
+              <ListGroup.Item key={group.id}>
                 <Row>
                   <Col>
                     <Link href={`/groups/${group.id}`}>
@@ -43,7 +43,7 @@ const DashboardGroupList = ({
               </ListGroup.Item>
             ),
           )}
-        <ListGroup.Item style={{ fontWeight: 'bold' }}>
+        <ListGroup.Item style={{ fontWeight: 'bold' }} key="all-groups">
           <Link href="/groups">
             See all groups...
           </Link>
