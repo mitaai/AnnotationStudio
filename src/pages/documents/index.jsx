@@ -40,7 +40,7 @@ const DocumentsIndex = ({
   }, [session, key]);
 
   return (
-    <Layout alerts={alerts}>
+    <Layout alerts={alerts} type="document">
       {loading && !session && (
       <Card>
         <Card.Header>

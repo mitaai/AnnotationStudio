@@ -84,7 +84,7 @@ const EditProfile = ({ user }) => {
   });
 
   return (
-    <Layout alerts={alerts}>
+    <Layout alerts={alerts} type="profile">
       <Col lg="8" className="mx-auto">
         <Card>
           {!session && loading && (

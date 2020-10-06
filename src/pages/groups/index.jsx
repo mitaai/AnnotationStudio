@@ -40,7 +40,7 @@ const GroupList = ({ query, initAlerts }) => {
   }, [session]);
 
   return (
-    <Layout alerts={alerts}>
+    <Layout alerts={alerts} type="group">
       <Card>
         {!session && loading && (
           <LoadingSpinner />

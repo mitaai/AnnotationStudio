@@ -75,7 +75,7 @@ const NewUser = ({ groupId }) => {
   });
 
   return (
-    <Layout alerts={alerts}>
+    <Layout alerts={alerts} type="newuser">
       <Col lg="8" className="mx-auto">
         <Card>
           {!session && (

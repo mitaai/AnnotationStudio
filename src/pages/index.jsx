@@ -19,7 +19,7 @@ export default function Home({
   const [alerts, setAlerts] = useState(initAlerts || []);
 
   return (
-    <Layout alerts={alerts}>
+    <Layout alerts={alerts} type="dashboard">
       {loading && (
         <Card>
           <Card.Body>

@@ -53,7 +53,7 @@ const NewGroup = () => {
   });
 
   return (
-    <Layout alerts={alerts}>
+    <Layout alerts={alerts} type="group" title="New Group">
       <Col lg="8" className="mx-auto">
         <Card>
           {!session && (
