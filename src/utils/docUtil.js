@@ -1,8 +1,8 @@
 import fetch from 'unfetch';
 
-const getDocumentsByUser = async (id) => {
+const getDocumentsByUser = async (id, limit) => {
   const url = '/api/documents';
-  const body = { userId: id };
+  const body = { userId: id, limit };
   const res = await fetch(url, {
     method: 'POST',
     body: JSON.stringify(body),
@@ -36,9 +36,9 @@ const getAllDocumentsByGroup = async (groups) => {
   } return Promise.reject(Error(`Unable to retrieve documents: error ${res.status} received from server`));
 };
 
-const getSharedDocumentsByGroup = async (groups) => {
+const getSharedDocumentsByGroup = async (groups, limit) => {
   const url = '/api/documents';
-  const body = { groupIds: groups.map((group) => group.id) };
+  const body = { groupIds: groups.map((group) => group.id), limit };
   const res = await fetch(url, {
     method: 'POST',
     body: JSON.stringify(body),

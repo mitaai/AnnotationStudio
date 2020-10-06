@@ -1,10 +1,15 @@
 import { useState } from 'react';
 import { parseCookies, destroyCookie } from 'nookies';
-import { Button, Card } from 'react-bootstrap';
+import {
+  Button, Card, Col, Row,
+} from 'react-bootstrap';
 import fetch from 'isomorphic-unfetch';
 import { useSession } from 'next-auth/client';
 import Layout from '../components/Layout';
 import { addUserToGroup } from '../utils/groupUtil';
+import LoadingSpinner from '../components/LoadingSpinner';
+import DashboardDocumentList from '../components/Dashboard/DashboardDocumentList';
+import DashboardGroupList from '../components/Dashboard/DashboardGroupList';
 
 export default function Home({
   initAlerts,
@@ -15,6 +20,35 @@ export default function Home({
 
   return (
     <Layout alerts={alerts}>
+      {loading && (
+        <Card>
+          <Card.Body>
+            <LoadingSpinner />
+          </Card.Body>
+        </Card>
+      )}
+      {!session && !loading && (
+      <Card>
+        <Card.Header><Card.Title>Welcome to Annotation Studio</Card.Title></Card.Header>
+        <Card.Body>Welcome to Annotation Studio. Please log in to use the application.</Card.Body>
+      </Card>
+      )}
+      {session && !loading && (
+        <Row>
+          <Col>
+            <DashboardDocumentList
+              session={session}
+              alerts={alerts}
+              setAlerts={setAlerts}
+            />
+          </Col>
+          <Col>
+            <DashboardGroupList
+              session={session}
+            />
+          </Col>
+        </Row>
+      )}
       {session && !loading && groupId && groupId !== '' && (
         <Card style={{ width: '33%', marginLeft: '33%' }} className="text-center">
           <Card.Header>Join Group</Card.Header>
@@ -39,8 +73,6 @@ export default function Home({
           </Card.Body>
         </Card>
       )}
-      {' '}
-      Welcome to Annotation Studio.
     </Layout>
   );
 }

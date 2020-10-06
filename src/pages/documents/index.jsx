@@ -68,37 +68,24 @@ const DocumentsIndex = ({
             activeKey={key}
             onSelect={(k) => setKey(k)}
           >
-            <Tab eventKey="shared" title="Shared">
-              {Array.isArray(documents) && documents.length > 0 && (
-                <DocumentList
-                  documents={documents}
-                  setDocuments={setDocuments}
-                  alerts={alerts}
-                  setAlerts={setAlerts}
-                  loading={listLoading}
-                  userId={session.user.id}
-                />
-              )}
-              {(!Array.isArray(documents) || documents.length === 0) && (
-                <Container fluid className="p-3 mb-3 border">You have no shared documents.</Container>
-              )}
-            </Tab>
-            <Tab eventKey="mine" title="Mine">
-              {Array.isArray(documents) && documents.length > 0 && (
-                <DocumentList
-                  documents={documents}
-                  setDocuments={setDocuments}
-                  alerts={alerts}
-                  setAlerts={setAlerts}
-                  loading={listLoading}
-                  userId={session.user.id}
-                />
-              )}
-              {(!Array.isArray(documents) || documents.length === 0) && (
-                <Container fluid className="p-3 mb-3 border">You have no created documents.</Container>
-              )}
-            </Tab>
+            <Tab eventKey="shared" title="Shared" />
+            <Tab eventKey="mine" title="Mine" />
           </Tabs>
+          {Array.isArray(documents) && documents.length > 0 && (
+            <DocumentList
+              documents={documents}
+              setDocuments={setDocuments}
+              alerts={alerts}
+              setAlerts={setAlerts}
+              loading={listLoading}
+              userId={session.user.id}
+            />
+          )}
+          {(!Array.isArray(documents) || documents.length === 0) && (
+            <Container fluid className="p-3 mb-3 border">
+              {`You have no ${key === 'shared' ? key : 'created'} documents.`}
+            </Container>
+          )}
           <Button href="/documents/new">
             Create New Document
           </Button>

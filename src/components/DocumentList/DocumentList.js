@@ -87,44 +87,46 @@ const DocumentList = ({
             </tr>
           </thead>
           <tbody>
-            {documents.map((document) => (
+            {documents
+              .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+              .map((document) => (
               // eslint-disable-next-line no-underscore-dangle
-              <tr key={document._id}>
-                <td>
-                  <Link href={`documents/${document.slug}`}>
-                    {document.title}
-                  </Link>
-                </td>
-                <td>
-                  {document.authors ? document.authors.join(', ') : (<Badge>[no author]</Badge>)}
-                </td>
-                <td>
-                  {format(new Date(document.createdAt), 'MM/dd/yyyy')}
-                </td>
-                <td>
-                  {(document.groups && document.groups.length > 0)
-                    ? document.groups.sort().map((group) => (
-                      <Badge
-                        variant="info"
-                        className="mr-1"
-                        as={Button}
-                        href={`/groups/${group}`}
-                        key={group}
-                      >
-                        {groupState[group]}
-                      </Badge>
-                    )) : (<Badge>[no groups]</Badge>)}
-                </td>
-                <td>
-                  {getStateIcon(document.state)}
-                  {document.state && (
+                <tr key={document._id}>
+                  <td>
+                    <Link href={`documents/${document.slug}`}>
+                      {document.title}
+                    </Link>
+                  </td>
+                  <td>
+                    {document.authors ? document.authors.join(', ') : (<Badge>[no author]</Badge>)}
+                  </td>
+                  <td>
+                    {format(new Date(document.createdAt), 'MM/dd/yyyy')}
+                  </td>
+                  <td>
+                    {(document.groups && document.groups.length > 0)
+                      ? document.groups.sort().map((group) => (
+                        <Badge
+                          variant="info"
+                          className="mr-1"
+                          as={Button}
+                          href={`/groups/${group}`}
+                          key={group}
+                        >
+                          {groupState[group]}
+                        </Badge>
+                      )) : (<Badge>[no groups]</Badge>)}
+                  </td>
+                  <td>
+                    {getStateIcon(document.state)}
+                    {document.state && (
                     <Badge>
                       {ucFirst(document.state)}
                     </Badge>
-                  )}
-                </td>
-                <td>
-                  {document.owner === userId && (
+                    )}
+                  </td>
+                  <td>
+                    {document.owner === userId && (
                     <ButtonGroup>
                       <Button variant="outline-primary" href={`documents/${document.slug}/edit`}>
                         <PencilSquare className="align-text-bottom mr-1" />
@@ -161,10 +163,10 @@ const DocumentList = ({
                         }}
                       />
                     </ButtonGroup>
-                  )}
-                </td>
-              </tr>
-            ))}
+                    )}
+                  </td>
+                </tr>
+              ))}
           </tbody>
         </Table>
       )}
