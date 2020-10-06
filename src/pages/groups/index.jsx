@@ -1,6 +1,5 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import { useSession } from 'next-auth/client';
-import assert from 'assert';
 import { useState } from 'react';
 import Link from 'next/link';
 import {
@@ -17,6 +16,7 @@ import GroupRoleBadge from '../../components/GroupRoleBadge';
 import { FirstNameLastInitial } from '../../utils/nameUtil';
 import { deleteGroupFromId, removeUserFromGroup } from '../../utils/groupUtil';
 import { getUserByEmail } from '../../utils/userUtil';
+import { deepEqual } from '../../utils/objectUtil';
 
 const GroupList = ({ query, initAlerts }) => {
   const [session, loading] = useSession();
@@ -32,17 +32,6 @@ const GroupList = ({ query, initAlerts }) => {
   if (query.deletedGroupId && groups.some((g) => g.id === query.deletedGroupId)) {
     setGroups(groups.filter((g) => g.id !== query.deletedGroupId));
   }
-  const deepEqual = (a, b) => {
-    try {
-      assert.deepStrictEqual(a, b);
-    } catch (error) {
-      if (error.name === 'AssertionError') {
-        return false;
-      }
-      throw error;
-    }
-    return true;
-  };
 
   React.useEffect(() => {
     if (session && !deepEqual(session.user.groups, groups)) {
