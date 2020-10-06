@@ -1,53 +1,38 @@
-import nc from 'next-connect';
-import { testLambda } from '../../utils/lambdaTestUtil';
-import { postMethod } from '../../pages/api/document';
-import { expectJSONBodyMiddleware } from '../../middlewares/expectJSONBody';
-import {
-  RequestInitMethod,
-} from '../../utils/requestMethods';
+import handler from '../../pages/api/document';
+import { createMocks } from 'node-mocks-http';
 
 afterEach(jest.clearAllMocks);
 
-const url = '/api/document';
-const middleware = expectJSONBodyMiddleware;
-const docRoute = nc().post(postMethod);
-
-test('should be a function', () => {
-  expect(docRoute).toBeInstanceOf(Function);
-});
-
-test('results in 404 on get', async () => {
-  const method: RequestInitMethod = 'get';
-  const response = await testLambda(docRoute, {
-    method,
-    middleware,
-    url,
+describe('/api/document', () => {
+  
+  test('handler should be a function', () => {
+    expect(handler).toBeInstanceOf(Function);
   });
 
-  expect(response.status).toBe(404);
-});
-
-test('results in 400 on empty post', async () => {
-  const method: RequestInitMethod = 'post';
-  const response = await testLambda(docRoute, {
-    method,
-    middleware,
-    url,
+  test('results in 405 on GET', async () => {
+    const { req, res } = createMocks({
+      method: 'GET',
+    });
+    await handler(req, res);
+    expect(res._getStatusCode()).toBe(405);
   });
 
-  expect(response.status).toBe(400);
-});
-
-test('results in 400 on post with missing title', async () => {
-  const method: RequestInitMethod = 'post';
-  const response = await testLambda(docRoute, {
-    method,
-    middleware,
-    url,
-    body: {
-      'notes':'test',
-    },
+  test('results in 400 on empty post', async () => {
+    const { req, res } = createMocks({
+      method: 'POST',
+    });
+    await handler(req, res);
+    expect(res._getStatusCode()).toBe(400);
   });
 
-  expect(response.status).toBe(400);
+  test('results in 400 on post with missing title', async () => {
+    const { req, res } = createMocks({
+      method: 'POST',
+      body: {
+        'notes':'test',
+      },
+    });
+    await handler(req, res);
+    expect(res._getStatusCode()).toBe(400);
+  });
 });
