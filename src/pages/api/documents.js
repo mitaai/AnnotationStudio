@@ -13,10 +13,19 @@ const handler = async (req, res) => {
         const condition = req.body.userId
           ? { owner: req.body.userId }
           : { groups: { $in: req.body.groupIds } };
-        const arr = await db
-          .collection('documents')
-          .find(condition)
-          .toArray();
+        let arr;
+        if (req.body.limit) {
+          arr = await db
+            .collection('documents')
+            .find(condition)
+            .limit(req.body.limit)
+            .toArray();
+        } else {
+          arr = await db
+            .collection('documents')
+            .find(condition)
+            .toArray();
+        }
         if (arr.length > 0) res.status(200).json({ documents: arr });
         else res.status(404).end('File Not Found');
       } else res.status(400).end('Bad request');
