@@ -14,8 +14,7 @@
     "test": "jest --watch",
     "test:ci": "jest --ci",
     "lint": "eslint --fix ./src/**/*.js ./src/**/*.jsx",
-    "lint-latest": "LIST=`git diff-index --name-only --diff-filter=d HEAD | grep .*\\.js | grep -v json`; if [ \"$LIST\" ]; then eslint --fix $LIST; fi",
-    "seed": "seed -u --db-name ${DBNAME=as4} --replace-id ./src/seeds"
+    "lint-latest": "LIST=`git diff-index --name-only --diff-filter=d HEAD | grep .*\\.js | grep -v json`; if [ \"$LIST\" ]; then eslint --fix $LIST; fi"
   },
   "dependencies": {
     "@sindresorhus/slugify": "^1.1.0",
@@ -28,8 +27,6 @@
     "isomorphic-unfetch": "^3.0.0",
     "jquery": "^3.5.1",
     "moment": "^2.27.0",
-    "mongo-seeding": "^3.4.1",
-    "mongo-seeding-cli": "^3.4.1",
     "mongodb": "^3.6.0",
     "next": "^9.5.3",
     "next-auth": "^3.1.0",
