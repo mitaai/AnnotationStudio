@@ -38,7 +38,7 @@ const DashboardDocumentList = ({
       }
     }
     fetchData();
-  }, [session, key]);
+  }, [key]);
 
 
   useEffect(() => {
