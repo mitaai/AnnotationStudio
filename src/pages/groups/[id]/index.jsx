@@ -26,7 +26,7 @@ const ViewGroup = ({ group }) => {
   const roleInGroup = (currentSession) => currentSession.user.groups.find((o) => Object.entries(o).some(([k, value]) => k === 'id' && value === group.id)).role;
 
   return (
-    <Layout>
+    <Layout alerts={alerts} type="group" title={group.name}>
       <Card>
         {!session && loading && (
           <LoadingSpinner />

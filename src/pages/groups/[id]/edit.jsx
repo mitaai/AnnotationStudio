@@ -77,7 +77,7 @@ const EditGroup = ({
   };
 
   return (
-    <Layout alerts={alerts}>
+    <Layout alerts={alerts} type="group" title={`Manage Group: ${group.name}`}>
       <Card>
         {!session && loading && (
           <LoadingSpinner />

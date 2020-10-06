@@ -9,7 +9,7 @@ import DocumentForm from '../../components/DocumentForm';
 const NewDocument = () => {
   const [session] = useSession();
   return (
-    <Layout>
+    <Layout type="document" title="New Document">
       <Col lg="12" className="mx-auto">
         <Card>
           {!session && (

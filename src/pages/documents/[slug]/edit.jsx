@@ -10,7 +10,7 @@ const EditDocument = (props) => {
   const { document, alerts } = props;
   const [session] = useSession();
   return (
-    <Layout alerts={alerts}>
+    <Layout alerts={alerts} type="document" title={`Edit Document: ${document.title}`}>
       <Col lg="12" className="mx-auto">
         <Card>
           {!session && (

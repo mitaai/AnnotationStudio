@@ -17,7 +17,7 @@ export default function DocumentPage() {
 
   return (
     <>
-      <Layout>
+      <Layout type="document" title="Document Title" docView>
         <Container>
           <Row id="document-container">
             <Col sm={8}>

@@ -12,7 +12,10 @@ function getEditProfileUrl(email) {
   return editUrl;
 }
 
-function Header({ type }) {
+function Header({
+  type,
+  title,
+}) {
   const [session, loading] = useSession();
   const router = useRouter();
   return (
@@ -61,12 +64,8 @@ function Header({ type }) {
           </Navbar.Collapse>
         </Container>
       </Navbar>
-      {session && (
-      <>
-        {session.user.name && (
-        <SecondNavbar />
-        )}
-      </>
+      {session && !loading && (
+        <SecondNavbar type={type} title={title} />
       )}
     </header>
   );
