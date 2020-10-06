@@ -6,3 +6,6 @@
 // learn more: https://github.com/testing-library/jest-dom
 
 import '@testing-library/jest-dom/extend-expect';
+
+process.env.MONGODB_URI = process.env.MONGO_URL;
+process.env.DB_NAME = 'jest';
