@@ -3,7 +3,9 @@ import { useSession } from 'next-auth/client';
 import { useRouter } from 'next/router';
 import Container from 'react-bootstrap/Container';
 import { Nav, Navbar, NavDropdown } from 'react-bootstrap';
-import { BoxArrowUpRight, BoxArrowInRight, BoxArrowRight } from 'react-bootstrap-icons';
+import {
+  BoxArrowUpRight, BoxArrowInRight, BoxArrowRight, GearWideConnected,
+} from 'react-bootstrap-icons';
 import SecondNavbar from '../SecondNavbar';
 
 function getEditProfileUrl(email) {
@@ -44,6 +46,12 @@ function Header({
               )}
               {session && (
                 <>
+                  {session.user.role === 'admin' && (
+                    <Nav.Link href="/admin">
+                      Administration
+                      <GearWideConnected className="align-text-bottom ml-1" />
+                    </Nav.Link>
+                  )}
                   {session.user.name && (
                     <NavDropdown title={session.user.name} id="basic-nav-dropdown" data-testid="nav-profile-dropdown">
                       <NavDropdown.Item href={getEditProfileUrl(session.user.email)}>My Profile</NavDropdown.Item>
