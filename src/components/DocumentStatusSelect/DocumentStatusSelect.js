@@ -22,6 +22,7 @@ const DocumentStatusSelect = ({
   values,
   onChange,
   onBlur,
+  session,
 }) => (
   <Row>
     <Col>
@@ -80,24 +81,26 @@ const DocumentStatusSelect = ({
             Archived
           </FormCheck.Label>
         </Form.Check>
-        <Form.Check
-          name="state"
-          id="public"
-        >
-          <FormCheck.Input
+        {session.user.role === 'admin' && (
+          <Form.Check
             name="state"
-            type="radio"
-            value="public"
-            onChange={onChange}
-            onBlur={onBlur}
-            as={Field}
-          />
-          <FormCheck.Label>
-            <Globe className="mb-1" />
-            {' '}
-            Public
-          </FormCheck.Label>
-        </Form.Check>
+            id="public"
+          >
+            <FormCheck.Input
+              name="state"
+              type="radio"
+              value="public"
+              onChange={onChange}
+              onBlur={onBlur}
+              as={Field}
+            />
+            <FormCheck.Label>
+              <Globe className="mb-1" />
+              {' '}
+              Public
+            </FormCheck.Label>
+          </Form.Check>
+        )}
         <ErrorMessage name="state" />
       </Form.Group>
     </Col>
