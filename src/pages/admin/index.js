@@ -2,6 +2,7 @@ import { useSession } from 'next-auth/client';
 import {
   Card,
 } from 'react-bootstrap';
+import AdminPanel from '../../components/Admin/AdminPanel';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import Layout from '../../components/Layout';
 
@@ -24,14 +25,7 @@ const AdminView = () => {
         </Card>
       )}
       {!loading && session && session.user.role === 'admin' && (
-        <Card>
-          <Card.Header>
-            <Card.Title>Administration</Card.Title>
-          </Card.Header>
-          <Card.Body>
-            This is the administration panel.
-          </Card.Body>
-        </Card>
+        <AdminPanel />
       )}
     </Layout>
   );
