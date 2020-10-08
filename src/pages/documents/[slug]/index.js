@@ -142,7 +142,7 @@ export default function DocumentPage() {
   
   return (
     <>
-      <Layout type="document" title="Placeholder Document">
+      <Layout type="document" title="Placeholder Document" docView>
         <Row id="document-container">
           <Col sm={3}>
             <AnnotationChannel setAnnotationChannelLoaded={setAnnotationChannel1Loaded} side="left" annotations={channelAnnotations.left} />
