@@ -1,9 +1,11 @@
+import { useEffect } from 'react';
 import {
   Nav, Row, Col, Navbar, Breadcrumb, Container, Button,
 } from 'react-bootstrap';
 
 
 function SecondNavbar() {
+  useEffect(() => { console.log('finished loading'); });
   return (
     <>
       <Navbar bg="light" variant="light" className="Second-Navbar">
