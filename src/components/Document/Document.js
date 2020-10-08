@@ -175,7 +175,7 @@ function adjustLine(from, to, line) {
 }
 
 function MoveAnnotationsToCorrectSpotBasedOnFocus(side, focusID) {
-  let annotations = JSON.parse($('#document-container').attr('annotations'))[side];
+  const annotations = JSON.parse($('#document-container').attr('annotations'))[side];
   // this function will focus the annotation that has been clicked on in the channel. It works very similar to the function "PlaceAnnotationsInCorrectSpot"
 
   // first we need to find the index of the annotation we want to focus on in the annotations array
@@ -223,10 +223,11 @@ function MoveAnnotationsToCorrectSpotBasedOnFocus(side, focusID) {
     const offsetLeftForLine2 = side === 'left' ? annotations[i].position.left : annotations[i].position.left - $(`#document-container #${annotations[i]._id}`).offset().left;
     // this is where the annotation wants to be
     trueTop = annotations[i].position.top - documentContainerOffset.top + tempTopAdjustment - adjustmentTopNumber;
-    // if where the annotation can be minus the annotation height is smaller than were it wants to be then we have to set the annotations top to where it can be and not where it wants to be
-    if (lastLowestPoint - $(`#document-container #${annotations[i]._id}`).height() - marginBottom < trueTop) {
+    // if where the annotation can be minus the annotation height is smaller than were it wants to be then we have to set the annotations top to where it can be and not where it wants to be. Or if where it is now is no an acceptable value we will move it to the next most available spot
+    if (lastLowestPoint - $(`#document-container #${annotations[i]._id}`).height() - marginBottom < trueTop || lastLowestPoint - $(`#document-container #${annotations[i]._id}`).height() - marginBottom < $(`#document-container #${annotations[i]._id}`).position().top) {
       top = lastLowestPoint - $(`#document-container #${annotations[i]._id}`).height() - marginBottom;
     } else {
+      // this would be focusing the annotation if it is possible which could displace other annotations higher up because we are iterating through the loop backwards
       top = trueTop;
     }
 
@@ -288,8 +289,8 @@ export default class Document extends React.Component {
         if (annotationBeginning.get(0) == undefined) {
           console.log('unable to annotation a piece of text');
         } else {
-          let annotationBeginningPosition = annotationBeginning.offset();
-          annotationBeginningPosition.top += $("#document-container").scrollTop(); // this takes into account if the user was scrolling through the document as the it was being populated with annotations
+          const annotationBeginningPosition = annotationBeginning.offset();
+          annotationBeginningPosition.top += $('#document-container').scrollTop(); // this takes into account if the user was scrolling through the document as the it was being populated with annotations
           console.log(annotationBeginningPosition, annotationBeginning.position());
           // now that we have position data we will add the annotation either to the left or right channel
           if (annotationBeginningPosition.left < window.innerWidth / 2) {
@@ -370,19 +371,21 @@ export default class Document extends React.Component {
       if (selection.rangeCount === 1) {
         const range = selection.getRangeAt(0);
         if (!range.collapsed && range.toString().length > 0) {
-          // make sure the range is something
-          // console.log('range', range);
-
-          const scope = document.createRange();
-          // console.log('documentContainer', documentContainer);
-          scope.selectNodeContents(documentContainer);
-          // console.log('scope', scope);
-          // we need to make sure that the selection the user made is inside the scope, meaning that everything they selected is inside the document and not outside the document
-          // if (range.compareBoundaryPoints(Range.START_TO_START, scope) != -1 && range.compareBoundaryPoints(Range.END_TO_END, scope) != 1) {
-          const mySelector = await CustomDescibeTextQuote(range, scope);
-          // console.log(mySelector);
-          this.PositionAnnotateButton(selection, mySelector);
-          // } else { console.log('outside of bounds'); }
+          // we need to make sure this selection happened inside the document card container and not some where outside of the document
+          if ($(range.commonAncestorContainer.parentElement).parents('#document-card-container').length !== 0) {
+            // make sure the range is something
+            //console.log('range', range.commonAncestorContainer.parentElement);
+            const scope = document.createRange();
+            // console.log('documentContainer', documentContainer);
+            scope.selectNodeContents(documentContainer);
+            // console.log('scope', scope);
+            // we need to make sure that the selection the user made is inside the scope, meaning that everything they selected is inside the document and not outside the document
+            // if (range.compareBoundaryPoints(Range.START_TO_START, scope) != -1 && range.compareBoundaryPoints(Range.END_TO_END, scope) != 1) {
+            const mySelector = await CustomDescibeTextQuote(range, scope);
+            // console.log(mySelector);
+            this.PositionAnnotateButton(selection, mySelector);
+            // } else { console.log('outside of bounds'); }
+          }
         }
       }
       //
@@ -411,8 +414,8 @@ export default class Document extends React.Component {
                 // when the user clicks to annotate the piece of text that is selected we need to grab information about all the annotations currently showing in the dom then we need to place this new annotation into that object along with the annotations position data then once we have set this new information we need to save it by reseting the dom element attribute "annotations" then use the new data and use the updated data and pass it into "MoveAnnotationsToCorrectSpotBasedOnFocus" function
 
                 // first grabbing position data on the annotation button so we can know which side to put the annotation on
-                let annotationBtnPosition = $('#annotate-btn-position-node').offset();
-                annotationBtnPosition.top += $("#document-container").scrollTop();
+                const annotationBtnPosition = $('#annotate-btn-position-node').offset();
+                annotationBtnPosition.top += $('#document-container').scrollTop();
                 const side = (annotationBtnPosition.left < window.innerWidth / 2) ? 'left' : 'right';
                 // now that we know which side to get the annotation data from we will grab the current data and update it
                 const annotationChannelData = JSON.parse($('#document-container').attr('annotations'));

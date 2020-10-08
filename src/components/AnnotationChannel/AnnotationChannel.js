@@ -98,10 +98,11 @@ function MoveAnnotationsToCorrectSpotBasedOnFocus(side, focusID) {
     const offsetLeftForLine2 = side === 'left' ? annotations[i].position.left : annotations[i].position.left - $(`#document-container #${annotations[i]._id}`).offset().left;
     // this is where the annotation wants to be
     trueTop = annotations[i].position.top - documentContainerOffset.top + tempTopAdjustment - adjustmentTopNumber;
-    // if where the annotation can be minus the annotation height is smaller than were it wants to be then we have to set the annotations top to where it can be and not where it wants to be
-    if (lastLowestPoint - $(`#document-container #${annotations[i]._id}`).height() - marginBottom < trueTop) {
+    // if where the annotation can be minus the annotation height is smaller than were it wants to be then we have to set the annotations top to where it can be and not where it wants to be. Or if where it is now is no an acceptable value we will move it to the next most available spot
+    if (lastLowestPoint - $(`#document-container #${annotations[i]._id}`).height() - marginBottom < trueTop || lastLowestPoint - $(`#document-container #${annotations[i]._id}`).height() - marginBottom < $(`#document-container #${annotations[i]._id}`).position().top) {
       top = lastLowestPoint - $(`#document-container #${annotations[i]._id}`).height() - marginBottom;
     } else {
+      // this would be focusing the annotation if it is possible which could displace other annotations higher up because we are iterating through the loop backwards
       top = trueTop;
     }
 

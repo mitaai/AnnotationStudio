@@ -139,6 +139,7 @@ export default function DocumentPage() {
   const [channelAnnotations, setChannelAnnotations] = useState({ left: null, right: null });
   const [annotationChannel1Loaded, setAnnotationChannel1Loaded] = useState(false);
   const [annotationChannel2Loaded, setAnnotationChannel2Loaded] = useState(false);
+  
   return (
     <>
       <Layout2>
