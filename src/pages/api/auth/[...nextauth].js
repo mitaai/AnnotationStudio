@@ -79,7 +79,7 @@ const options = {
         session.user.id = id;
         session.user.name = user.name;
         session.user.groups = user.groups;
-        session.user.role = user.role;
+        session.user.role = user.role ? user.role : 'user';
       } else {
         return Promise.reject();
       }
