@@ -1,3 +1,7 @@
-const AdminUserList = () => {};
+const AdminUserList = () => (
+  <>
+    User List
+  </>
+);
 
 export default AdminUserList;
