@@ -12,8 +12,12 @@ function getEditProfileUrl(email) {
   return editUrl;
 }
 
-function Header({ type }) {
-  const [session] = useSession();
+function Header({
+  type,
+  title,
+  docView,
+}) {
+  const [session, loading] = useSession();
   const router = useRouter();
   return (
     <header sticky="top">
@@ -30,7 +34,10 @@ function Header({ type }) {
                 Help
                 <BoxArrowUpRight className="align-text-bottom ml-1" />
               </Nav.Link>
-              {!session && (
+              {loading && (
+                <Nav.Link disabled>Loading...</Nav.Link>
+              )}
+              {!session && !loading && (
                 <Nav.Link href="/api/auth/signin" data-testid="nav-login-link" disabled={type === 'signin'}>
                   Log In
                   <BoxArrowInRight className="align-text-bottom ml-1" />
@@ -58,12 +65,8 @@ function Header({ type }) {
           </Navbar.Collapse>
         </Container>
       </Navbar>
-      {session && (
-      <>
-        {session.user.name && (
-        <SecondNavbar />
-        )}
-      </>
+      {session && !loading && (
+        <SecondNavbar type={type} title={title} docView={docView} />
       )}
     </header>
   );

@@ -1,18 +1,55 @@
+import { useState } from 'react';
 import { parseCookies, destroyCookie } from 'nookies';
-import { Button, Card } from 'react-bootstrap';
-import Router from 'next/router';
+import {
+  Button, Card, Col, Row,
+} from 'react-bootstrap';
 import fetch from 'isomorphic-unfetch';
 import { useSession } from 'next-auth/client';
 import Layout from '../components/Layout';
-import { AddUserToGroup } from '../utils/groupUtil';
-import { StripQuery } from '../utils/stringUtil';
+import { addUserToGroup } from '../utils/groupUtil';
+import LoadingSpinner from '../components/LoadingSpinner';
+import DashboardDocumentList from '../components/Dashboard/DashboardDocumentList';
+import DashboardGroupList from '../components/Dashboard/DashboardGroupList';
 
-export default function Home({ props }) {
+export default function Home({
+  initAlerts,
+  groupId,
+}) {
   const [session, loading] = useSession();
-  const { groupId } = props;
+  const [alerts, setAlerts] = useState(initAlerts || []);
+
   return (
-    <Layout>
-      {session && !loading && groupId !== '' && (
+    <Layout alerts={alerts} type="dashboard">
+      {loading && (
+        <Card>
+          <Card.Body>
+            <LoadingSpinner />
+          </Card.Body>
+        </Card>
+      )}
+      {!session && !loading && (
+      <Card>
+        <Card.Header><Card.Title>Welcome to Annotation Studio</Card.Title></Card.Header>
+        <Card.Body>Welcome to Annotation Studio. Please log in to use the application.</Card.Body>
+      </Card>
+      )}
+      {session && !loading && (
+        <Row>
+          <Col>
+            <DashboardDocumentList
+              session={session}
+              alerts={alerts}
+              setAlerts={setAlerts}
+            />
+          </Col>
+          <Col>
+            <DashboardGroupList
+              session={session}
+            />
+          </Col>
+        </Row>
+      )}
+      {session && !loading && groupId && groupId !== '' && (
         <Card style={{ width: '33%', marginLeft: '33%' }} className="text-center">
           <Card.Header>Join Group</Card.Header>
           <Card.Body>
@@ -24,18 +61,10 @@ export default function Home({ props }) {
                 destroyCookie(null, 'ans_grouptoken', {
                   path: '/',
                 });
-                AddUserToGroup({ id: groupId }, session.user.email).then(() => {
-                  Router.push({
-                    pathname: '/',
-                    query: { alert: 'joinedGroup' },
-                  });
+                addUserToGroup({ id: groupId }, session.user.email).then(() => {
+                  setAlerts([...alerts, { text: 'Group successfully joined', variant: 'success' }]);
                 }).catch((err) => {
-                  Router.push(
-                    {
-                      pathname: StripQuery(Router.asPath),
-                      query: { error: err.message },
-                    },
-                  );
+                  setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
                 });
               }}
             >
@@ -44,8 +73,6 @@ export default function Home({ props }) {
           </Card.Body>
         </Card>
       )}
-      {' '}
-      Welcome to Annotation Studio.
     </Layout>
   );
 }
@@ -54,10 +81,15 @@ Home.getInitialProps = async (context) => {
   const { query } = context;
   const cookies = parseCookies(context);
   let groupId = '';
+  let initAlerts = [];
   if (query.alert === 'completeRegistration') {
     destroyCookie(context, 'ans_grouptoken', {
       path: '/',
     });
+    initAlerts = [{
+      text: 'You have successfully registered for Annotation Studio. Welcome!',
+      variant: 'success',
+    }];
   } else if (cookies.ans_grouptoken) {
     const url = `${process.env.SITE}/api/invite/${cookies.ans_grouptoken}`;
     const res = await fetch(url, {
@@ -70,11 +102,17 @@ Home.getInitialProps = async (context) => {
       const result = await res.json();
       groupId = result.group;
     }
+  } else if (query.alert === 'joinedGroup') {
+    initAlerts = [{
+      text: 'Group successfully joined.',
+      variant: 'success',
+    }];
   }
   return {
     props: {
       query,
       groupId,
+      initAlerts,
     },
   };
 };

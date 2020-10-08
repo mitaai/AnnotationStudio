@@ -1,9 +1,92 @@
-import nc from 'next-connect';
-import middleware from '../../../middlewares/middleware';
-import postDocument from '../../../utils/dbUtil';
+import jwt from 'next-auth/jwt';
+import { connectToDatabase } from '../../../utils/dbUtil';
 
-const handler = nc()
-  .use(middleware)
-  .post(postDocument);
+const secret = process.env.AUTH_SECRET;
+
+const handler = async (req, res) => {
+  const { method } = req;
+  if (method === 'POST') {
+    const token = await jwt.getToken({ req, secret });
+    if (token && token.exp > 0) {
+      const dateCreated = new Date(Date.now());
+      let { groups } = req.body;
+      groups = groups ? groups.filter((group) => group !== '') : {};
+      const {
+        title,
+        slug,
+        resourceType,
+        authors,
+        publisher,
+        publicationDate,
+        bookTitle,
+        edition,
+        url,
+        accessed,
+        rightsStatus,
+        location,
+        state,
+        text,
+        uploadContentType,
+        editors,
+        volume,
+        issue,
+        pageNumbers,
+        publication,
+        series,
+        sesiesNumber,
+        notes,
+      } = req.body;
+      const metadata = {
+        title,
+        slug,
+        groups,
+        resourceType,
+        authors,
+        publisher,
+        publicationDate,
+        bookTitle,
+        edition,
+        url,
+        accessed,
+        rightsStatus,
+        location,
+        state,
+        text,
+        uploadContentType,
+        editors,
+        volume,
+        issue,
+        pageNumbers,
+        publication,
+        series,
+        sesiesNumber,
+        notes,
+      };
+      Object.keys(metadata).forEach((key) => {
+        if (metadata[key] === undefined) {
+          delete metadata[key];
+        }
+      });
+      if (Object.keys(metadata).length === 0) {
+        res.status(400).end('No request body');
+      } else if (!metadata.title) {
+        res.status(400).end('Missing title');
+      } else {
+        const { db } = await connectToDatabase();
+        const doc = await db
+          .collection('documents')
+          .insertOne(
+            {
+              owner: token.id,
+              createdAt: dateCreated,
+              updatedAt: dateCreated,
+              ...metadata,
+            },
+          );
+        res.status(200).json(doc);
+      }
+    } else res.status(403).end('Invalid or expired token');
+  } else res.status(405).end(`Method ${method} Not Allowed`);
+};
 
 export default handler;

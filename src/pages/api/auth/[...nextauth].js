@@ -76,6 +76,7 @@ const options = {
       });
       if (res.status === 200) {
         const user = await res.json();
+        session.user.id = id;
         session.user.name = user.name;
         session.user.groups = user.groups;
       } else {

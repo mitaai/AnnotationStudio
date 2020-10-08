@@ -8,18 +8,20 @@ import {
 import {
   PencilSquare, TrashFill, Plus, BoxArrowRight,
 } from 'react-bootstrap-icons';
-import Router from 'next/router';
 import Layout from '../../components/Layout';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ConfirmationDialog from '../../components/ConfirmationDialog';
 import GroupRoleSummaries from '../../components/GroupRoleSummaries';
 import GroupRoleBadge from '../../components/GroupRoleBadge';
 import { FirstNameLastInitial } from '../../utils/nameUtil';
-import { DeleteGroupFromId, RemoveUserFromGroup } from '../../utils/groupUtil';
-import { GetUserByEmail } from '../../utils/userUtil';
+import { deleteGroupFromId, removeUserFromGroup } from '../../utils/groupUtil';
+import { getUserByEmail } from '../../utils/userUtil';
+import { deepEqual } from '../../utils/objectUtil';
 
-const GroupList = ({ query }) => {
+const GroupList = ({ query, initAlerts }) => {
   const [session, loading] = useSession();
+  const [alerts, setAlerts] = useState(initAlerts);
+  const [groups, setGroups] = useState([]);
 
   const [showModal, setShowModal] = useState('');
   const handleCloseModal = () => setShowModal('');
@@ -27,8 +29,18 @@ const GroupList = ({ query }) => {
     setShowModal(event.target.getAttribute('data-key'));
   };
 
+  if (query.deletedGroupId && groups.some((g) => g.id === query.deletedGroupId)) {
+    setGroups(groups.filter((g) => g.id !== query.deletedGroupId));
+  }
+
+  React.useEffect(() => {
+    if (session && !deepEqual(session.user.groups, groups)) {
+      setGroups(session.user.groups);
+    }
+  }, [session]);
+
   return (
-    <Layout>
+    <Layout alerts={alerts} type="group">
       <Card>
         {!session && loading && (
           <LoadingSpinner />
@@ -39,10 +51,10 @@ const GroupList = ({ query }) => {
               Groups
             </Card.Header>
             <Card.Body data-testid="grouplist-card-body">
-              {session.user.groups.length === 0 && (
+              {groups.length === 0 && (
               <>You are not a member of any groups.</>
               )}
-              {session.user.groups.length > 0 && (
+              {groups.length > 0 && (
               <Table striped bordered hover variant="light">
                 <thead>
                   <tr>
@@ -54,98 +66,80 @@ const GroupList = ({ query }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {session.user.groups.map((value) => {
-                    if (value.id !== query.deletedGroupId) {
-                      return (
-                        <tr key={value.id}>
-                          <td>
-                            <Link href={`/groups/${value.id}`}>
-                              <a title={value.name}>{value.name}</a>
-                            </Link>
-                          </td>
-                          <td><GroupRoleBadge groupRole={value.role} /></td>
-                          <td>{FirstNameLastInitial(value.ownerName)}</td>
-                          <td>{value.memberCount}</td>
-                          <td>
-                            <ButtonGroup>
-                              {(value.role === 'owner' || value.role === 'manager') && (
-                                <Button variant="outline-primary" href={`/groups/${value.id}/edit`}>
-                                  <PencilSquare className="align-text-bottom mr-1" />
-                                  Manage
-                                </Button>
-                              )}
-                              {(value.role === 'member' || value.role === 'manager') && (
-                                <Button
-                                  variant="outline-danger"
-                                  onClick={async () => {
-                                    const user = await GetUserByEmail(session.user.email);
-                                    RemoveUserFromGroup(value, user).then(() => {
-                                      Router.push({
-                                        pathname: '/groups',
-                                        query: {
-                                          alert: 'leftGroup',
-                                          deletedGroupId: value.id,
-                                        },
-                                      }, '/groups');
-                                    }).catch((err) => {
-                                      Router.push({
-                                        pathname: '/groups',
-                                        query: {
-                                          error: err.message,
-                                        },
-                                      }, '/groups');
-                                    });
-                                  }}
-                                >
-                                  <BoxArrowRight className="align-text-bottom mr-1" />
-                                  Leave
-                                </Button>
-                              )}
-                              {value.role === 'owner' && (
-                                <>
-                                  <Button
-                                    variant="outline-danger"
-                                    type="button"
-                                    onClick={handleShowModal}
-                                    data-key={value.id}
-                                  >
-                                    <TrashFill className="align-text-bottom mr-1" />
-                                    Delete
-                                  </Button>
-                                  <ConfirmationDialog
-                                    value={value}
-                                    type="deleteGroup"
-                                    handleCloseModal={handleCloseModal}
-                                    show={showModal === value.id}
-                                    onClick={(event) => {
-                                      event.target.setAttribute('disabled', 'true');
-                                      DeleteGroupFromId(value.id).then(() => {
-                                        Router.push({
-                                          pathname: '/groups',
-                                          query: {
-                                            alert: 'deletedGroup',
-                                            deletedGroupId: value.id,
-                                          },
-                                        }, '/groups');
-                                      }).catch((err) => {
-                                        Router.push({
-                                          pathname: '/groups',
-                                          query: {
-                                            error: err.message,
-                                          },
-                                        }, '/groups');
-                                      });
-                                      handleCloseModal();
-                                    }}
-                                  />
-                                </>
-                              )}
-                            </ButtonGroup>
-                          </td>
-                        </tr>
-                      );
-                    } return null;
-                  })}
+                  {groups.map((group) => (
+                    <tr key={group.id}>
+                      <td>
+                        <Link href={`/groups/${group.id}`}>
+                          <a title={group.name}>{group.name}</a>
+                        </Link>
+                      </td>
+                      <td><GroupRoleBadge groupRole={group.role} /></td>
+                      <td>{FirstNameLastInitial(group.ownerName)}</td>
+                      <td>{group.memberCount}</td>
+                      <td>
+                        <ButtonGroup>
+                          {(group.role === 'owner' || group.role === 'manager') && (
+                          <Button variant="outline-primary" href={`/groups/${group.id}/edit`}>
+                            <PencilSquare className="align-text-bottom mr-1" />
+                            Manage
+                          </Button>
+                          )}
+                          {(group.role === 'member' || group.role === 'manager') && (
+                          <Button
+                            variant="outline-danger"
+                            onClick={async () => {
+                              const user = await getUserByEmail(session.user.email);
+                              removeUserFromGroup(group, user).then(() => {
+                                setGroups(groups.filter((g) => g.id !== group.id));
+                                setAlerts([...alerts, {
+                                  text: 'You have successfully left the group.',
+                                  variant: 'warning',
+                                }]);
+                              }).catch((err) => {
+                                setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+                              });
+                            }}
+                          >
+                            <BoxArrowRight className="align-text-bottom mr-1" />
+                            Leave
+                          </Button>
+                          )}
+                          {group.role === 'owner' && (
+                          <>
+                            <Button
+                              variant="outline-danger"
+                              type="button"
+                              onClick={handleShowModal}
+                              data-key={group.id}
+                            >
+                              <TrashFill className="align-text-bottom mr-1" />
+                              Delete
+                            </Button>
+                            <ConfirmationDialog
+                              name={group.name}
+                              type="group"
+                              handleCloseModal={handleCloseModal}
+                              show={showModal === group.id}
+                              onClick={(event) => {
+                                event.target.setAttribute('disabled', 'true');
+                                deleteGroupFromId(group.id).then(() => {
+                                  setGroups(groups.filter((g) => g.id !== group.id));
+                                  setAlerts([...alerts, {
+                                    text: 'You have successfully deleted the group.',
+                                    variant: 'warning',
+                                  }]);
+                                }).catch((err) => {
+                                  setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+                                });
+                                handleCloseModal();
+                              }}
+                            />
+                          </>
+                          )}
+                        </ButtonGroup>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </Table>
               )}
@@ -165,8 +159,22 @@ const GroupList = ({ query }) => {
 };
 
 export async function getServerSideProps(context) {
+  const { alert } = context.query;
+  let initAlerts = [];
+  if (alert === 'leftGroup') {
+    initAlerts = [{
+      text: 'You have successfully left the group.',
+      variant: 'warning',
+    }];
+  } else if (alert === 'deletedGroup') {
+    initAlerts = [{
+      text: 'You have successfully deleted the group.',
+      variant: 'warning',
+    }];
+  }
+
   return {
-    props: { query: context.query }, // will be passed to the page component as props
+    props: { query: context.query, initAlerts },
   };
 }
 

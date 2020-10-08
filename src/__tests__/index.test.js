@@ -4,10 +4,14 @@
 
 import { act } from 'react-dom/test-utils';
 import { render, wait } from '@testing-library/react';
+import fetch from 'unfetch';
 import Index from '../pages/index';
+
+jest.mock('unfetch');
 
 test('renders header', async () => {
   let navElement;
+  fetch.mockReturnValueOnce([]);
   act(() => {
     const { getAllByRole } = render(<Index props={{ groupId: '' }} />);
     [navElement] = getAllByRole('navigation');
