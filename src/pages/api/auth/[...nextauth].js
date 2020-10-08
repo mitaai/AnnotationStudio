@@ -31,7 +31,7 @@ const options = {
 
   adapter: Adapters.TypeORM.Adapter(process.env.MONGODB_URI,
     {
-      customModels: {
+      models: {
         User: Models.User,
       },
     }),
@@ -79,6 +79,7 @@ const options = {
         session.user.id = id;
         session.user.name = user.name;
         session.user.groups = user.groups;
+        session.user.role = user.role ? user.role : 'user';
       } else {
         return Promise.reject();
       }
