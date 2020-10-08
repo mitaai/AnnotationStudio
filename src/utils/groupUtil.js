@@ -1,7 +1,9 @@
+/* eslint-disable no-underscore-dangle */
 import fetch from 'unfetch';
-import { GetUserByEmail } from './userUtil';
+import { getAllDocumentsByGroup } from './docUtil';
+import { getUserByEmail } from './userUtil';
 
-const UpdateMemberCounts = async (group) => {
+const updateMemberCounts = async (group) => {
   const { members } = group;
   // eslint-disable-next-line no-underscore-dangle
   const updatedGroupId = group._id;
@@ -21,14 +23,14 @@ const UpdateMemberCounts = async (group) => {
         },
       });
       if (res.status === 200) {
-        const response = res.json();
+        const response = await res.json();
         return Promise.resolve(response);
       } return Promise.reject(Error(`Unable to update member counts: error ${res.status} received from server`));
     }),
   );
 };
 
-const AddGroupToUser = async (group, user) => {
+const addGroupToUser = async (group, user) => {
   const url = `/api/user/${user.id}`;
   const {
     id,
@@ -60,8 +62,8 @@ const AddGroupToUser = async (group, user) => {
   return Promise.reject(Error(`Unable to add group to user: error ${res.status} received from server`));
 };
 
-const AddUserToGroup = async (group, email) => {
-  const user = await GetUserByEmail(email);
+const addUserToGroup = async (group, email) => {
+  const user = await getUserByEmail(email);
   let alreadyInGroup = false;
   alreadyInGroup = user.groups.some((userGroup) => (userGroup.id === group.id));
   user.error = (alreadyInGroup === true) ? 'User is already in group' : undefined;
@@ -94,13 +96,13 @@ const AddUserToGroup = async (group, email) => {
         ownerName,
         role: 'member',
       };
-      return AddGroupToUser(groupToAdd, user, false)
-        .then(UpdateMemberCounts(response.value));
+      return addGroupToUser(groupToAdd, user, false)
+        .then(updateMemberCounts(response.value));
     } return Promise.reject(Error(`Unable to add user to group: error ${res.status} received from server`));
   } return Promise.reject(Error(`Unable to add user with email ${email}: ${user.error}.`));
 };
 
-const RemoveGroupFromUser = async (group, user) => {
+const removeGroupFromUser = async (group, user) => {
   const removedGroupId = group.id;
   const url = `/api/user/${user.id}`;
   const body = { removedGroupId };
@@ -117,7 +119,7 @@ const RemoveGroupFromUser = async (group, user) => {
   } return Promise.reject(Error(`Unable to remove group from user: error ${res.status} received from server`));
 };
 
-const RemoveUserFromGroup = async (group, user) => {
+const removeUserFromGroup = async (group, user) => {
   const removedUserId = user.id;
   const url = `/api/group/${group.id}`;
   const body = { removedUserId };
@@ -130,11 +132,36 @@ const RemoveUserFromGroup = async (group, user) => {
   });
   if (res.status === 200) {
     const response = await res.json();
-    return RemoveGroupFromUser(group, user).then(UpdateMemberCounts(response.value));
+    return removeGroupFromUser(group, user).then(updateMemberCounts(response.value));
   } return Promise.reject(Error(`Unable to remove user from group: error ${res.status} received from server`));
 };
 
-const DeleteGroup = async (group) => {
+const removeGroupFromDocuments = async (group) => {
+  const documents = await getAllDocumentsByGroup([group]);
+  return (Array.isArray(documents) && documents.length > 0)
+    ? Promise.all(
+      documents.map(async (document) => {
+        const url = `/api/document/${document._id}`;
+        const body = {
+          removedGroupId: group.id,
+        };
+        const res = await fetch(url, {
+          method: 'PATCH',
+          body: JSON.stringify(body),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        if (res.status === 200) {
+          const result = await res.json();
+          return Promise.resolve(result);
+        } return Promise.reject(Error(`Unable to remove group from documents: error ${res.status} receievd from server`));
+      }),
+    )
+    : Promise.resolve([]);
+};
+
+const deleteGroup = async (group) => {
   const { members } = group;
   const url = `/api/group/${group.id}`;
   const res = await fetch(url, {
@@ -144,13 +171,15 @@ const DeleteGroup = async (group) => {
     },
   });
   if (res.status === 200) {
-    return Promise.all(
-      members.map(async (member) => RemoveGroupFromUser(group, member, true)),
-    );
+    return removeGroupFromDocuments(group)
+      .then(Promise.all(
+        members.map(async (member) => removeGroupFromUser(group, member, true)),
+      ))
+      .catch((err) => Promise.reject(Error(err.message)));
   } return Promise.reject(Error(`Unable to delete group: error ${res.status} received from server`));
 };
 
-const DeleteGroupFromId = async (id) => {
+const deleteGroupFromId = async (id) => {
   const url = `/api/group/${id}`;
   const res = await fetch(url, {
     method: 'GET',
@@ -161,11 +190,11 @@ const DeleteGroupFromId = async (id) => {
   if (res.status === 200) {
     const response = await res.json();
     const group = { id, name: response.name, members: response.members };
-    return DeleteGroup(group);
+    return deleteGroup(group);
   } return Promise.reject(Error(`Unable to find group by ID: error ${res.status} received from server`));
 };
 
-const ChangeUserRole = async (group, member, role) => {
+const changeUserRole = async (group, member, role) => {
   const url = `/api/group/${group.id}`;
   const body = { memberToChangeRoleId: member.id, role };
   const res = await fetch(url, {
@@ -192,7 +221,7 @@ const ChangeUserRole = async (group, member, role) => {
   } return Promise.reject(Error(`Unable to change user's role: error ${res.status} received from server`));
 };
 
-const RenameGroupInMember = async (group, member, newName) => {
+const renameGroupInMember = async (group, member, newName) => {
   const url = `/api/user/${member.id}`;
   const body = { updatedGroupId: group.id, groupName: newName };
   const res = await fetch(url, {
@@ -208,7 +237,7 @@ const RenameGroupInMember = async (group, member, newName) => {
   } return Promise.reject(Error(`Unable to update user: error ${res.status} received from server`));
 };
 
-const RenameGroup = async (group, newName) => {
+const renameGroup = async (group, newName) => {
   const { members } = group;
   const url = `/api/group/${group.id}`;
   const body = { name: newName };
@@ -221,12 +250,12 @@ const RenameGroup = async (group, newName) => {
   });
   if (res.status === 200) {
     return Promise.all(
-      members.map(async (member) => RenameGroupInMember(group, member, newName)),
+      members.map(async (member) => renameGroupInMember(group, member, newName)),
     );
   } return Promise.reject(Error(`Unable to update user: error ${res.status} received from server`));
 };
 
-const GenerateInviteToken = async (group) => {
+const generateInviteToken = async (group) => {
   const { id } = group;
   const url = '/api/invite';
   const body = { group: id };
@@ -252,13 +281,13 @@ const GenerateInviteToken = async (group) => {
       },
     });
     if (groupRes.status === 200) {
-      const groupResponse = groupRes.json();
+      const groupResponse = await groupRes.json();
       return Promise.resolve(groupResponse);
     } return Promise.reject(Error(`Unable to add token to group: error ${res.status} received from server`));
   } return Promise.reject(Error(`Unable to generate token: error ${res.status} received from server`));
 };
 
-const DeleteInviteToken = async (group) => {
+const deleteInviteToken = async (group) => {
   const { inviteToken } = group;
   const url = `/api/invite/${inviteToken}`;
   const res = await fetch(url, {
@@ -281,14 +310,30 @@ const DeleteInviteToken = async (group) => {
   } return Promise.reject(Error(`Unable to delete token: error ${res.status} received from server`));
 };
 
+const getGroupNameById = async (id) => {
+  const url = `/api/group/${id}`;
+  const res = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (res.status === 200) {
+    const response = await res.json();
+    const { name } = response;
+    return Promise.resolve(name);
+  } return Promise.reject(Error(`Unable to find group with id ${id}: error ${res.status} received from server`));
+};
+
 export {
-  AddGroupToUser,
-  AddUserToGroup,
-  ChangeUserRole,
-  DeleteGroup,
-  DeleteGroupFromId,
-  DeleteInviteToken,
-  GenerateInviteToken,
-  RemoveUserFromGroup,
-  RenameGroup,
+  addGroupToUser,
+  addUserToGroup,
+  changeUserRole,
+  deleteGroup,
+  deleteGroupFromId,
+  deleteInviteToken,
+  generateInviteToken,
+  getGroupNameById,
+  removeUserFromGroup,
+  renameGroup,
 };

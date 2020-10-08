@@ -1,24 +1,27 @@
 import fetch from 'unfetch';
 import { Formik } from 'formik';
 import { useSession } from 'next-auth/client';
+import { useState } from 'react';
 import {
   Button, Card, Col, Form, Row,
 } from 'react-bootstrap';
 import * as yup from 'yup';
 import Router from 'next/router';
-import { AddGroupToUser } from '../../utils/groupUtil';
+import { addGroupToUser } from '../../utils/groupUtil';
 import Layout from '../../components/Layout';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
 const NewGroup = () => {
   const [session] = useSession();
+  const [alerts, setAlerts] = useState([]);
 
   const createGroup = async (values) => {
     const url = '/api/group';
     const { name } = values;
+    const ownerName = session.user.name;
     const res = await fetch(url, {
       method: 'POST',
-      body: JSON.stringify({ name }),
+      body: JSON.stringify({ name, ownerName }),
       headers: {
         'Content-Type': 'application/json',
       },
@@ -28,14 +31,14 @@ const NewGroup = () => {
       const group = {
         id: result.insertedId,
         name,
-        ownerName: result.ops[0].members[0].name,
+        ownerName: session.user.name || result.ops[0].members[0].name,
         memberCount: 1,
         role: 'owner',
       };
       const user = {
         id: result.ops[0].members[0].id,
       };
-      return AddGroupToUser(group, user).then(() => {
+      return addGroupToUser(group, user).then(() => {
         Router.push({
           pathname: `/groups/${group.id}/edit`,
           query: { alert: 'newGroup' },
@@ -50,7 +53,7 @@ const NewGroup = () => {
   });
 
   return (
-    <Layout>
+    <Layout alerts={alerts} type="group" title="New Group">
       <Col lg="8" className="mx-auto">
         <Card>
           {!session && (
@@ -64,10 +67,7 @@ const NewGroup = () => {
                 onSubmit={(values, actions) => {
                   setTimeout(() => {
                     createGroup(values).catch((err) => {
-                      Router.push({
-                        pathname: '/groups',
-                        query: { error: err.message },
-                      }, '/groups');
+                      setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
                     });
                     actions.setSubmitting(false);
                   }, 1000);

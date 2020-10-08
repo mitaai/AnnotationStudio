@@ -12,12 +12,13 @@ import LoadingSpinner from '../../../components/LoadingSpinner';
 import ConfirmationDialog from '../../../components/ConfirmationDialog';
 import GroupRoleSummaries from '../../../components/GroupRoleSummaries';
 import GroupRoleBadge from '../../../components/GroupRoleBadge';
-import { DeleteGroup, RemoveUserFromGroup } from '../../../utils/groupUtil';
-import { GetUserByEmail } from '../../../utils/userUtil';
+import { deleteGroup, removeUserFromGroup } from '../../../utils/groupUtil';
+import { getUserByEmail } from '../../../utils/userUtil';
 
 const ViewGroup = ({ group }) => {
   const [session, loading] = useSession();
 
+  const [alerts, setAlerts] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const handleCloseModal = () => setShowModal(false);
   const handleShowModal = () => setShowModal(true);
@@ -25,7 +26,7 @@ const ViewGroup = ({ group }) => {
   const roleInGroup = (currentSession) => currentSession.user.groups.find((o) => Object.entries(o).some(([k, value]) => k === 'id' && value === group.id)).role;
 
   return (
-    <Layout>
+    <Layout alerts={alerts} type="group" title={group.name}>
       <Card>
         {!session && loading && (
           <LoadingSpinner />
@@ -65,21 +66,17 @@ const ViewGroup = ({ group }) => {
                   <Button
                     variant="outline-danger"
                     onClick={async () => {
-                      const user = await GetUserByEmail(session.user.email);
-                      RemoveUserFromGroup(group, user).then(() => {
+                      const user = await getUserByEmail(session.user.email);
+                      removeUserFromGroup(group, user).then(() => {
                         Router.push({
                           pathname: '/groups',
                           query: {
                             alert: 'leftGroup',
+                            deletedGroupId: group.id,
                           },
                         }, '/groups');
                       }).catch((err) => {
-                        Router.push({
-                          pathname: `/groups/${group.id}`,
-                          query: {
-                            error: err.message,
-                          },
-                        }, '/groups');
+                        setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
                       });
                     }}
                   >
@@ -98,13 +95,13 @@ const ViewGroup = ({ group }) => {
                     Delete this group
                   </Button>
                   <ConfirmationDialog
-                    value={group}
-                    type="deleteGroup"
+                    name={group.name}
+                    type="group"
                     handleCloseModal={handleCloseModal}
                     show={showModal}
                     onClick={(event) => {
                       event.target.setAttribute('disabled', 'true');
-                      DeleteGroup(group).then(() => {
+                      deleteGroup(group).then(() => {
                         Router.push({
                           pathname: '/groups',
                           query: {
@@ -113,12 +110,7 @@ const ViewGroup = ({ group }) => {
                           },
                         }, '/groups');
                       }).catch((err) => {
-                        Router.push({
-                          pathname: '/groups',
-                          query: {
-                            error: err.message,
-                          },
-                        }, '/groups');
+                        setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
                       });
                       handleCloseModal();
                     }}

@@ -1,11 +1,10 @@
 import { useState } from 'react';
-import { useSession, getSession } from 'next-auth/client';
+import { useSession } from 'next-auth/client';
 import { Formik } from 'formik';
 import * as yup from 'yup';
 import {
   Button, Card, Col, Form, Row,
 } from 'react-bootstrap';
-import Router from 'next/router';
 import { FullName } from '../../../utils/nameUtil';
 import Layout from '../../../components/Layout';
 import LoadingSpinner from '../../../components/LoadingSpinner';
@@ -13,7 +12,7 @@ import LoadingSpinner from '../../../components/LoadingSpinner';
 const EditProfile = ({ user }) => {
   const [session, loading] = useSession();
 
-  const [errorMsg, setErrorMsg] = useState('');
+  const [alerts, setAlerts] = useState([]);
 
   const submitHandler = async (values) => {
     const newName = FullName(values.firstName, values.lastName);
@@ -35,7 +34,7 @@ const EditProfile = ({ user }) => {
       const result = await res.json();
       const { groups, _id } = result.value;
       if (groups && groups.length > 0) {
-        groups.map(async (group) => {
+        return Promise.all(groups.map(async (group) => {
           const url = `/api/group/${group.id}`;
           const groupBody = { memberToChangeNameId: _id, memberName: newName };
           // eslint-disable-next-line no-undef
@@ -46,19 +45,36 @@ const EditProfile = ({ user }) => {
               'Content-Type': 'application/json',
             },
           });
-          return groupRes.json();
+          if (groupRes.status === 200) {
+            const groupResult = await groupRes.json();
+            if (group.role === 'owner' && groupResult.value.members) {
+              try {
+                return Promise.all(groupResult.value.members.map(async (member) => {
+                  const memberUrl = `/api/user/${member.id}`;
+                  const memberBody = { updatedGroupId: group.id, ownerName: newName };
+                  // eslint-disable-next-line no-undef
+                  const memberRes = await fetch(memberUrl, {
+                    method: 'PATCH',
+                    body: JSON.stringify(memberBody),
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                  });
+                  if (memberRes.status === 200) return Promise.resolve(memberRes.json());
+                  return Promise.reject(Error(`Error: received code ${memberRes.status} from server`));
+                }));
+              } catch (err) {
+                return Promise.reject(err.message);
+              }
+            } return Promise.resolve(groupResult);
+          } return Promise.reject(Error(`Error: received code ${groupRes.status} from server`));
+        })).catch((err) => {
+          setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
         });
       }
-      getSession();
-      Router.push({
-        pathname: '/',
-        query: {
-          alert: 'profileEdited',
-        },
-      });
-    } else {
-      setErrorMsg(await res.text());
+      return Promise.resolve(result);
     }
+    return Promise.reject(Error(await res.text()));
   };
 
   const schema = yup.object({
@@ -68,7 +84,7 @@ const EditProfile = ({ user }) => {
   });
 
   return (
-    <Layout>
+    <Layout alerts={alerts} type="profile">
       <Col lg="8" className="mx-auto">
         <Card>
           {!session && loading && (
@@ -80,7 +96,13 @@ const EditProfile = ({ user }) => {
               <Formik
                 onSubmit={(values, actions) => {
                   setTimeout(() => {
-                    submitHandler(values);
+                    submitHandler(values)
+                      .then(() => {
+                        setAlerts([...alerts, { text: 'Profile updated successfully.', variant: 'success' }]);
+                      })
+                      .catch((err) => {
+                        setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+                      });
                     actions.setSubmitting(false);
                   }, 1000);
                 }}
@@ -90,7 +112,6 @@ const EditProfile = ({ user }) => {
               >
                 {(props) => (
                   <Form onSubmit={props.handleSubmit} noValidate>
-                    {errorMsg ? <p style={{ color: 'red' }}>{errorMsg}</p> : null}
                     <Form.Group as={Row} controlId="formPlaintextEmail">
                       <Form.Label column lg="4">
                         Email
@@ -164,7 +185,7 @@ const EditProfile = ({ user }) => {
                         <Button
                           variant="primary"
                           type="submit"
-                          disabled={props.isSubmitting || props.submitCount >= 1}
+                          disabled={props.isSubmitting}
                           data-testid="editprofile-submit-button"
                         >
                           Submit

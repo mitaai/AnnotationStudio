@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/router';
 import $ from 'jquery';
 import {
@@ -15,13 +15,13 @@ import {
   createTextQuoteSelector,
   highlightRange,
 } from 'apache-annotator/dom';
-import Layout2 from '../../components/Layout2';
+import Layout from '../../../components/Layout';
 
-import AnnotationChannel from '../../components/AnnotationChannel';
+import AnnotationChannel from '../../../components/AnnotationChannel';
 
-import Document from '../../components/Document';
+import Document from '../../../components/Document';
 
-import LoadingAnnotationsModal from '../../components/LoadingAnnotationsModal';
+import LoadingAnnotationsModal from '../../../components/LoadingAnnotationsModal';
 
 
 export default function DocumentPage() {
@@ -141,7 +141,7 @@ export default function DocumentPage() {
   const [annotationChannel2Loaded, setAnnotationChannel2Loaded] = useState(false);
   return (
     <>
-      <Layout2>
+      <Layout type="document" title="Placeholder Document">
         <Row id="document-container">
           <Col sm={3}>
             <AnnotationChannel setAnnotationChannelLoaded={setAnnotationChannel1Loaded} side="left" annotations={channelAnnotations.left} />
@@ -179,7 +179,7 @@ export default function DocumentPage() {
             <ProgressBar animated now={100} />
           </Modal.Body>
         </Modal>
-      </Layout2>
+      </Layout>
       <style jsx global>
         {`
           #annotations-header-label {

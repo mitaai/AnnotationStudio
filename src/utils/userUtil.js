@@ -1,6 +1,6 @@
 import fetch from 'unfetch';
 
-const GetUserByEmail = async (email) => {
+const getUserByEmail = async (email) => {
   const url = `/api/user/email/${email}`;
   const res = await fetch(url, {
     method: 'GET',
@@ -12,4 +12,4 @@ const GetUserByEmail = async (email) => {
 };
 
 // eslint-disable-next-line import/prefer-default-export
-export { GetUserByEmail };
+export { getUserByEmail };

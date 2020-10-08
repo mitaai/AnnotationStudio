@@ -6,7 +6,7 @@ import { render, wait } from '@testing-library/react';
 import EditProfile from '../../pages/user/[slug]/editprofile';
 
 test('renders edit profile card', async () => {
-  const { getByText } = render(<EditProfile user={{
+  const { getAllByText } = render(<EditProfile user={{
     name: 'Test User',
     firstName: 'Test',
     lastName: 'User',
@@ -14,9 +14,9 @@ test('renders edit profile card', async () => {
     affiliation: 'Jest Tests',
   }}
   />);
-  const textElement = getByText(/Edit Profile/);
+  const textElements = getAllByText(/Edit Profile/);
   await wait(() => {
-    expect(textElement).toBeInTheDocument();
+    expect(textElements[1]).toBeInTheDocument();
   });
 });
 
