@@ -220,6 +220,9 @@ const DocumentForm = ({
                       </Col>
                     </Row>
                   )}
+                  {(!session.user.groups || session.user.groups.length === 0) && (
+                    <Row><Col>You are not a member of any groups.</Col></Row>
+                  )}
                 </Card.Body>
               </Card>
               <Card>
@@ -228,6 +231,7 @@ const DocumentForm = ({
                 </Card.Header>
                 <Card.Body>
                   <DocumentStatusSelect
+                    session={session}
                     values={props.values}
                     onChange={props.handleChange}
                     onBlur={props.handleBlur}

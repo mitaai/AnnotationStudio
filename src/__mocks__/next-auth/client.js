@@ -8,6 +8,7 @@ const useSession = jest.fn(() => [
       groups: [{
         id: 'abcd1234', name: 'Test Group', ownerName: 'Test User', memberCount: 2, role: 'owner',
       }],
+      role: 'user',
     },
     expires: '2881-10-05T14:48:00.000',
   },
