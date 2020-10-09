@@ -17,6 +17,20 @@ const getDocumentsByUser = async (id, limit) => {
   } return Promise.reject(Error(`Unable to retrieve documents: error ${res.status} received from server`));
 };
 
+const getDocumentBySlug = async (slug) => {
+  const url = `/api/document/${slug}`;
+  const res = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (res.status === 200) {
+    const response = await res.json();
+    return Promise.resolve(response);
+  } return Promise.reject(Error(`Unable to retrieve document: error ${res.status} received from server`));
+};
+
 const getAllDocumentsByGroup = async (groups) => {
   const url = '/api/documents';
   const body = { groupIds: groups.map((group) => group.id) };
@@ -72,4 +86,5 @@ export {
   getDocumentsByUser,
   getAllDocumentsByGroup,
   getSharedDocumentsByGroup,
+  getDocumentBySlug,
 };
