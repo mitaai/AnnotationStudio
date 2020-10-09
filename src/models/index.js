@@ -5,6 +5,9 @@ class User {
     }
     if (email) {
       this.email = email;
+      if (email === process.env.ADMIN_EMAIL) {
+        this.role = 'admin';
+      } else this.role = 'user';
     }
     if (image) {
       this.image = image;
@@ -12,7 +15,6 @@ class User {
     if (emailVerified) {
       const currentDate = new Date();
       this.emailVerified = currentDate;
-      this.role = 'user';
     }
   }
 }

@@ -26,6 +26,11 @@ const SecondNavbar = ({
                     Groups
                   </Breadcrumb.Item>
                 )}
+                {type === 'admin' && (
+                  <Breadcrumb.Item active={!title}>
+                    Administration
+                  </Breadcrumb.Item>
+                )}
                 {type === 'profile' && (
                   <Breadcrumb.Item active>
                     Edit Profile

@@ -18,11 +18,11 @@ const handler = async (req, res) => {
         .toArray();
       if (doc[0]) {
         const {
-          name, firstName, lastName, affiliation,
+          name, firstName, lastName, affiliation, role,
         } = doc[0];
         const groups = doc[0].groups ? doc[0].groups : [];
         res.status(200).json({
-          name, firstName, lastName, affiliation, groups,
+          name, firstName, lastName, affiliation, groups, role,
         });
       } else res.status(404).end('Not Found');
     } else res.status(404).end('Not Found');

@@ -24,7 +24,7 @@ const DashboardGroupList = ({
       </Card.Header>
       <ListGroup>
         {groups && groups.length === 0 && (
-        <>You are not a member of any groups.</>
+        <Card.Body>You are not a member of any groups.</Card.Body>
         )}
         {groups && groups.length > 0
           && groups.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map(
@@ -43,11 +43,13 @@ const DashboardGroupList = ({
               </ListGroup.Item>
             ),
           )}
+        {groups && groups.length > 0 && (
         <ListGroup.Item style={{ fontWeight: 'bold' }} key="all-groups">
           <Link href="/groups">
             See all groups...
           </Link>
         </ListGroup.Item>
+        )}
       </ListGroup>
       <Card.Footer className="text-right" style={{ borderTop: 0 }}>
         <Button
