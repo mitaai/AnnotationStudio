@@ -139,10 +139,10 @@ export default function DocumentPage() {
   const [channelAnnotations, setChannelAnnotations] = useState({ left: null, right: null });
   const [annotationChannel1Loaded, setAnnotationChannel1Loaded] = useState(false);
   const [annotationChannel2Loaded, setAnnotationChannel2Loaded] = useState(false);
-  
+
   return (
     <>
-      <Layout type="document" title="Placeholder Document">
+      <Layout type="document" title="Placeholder Document" docView>
         <Row id="document-container">
           <Col sm={3}>
             <AnnotationChannel setAnnotationChannelLoaded={setAnnotationChannel1Loaded} side="left" annotations={channelAnnotations.left} />
@@ -150,7 +150,7 @@ export default function DocumentPage() {
           <Col sm={6}>
             <Card id="document-card-container">
               <Card.Body>
-                <Document setChannelAnnotations={setChannelAnnotations} annotations={dummyData} annotateDocument={(mySelector) => { HighlightTextToAnnotate(mySelector); }}>
+                <Document setChannelAnnotations={setChannelAnnotations} annotations={dummyData} annotateDocument={(mySelector, annotationID) => { HighlightTextToAnnotate(mySelector, annotationID); }}>
                   is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard
                   {' '}
                   <strong>dummy</strong>
@@ -251,17 +251,20 @@ async function HighlightText(obj, domElement) {
   }
 }
 
-async function HighlightTextToAnnotate(mySelector) {
+async function HighlightTextToAnnotate(mySelector, annotationID) {
   // this function takes a object selector and it highlights it accordingly so that the user knows what they are about to annotate
   const obj = {
     selector: mySelector,
     props: {
       class: 'text-currently-being-annotated active',
+      'annotation-id': annotationID,
     },
   };
 
   // before we highlight the tex to annotate we need to make sure to unhighlight text that was trying to be annotated by the user previously
   $('.text-currently-being-annotated').removeClass('text-currently-being-annotated active');
+
+  $("#document-content-container").addClass("unselectable");
 
   HighlightText(obj, $('#document-content-container').get(0));
 }

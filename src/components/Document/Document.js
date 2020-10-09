@@ -186,7 +186,7 @@ function MoveAnnotationsToCorrectSpotBasedOnFocus(side, focusID) {
   const tempTopAdjustment = 0;
   const documentContainerOffset = $('#document-container').offset();
   let lastHighestPoint = -1000;
-  const marginBottom = 5;
+  const marginBottom = 8;
   const adjustmentTopNumber = 6;
   let top;
   let trueTop;
@@ -223,12 +223,11 @@ function MoveAnnotationsToCorrectSpotBasedOnFocus(side, focusID) {
     const offsetLeftForLine2 = side === 'left' ? annotations[i].position.left : annotations[i].position.left - $(`#document-container #${annotations[i]._id}`).offset().left;
     // this is where the annotation wants to be
     trueTop = annotations[i].position.top - documentContainerOffset.top + tempTopAdjustment - adjustmentTopNumber;
-    // if where the annotation can be minus the annotation height is smaller than were it wants to be then we have to set the annotations top to where it can be and not where it wants to be. Or if where it is now is no an acceptable value we will move it to the next most available spot
-    if (lastLowestPoint - $(`#document-container #${annotations[i]._id}`).height() - marginBottom < trueTop || lastLowestPoint - $(`#document-container #${annotations[i]._id}`).height() - marginBottom < $(`#document-container #${annotations[i]._id}`).position().top) {
+    // if where you are is greater than where you can be then we have to set your position to where you can be. Otherwise just set your position to where you are
+    if (lastLowestPoint - $(`#document-container #${annotations[i]._id}`).height() - marginBottom < $(`#document-container #${annotations[i]._id}`).position().top) {
       top = lastLowestPoint - $(`#document-container #${annotations[i]._id}`).height() - marginBottom;
     } else {
-      // this would be focusing the annotation if it is possible which could displace other annotations higher up because we are iterating through the loop backwards
-      top = trueTop;
+      top = $(`#document-container #${annotations[i]._id}`).position().top;
     }
 
     lastLowestPoint = top;
@@ -291,7 +290,7 @@ export default class Document extends React.Component {
         } else {
           const annotationBeginningPosition = annotationBeginning.offset();
           annotationBeginningPosition.top += $('#document-container').scrollTop(); // this takes into account if the user was scrolling through the document as the it was being populated with annotations
-          console.log(annotationBeginningPosition, annotationBeginning.position());
+          // console.log(annotationBeginningPosition, annotationBeginning.position());
           // now that we have position data we will add the annotation either to the left or right channel
           if (annotationBeginningPosition.left < window.innerWidth / 2) {
             annotations.left.push({ position: { left: annotationBeginningPosition.left, top: annotationBeginningPosition.top }, ...annotation });
@@ -357,37 +356,41 @@ export default class Document extends React.Component {
         this.setState({ target: null, show: false });
       }
 
-      // if the reason why the selection change is because you selected text to annotate then don't remove class active from a text that was selected
-      // otherwise the selection change so any text that was selected by the user is no longer needed so we need to remove styling
-      if (!this.state.selectedTextToAnnotate) {
+      if (!$('#document-content-container').hasClass('unselectable')) {
+        // if the reason why the selection change is because you selected text to annotate then don't remove class active from a text that was selected
+        // otherwise the selection change so any text that was selected by the user is no longer needed so we need to remove styling
+        if (!this.state.selectedTextToAnnotate) {
         // if we are making a new selection we need to make sure all old selections are removed
-        $('.text-currently-being-annotated').removeClass('active');
-      } else {
-        this.setState({ selectedTextToAnnotate: false });
-      }
+          $('.text-currently-being-annotated').removeClass('active');
+          $('#document-content-container').removeClass('unselectable');
+        } else {
+          this.setState({ selectedTextToAnnotate: false });
+        }
 
-      const selection = document.getSelection();
-      // console.log('selection', selection);
-      if (selection.rangeCount === 1) {
-        const range = selection.getRangeAt(0);
-        if (!range.collapsed && range.toString().length > 0) {
+        const selection = document.getSelection();
+        // console.log('selection', selection);
+        if (selection.rangeCount === 1) {
+          const range = selection.getRangeAt(0);
+          if (!range.collapsed && range.toString().length > 0) {
           // we need to make sure this selection happened inside the document card container and not some where outside of the document
-          if ($(range.commonAncestorContainer.parentElement).parents('#document-card-container').length !== 0) {
+            if ($(range.commonAncestorContainer.parentElement).parents('#document-card-container').length !== 0) {
             // make sure the range is something
-            //console.log('range', range.commonAncestorContainer.parentElement);
-            const scope = document.createRange();
-            // console.log('documentContainer', documentContainer);
-            scope.selectNodeContents(documentContainer);
-            // console.log('scope', scope);
-            // we need to make sure that the selection the user made is inside the scope, meaning that everything they selected is inside the document and not outside the document
-            // if (range.compareBoundaryPoints(Range.START_TO_START, scope) != -1 && range.compareBoundaryPoints(Range.END_TO_END, scope) != 1) {
-            const mySelector = await CustomDescibeTextQuote(range, scope);
-            // console.log(mySelector);
-            this.PositionAnnotateButton(selection, mySelector);
+            // console.log('range', range.commonAncestorContainer.parentElement);
+              const scope = document.createRange();
+              // console.log('documentContainer', documentContainer);
+              scope.selectNodeContents(documentContainer);
+              // console.log('scope', scope);
+              // we need to make sure that the selection the user made is inside the scope, meaning that everything they selected is inside the document and not outside the document
+              // if (range.compareBoundaryPoints(Range.START_TO_START, scope) != -1 && range.compareBoundaryPoints(Range.END_TO_END, scope) != 1) {
+              const mySelector = await CustomDescibeTextQuote(range, scope);
+              // console.log(mySelector);
+              this.PositionAnnotateButton(selection, mySelector);
             // } else { console.log('outside of bounds'); }
+            }
           }
         }
       }
+
       //
     }, 500, this.myRef.current));
     if (!this.annotationsHighlighted) {
@@ -409,7 +412,8 @@ export default class Document extends React.Component {
             <Tooltip
               id="annotate-document-tooltip"
               onClick={() => {
-                this.props.annotateDocument(this.state.selector);
+                const rid = RID();
+                this.props.annotateDocument(this.state.selector, rid);
 
                 // when the user clicks to annotate the piece of text that is selected we need to grab information about all the annotations currently showing in the dom then we need to place this new annotation into that object along with the annotations position data then once we have set this new information we need to save it by reseting the dom element attribute "annotations" then use the new data and use the updated data and pass it into "MoveAnnotationsToCorrectSpotBasedOnFocus" function
 
@@ -420,7 +424,7 @@ export default class Document extends React.Component {
                 // now that we know which side to get the annotation data from we will grab the current data and update it
                 const annotationChannelData = JSON.parse($('#document-container').attr('annotations'));
                 const newAnnotation = {
-                  _id: RID(),
+                  _id: rid,
                   user: 'Joshua Mbogo',
                   annotation: '',
                   date: moment().format('MM/DD/YYYY'),
@@ -485,6 +489,14 @@ export default class Document extends React.Component {
 
             .annotation-highlighted-text.active,  .annotation-highlighted-text.active * {
               background-color: rgba(0, 123, 255, 0.5) !important;
+            }
+
+            #document-content-container.unselectable {
+              -moz-user-select: -moz-none;
+              -khtml-user-select: none;
+              -webkit-user-select: none;
+              -o-user-select: none;
+              user-select: none;
             }
         `}
         </style>
