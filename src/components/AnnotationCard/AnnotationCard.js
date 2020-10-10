@@ -16,6 +16,76 @@ import {
   Tooltip,
 } from 'react-bootstrap';
 
+function AddHoverEventListenersToAllHighlightedText() {
+  // console.log('annotation-highlighted-text', $('.annotation-highlighted-text'));
+  $('.annotation-highlighted-text').on('mouseover', (e) => {
+    // highlighting all every piece of the annotation a different color by setting it to active
+    $(`.annotation-highlighted-text[annotation-id='${$(e.target).attr('annotation-id')}']`).addClass('active');
+    // highligthing the correct annotation on the left or right channel that the user is hovering
+    $(`#${$(e.target).attr('annotation-id')}`).addClass('active');
+
+    // we need to higlight any text that is highlighted text but a parent of this dom element. This is what happens if somone annotates a piece of text inside of another piece of annotated text
+    $(`.annotation-highlighted-text[annotation-id='${$(e.target).attr('annotation-id')}']`).parents('.annotation-highlighted-text').each((index, elmnt) => {
+      // highlighting ever piece of text that is highlighted and is the parent of the text that is currently being highlighted
+      $(`.annotation-highlighted-text[annotation-id='${$(elmnt).attr('annotation-id')}']`).addClass('active');
+      // highlighting the correct annotation that matches this specific highlighted text that is the parent of the text that is currently getting hovered
+      $(`#${$(elmnt).attr('annotation-id')}`).addClass('active');
+    });
+  }).on('mouseout', (e) => {
+    $(`.annotation-highlighted-text[annotation-id='${$(e.target).attr('annotation-id')}']`).removeClass('active');
+    $(`#${$(e.target).attr('annotation-id')}`).removeClass('active');
+
+    // we need to higlight any text that is highlighted text but a parent of this dom element. This is what happens if somone annotates a piece of text inside of another piece of annotated text
+    $(`.annotation-highlighted-text[annotation-id='${$(e.target).attr('annotation-id')}']`).parents('.annotation-highlighted-text').each((index, elmnt) => {
+      // highlighting ever piece of text that is highlighted and is the parent of the text that is currently being highlighted
+      $(`.annotation-highlighted-text[annotation-id='${$(elmnt).attr('annotation-id')}']`).removeClass('active');
+      // highlighting the correct annotation that matches this specific highlighted text that is the parent of the text that is currently getting hovered
+      $(`#${$(elmnt).attr('annotation-id')}`).removeClass('active');
+    });
+  });
+}
+
+
+/*
+
+"annotation data structure"
+
+{
+  "id": <String> (valid ObjectID),
+  "type": "Annotation",
+  "creator": {
+    "name": <String>,
+    "email": <String> (valid email)
+  },
+  "permissions": {
+    "groups": Array<String> (valid ObjectID)> or undefined,
+    "documentOwner": <Boolean>,
+  }
+  "created": <Date>,
+  "modified": <Date>,
+  "body": {
+    "type": "TextualBody",
+    "value": <String> (valid HTML),
+    "tags": Array<String>,
+    "format": "text/html",
+    "language": <String> (valid W3C language tag)
+  },
+  "target": {
+    "document": {
+      "slug": <String> (valid slug),
+      "format": "text/html",
+      ...metadata
+    },
+    "selector": {
+      "type": "TextQuoteSelector",
+      "exact": <String>,
+      "prefix": <String>,
+      "suffix": <String>,
+    }
+  }
+}
+*/
+
 
 function AnnotationCard({
   side, annotation, focusOnAnnotation, initializedAsEditing,
@@ -73,6 +143,7 @@ function AnnotationCard({
       // after we have saved the annotation the highlighted text needs to change its class from  "text-currently-being-annotated active" to "annotation-highlighted-text"
       $('.text-currently-being-annotated.active').addClass('annotation-highlighted-text');
       $('.text-currently-being-annotated.active').removeClass('text-currently-being-annotated active');
+      AddHoverEventListenersToAllHighlightedText();
       // we also need to make the document selectable again
       $('#document-content-container').removeClass('unselectable');
       // then after everything is done we will focus on the annotation so that things get shifted to their correct spots
@@ -259,7 +330,7 @@ function AnnotationCard({
                       <>
                         <ListGroup.Item className="annotation-tags">
                           {annotationData.tags.map((tag, index) => {
-                            if (tag === '') {return ''; }
+                            if (tag === '') { return ''; }
                             return <Badge key={index} variant="secondary">{tag}</Badge>;
                           })}
                         </ListGroup.Item>

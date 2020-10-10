@@ -1,6 +1,6 @@
+/* eslint-disable react/no-danger */
 
 import { useState } from 'react';
-import { useRouter } from 'next/router';
 import $ from 'jquery';
 import {
   Row,
@@ -21,16 +21,16 @@ import AnnotationChannel from '../../../components/AnnotationChannel';
 
 import Document from '../../../components/Document';
 
-import LoadingAnnotationsModal from '../../../components/LoadingAnnotationsModal';
+import { getDocumentBySlug } from '../../../utils/docUtil';
 
+export default function DocumentPage(props) {
+  const { document, alerts } = props;
 
-export default function DocumentPage() {
-  const router = useRouter();
-  const { slug } = router.query;
-  console.log(slug);
+  const dummyData = [];
 
+  /*
   const dummyData = [
-    {
+    /*{
       _id: 'awef235235323',
       user: 'Joshua Mbogo',
       annotation: 'hello good sir how are you today?',
@@ -135,6 +135,7 @@ export default function DocumentPage() {
       },
     },
   ];
+  */
 
   const [channelAnnotations, setChannelAnnotations] = useState({ left: null, right: null });
   const [annotationChannel1Loaded, setAnnotationChannel1Loaded] = useState(false);
@@ -142,7 +143,7 @@ export default function DocumentPage() {
 
   return (
     <>
-      <Layout type="document" title="Placeholder Document" docView>
+      <Layout type="document" title={document.title} alerts={alerts} docView>
         <Row id="document-container">
           <Col sm={3}>
             <AnnotationChannel setAnnotationChannelLoaded={setAnnotationChannel1Loaded} side="left" annotations={channelAnnotations.left} />
@@ -150,14 +151,12 @@ export default function DocumentPage() {
           <Col sm={6}>
             <Card id="document-card-container">
               <Card.Body>
-                <Document setChannelAnnotations={setChannelAnnotations} annotations={dummyData} annotateDocument={(mySelector, annotationID) => { HighlightTextToAnnotate(mySelector, annotationID); }}>
-                  is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard
-                  {' '}
-                  <strong>dummy</strong>
-                  {' '}
-                  text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum. is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum. is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
-                  Attempting to develop inventions he could patent and market, Tesla conducted a range of experiments with mechanical oscillators/generators, electrical discharge tubes, and early X-ray imaging. He also built a wireless-controlled boat, one of the first ever exhibited. Tesla became well known as an inventor and demonstrated his achievements to celebrities and wealthy patrons at his lab, and was noted for his showmanship at public lectures. Throughout the 1890s, Tesla pursued his ideas for wireless lighting and worldwide wireless electric power distribution in his high-voltage, high-frequency power experiments in New York and Colorado Springs. In 1893, he made pronouncements on the possibility of wireless communication with his devices. Tesla tried to put these ideas to practical use in his unfinished Wardenclyffe Tower project, an intercontinental wireless communication and power transmitter, but ran out of funding before he could complete it.
-                </Document>
+                <Document
+                  setChannelAnnotations={setChannelAnnotations}
+                  annotations={dummyData}
+                  annotateDocument={(mySelector, annotationID) => { HighlightTextToAnnotate(mySelector, annotationID); }}
+                  documentText={document.text}
+                />
               </Card.Body>
             </Card>
           </Col>
@@ -242,6 +241,26 @@ export default function DocumentPage() {
   );
 }
 
+export async function getServerSideProps(context) {
+  const { slug } = context.params;
+  let props = {};
+  await getDocumentBySlug(slug, context.req.headers.cookie).then((response) => {
+    props = {
+      document: {
+        slug,
+        ...response,
+      },
+    };
+  }).catch((err) => {
+    props = {
+      alerts: [{ text: err.message, variant: 'danger' }],
+    };
+  });
+
+  return { props };
+}
+
+
 async function HighlightText(obj, domElement) {
   const selector = createTextQuoteSelector(obj.selector);
   const matches = selector(domElement);
@@ -264,7 +283,7 @@ async function HighlightTextToAnnotate(mySelector, annotationID) {
   // before we highlight the tex to annotate we need to make sure to unhighlight text that was trying to be annotated by the user previously
   $('.text-currently-being-annotated').removeClass('text-currently-being-annotated active');
 
-  $("#document-content-container").addClass("unselectable");
+  $('#document-content-container').addClass('unselectable');
 
   HighlightText(obj, $('#document-content-container').get(0));
 }

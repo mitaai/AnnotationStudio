@@ -1,9 +1,9 @@
-import fetch from 'unfetch';
+import myFetch from 'unfetch';
 
 const getDocumentsByUser = async (id, limit) => {
   const url = '/api/documents';
   const body = { userId: id, limit };
-  const res = await fetch(url, {
+  const res = await myFetch(url, {
     method: 'POST',
     body: JSON.stringify(body),
     headers: {
@@ -17,12 +17,14 @@ const getDocumentsByUser = async (id, limit) => {
   } return Promise.reject(Error(`Unable to retrieve documents: error ${res.status} received from server`));
 };
 
-const getDocumentBySlug = async (slug) => {
-  const url = `/api/document/${slug}`;
+const getDocumentBySlug = async (slug, cookie) => {
+  const url = `${process.env.SITE}/api/document/slug/${slug}`;
+  // eslint-disable-next-line no-undef
   const res = await fetch(url, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
+      Cookie: cookie,
     },
   });
   if (res.status === 200) {
@@ -34,7 +36,7 @@ const getDocumentBySlug = async (slug) => {
 const getAllDocumentsByGroup = async (groups) => {
   const url = '/api/documents';
   const body = { groupIds: groups.map((group) => group.id) };
-  const res = await fetch(url, {
+  const res = await myFetch(url, {
     method: 'POST',
     body: JSON.stringify(body),
     headers: {
@@ -53,7 +55,7 @@ const getAllDocumentsByGroup = async (groups) => {
 const getSharedDocumentsByGroup = async (groups, limit) => {
   const url = '/api/documents';
   const body = { groupIds: groups.map((group) => group.id), limit };
-  const res = await fetch(url, {
+  const res = await myFetch(url, {
     method: 'POST',
     body: JSON.stringify(body),
     headers: {
@@ -69,7 +71,7 @@ const getSharedDocumentsByGroup = async (groups, limit) => {
 
 const deleteDocumentById = async (id) => {
   const url = `/api/document/${id}`;
-  const res = await fetch(url, {
+  const res = await myFetch(url, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',

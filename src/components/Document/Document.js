@@ -1,3 +1,4 @@
+/* eslint-disable react/no-danger */
 import React from 'react';
 import ReactDOM from 'react-dom';
 import $ from 'jquery';
@@ -404,8 +405,7 @@ export default class Document extends React.Component {
     return (
       <>
         <div id="document-content-container" ref={this.myRef}>
-          <span>hello</span>
-          <span>{this.props.children}</span>
+          <div dangerouslySetInnerHTML={{ __html: this.props.documentText }} />
         </div>
         <Overlay id="annotate-document-overlay" target={this.state.target} show={this.state.show} placement="top">
           {(props) => (
