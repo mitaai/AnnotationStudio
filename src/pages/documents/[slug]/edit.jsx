@@ -6,7 +6,7 @@ import Layout from '../../../components/Layout';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import DocumentForm from '../../../components/DocumentForm';
 
-import { getDocumentBySlug } from '../../../utils/docUtil';
+import { prefetchDocumentBySlug } from '../../../utils/docUtil';
 
 const EditDocument = (props) => {
   const { document, alerts } = props;
@@ -41,7 +41,7 @@ const EditDocument = (props) => {
 export async function getServerSideProps(context) {
   const { slug } = context.params;
   let props = {};
-  await getDocumentBySlug(slug, context.req.headers.cookie).then((response) => {
+  await prefetchDocumentBySlug(slug, context.req.headers.cookie).then((response) => {
     props = {
       document: {
         slug,

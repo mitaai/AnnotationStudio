@@ -17,7 +17,7 @@ const getDocumentsByUser = async (id, limit) => {
   } return Promise.reject(Error(`Unable to retrieve documents: error ${res.status} received from server`));
 };
 
-const getDocumentBySlug = async (slug, cookie) => {
+const prefetchDocumentBySlug = async (slug, cookie) => {
   const url = `${process.env.SITE}/api/document/slug/${slug}`;
   // eslint-disable-next-line no-undef
   const res = await fetch(url, {
@@ -88,5 +88,5 @@ export {
   getDocumentsByUser,
   getAllDocumentsByGroup,
   getSharedDocumentsByGroup,
-  getDocumentBySlug,
+  prefetchDocumentBySlug,
 };

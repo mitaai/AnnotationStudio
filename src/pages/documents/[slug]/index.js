@@ -21,7 +21,7 @@ import AnnotationChannel from '../../../components/AnnotationChannel';
 
 import Document from '../../../components/Document';
 
-import { getDocumentBySlug } from '../../../utils/docUtil';
+import { prefetchDocumentBySlug } from '../../../utils/docUtil';
 
 export default function DocumentPage(props) {
   const { document, alerts } = props;
@@ -244,7 +244,7 @@ export default function DocumentPage(props) {
 export async function getServerSideProps(context) {
   const { slug } = context.params;
   let props = {};
-  await getDocumentBySlug(slug, context.req.headers.cookie).then((response) => {
+  await prefetchDocumentBySlug(slug, context.req.headers.cookie).then((response) => {
     props = {
       document: {
         slug,
