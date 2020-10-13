@@ -1,9 +1,9 @@
-import myFetch from 'unfetch';
+import unfetch from 'unfetch';
 
 const getDocumentsByUser = async (id, limit) => {
   const url = '/api/documents';
   const body = { userId: id, limit };
-  const res = await myFetch(url, {
+  const res = await unfetch(url, {
     method: 'POST',
     body: JSON.stringify(body),
     headers: {
@@ -36,7 +36,7 @@ const getDocumentBySlug = async (slug, cookie) => {
 const getAllDocumentsByGroup = async (groups) => {
   const url = '/api/documents';
   const body = { groupIds: groups.map((group) => group.id) };
-  const res = await myFetch(url, {
+  const res = await unfetch(url, {
     method: 'POST',
     body: JSON.stringify(body),
     headers: {
@@ -55,7 +55,7 @@ const getAllDocumentsByGroup = async (groups) => {
 const getSharedDocumentsByGroup = async (groups, limit) => {
   const url = '/api/documents';
   const body = { groupIds: groups.map((group) => group.id), limit };
-  const res = await myFetch(url, {
+  const res = await unfetch(url, {
     method: 'POST',
     body: JSON.stringify(body),
     headers: {
@@ -71,7 +71,7 @@ const getSharedDocumentsByGroup = async (groups, limit) => {
 
 const deleteDocumentById = async (id) => {
   const url = `/api/document/${id}`;
-  const res = await myFetch(url, {
+  const res = await unfetch(url, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
