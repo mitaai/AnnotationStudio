@@ -16,8 +16,8 @@ const handler = async (req, res) => {
           const {
             creator, body, permissions, target,
           } = req.body;
-          body.type = 'TextualBody';
-          body.format = 'text/html';
+          if (!body.type) body.type = 'TextualBody';
+          if (!body.format) body.format = 'text/html';
           if (!creator.name) creator.name = token.name;
           if (!creator.email) creator.email = token.email;
           const { db } = await connectToDatabase();
