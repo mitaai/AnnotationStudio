@@ -17,7 +17,7 @@ import {
   Tooltip,
 } from 'react-bootstrap';
 
-import { postAnnotation } from '../../utils/annotationUtil';
+import { postAnnotation, updateAnnotationById } from '../../utils/annotationUtil';
 
 function AddHoverEventListenersToAllHighlightedText() {
   // console.log('annotation-highlighted-text', $('.annotation-highlighted-text'));
@@ -122,23 +122,23 @@ function AnnotationCard({
     if (savingAnnotation || cancelingAnnotation) { return; }// if we are already saving the annotation then don't try to run the function again
     setSavingAnnotation(true);
 
-    if (newAnnotation) {
-      // we need to reassign values to the annotationData
-      const newAnnotationData = JSON.parse(JSON.stringify(annotationData));
-      if (newAnnotationTags !== null) {
-        newAnnotationData.body.tags = newAnnotationTags.split(' ');
+    // we need to reassign values to the annotationData
+    const newAnnotationData = JSON.parse(JSON.stringify(annotationData));
+    if (newAnnotationTags !== null) {
+      newAnnotationData.body.tags = newAnnotationTags.split(' ');
+    }
+    if (newAnnotationPermissionsShareWithGroups !== null) {
+      if (newAnnotationPermissionsShareWithGroups) {
+        newAnnotationData.permissions.groups = newAnnotationData.target.document.groups;
+      } else {
+        newAnnotationData.permissions.groups = [];
       }
-      if (newAnnotationPermissionsShareWithGroups !== null) {
-        if (newAnnotationPermissionsShareWithGroups) {
-          newAnnotationData.permissions.groups = newAnnotationData.target.document.groups;
-        } else {
-          newAnnotationData.permissions.groups = [];
-        }
-      }
-      if (newAnnotationText !== null) {
-        newAnnotationData.body.value = newAnnotationText;
-      }
+    }
+    if (newAnnotationText !== null) {
+      newAnnotationData.body.value = newAnnotationText;
+    }
 
+    if (newAnnotation) {
       postAnnotation({
         creator: newAnnotationData.creator,
         permissions: newAnnotationData.permissions,
@@ -161,6 +161,7 @@ function AnnotationCard({
         $('.text-currently-being-annotated.active').addClass('annotation-highlighted-text');
         $('.text-currently-being-annotated.active').removeClass('text-currently-being-annotated active');
         AddHoverEventListenersToAllHighlightedText();
+        // we need to save this new data to the "#document-container" dom element attribute 'annotations'
         // we also need to make the document selectable again
         $('#document-content-container').removeClass('unselectable');
         // then after everything is done we will focus on the annotation so that things get shifted to their correct spots
@@ -170,7 +171,29 @@ function AnnotationCard({
         setSavingAnnotation(false);
       });
     } else {
+       console.log(newAnnotationData.db_id === undefined ? newAnnotationData._id : newAnnotationData.db_id); 
+      updateAnnotationById(
+        newAnnotationData.db_id === undefined ? newAnnotationData._id : newAnnotationData.db_id,
+        newAnnotationData,
+      ).then((response) => {
+        console.log(response);
+        newAnnotationData.modified = new Date();
+        setSavingAnnotation(false);
+        setNewAnnotation(false);
+        setEditing(false);
+        // once the new annotation data saves properly on the database then we can update the annotation data
+        setAnnotationData(newAnnotationData);
 
+        // after setting the annotation data we need to reset the "new" data back to null
+        setNewAnnotationTags(null);
+        setNewAnnotationPermissionsShareWithGroups(null);
+        setNewAnnotationText(null);
+        // then after everything is done we will focus on the annotation so that things get shifted to their correct spots
+        focusOnAnnotation();
+      }).catch((err) => {
+        console.log(err);
+        setSavingAnnotation(false);
+      });
     }
   }
 
