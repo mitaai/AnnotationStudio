@@ -59,7 +59,7 @@ const handler = async (req, res) => {
         if (permissions) updateMethods.$set.permissions = { ...permissions };
         updateMethods.$currentDate = { modified: true };
         const doc = await db
-          .collection('documents')
+          .collection('annotations')
           .findOneAndUpdate(
             findCondition,
             updateMethods,
