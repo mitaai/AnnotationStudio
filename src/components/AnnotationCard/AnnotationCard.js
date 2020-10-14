@@ -122,60 +122,56 @@ function AnnotationCard({
     if (savingAnnotation || cancelingAnnotation) { return; }// if we are already saving the annotation then don't try to run the function again
     setSavingAnnotation(true);
 
-    // we need to reassign values to the annotationData
-    const newAnnotationData = JSON.parse(JSON.stringify(annotationData));
-    if (newAnnotationTags !== null) {
-      newAnnotationData.body.tags = newAnnotationTags.split(' ');
-    }
-    if (newAnnotationPermissionsShareWithGroups !== null) {
-      if (newAnnotationPermissionsShareWithGroups) {
-        newAnnotationData.permissions.groups = newAnnotationData.creator_groups;
-      } else {
-        newAnnotationData.permissions.groups = [];
+    if (newAnnotation) {
+      // we need to reassign values to the annotationData
+      const newAnnotationData = JSON.parse(JSON.stringify(annotationData));
+      if (newAnnotationTags !== null) {
+        newAnnotationData.body.tags = newAnnotationTags.split(' ');
       }
+      if (newAnnotationPermissionsShareWithGroups !== null) {
+        if (newAnnotationPermissionsShareWithGroups) {
+          newAnnotationData.permissions.groups = newAnnotationData.target.document.groups;
+        } else {
+          newAnnotationData.permissions.groups = [];
+        }
+      }
+      if (newAnnotationText !== null) {
+        newAnnotationData.body.value = newAnnotationText;
+      }
+
+      postAnnotation({
+        creator: newAnnotationData.creator,
+        permissions: newAnnotationData.permissions,
+        body: newAnnotationData.body,
+        target: newAnnotationData.target,
+      }).then((response) => {
+        newAnnotationData.db_id = response.insertedId;// the new annotation already has an id but this id relates to the
+        newAnnotationData.modified = new Date();
+        setSavingAnnotation(false);
+        setNewAnnotation(false);
+        setEditing(false);
+        // once the new annotation data saves properly on the database then we can update the annotation data
+        setAnnotationData(newAnnotationData);
+
+        // after setting the annotation data we need to reset the "new" data back to null
+        setNewAnnotationTags(null);
+        setNewAnnotationPermissionsShareWithGroups(null);
+        setNewAnnotationText(null);
+        // after we have saved the annotation the highlighted text needs to change its class from  "text-currently-being-annotated active" to "annotation-highlighted-text"
+        $('.text-currently-being-annotated.active').addClass('annotation-highlighted-text');
+        $('.text-currently-being-annotated.active').removeClass('text-currently-being-annotated active');
+        AddHoverEventListenersToAllHighlightedText();
+        // we also need to make the document selectable again
+        $('#document-content-container').removeClass('unselectable');
+        // then after everything is done we will focus on the annotation so that things get shifted to their correct spots
+        focusOnAnnotation();
+      }).catch((err) => {
+        console.log(err);
+        setSavingAnnotation(false);
+      });
+    } else {
+
     }
-    if (newAnnotationText !== null) {
-      newAnnotationData.body.value = newAnnotationText;
-    }
-
-    console.log({
-      creator: newAnnotationData.creator,
-      permissions: newAnnotationData.permissions,
-      body: newAnnotationData.body,
-      target: newAnnotationData.target,
-    });
-
-    postAnnotation({
-      creator: newAnnotationData.creator,
-      permissions: newAnnotationData.permissions,
-      body: newAnnotationData.body,
-      target: newAnnotationData.target,
-    }).then((response) => {
-      console.log(response);
-      newAnnotationData.db_id = response.insertedId;// the new annotation already has an id but this id relates to the
-      newAnnotationData.modified = new Date();
-      setSavingAnnotation(false);
-      setNewAnnotation(false);
-      setEditing(false);
-      // once the new annotation data saves properly on the database then we can update the annotation data
-      setAnnotationData(newAnnotationData);
-
-      // after setting the annotation data we need to reset the "new" data back to null
-      setNewAnnotationTags(null);
-      setNewAnnotationPermissionsShareWithGroups(null);
-      setNewAnnotationText(null);
-      // after we have saved the annotation the highlighted text needs to change its class from  "text-currently-being-annotated active" to "annotation-highlighted-text"
-      $('.text-currently-being-annotated.active').addClass('annotation-highlighted-text');
-      $('.text-currently-being-annotated.active').removeClass('text-currently-being-annotated active');
-      AddHoverEventListenersToAllHighlightedText();
-      // we also need to make the document selectable again
-      $('#document-content-container').removeClass('unselectable');
-      // then after everything is done we will focus on the annotation so that things get shifted to their correct spots
-      focusOnAnnotation();
-    }).catch((err) => {
-      console.log(err);
-      setSavingAnnotation(false);
-    });
   }
 
   function CancelAnnotation() {
@@ -257,7 +253,7 @@ function AnnotationCard({
               <span className="float-left">{annotationData.creator.name}</span>
               <span className="float-right">
                 <span>{annotationData.modified === undefined ? '' : moment(annotationData.modified.toString()).format('MM/DD/YYYY')}</span>
-                {user.email !== annotationData.creator.email ? (
+                {user.email === annotationData.creator.email ? (
                   <Dropdown className="annotation-more-options-dropdown">
                     <Dropdown.Toggle variant="light" id="dropdown-basic">
                       <svg width="0.8em" height="0.8em" viewBox="0 0 16 16" className="bi bi-three-dots-vertical" fill="currentColor" xmlns="http://www.w3.org/2000/svg">

@@ -443,7 +443,6 @@ export default class Document extends React.Component {
                   const annotationChannelData = JSON.parse($('#document-container').attr('annotations'));
                   const newAnnotation = {
                     _id: rid,
-                    creator_groups: this.props.user.groups,
                     type: 'Annotation',
                     creator: {
                       name: this.props.user.name,
