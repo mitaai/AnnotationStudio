@@ -3,8 +3,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import $ from 'jquery';
 import moment from 'moment';
-import Overlay from 'react-bootstrap/Overlay';
-import Tooltip from 'react-bootstrap/Tooltip';
+import { Overlay, Tooltip, Toast } from 'react-bootstrap';
 import { Pen } from 'react-bootstrap-icons';
 import {
   createTextQuoteSelector,
@@ -252,7 +251,7 @@ function MoveAnnotationsToCorrectSpotBasedOnFocus(side, focusID) {
 function RID() {
   const c = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let rid = '';
-  for (let i = 0; i < 15; i++) {
+  for (let i = 0; i < 15; i += 1) {
     const r = Math.random() * c.length;
     rid += c.substring(r, r + 1);
   }
@@ -270,6 +269,7 @@ export default class Document extends React.Component {
       show: false,
       selector: null,
       selectedTextToAnnotate: false,
+      showCannotAnnotateDocumentToast: false,
     };
 
     this.annotationsHighlighted = false;
@@ -279,6 +279,7 @@ export default class Document extends React.Component {
         left: [],
         right: [],
       };
+      // eslint-disable-next-line no-restricted-syntax
       for await (const annotation of _annotations) {
         await HighlightText({ selector: annotation.target.selector, props: { 'annotation-id': annotation._id, class: 'annotation-highlighted-text' } }, $('#document-content-container').get(0));
 
@@ -286,7 +287,7 @@ export default class Document extends React.Component {
         $($(`#document-content-container span[annotation-id='${annotation._id}']`).get(0)).prepend("<span class='annotation-beginning-marker'></span>");
         // so now that we have added the beginning marker we are going to get the position of the begginning market then remove it from the dom
         const annotationBeginning = $(`#document-content-container span[annotation-id='${annotation._id}'] .annotation-beginning-marker`);
-        if (annotationBeginning.get(0) == undefined) {
+        if (annotationBeginning.get(0) === undefined) {
           console.log('unable to annotation a piece of text');
         } else {
           const annotationBeginningPosition = annotationBeginning.offset();
@@ -404,6 +405,22 @@ export default class Document extends React.Component {
   render() {
     return (
       <>
+        <div id="show-cannot-annotate-document-toast-container">
+          <Toast
+            onClose={() => this.setState({ showCannotAnnotateDocumentToast: false })}
+            show={this.state.showCannotAnnotateDocumentToast}
+            // delay={8000}
+            variant="warning"
+            // autohide
+          >
+            <Toast.Header>
+              <strong className="mr-auto">Cannot Annotate Document</strong>
+            </Toast.Header>
+            <Toast.Body>This document is currently a draft so it cannot be annotated at the moment</Toast.Body>
+          </Toast>
+        </div>
+
+
         <div id="document-content-container" ref={this.myRef}>
           <div dangerouslySetInnerHTML={{ __html: this.props.document !== undefined ? this.props.document.text : '' }} />
         </div>
@@ -412,101 +429,91 @@ export default class Document extends React.Component {
             <Tooltip
               id="annotate-document-tooltip"
               onClick={() => {
-                const rid = RID();
-                this.props.annotateDocument(this.state.selector, rid);
+                if (this.props.document.state !== 'draft') {
+                  const rid = RID();
+                  this.props.annotateDocument(this.state.selector, rid);
 
-                // when the user clicks to annotate the piece of text that is selected we need to grab information about all the annotations currently showing in the dom then we need to place this new annotation into that object along with the annotations position data then once we have set this new information we need to save it by reseting the dom element attribute "annotations" then use the new data and use the updated data and pass it into "MoveAnnotationsToCorrectSpotBasedOnFocus" function
+                  // when the user clicks to annotate the piece of text that is selected we need to grab information about all the annotations currently showing in the dom then we need to place this new annotation into that object along with the annotations position data then once we have set this new information we need to save it by reseting the dom element attribute "annotations" then use the new data and use the updated data and pass it into "MoveAnnotationsToCorrectSpotBasedOnFocus" function
 
-                // first grabbing position data on the annotation button so we can know which side to put the annotation on
-                const annotationBtnPosition = $('#annotate-btn-position-node').offset();
-                annotationBtnPosition.top += $('#document-container').scrollTop();
-                const side = (annotationBtnPosition.left < window.innerWidth / 2) ? 'left' : 'right';
-                // now that we know which side to get the annotation data from we will grab the current data and update it
-                const annotationChannelData = JSON.parse($('#document-container').attr('annotations'));
-                const newAnnotation = {
-                  _id: rid,
-                  creator_groups: this.props.user.groups,
-                  type: 'Annotation',
-                  creator: {
-                    name: this.props.user.name,
-                    email: this.props.user.email,
-                  },
-                  permissions: {
-                    groups: [],
-                    documentOwner: this.props.document.owner === this.props.user.id,
-                  },
-                  created: undefined,
-                  modified: undefined,
-                  body: {
-                    type: 'TextualBody',
-                    value: '', // (valid HTML)
-                    tags: [],
-                    format: 'text/html',
-                    language: 'es', // W3C Language Tag for English
-                  },
-                  target: {
-                    document: {
-                      ...this.props.document,
-                      text: undefined,
+                  // first grabbing position data on the annotation button so we can know which side to put the annotation on
+                  const annotationBtnPosition = $('#annotate-btn-position-node').offset();
+                  annotationBtnPosition.top += $('#document-container').scrollTop();
+                  const side = (annotationBtnPosition.left < window.innerWidth / 2) ? 'left' : 'right';
+                  // now that we know which side to get the annotation data from we will grab the current data and update it
+                  const annotationChannelData = JSON.parse($('#document-container').attr('annotations'));
+                  const newAnnotation = {
+                    _id: rid,
+                    creator_groups: this.props.user.groups,
+                    type: 'Annotation',
+                    creator: {
+                      name: this.props.user.name,
+                      email: this.props.user.email,
+                    },
+                    permissions: {
+                      groups: [],
+                      documentOwner: this.props.document.owner === this.props.user.id,
+                    },
+                    created: undefined,
+                    modified: undefined,
+                    body: {
+                      type: 'TextualBody',
+                      value: '', // (valid HTML)
+                      tags: [],
                       format: 'text/html',
+                      language: 'es', // W3C Language Tag for English
                     },
-                    selector: {
-                      type: 'TextQuoteSelector',
-                      ...this.state.selector, // keys -> exact, prefix, suffix
+                    target: {
+                      document: {
+                        ...this.props.document,
+                        text: undefined,
+                        format: 'text/html',
+                      },
+                      selector: {
+                        type: 'TextQuoteSelector',
+                        ...this.state.selector, // keys -> exact, prefix, suffix
+                      },
                     },
-                  },
-                  position: {
-                    left: annotationBtnPosition.left,
-                    top: annotationBtnPosition.top,
-                  },
-                };
-                /*
-                const newAnnotation = {
-                  _id: rid,
-                  user: 'Joshua Mbogo',
-                  annotation: '',
-                  date: moment().format('MM/DD/YYYY'),
-                  tags: [],
-                  public: true,
-                  selector: { ...this.state.selector },
-                  position: {
-                    left: annotationBtnPosition.left,
-                    top: annotationBtnPosition.top,
-                  },
-                }; */
-                // we need to figure out where we need to add this new annotation inside this annotations array
-                let indexForNewAnnotation = annotationChannelData[side].findIndex((annotation) => {
-                  if (newAnnotation.position.top - annotation.position.top === 0) { // if the tops are the same then we have to distinguish which annotation comes first by who has the smaller left value
-                    return newAnnotation.position.left < annotation.position.left;
-                  }
-                  return newAnnotation.position.top < annotation.position.top;
-                });
+                    position: {
+                      left: annotationBtnPosition.left,
+                      top: annotationBtnPosition.top,
+                    },
+                  };
+                  // we need to figure out where we need to add this new annotation inside this annotations array
+                  let indexForNewAnnotation = annotationChannelData[side].findIndex((annotation) => {
+                    if (newAnnotation.position.top - annotation.position.top === 0) { // if the tops are the same then we have to distinguish which annotation comes first by who has the smaller left value
+                      return newAnnotation.position.left < annotation.position.left;
+                    }
+                    return newAnnotation.position.top < annotation.position.top;
+                  });
 
-                // make sure that if we can't find a place to put the new annotation we put it at the end of the existing list of annotations
-                indexForNewAnnotation = indexForNewAnnotation === -1 ? annotationChannelData[side].length : indexForNewAnnotation;
+                  // make sure that if we can't find a place to put the new annotation we put it at the end of the existing list of annotations
+                  indexForNewAnnotation = indexForNewAnnotation === -1 ? annotationChannelData[side].length : indexForNewAnnotation;
 
-                // updating annotation channel data with new annotation
-                annotationChannelData[side].splice(indexForNewAnnotation, 0, newAnnotation);
-                // saving updated data in dom
-                $('#document-container').attr('annotations', JSON.stringify(annotationChannelData));
+                  // updating annotation channel data with new annotation
+                  annotationChannelData[side].splice(indexForNewAnnotation, 0, newAnnotation);
+                  // saving updated data in dom
+                  $('#document-container').attr('annotations', JSON.stringify(annotationChannelData));
 
 
-                ReactDOM.render(<AnnotationCard
-                  focusOnAnnotation={() => {
-                    MoveAnnotationsToCorrectSpotBasedOnFocus(side, newAnnotation._id);
-                  }}
-                  key={newAnnotation._id}
-                  side={side}
-                  expanded={false}
-                  initializedAsEditing
-                  annotation={newAnnotation}
-                  user={this.props.user}
-                />, document.getElementById(`new-annotation-holder-${side}`));
-                // after the new annotation has been added to the dom we need to remove it from the the "new-annotation-holder-${side}" and allow it to exist where all the other annoations exist. We do this by unwrapping it
-                $(`#${newAnnotation._id}`).unwrap(`#new-annotation-holder-${side}`);
-                // once we unwrap the annotation from its holder we need to add the holder back into the dom
-                $(`#annotation-channel-${side}`).prepend(`<div id='new-annotation-holder-${side}'></div>`);
-                this.setState({ selectedTextToAnnotate: true });
+                  ReactDOM.render(<AnnotationCard
+                    focusOnAnnotation={() => {
+                      MoveAnnotationsToCorrectSpotBasedOnFocus(side, newAnnotation._id);
+                    }}
+                    key={newAnnotation._id}
+                    side={side}
+                    expanded={false}
+                    initializedAsEditing
+                    annotation={newAnnotation}
+                    user={this.props.user}
+                  />, document.getElementById(`new-annotation-holder-${side}`));
+                  // after the new annotation has been added to the dom we need to remove it from the the "new-annotation-holder-${side}" and allow it to exist where all the other annoations exist. We do this by unwrapping it
+                  $(`#${newAnnotation._id}`).unwrap(`#new-annotation-holder-${side}`);
+                  // once we unwrap the annotation from its holder we need to add the holder back into the dom
+                  $(`#annotation-channel-${side}`).prepend(`<div id='new-annotation-holder-${side}'></div>`);
+                  this.setState({ selectedTextToAnnotate: true });
+                } else {
+                  this.setState({ showCannotAnnotateDocumentToast: true });
+                }
               }}
               {...props}
             >
@@ -517,6 +524,27 @@ export default class Document extends React.Component {
 
         <style jsx global>
           {`
+
+            #show-cannot-annotate-document-toast-container {
+              position: fixed;
+              height: 0px;
+              left: 10px;
+              top: 130px;
+            }
+
+            #show-cannot-annotate-document-toast-container .toast {
+              border-color: rgb(220, 53, 70) !important;
+            }
+
+            #show-cannot-annotate-document-toast-container .toast-header {
+              background-color: rgba(220, 53, 70, 0.85) !important;
+              color: white !important; 
+            }
+
+            #show-cannot-annotate-document-toast-container .toast-header button {
+              color: white !important;
+            }
+
             #annotate-document-tooltip, #annotate-document-overlay {
                 cursor: pointer;
             }

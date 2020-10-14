@@ -30,6 +30,8 @@ import { prefetchSharedAnnotationsOnDocument, getAnnotationById } from '../../..
 export default function DocumentPage(props) {
   const { document, annotations, alerts } = props;
 
+  console.log("document", document);
+
   const dummyData = [];
 
   /*
