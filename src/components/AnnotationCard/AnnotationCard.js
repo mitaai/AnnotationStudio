@@ -16,6 +16,8 @@ import {
   Tooltip,
 } from 'react-bootstrap';
 
+import { postAnnotation } from '../../utils/annotationUtil';
+
 function AddHoverEventListenersToAllHighlightedText() {
   // console.log('annotation-highlighted-text', $('.annotation-highlighted-text'));
   $('.annotation-highlighted-text').on('mouseover', (e) => {
@@ -88,11 +90,11 @@ function AddHoverEventListenersToAllHighlightedText() {
 
 
 function AnnotationCard({
-  side, annotation, focusOnAnnotation, initializedAsEditing,
+  side, annotation, focusOnAnnotation, initializedAsEditing, saveAnnotationToDatabase,
 }) {
   const [annotationData, setAnnotationData] = useState({ ...annotation });
   const [newAnnotationTags, setNewAnnotationTags] = useState(null);
-  const [newAnnotationPermissions, setNewAnnotationPermissions] = useState(null);
+  const [newAnnotationPermissionsShareWithGroups, setNewAnnotationPermissionsShareWithGroups] = useState(null);
   const [newAnnotationText, setNewAnnotationText] = useState(initializedAsEditing !== undefined ? '' : null);
   const [newAnnotation, setNewAnnotation] = useState(initializedAsEditing !== undefined ? initializedAsEditing : false);
   const [cancelingAnnotation, setCancelingAnnotation] = useState(false);
@@ -119,26 +121,45 @@ function AnnotationCard({
     if (savingAnnotation || cancelingAnnotation) { return; }// if we are already saving the annotation then don't try to run the function again
     setSavingAnnotation(true);
 
-    // pretend async function because it may take time to save the data to the database and make sure the connection is secure
-    setTimeout(() => {
+    // we need to reassign values to the annotationData
+    const newAnnotationData = JSON.parse(JSON.stringify(annotationData));
+    if (newAnnotationTags !== null) {
+      newAnnotationData.body.tags = newAnnotationTags.split(' ');
+    }
+    if (newAnnotationPermissionsShareWithGroups !== null) {
+      if (newAnnotationPermissionsShareWithGroups) {
+        newAnnotationData.permissions.groups = newAnnotationData.creator_groups;
+      } else {
+        newAnnotationData.permissions.groups = [];
+      }
+    }
+    if (newAnnotationText !== null) {
+      newAnnotationData.body.value = newAnnotationText;
+    }
+
+    console.log({
+        creator: annotationData.creator,
+        permissions: annotationData.permissions,
+        body: annotationData.body,
+        target: annotationData.target,
+      });
+
+    postAnnotation({
+      creator: annotationData.creator,
+      permissions: annotationData.permissions,
+      body: annotationData.body,
+      target: annotationData.target,
+    }).then((response) => {
+      console.log(response);
       setSavingAnnotation(false);
       setNewAnnotation(false);
       setEditing(false);
-      // we need to reassign values to the annotationData
-      const newAnnotationData = JSON.parse(JSON.stringify(annotationData));
-      if (newAnnotationTags !== null) {
-        newAnnotationData.tags = newAnnotationTags.split(' ');
-      }
-      if (newAnnotationPermissions !== null) {
-        newAnnotationData.public = newAnnotationPermissions;
-      }
-      if (newAnnotationText !== null) {
-        newAnnotationData.annotation = newAnnotationText;
-      }
+      // once the new annotation data saves properly on the database then we can update the annotation data
       setAnnotationData(newAnnotationData);
+
       // after setting the annotation data we need to reset the "new" data back to null
       setNewAnnotationTags(null);
-      setNewAnnotationPermissions(null);
+      setNewAnnotationPermissionsShareWithGroups(null);
       setNewAnnotationText(null);
       // after we have saved the annotation the highlighted text needs to change its class from  "text-currently-being-annotated active" to "annotation-highlighted-text"
       $('.text-currently-being-annotated.active').addClass('annotation-highlighted-text');
@@ -148,7 +169,10 @@ function AnnotationCard({
       $('#document-content-container').removeClass('unselectable');
       // then after everything is done we will focus on the annotation so that things get shifted to their correct spots
       focusOnAnnotation();
-    }, 2000);
+    }).catch((err) => {
+      console.log(err);
+      setSavingAnnotation(false);
+    });
   }
 
   function CancelAnnotation() {
@@ -173,7 +197,7 @@ function AnnotationCard({
       }, 1000);
     } else {
       setNewAnnotationTags(null);
-      setNewAnnotationPermissions(null);
+      setNewAnnotationPermissionsShareWithGroups(null);
       setNewAnnotationText(null);
       // if the annotation is not new then canceling should just return it to its previous state
       setEditing(false); setUpdateFocusOfAnnotation(true);
@@ -188,8 +212,8 @@ function AnnotationCard({
     setNewAnnotationText(event.target.value);
   }
 
-  function handleAnnotationPermissionsChange() {
-    setNewAnnotationPermissions(!newAnnotationPermissions);
+  function handleAnnotationPermissionsChange(event) {
+    setNewAnnotationPermissionsShareWithGroups($(event.target).prop('checked'));
   }
 
   useEffect(() => {
@@ -227,9 +251,9 @@ function AnnotationCard({
         {expanded ? (
           <>
             <Card.Header className="annotation-header">
-              <span className="float-left">{annotationData.user}</span>
+              <span className="float-left">{annotationData.creator.name}</span>
               <span className="float-right">
-                <span>{annotationData.date}</span>
+                <span>{annotationData.modified === undefined ? '' : annotationData.modified}</span>
                 <Dropdown className="annotation-more-options-dropdown">
                   <Dropdown.Toggle variant="light" id="dropdown-basic">
                     <svg width="0.8em" height="0.8em" viewBox="0 0 16 16" className="bi bi-three-dots-vertical" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -256,7 +280,7 @@ function AnnotationCard({
                             as="textarea"
                             rows="3"
                             placeholder="annotation"
-                            defaultValue={annotationData.annotation}
+                            defaultValue={annotationData.body.value}
                             onChange={handleAnnotationTextChange}
                             readOnly={savingAnnotation}
                           />
@@ -268,7 +292,7 @@ function AnnotationCard({
                             type="text"
                             style={{ fontSize: '12px' }}
                             placeholder="add some tags here..."
-                            defaultValue={annotationData.tags.join(' ')}
+                            defaultValue={annotationData.body.tags.join(' ')}
                             onChange={handleTagChange}
                             readOnly={savingAnnotation}
                           />
@@ -279,7 +303,7 @@ function AnnotationCard({
                       <Col lg={12}>
                         <input id="checkbox-share-annotation" type="checkbox" onChange={handleAnnotationPermissionsChange} />
                         <span id="text-share-annotation">Share with my groups</span>
-                        {newAnnotationTags === null && newAnnotationPermissions === null && newAnnotationText === null ? ''
+                        {newAnnotationTags === null && newAnnotationPermissionsShareWithGroups === null && newAnnotationText === null ? ''
                           : (
                             <Button
                               className="btn-save-annotation-edits float-right"
@@ -317,19 +341,21 @@ function AnnotationCard({
               : (
                 <>
                   <ListGroup variant="flush" style={{ borderTop: 'none' }}>
-                    <ListGroup.Item className="annotation-body">
-                      {annotationData.annotation}
-                      <span
-                        style={{ margin: '0px 0px 0px 5px', color: '#007bff' }}
-                        onClick={() => { setExpanded(false); setUpdateFocusOfAnnotation(true); }}
-                      >
-                        show less
-                      </span>
-                    </ListGroup.Item>
-                    {annotationData.tags.join('').length > 0 ? (
+                    {annotationData.body.value.length > 0 ? (
+                      <ListGroup.Item className="annotation-body">
+                        {annotationData.body.value}
+                        <span
+                          style={{ margin: '0px 0px 0px 5px', color: '#007bff' }}
+                          onClick={() => { setExpanded(false); setUpdateFocusOfAnnotation(true); }}
+                        >
+                          show less
+                        </span>
+                      </ListGroup.Item>
+                    ) : ''}
+                    {annotationData.body.tags.join('').length > 0 ? (
                       <>
                         <ListGroup.Item className="annotation-tags">
-                          {annotationData.tags.map((tag, index) => {
+                          {annotationData.body.tags.map((tag, index) => {
                             if (tag === '') { return ''; }
                             return <Badge key={index} variant="secondary">{tag}</Badge>;
                           })}
@@ -344,16 +370,16 @@ function AnnotationCard({
         ) : (
           <>
             <OverlayTrigger
-              key={annotation._id}
+              key={annotationData._id}
               placement="top"
               overlay={(
-                <Tooltip id={`tooltip-${annotation._id}`}>
-                  {annotation.user}
+                <Tooltip id={`tooltip-${annotationData._id}`}>
+                  {annotationData.creator.name}
                 </Tooltip>
       )}
             >
               <Card.Header className="annotation-header" onClick={() => { setExpanded(true); }}>
-                <div className="truncated-annotation">{annotationData.annotation}</div>
+                <div className="truncated-annotation">{annotationData.body.value}</div>
               </Card.Header>
             </OverlayTrigger>
           </>

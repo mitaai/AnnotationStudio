@@ -405,7 +405,7 @@ export default class Document extends React.Component {
     return (
       <>
         <div id="document-content-container" ref={this.myRef}>
-          <div dangerouslySetInnerHTML={{ __html: this.props.documentText }} />
+          <div dangerouslySetInnerHTML={{ __html: this.props.document !== undefined ? this.props.document.text : '' }} />
         </div>
         <Overlay id="annotate-document-overlay" target={this.state.target} show={this.state.show} placement="top">
           {(props) => (
@@ -425,6 +425,44 @@ export default class Document extends React.Component {
                 const annotationChannelData = JSON.parse($('#document-container').attr('annotations'));
                 const newAnnotation = {
                   _id: rid,
+                  creator_groups: this.props.user.groups,
+                  type: 'Annotation',
+                  creator: {
+                    name: this.props.user.name,
+                    email: this.props.user.email,
+                  },
+                  permissions: {
+                    groups: [],
+                    documentOwner: this.props.document.owner === this.props.user.id,
+                  },
+                  created: undefined,
+                  modified: undefined,
+                  body: {
+                    type: 'TextualBody',
+                    value: '', // (valid HTML)
+                    tags: [],
+                    format: 'text/html',
+                    language: 'es', // W3C Language Tag for English
+                  },
+                  target: {
+                    document: {
+                      ...this.props.document,
+                      text: undefined,
+                      format: 'text/html',
+                    },
+                    selector: {
+                      type: 'TextQuoteSelector',
+                      ...this.state.selector, // keys -> exact, prefix, suffix
+                    },
+                  },
+                  position: {
+                    left: annotationBtnPosition.left,
+                    top: annotationBtnPosition.top,
+                  },
+                };
+                /*
+                const newAnnotation = {
+                  _id: rid,
                   user: 'Joshua Mbogo',
                   annotation: '',
                   date: moment().format('MM/DD/YYYY'),
@@ -435,7 +473,7 @@ export default class Document extends React.Component {
                     left: annotationBtnPosition.left,
                     top: annotationBtnPosition.top,
                   },
-                };
+                }; */
                 // we need to figure out where we need to add this new annotation inside this annotations array
                 let indexForNewAnnotation = annotationChannelData[side].findIndex((annotation) => {
                   if (newAnnotation.position.top - annotation.position.top === 0) { // if the tops are the same then we have to distinguish which annotation comes first by who has the smaller left value

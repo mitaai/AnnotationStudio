@@ -1,6 +1,7 @@
 /* eslint-disable react/no-danger */
 
 import { useState } from 'react';
+import { useSession } from 'next-auth/client';
 import $ from 'jquery';
 import {
   Row,
@@ -17,14 +18,19 @@ import {
 } from 'apache-annotator/dom';
 import Layout from '../../../components/Layout';
 
+import LoadingSpinner from '../../../components/LoadingSpinner';
+
 import AnnotationChannel from '../../../components/AnnotationChannel';
 
 import Document from '../../../components/Document';
 
 import { prefetchDocumentBySlug } from '../../../utils/docUtil';
+import {prefetchSharedAnnotationsOnDocument, getAnnotationById} from '../../../utils/annotationUtil';
 
 export default function DocumentPage(props) {
   const { document, alerts } = props;
+
+  console.log("document",document);
 
   const dummyData = [];
 
@@ -141,9 +147,25 @@ export default function DocumentPage(props) {
   const [annotationChannel1Loaded, setAnnotationChannel1Loaded] = useState(false);
   const [annotationChannel2Loaded, setAnnotationChannel2Loaded] = useState(false);
 
+  const [session, loading] = useSession();
+
+  console.log(session);
+
   return (
     <>
-      <Layout type="document" title={document.title} alerts={alerts} docView>
+      {!session && loading && (
+      <LoadingSpinner />
+      )}
+      {!session && !loading && (
+      <>You must be logged in to view this page.</>
+      )}
+      {session && !loading && (
+      <Layout
+        type="document"
+        title={document === undefined ? '' : document.title}
+        alerts={alerts}
+        docView
+      >
         <Row id="document-container">
           <Col sm={3}>
             <AnnotationChannel setAnnotationChannelLoaded={setAnnotationChannel1Loaded} side="left" annotations={channelAnnotations.left} />
@@ -155,7 +177,8 @@ export default function DocumentPage(props) {
                   setChannelAnnotations={setChannelAnnotations}
                   annotations={dummyData}
                   annotateDocument={(mySelector, annotationID) => { HighlightTextToAnnotate(mySelector, annotationID); }}
-                  documentText={document.text}
+                  document={document}
+                  user={session ? session.user : undefined}
                 />
               </Card.Body>
             </Card>
@@ -180,6 +203,8 @@ export default function DocumentPage(props) {
           </Modal.Body>
         </Modal>
       </Layout>
+      )}
+
       <style jsx global>
         {`
           #annotations-header-label {
