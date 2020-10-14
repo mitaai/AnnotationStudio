@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import $ from 'jquery';
+import moment from 'moment';
 import {
   Row,
   Col,
@@ -90,7 +91,7 @@ function AddHoverEventListenersToAllHighlightedText() {
 
 
 function AnnotationCard({
-  side, annotation, focusOnAnnotation, initializedAsEditing, saveAnnotationToDatabase,
+  side, annotation, focusOnAnnotation, initializedAsEditing, user,
 }) {
   const [annotationData, setAnnotationData] = useState({ ...annotation });
   const [newAnnotationTags, setNewAnnotationTags] = useState(null);
@@ -138,19 +139,21 @@ function AnnotationCard({
     }
 
     console.log({
-        creator: annotationData.creator,
-        permissions: annotationData.permissions,
-        body: annotationData.body,
-        target: annotationData.target,
-      });
+      creator: newAnnotationData.creator,
+      permissions: newAnnotationData.permissions,
+      body: newAnnotationData.body,
+      target: newAnnotationData.target,
+    });
 
     postAnnotation({
-      creator: annotationData.creator,
-      permissions: annotationData.permissions,
-      body: annotationData.body,
-      target: annotationData.target,
+      creator: newAnnotationData.creator,
+      permissions: newAnnotationData.permissions,
+      body: newAnnotationData.body,
+      target: newAnnotationData.target,
     }).then((response) => {
       console.log(response);
+      newAnnotationData.db_id = response.insertedId;// the new annotation already has an id but this id relates to the
+      newAnnotationData.modified = new Date();
       setSavingAnnotation(false);
       setNewAnnotation(false);
       setEditing(false);
@@ -253,19 +256,22 @@ function AnnotationCard({
             <Card.Header className="annotation-header">
               <span className="float-left">{annotationData.creator.name}</span>
               <span className="float-right">
-                <span>{annotationData.modified === undefined ? '' : annotationData.modified}</span>
-                <Dropdown className="annotation-more-options-dropdown">
-                  <Dropdown.Toggle variant="light" id="dropdown-basic">
-                    <svg width="0.8em" height="0.8em" viewBox="0 0 16 16" className="bi bi-three-dots-vertical" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                      <path fillRule="evenodd" d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z" />
-                    </svg>
-                  </Dropdown.Toggle>
+                <span>{annotationData.modified === undefined ? '' : moment(annotationData.modified.toString()).format('MM/DD/YYYY')}</span>
+                {user.email !== annotationData.creator.email ? (
+                  <Dropdown className="annotation-more-options-dropdown">
+                    <Dropdown.Toggle variant="light" id="dropdown-basic">
+                      <svg width="0.8em" height="0.8em" viewBox="0 0 16 16" className="bi bi-three-dots-vertical" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <path fillRule="evenodd" d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z" />
+                      </svg>
+                    </Dropdown.Toggle>
 
-                  <Dropdown.Menu className="annotation-more-options-dropdown-menu">
-                    <Dropdown.Item href="#/action-1" onClick={() => { setEditing(true); setUpdateFocusOfAnnotation(true); }}>Edit</Dropdown.Item>
-                    <Dropdown.Item href="#/action-2">Delete</Dropdown.Item>
-                  </Dropdown.Menu>
-                </Dropdown>
+                    <Dropdown.Menu className="annotation-more-options-dropdown-menu">
+                      <Dropdown.Item href="#/action-1" onClick={() => { setEditing(true); setUpdateFocusOfAnnotation(true); }}>Edit</Dropdown.Item>
+                      <Dropdown.Item href="#/action-2">Delete</Dropdown.Item>
+                    </Dropdown.Menu>
+                  </Dropdown>
+                ) : ''}
+
               </span>
             </Card.Header>
             {editing

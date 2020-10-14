@@ -157,7 +157,9 @@ function PlaceAnnotationsInCorrectSpot(annotations, side) {
   }
 }
 
-function AnnotationChannel({ side, annotations, setAnnotationChannelLoaded }) {
+function AnnotationChannel({
+  side, annotations, setAnnotationChannelLoaded, user,
+}) {
   let sortedAnnotations = [];
   if (annotations !== null) {
     // the first thing we need to is sort these anntotations by their position
@@ -183,7 +185,14 @@ function AnnotationChannel({ side, annotations, setAnnotationChannelLoaded }) {
       <div id={`new-annotation-holder-${side}`} />
       <div>
         {sortedAnnotations.map((annotation) => (
-          <AnnotationCard focusOnAnnotation={() => { MoveAnnotationsToCorrectSpotBasedOnFocus(side, annotation._id); }} key={annotation._id} side={side} expanded={false} annotation={annotation} />
+          <AnnotationCard
+            focusOnAnnotation={() => { MoveAnnotationsToCorrectSpotBasedOnFocus(side, annotation._id); }}
+            key={annotation._id}
+            side={side}
+            expanded={false}
+            annotation={annotation}
+            user={user}
+          />
         ))}
       </div>
       <style jsx global>

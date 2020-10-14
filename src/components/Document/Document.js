@@ -500,6 +500,7 @@ export default class Document extends React.Component {
                   expanded={false}
                   initializedAsEditing
                   annotation={newAnnotation}
+                  user={this.props.user}
                 />, document.getElementById(`new-annotation-holder-${side}`));
                 // after the new annotation has been added to the dom we need to remove it from the the "new-annotation-holder-${side}" and allow it to exist where all the other annoations exist. We do this by unwrapping it
                 $(`#${newAnnotation._id}`).unwrap(`#new-annotation-holder-${side}`);

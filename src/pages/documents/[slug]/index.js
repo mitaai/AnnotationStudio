@@ -25,12 +25,12 @@ import AnnotationChannel from '../../../components/AnnotationChannel';
 import Document from '../../../components/Document';
 
 import { prefetchDocumentBySlug } from '../../../utils/docUtil';
-import {prefetchSharedAnnotationsOnDocument, getAnnotationById} from '../../../utils/annotationUtil';
+import { prefetchSharedAnnotationsOnDocument, getAnnotationById } from '../../../utils/annotationUtil';
 
 export default function DocumentPage(props) {
   const { document, alerts } = props;
 
-  console.log("document",document);
+  console.log('document', document);
 
   const dummyData = [];
 
@@ -168,7 +168,12 @@ export default function DocumentPage(props) {
       >
         <Row id="document-container">
           <Col sm={3}>
-            <AnnotationChannel setAnnotationChannelLoaded={setAnnotationChannel1Loaded} side="left" annotations={channelAnnotations.left} />
+            <AnnotationChannel
+              setAnnotationChannelLoaded={setAnnotationChannel1Loaded}
+              side="left"
+              annotations={channelAnnotations.left}
+              user={session ? session.user : undefined}
+            />
           </Col>
           <Col sm={6}>
             <Card id="document-card-container">
@@ -184,7 +189,12 @@ export default function DocumentPage(props) {
             </Card>
           </Col>
           <Col sm={3}>
-            <AnnotationChannel setAnnotationChannelLoaded={setAnnotationChannel2Loaded} side="right" annotations={channelAnnotations.right} />
+            <AnnotationChannel
+              setAnnotationChannelLoaded={setAnnotationChannel2Loaded}
+              side="right"
+              annotations={channelAnnotations.right}
+              user={session ? session.user : undefined}
+            />
           </Col>
         </Row>
         <Modal
@@ -270,13 +280,22 @@ export async function getServerSideProps(context) {
   const { slug } = context.params;
   let props = {};
   await prefetchDocumentBySlug(slug, context.req.headers.cookie).then((response) => {
-    props = {
-      document: {
-        slug,
-        ...response,
-      },
+    props.document = {
+      slug,
+      ...response,
     };
+
   }).catch((err) => {
+    props = {
+      alerts: [{ text: err.message, variant: 'danger' }],
+    };
+  });
+
+  // after we get the document data we need to get the annotations on this document data
+  await prefetchSharedAnnotationsOnDocument(slug, context.req.headers.cookie).then((response) => {
+    console.log(response);
+  }).catch((err) => {
+    console.log(err);
     props = {
       alerts: [{ text: err.message, variant: 'danger' }],
     };
