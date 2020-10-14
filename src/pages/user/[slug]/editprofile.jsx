@@ -8,6 +8,7 @@ import {
 import { FullName } from '../../../utils/nameUtil';
 import Layout from '../../../components/Layout';
 import LoadingSpinner from '../../../components/LoadingSpinner';
+import { updateAllAnnotationsByUser } from '../../../utils/annotationUtil';
 
 const EditProfile = ({ user }) => {
   const [session, loading] = useSession();
@@ -70,6 +71,13 @@ const EditProfile = ({ user }) => {
           } return Promise.reject(Error(`Error: received code ${groupRes.status} from server`));
         })).catch((err) => {
           setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+        }).then(async () => {
+          const userToUpdate = {
+            id: _id,
+            name: body.name,
+            email: body.email,
+          };
+          return Promise.resolve(await updateAllAnnotationsByUser(userToUpdate));
         });
       }
       return Promise.resolve(result);
