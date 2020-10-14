@@ -30,8 +30,6 @@ import { prefetchSharedAnnotationsOnDocument, getAnnotationById } from '../../..
 export default function DocumentPage(props) {
   const { document, annotations, alerts } = props;
 
-  console.log("document", document);
-
   const dummyData = [];
 
   /*
@@ -148,8 +146,6 @@ export default function DocumentPage(props) {
   const [annotationChannel2Loaded, setAnnotationChannel2Loaded] = useState(false);
 
   const [session, loading] = useSession();
-
-  console.log(session);
 
   return (
     <>

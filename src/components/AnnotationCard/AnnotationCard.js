@@ -171,12 +171,10 @@ function AnnotationCard({
         setSavingAnnotation(false);
       });
     } else {
-       console.log(newAnnotationData.db_id === undefined ? newAnnotationData._id : newAnnotationData.db_id); 
       updateAnnotationById(
         newAnnotationData.db_id === undefined ? newAnnotationData._id : newAnnotationData.db_id,
         newAnnotationData,
       ).then((response) => {
-        console.log(response);
         newAnnotationData.modified = new Date();
         setSavingAnnotation(false);
         setNewAnnotation(false);
