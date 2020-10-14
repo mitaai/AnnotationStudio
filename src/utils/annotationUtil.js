@@ -15,7 +15,7 @@ const getAnnotationById = async (id) => {
 };
 
 const prefetchSharedAnnotationsOnDocument = async (slug, cookie) => {
-  const url = `${process.env.SITE}/api/annotations?document=${slug}`;
+  const url = `${process.env.SITE}/api/annotations?slug=${slug}`;
   // eslint-disable-next-line no-undef
   const res = await fetch(url, {
     method: 'GET',
