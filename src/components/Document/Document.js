@@ -445,6 +445,7 @@ export default class Document extends React.Component {
                     _id: rid,
                     type: 'Annotation',
                     creator: {
+                      id: this.props.user.id,
                       name: this.props.user.name,
                       email: this.props.user.email,
                     },

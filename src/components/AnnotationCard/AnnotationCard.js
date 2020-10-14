@@ -17,7 +17,7 @@ import {
   Tooltip,
 } from 'react-bootstrap';
 
-import { postAnnotation, updateAnnotationById } from '../../utils/annotationUtil';
+import { postAnnotation, updateAnnotationById, deleteAnnotationById } from '../../utils/annotationUtil';
 
 function AddHoverEventListenersToAllHighlightedText() {
   // console.log('annotation-highlighted-text', $('.annotation-highlighted-text'));
@@ -100,6 +100,7 @@ function AnnotationCard({
   const [newAnnotation, setNewAnnotation] = useState(initializedAsEditing !== undefined ? initializedAsEditing : false);
   const [cancelingAnnotation, setCancelingAnnotation] = useState(false);
   const [savingAnnotation, setSavingAnnotation] = useState(false);
+  const [deletingAnnotation, setDeletingAnnotation] = useState(false);
   const [editing, setEditing] = useState(initializedAsEditing !== undefined ? initializedAsEditing : false);
   const [expanded, setExpanded] = useState(initializedAsEditing !== undefined ? initializedAsEditing : false);
   const [updateFocusOfAnnotation, setUpdateFocusOfAnnotation] = useState(initializedAsEditing !== undefined ? initializedAsEditing : false);
@@ -214,14 +215,34 @@ function AnnotationCard({
         $('.text-currently-being-annotated.active').removeClass('text-currently-being-annotated active');
         // we also need to make the document selectable again
         $('#document-content-container').removeClass('unselectable');
-      }, 1000);
+      }, 500);
     } else {
       setNewAnnotationTags(null);
       setNewAnnotationPermissionsShareWithGroups(null);
       setNewAnnotationText(null);
       // if the annotation is not new then canceling should just return it to its previous state
-      setEditing(false); setUpdateFocusOfAnnotation(true);
+      setEditing(false);
+      setUpdateFocusOfAnnotation(true);
     }
+  }
+
+  function DeleteAnnotation() {
+    if (deletingAnnotation || savingAnnotation) { return; }// if we are already canceling the annotation then don't try to run the function again
+    setDeletingAnnotation(true);
+    deleteAnnotationById(annotationData.db_id === undefined ? annotationData._id : annotationData.db_id).then((response) => {
+      console.log(response);
+      const annotations = JSON.parse($('#document-container').attr('annotations'));
+      const indexOfAnnotationToDelete = annotations[side].findIndex((a) => a._id === annotationData._id);
+      annotations[side].splice(indexOfAnnotationToDelete, 1);
+      $('#document-container').attr('annotations', JSON.stringify(annotations));
+      // now that we have removed the annotation from the data we need to remove it from the dom
+      $(`#${annotationData._id}.annotation-card-container`).remove();
+      // now we have to remove the highlight from any text that has the annotation-id of the annotation we just removed
+      $(`[annotation-id='${annotationData._id}']`).removeClass('annotation-highlighted-text');
+    }).catch((err) => {
+      console.log(err);
+      setDeletingAnnotation(false);
+    });
   }
 
   function handleTagChange(event) {
@@ -274,7 +295,7 @@ function AnnotationCard({
               <span className="float-left">{annotationData.creator.name}</span>
               <span className="float-right">
                 <span>{annotationData.modified === undefined ? '' : moment(annotationData.modified.toString()).format('MM/DD/YYYY')}</span>
-                {user.email === annotationData.creator.email ? (
+                {user.email === annotationData.creator.email && !newAnnotation ? (
                   <Dropdown className="annotation-more-options-dropdown">
                     <Dropdown.Toggle variant="light" id="dropdown-basic">
                       <svg width="0.8em" height="0.8em" viewBox="0 0 16 16" className="bi bi-three-dots-vertical" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -284,7 +305,7 @@ function AnnotationCard({
 
                     <Dropdown.Menu className="annotation-more-options-dropdown-menu">
                       <Dropdown.Item href="#/action-1" onClick={() => { setEditing(true); setUpdateFocusOfAnnotation(true); }}>Edit</Dropdown.Item>
-                      <Dropdown.Item href="#/action-2">Delete</Dropdown.Item>
+                      <Dropdown.Item href="#/action-2" onClick={DeleteAnnotation}>Delete</Dropdown.Item>
                     </Dropdown.Menu>
                   </Dropdown>
                 ) : ''}
@@ -350,10 +371,10 @@ function AnnotationCard({
                         >
                           {cancelingAnnotation ? (
                             <>
-                              <span style={{ marginRight: '3px' }}>Cancel</span>
+                              <span style={{ marginRight: '3px' }}>{newAnnotation ? 'Delete' : 'Cancel'}</span>
                               <Spinner animation="border" variant="light" size="sm" />
                             </>
-                          ) : 'Cancel'}
+                          ) : (newAnnotation ? 'Delete' : 'Cancel')}
                         </Button>
                       </Col>
                     </Row>
