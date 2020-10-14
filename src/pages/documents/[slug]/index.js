@@ -28,9 +28,7 @@ import { prefetchDocumentBySlug } from '../../../utils/docUtil';
 import { prefetchSharedAnnotationsOnDocument, getAnnotationById } from '../../../utils/annotationUtil';
 
 export default function DocumentPage(props) {
-  const { document, alerts } = props;
-
-  console.log('document', document);
+  const { document, annotations, alerts } = props;
 
   const dummyData = [];
 
@@ -180,7 +178,7 @@ export default function DocumentPage(props) {
               <Card.Body>
                 <Document
                   setChannelAnnotations={setChannelAnnotations}
-                  annotations={dummyData}
+                  annotations={annotations}
                   annotateDocument={(mySelector, annotationID) => { HighlightTextToAnnotate(mySelector, annotationID); }}
                   document={document}
                   user={session ? session.user : undefined}
@@ -284,7 +282,6 @@ export async function getServerSideProps(context) {
       slug,
       ...response,
     };
-
   }).catch((err) => {
     props = {
       alerts: [{ text: err.message, variant: 'danger' }],
@@ -292,8 +289,8 @@ export async function getServerSideProps(context) {
   });
 
   // after we get the document data we need to get the annotations on this document data
-  await prefetchSharedAnnotationsOnDocument(slug, context.req.headers.cookie).then((response) => {
-    console.log(response);
+  await prefetchSharedAnnotationsOnDocument(slug, context.req.headers.cookie).then((annotations) => {
+    props.annotations = annotations;
   }).catch((err) => {
     console.log(err);
     props = {

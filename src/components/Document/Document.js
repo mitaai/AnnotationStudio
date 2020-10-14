@@ -280,7 +280,7 @@ export default class Document extends React.Component {
         right: [],
       };
       for await (const annotation of _annotations) {
-        await HighlightText({ selector: annotation.selector, props: { 'annotation-id': annotation._id, class: 'annotation-highlighted-text' } }, $('#document-content-container').get(0));
+        await HighlightText({ selector: annotation.target.selector, props: { 'annotation-id': annotation._id, class: 'annotation-highlighted-text' } }, $('#document-content-container').get(0));
 
         // after we highlight everything in the document we need to figure out the position of where these highlights are and divide the array of annotations we were given into two array representing left and right side channel and then add position data to the annotation object.
         $($(`#document-content-container span[annotation-id='${annotation._id}']`).get(0)).prepend("<span class='annotation-beginning-marker'></span>");
