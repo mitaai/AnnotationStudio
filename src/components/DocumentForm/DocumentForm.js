@@ -15,6 +15,7 @@ import DocumentMetadata from '../DocumentMetadata';
 import DocumentStatusSelect from '../DocumentStatusSelect';
 import { deleteDocumentById } from '../../utils/docUtil';
 import ConfirmationDialog from '../ConfirmationDialog';
+import { updateAllAnnotationsOnDocument } from '../../utils/annotationUtil';
 
 const DocumentForm = ({
   session,
@@ -48,7 +49,7 @@ const DocumentForm = ({
   };
 
   const editDocument = async (values) => {
-    const { id } = data;
+    const { id, slug } = data;
     const patchUrl = `/api/document/${id}`;
     const res = await fetch(patchUrl, {
       method: 'PATCH',
@@ -58,8 +59,9 @@ const DocumentForm = ({
       },
     });
     if (res.status === 200) {
-      const result = await res.json();
-      return Promise.resolve(result);
+      await res.json();
+      const documentToUpdate = { ...values, slug };
+      return Promise.resolve(await updateAllAnnotationsOnDocument(documentToUpdate));
     }
     return Promise.reject(Error(`Unable to edit document: error ${res.status} received from server`));
   };
