@@ -7,7 +7,7 @@ const handler = async (req, res) => {
   const { method } = req;
   if (method === 'POST') {
     if (req.body.body && req.body.permissions && req.body.target) {
-      if (req.body.target.document && req.body.target.slug) {
+      if (req.body.target.document && req.body.target.document.slug) {
         const token = await jwt.getToken({ req, secret });
         if (token && token.exp > 0) {
           const created = new Date(Date.now());
