@@ -1,3 +1,4 @@
+import { ObjectID } from 'mongodb';
 import jwt from 'next-auth/jwt';
 import { connectToDatabase } from '../../utils/dbUtil';
 
@@ -20,6 +21,68 @@ const handler = async (req, res) => {
         res.status(200).json({ annotations: arr });
       } else res.status(400).end('Bad request: missing document slug');
     } else res.status(403).end('Invalid or expired token');
+  } else if (method === 'PATCH') {
+    if (req.body.mode === 'documentMetadata' && req.body.documentToUpdate) {
+      const { documentToUpdate } = req.body;
+      const token = await jwt.getToken({ req, secret });
+      if (token && token.exp > 0) {
+        const { db } = await connectToDatabase();
+        const userObj = await db
+          .collection('users')
+          .findOne({ _id: ObjectID(token.id) });
+        const { role } = userObj;
+        let findCondition = {
+          'target.document.slug': documentToUpdate.slug,
+          'target.document.owner.id': token.id,
+        };
+        if (role === 'admin') {
+          findCondition = { 'target.document.slug': documentToUpdate.slug };
+        }
+        if (!documentToUpdate.format) documentToUpdate.format = 'text/html';
+        const arr = await db
+          .collection('annotations')
+          .updateMany(
+            findCondition,
+            {
+              $set: {
+                'target.document': documentToUpdate,
+              },
+              $currentDate: { modified: true },
+            },
+          );
+        if (arr !== null) res.status(200).json({ annotations: arr });
+        else res.status(404).end('Not found');
+      } else res.status(403).end('Invalid or expired token');
+    } else if (req.body.mode === 'userProfile' && req.body.creatorToUpdate) {
+      const { creatorToUpdate } = req.body;
+      const token = await jwt.getToken({ req, secret });
+      if (token && token.exp > 0) {
+        const { db } = await connectToDatabase();
+        const userObj = await db
+          .collection('users')
+          .findOne({ _id: ObjectID(token.id) });
+        const { role } = userObj;
+        if (role !== 'admin' && creatorToUpdate.id !== token.id) {
+          res.status(403).end('Not authorized');
+        } else {
+          const findCondition = { 'creator.id': creatorToUpdate.id };
+          const arr = await db
+            .collection('annotations')
+            .updateMany(
+              findCondition,
+              {
+                $set: {
+                  'creator.name': creatorToUpdate.name,
+                  'creator.email': creatorToUpdate.email,
+                },
+                $currentDate: { modified: true },
+              },
+            );
+          if (arr !== null) res.status(200).json({ annotations: arr });
+          else res.status(404).end('Not found');
+        }
+      } else res.status(403).end('Invalid or expired token');
+    } else res.status(400).end('Bad request body');
   } else res.status(405).end(`Method ${method} Not Allowed`);
 };
 
