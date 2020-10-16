@@ -249,6 +249,7 @@ const SecondNavbar = ({
         #filter-popover .filter-option-name {
           position: relative;
           top: -2px;
+          font-size: 14px;
         }
 
         #filter-popover .arrow::after {

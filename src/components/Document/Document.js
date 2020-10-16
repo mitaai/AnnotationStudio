@@ -527,7 +527,7 @@ export default class Document extends React.Component {
                   const annotateStartPositionSpan = $('#annotate-start-position-span').offset();
                   $('#document-container').animate({
                     scrollTop: annotateStartPositionSpan.top,
-                  }, 1000, () => { this.addNewAnnotationToDom(rid); });
+                  }, 500, () => { this.addNewAnnotationToDom(rid); });
                 } else {
                   this.setState({ showCannotAnnotateDocumentToast: true });
                 }
