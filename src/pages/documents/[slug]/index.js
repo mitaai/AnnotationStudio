@@ -201,7 +201,7 @@ export default function DocumentPage(props) {
         >
           <Modal.Header>
             <Modal.Title>
-              Lodaing Annotations
+              Loading Annotations
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
