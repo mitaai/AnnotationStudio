@@ -17,7 +17,7 @@ const handler = async (req, res) => {
       if (role === 'admin') {
         const { query } = req;
         const {
-          sort, order, page, perPage, lastId,
+          sort, order, page, perPage,
         } = query;
         let direction = 1;
         if (order) {
@@ -25,39 +25,15 @@ const handler = async (req, res) => {
           else if (order === 'desc') direction = -1;
         }
         const sortBy = sort ? { [sort]: direction } : { _id: direction };
-        let doc;
-        if (sort) {
-          doc = await db
-            .collection('groups')
-            .find()
-            .sort(sortBy)
-            .skip(page > 0 ? ((page - 1) * perPage) : 0)
-            .limit(parseInt(perPage, 10))
-            .toArray();
-          res.status(200).json({ groups: JSON.parse(JSON.stringify(doc)) });
-        } else {
-          let findBy = {};
-          if (page > 1 && lastId) {
-            switch (direction) {
-              case -1: findBy = {
-                _id: { $lt: lastId },
-              }; break;
-              default: findBy = {
-                _id: { $gt: lastId },
-              }; break;
-            }
-          }
-          if (page > 1 && !lastId) res.status(400).end('Bad request');
-          else {
-            doc = await db
-              .collection('groups')
-              .find(findBy)
-              .sort(sortBy)
-              .limit(parseInt(perPage, 10))
-              .toArray();
-            res.status(200).json({ groups: JSON.parse(JSON.stringify(doc)) });
-          }
-        }
+        const doc = await db
+          .collection('groups')
+          .find()
+          .sort(sortBy)
+          .skip(page > 0 ? ((page - 1) * perPage) : 0)
+          .limit(parseInt(perPage, 10))
+          .toArray();
+        const count = await db.collection('groups').countDocuments({});
+        res.status(200).json({ groups: JSON.parse(JSON.stringify(doc)), count });
       } else res.status(403).end('Unauthorized');
     } else res.status(403).end('Invalid or expired token');
   } else res.status(405).end(`Method ${method} Not Allowed`);

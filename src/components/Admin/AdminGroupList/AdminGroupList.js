@@ -8,7 +8,11 @@ const AdminGroupList = (props) => {
         <LoadingSpinner />
       )}
       {!loading && groups && (
-        JSON.stringify(groups)
+        <>
+          <>
+            {JSON.stringify(groups)}
+          </>
+        </>
       )}
     </>
   );
