@@ -7,7 +7,7 @@ import AdminDashboard from '../AdminDashboard';
 import AdminUserList from '../AdminUserList';
 import AdminDocumentList from '../AdminDocumentList';
 import AdminGroupList from '../AdminGroupList';
-import { adminGetGroups } from '../../../utils/adminUtil';
+import { adminGetList } from '../../../utils/adminUtil';
 
 const AdminPanel = ({ alerts, setAlerts, session }) => {
   const [key, setKey] = useState('dashboard');
@@ -23,9 +23,9 @@ const AdminPanel = ({ alerts, setAlerts, session }) => {
         setListLoading(true);
         setPage(1);
         setTotalPages(1);
-        if (key === 'groups') {
+        if (key !== 'dashboard') {
           const params = `?page=${page}&perPage=${perPage}`;
-          await adminGetGroups(params)
+          await adminGetList(key, params)
             .then((results) => {
               setTotalPages(Math.ceil((results.count) / perPage));
               setData(results);
@@ -43,9 +43,9 @@ const AdminPanel = ({ alerts, setAlerts, session }) => {
       if (session) {
         setListLoading(true);
         setTotalPages(1);
-        if (key === 'groups') {
+        if (key !== 'dashboard') {
           const params = `?page=${page}&perPage=${perPage}`;
-          await adminGetGroups(params)
+          await adminGetList(key, params)
             .then((results) => {
               setTotalPages(Math.ceil((results.count) / perPage));
               setData(results);
@@ -122,13 +122,13 @@ const AdminPanel = ({ alerts, setAlerts, session }) => {
         )}
         {key === 'users' && (
           <AdminUserList
-            users={data}
+            users={data.users}
             loading={listLoading}
           />
         )}
         {key === 'documents' && (
         <AdminDocumentList
-          documents={data}
+          documents={data.documents}
           loading={listLoading}
         />
         )}

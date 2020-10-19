@@ -1,7 +1,7 @@
 import unfetch from 'unfetch';
 
-const adminGetGroups = async (params) => {
-  const url = `/api/admin/groups${params}`;
+const adminGetList = async (type, params) => {
+  const url = `/api/admin/${type}${params}`;
   const res = await unfetch(url, {
     method: 'GET',
     headers: {
@@ -9,10 +9,10 @@ const adminGetGroups = async (params) => {
     },
   });
   if (res.status === 200) {
-    const groups = res.json();
-    return Promise.resolve(groups);
-  } return Promise.reject(Error(`Unable to get groups, ${res.status} received from server`));
+    const data = res.json();
+    return Promise.resolve(data);
+  } return Promise.reject(Error(`Unable to get ${type}, ${res.status} received from server`));
 };
 
 // eslint-disable-next-line import/prefer-default-export
-export { adminGetGroups };
+export { adminGetList };
