@@ -15,7 +15,7 @@ const AdminPanel = ({ alerts, setAlerts, session }) => {
   const [page, setPage] = useState(1);
   const [listLoading, setListLoading] = useState(true);
   const [data, setData] = useState([]);
-  const perPage = 10;
+  const perPage = 20;
 
   useEffect(() => {
     async function fetchData() {
