@@ -5,6 +5,7 @@ import {
 } from 'react-bootstrap';
 import { format } from 'date-fns';
 import LoadingSpinner from '../../LoadingSpinner';
+import AdminRoleBadge from '../AdminRoleBadge';
 
 const AdminUserList = (props) => {
   const { users, loading } = props;
@@ -35,7 +36,7 @@ const AdminUserList = (props) => {
                   {user.email}
                 </td>
                 <td style={{ width: '14%' }}>
-                  {user.role}
+                  <AdminRoleBadge role={user.role} />
                 </td>
                 <td style={{ width: '14%' }}>
                   {user.affiliation}
