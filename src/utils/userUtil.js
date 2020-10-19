@@ -11,5 +11,15 @@ const getUserByEmail = async (email) => {
   return Promise.resolve(res.json());
 };
 
-// eslint-disable-next-line import/prefer-default-export
-export { getUserByEmail };
+const getUserById = async (id) => {
+  const url = `/api/user/${id}`;
+  const res = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  return Promise.resolve(res.json());
+};
+
+export { getUserByEmail, getUserById };

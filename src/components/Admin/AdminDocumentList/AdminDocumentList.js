@@ -1,12 +1,28 @@
 /* eslint-disable no-underscore-dangle */
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Table,
 } from 'react-bootstrap';
+import { format } from 'date-fns';
 import LoadingSpinner from '../../LoadingSpinner';
+import { getUserById } from '../../../utils/userUtil';
 
 const AdminDocumentList = (props) => {
-  const { documents, loading } = props;
+  const {
+    documents, loading, alerts, setAlerts,
+  } = props;
+  const [namesState, setNamesState] = useState({});
+  useEffect(() => {
+    async function fetchData() {
+      if (documents && Array.isArray(documents) && documents.length > 0) {
+        documents.map((document) => getUserById(document.owner)
+          .then((result) => setNamesState({ ...namesState, [document.owner]: result.name }))
+          .catch((err) => setAlerts([...alerts, { text: err.message, variant: 'danger' }])));
+      }
+    }
+    fetchData();
+  }, [documents]);
   return (
     <>
       {loading && (
@@ -29,13 +45,13 @@ const AdminDocumentList = (props) => {
                   {document.title}
                 </td>
                 <td style={{ width: '25%' }}>
-                  {document.owner}
+                  {namesState[document.owner] || 'Loading...'}
                 </td>
                 <td style={{ width: '25%' }}>
-                  {(new Date(document.createdAt)).toString()}
+                  {format(new Date(document.createdAt), 'MM/dd/yyyy')}
                 </td>
                 <td style={{ width: '10%' }}>
-                  <Link href={`/admin/document/${document._id}`}>View</Link>
+                  <Link href={`/admin/document/${document._id}`}>Manage</Link>
                 </td>
               </tr>
             ))}
