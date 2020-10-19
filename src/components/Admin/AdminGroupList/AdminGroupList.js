@@ -13,7 +13,7 @@ const AdminGroupList = (props) => {
         <LoadingSpinner />
       )}
       {!loading && groups && (
-        <Table striped bordered hover size="sm" variant="light">
+        <Table striped bordered hover size="sm" variant="light" style={{ borderCollapse: 'unset' }}>
           <thead>
             <tr>
               <th>Name</th>
