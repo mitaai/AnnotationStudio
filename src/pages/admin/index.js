@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import { useSession } from 'next-auth/client';
 import {
   Card,
@@ -8,8 +9,9 @@ import Layout from '../../components/Layout';
 
 const AdminView = () => {
   const [session, loading] = useSession();
+  const [alerts, setAlerts] = useState([]);
   return (
-    <Layout type="admin">
+    <Layout type="admin" alerts={alerts}>
       {loading && (
         <Card>
           <Card.Body>
@@ -25,7 +27,7 @@ const AdminView = () => {
         </Card>
       )}
       {!loading && session && session.user.role === 'admin' && (
-        <AdminPanel />
+        <AdminPanel alerts={alerts} setAlerts={setAlerts} session={session} />
       )}
     </Layout>
   );
