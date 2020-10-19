@@ -15,7 +15,15 @@ const AdminUserList = (props) => {
         <LoadingSpinner />
       )}
       {!loading && users && (
-        <Table striped bordered hover size="sm" variant="light" style={{ borderCollapse: 'unset' }}>
+        <Table
+          striped
+          bordered
+          hover
+          size="sm"
+          variant="light"
+          style={{ borderCollapse: 'unset' }}
+          data-testid="admin-users-table"
+        >
           <thead>
             <tr>
               <th>Name</th>

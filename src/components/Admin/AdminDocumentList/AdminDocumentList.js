@@ -29,7 +29,15 @@ const AdminDocumentList = (props) => {
         <LoadingSpinner />
       )}
       {!loading && documents && (
-        <Table striped bordered hover size="sm" variant="light" style={{ borderCollapse: 'unset' }}>
+        <Table
+          striped
+          bordered
+          hover
+          size="sm"
+          variant="light"
+          style={{ borderCollapse: 'unset' }}
+          data-testid="admin-docs-table"
+        >
           <thead>
             <tr>
               <th>Title</th>

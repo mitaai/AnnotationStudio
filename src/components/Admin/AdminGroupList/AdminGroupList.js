@@ -14,7 +14,15 @@ const AdminGroupList = (props) => {
         <LoadingSpinner />
       )}
       {!loading && groups && (
-        <Table striped bordered hover size="sm" variant="light" style={{ borderCollapse: 'unset' }}>
+        <Table
+          striped
+          bordered
+          hover
+          size="sm"
+          variant="light"
+          style={{ borderCollapse: 'unset' }}
+          data-testid="admin-groups-table"
+        >
           <thead>
             <tr>
               <th>Name</th>
