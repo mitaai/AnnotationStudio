@@ -35,7 +35,7 @@ const AdminGroupList = (props) => {
                   {group.members.length}
                 </td>
                 <td style={{ width: '10%' }}>
-                  <Link href={`/admin/group/${group._id}`}>View</Link>
+                  <Link href={`/admin/group/${group._id}`}>Manage</Link>
                 </td>
               </tr>
             ))}
