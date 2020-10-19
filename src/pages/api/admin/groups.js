@@ -19,7 +19,7 @@ const handler = async (req, res) => {
         const {
           sort, order, page, perPage,
         } = query;
-        let direction = 1;
+        let direction = -1;
         if (order) {
           if (order === 'asc') direction = 1;
           else if (order === 'desc') direction = -1;
