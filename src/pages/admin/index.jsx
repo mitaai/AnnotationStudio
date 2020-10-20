@@ -45,7 +45,9 @@ AdminView.getInitialProps = async (context) => {
   const { tab, alert } = context.query;
   let props = {};
   if (tab) props = { ...props, tab };
-  if (alert) props = { ...props, initAlerts: [alert] };
+  if (alert && alert === 'deletedDocument') {
+    props = { ...props, initAlerts: [{ text: 'Document deleted successfully', variant: 'warning' }] };
+  }
   return { props };
 };
 

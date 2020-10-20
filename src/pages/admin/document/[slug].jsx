@@ -74,17 +74,18 @@ const AdminManageDocument = (props) => {
                     show={showModal}
                     onClick={(event) => {
                       event.target.setAttribute('disabled', 'true');
-                      deleteDocumentById(document.id).then(() => {
-                        Router.push({
-                          pathname: '/admin',
-                          query: {
-                            alert: { text: 'Document deleted successfully', variant: 'sucess' },
-                            tab: 'documents',
-                          },
+                      deleteDocumentById(document.id)
+                        .then(() => {
+                          Router.push({
+                            pathname: '/admin',
+                            query: {
+                              alert: 'deletedDocument',
+                              tab: 'documents',
+                            },
+                          });
+                        }).catch((err) => {
+                          setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
                         });
-                      }).catch((err) => {
-                        setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
-                      });
                       handleCloseModal();
                     }}
                   />
