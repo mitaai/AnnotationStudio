@@ -59,7 +59,7 @@ const AdminDocumentList = (props) => {
                   {format(new Date(document.createdAt), 'MM/dd/yyyy')}
                 </td>
                 <td style={{ width: '10%' }}>
-                  <Link href={`/admin/document/${document._id}`}>Manage</Link>
+                  <Link href={`/admin/document/${document.slug}`}>Manage</Link>
                 </td>
               </tr>
             ))}
