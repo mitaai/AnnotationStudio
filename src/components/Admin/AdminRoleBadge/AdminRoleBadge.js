@@ -1,6 +1,6 @@
 import { Badge } from 'react-bootstrap';
 
-const GroupRoleBadge = (props) => {
+const AdminRoleBadge = (props) => {
   let variant;
   const { role } = props;
   switch (role) {
@@ -21,4 +21,4 @@ const GroupRoleBadge = (props) => {
   );
 };
 
-export default GroupRoleBadge;
+export default AdminRoleBadge;
