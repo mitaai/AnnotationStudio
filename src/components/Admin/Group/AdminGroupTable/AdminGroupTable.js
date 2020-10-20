@@ -14,7 +14,7 @@ const AdminGroupTable = ({ group }) => (
   >
     <thead>
       <tr>
-        <td colSpan="2" className="text-center">Manage Group</td>
+        <td colSpan="2" className="text-center">View Group</td>
       </tr>
     </thead>
     <tbody>

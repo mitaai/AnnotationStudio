@@ -43,7 +43,7 @@ const AdminDocumentTable = ({ document, alerts, setAlerts }) => {
     >
       <thead>
         <tr>
-          <td colSpan="2" className="text-center">Manage Document</td>
+          <td colSpan="2" className="text-center">View Document</td>
         </tr>
       </thead>
       <tbody>

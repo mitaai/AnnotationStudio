@@ -51,7 +51,7 @@ const AdminManageDocument = (props) => {
                     type="button"
                     href={`/documents/${document.slug}`}
                   >
-                    View Document
+                    View Full Document
                   </Button>
                   <Button
                     type="button"

@@ -53,7 +53,7 @@ const AdminUserList = (props) => {
                   {format(new Date(user.createdAt), 'MM/dd/yyyy')}
                 </td>
                 <td style={{ width: '14%' }}>
-                  <Link href={`/admin/user/${user._id}`}>Manage</Link>
+                  <Link href={`/admin/user/${user._id}`}>View</Link>
                 </td>
               </tr>
             ))}

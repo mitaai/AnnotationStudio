@@ -15,7 +15,7 @@ const AdminUserTable = ({ user }) => (
   >
     <thead>
       <tr>
-        <td colSpan="2" className="text-center">Manage User</td>
+        <td colSpan="2" className="text-center">View User</td>
       </tr>
     </thead>
     <tbody>

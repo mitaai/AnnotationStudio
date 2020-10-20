@@ -48,7 +48,7 @@ const AdminGroupList = (props) => {
                   {format(new Date(group.createdAt), 'MM/dd/yyyy')}
                 </td>
                 <td style={{ width: '10%' }}>
-                  <Link href={`/admin/group/${group._id}`}>Manage</Link>
+                  <Link href={`/admin/group/${group._id}`}>View</Link>
                 </td>
               </tr>
             ))}
