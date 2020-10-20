@@ -8,10 +8,10 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import Layout from '../../components/Layout';
 
 const AdminView = ({ props }) => {
-  const { tab } = props;
+  const { tab, initAlerts } = props;
   const [key, setKey] = useState(tab || 'dashboard');
   const [session, loading] = useSession();
-  const [alerts, setAlerts] = useState([]);
+  const [alerts, setAlerts] = useState(initAlerts || []);
   return (
     <Layout type="admin" alerts={alerts}>
       {loading && (
@@ -42,9 +42,10 @@ const AdminView = ({ props }) => {
 };
 
 AdminView.getInitialProps = async (context) => {
-  const { tab } = context.query;
+  const { tab, alert } = context.query;
   let props = {};
   if (tab) props = { ...props, tab };
+  if (alert) props = { ...props, initAlerts: [alert] };
   return { props };
 };
 

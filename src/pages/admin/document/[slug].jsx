@@ -2,18 +2,22 @@ import React, { useState } from 'react';
 import Router from 'next/router';
 import { useSession } from 'next-auth/client';
 import {
-  Card,
+  Button, Card, Container,
 } from 'react-bootstrap';
 import AdminHeader from '../../../components/Admin/AdminHeader';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import Layout from '../../../components/Layout';
-import { prefetchDocumentBySlug } from '../../../utils/docUtil';
+import ConfirmationDialog from '../../../components/ConfirmationDialog';
+import { prefetchDocumentBySlug, deleteDocumentById } from '../../../utils/docUtil';
 import AdminDocumentTable from '../../../components/Admin/Document/AdminDocumentTable';
 
 const AdminManageDocument = (props) => {
   const { document, initAlert } = props;
   const [session, loading] = useSession();
   const [alerts, setAlerts] = useState(initAlert || []);
+  const [showModal, setShowModal] = useState(false);
+  const handleCloseModal = () => setShowModal(false);
+  const handleShowModal = () => setShowModal(true);
   return (
     <Layout type="admin" alerts={alerts}>
       {loading && (
@@ -40,7 +44,52 @@ const AdminManageDocument = (props) => {
           />
           <Card.Body>
             {document && (
-              <AdminDocumentTable document={document} />
+              <>
+                <AdminDocumentTable document={document} alerts={alerts} setAlerts={setAlerts} />
+                <Container style={{ display: 'flex', justifyContent: 'space-between' }} className="p-0">
+                  <Button
+                    type="button"
+                    href={`/documents/${document.slug}`}
+                  >
+                    View Document
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="warning"
+                    href={`/documents/${document.slug}/edit`}
+                  >
+                    Modify Document
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="danger"
+                    onClick={handleShowModal}
+                  >
+                    Delete Document
+                  </Button>
+                  <ConfirmationDialog
+                    name={document.title}
+                    type="document"
+                    handleCloseModal={handleCloseModal}
+                    show={showModal}
+                    onClick={(event) => {
+                      event.target.setAttribute('disabled', 'true');
+                      deleteDocumentById(document.id).then(() => {
+                        Router.push({
+                          pathname: '/admin',
+                          query: {
+                            alert: { text: 'Document deleted successfully', variant: 'sucess' },
+                            tab: 'documents',
+                          },
+                        });
+                      }).catch((err) => {
+                        setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+                      });
+                      handleCloseModal();
+                    }}
+                  />
+                </Container>
+              </>
             )}
           </Card.Body>
         </Card>
