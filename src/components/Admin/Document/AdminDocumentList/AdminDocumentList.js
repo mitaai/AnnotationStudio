@@ -13,16 +13,23 @@ const AdminDocumentList = (props) => {
     documents, loading, alerts, setAlerts,
   } = props;
   const [namesState, setNamesState] = useState({});
+
   useEffect(() => {
     async function fetchData() {
       if (documents && Array.isArray(documents) && documents.length > 0) {
-        documents.map((document) => getUserById(document.owner)
-          .then((result) => setNamesState({ ...namesState, [document.owner]: result.name }))
-          .catch((err) => setAlerts([...alerts, { text: err.message, variant: 'danger' }])));
+        documents.map(async (document) => {
+          if (!namesState[document.owner]) {
+            await getUserById(document.owner)
+              .then((result) => {
+                setNamesState({ ...namesState, [document.owner]: result.name });
+              })
+              .catch((err) => setAlerts([...alerts, { text: err.message, variant: 'danger' }]));
+          }
+        });
       }
     }
     fetchData();
-  }, [documents]);
+  }, [documents, namesState]);
   return (
     <>
       {loading && (
