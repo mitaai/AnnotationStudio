@@ -24,7 +24,6 @@ const handler = async (req, res) => {
         const {
           name,
           members,
-          documents,
           inviteToken,
           createdAt,
           updatedAt,
@@ -32,7 +31,6 @@ const handler = async (req, res) => {
         res.status(200).json({
           name,
           members,
-          documents,
           inviteToken,
           createdAt,
           updatedAt,
@@ -45,15 +43,6 @@ const handler = async (req, res) => {
       const nameToUpdate = req.body.name
         ? { name: req.body.name }
         : {};
-      let documentToUpdate = {};
-      let documentById = {};
-      if (req.body.updatedDocument) {
-        documentById = { 'documents.id': req.body.updatedDocument.id };
-        documentToUpdate = {
-          'documents.$.slug': req.body.updatedDocument.slug,
-          'documents.$.name': req.body.updatedDocument.name,
-        };
-      }
       let memberToChangeRole = {};
       let memberById = {};
       if (req.body.memberToChangeRoleId) {
@@ -72,16 +61,9 @@ const handler = async (req, res) => {
       const memberToPush = req.body.addedUser
         ? { members: req.body.addedUser }
         : {};
-      const documentToPush = req.body.addedDocument
-        ? { documents: req.body.addedDocument }
-        : {};
       const memberToPull = req.body.removedUserId
         ? { members: { id: req.body.removedUserId } }
         : {};
-      const documentToPull = req.body.removedDocumentId
-        ? { documents: { id: req.body.removedDocumentId } }
-        : {};
-
       const inviteTokenToUpdate = req.body.inviteToken
         ? { inviteToken: req.body.inviteToken }
         : {};
@@ -93,7 +75,6 @@ const handler = async (req, res) => {
       const updateMethods = {};
       const fieldsToSet = {
         ...nameToUpdate,
-        ...documentToUpdate,
         ...memberToChangeRole,
         ...memberToChangeName,
         ...inviteTokenToUpdate,
@@ -103,9 +84,9 @@ const handler = async (req, res) => {
         ...inviteTokenToUnset,
       };
       if (Object.keys(fieldsToUnset).length !== 0) updateMethods.$unset = fieldsToUnset;
-      const fieldsToPush = { ...memberToPush, ...documentToPush };
+      const fieldsToPush = { ...memberToPush };
       if (Object.keys(fieldsToPush).length !== 0) updateMethods.$push = fieldsToPush;
-      const fieldsToPull = { ...memberToPull, ...documentToPull };
+      const fieldsToPull = { ...memberToPull };
       if (Object.keys(fieldsToPull).length !== 0) updateMethods.$pull = fieldsToPull;
       updateMethods.$currentDate = { updatedAt: true };
 
@@ -115,7 +96,6 @@ const handler = async (req, res) => {
         .findOneAndUpdate(
           {
             _id: ObjectID(req.query.id),
-            ...documentById,
             ...memberById,
           },
           updateMethods,
