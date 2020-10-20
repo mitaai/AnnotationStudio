@@ -10,6 +10,13 @@ const handler = async (req, res) => {
   if (method === 'GET') {
     const { db } = await connectToDatabase();
     if (ObjectID.isValid(req.query.id)) {
+      let querierRole = 'user';
+      if (token && token.exp > 0) {
+        const userObj = await db
+          .collection('users')
+          .findOne({ _id: ObjectID(token.id) });
+        querierRole = userObj.role;
+      }
       const doc = await db
         .collection('users')
         .find(
@@ -21,9 +28,28 @@ const handler = async (req, res) => {
           name, firstName, lastName, affiliation, role,
         } = doc[0];
         const groups = doc[0].groups ? doc[0].groups : [];
-        res.status(200).json({
-          name, firstName, lastName, affiliation, groups, role,
-        });
+        if (querierRole === 'admin') {
+          const {
+            email, emailVerified, createdAt, updatedAt, slug,
+          } = doc[0];
+          res.status(200).json({
+            name,
+            firstName,
+            lastName,
+            affiliation,
+            groups,
+            role,
+            email,
+            emailVerified,
+            createdAt,
+            updatedAt,
+            slug,
+          });
+        } else {
+          res.status(200).json({
+            name, firstName, lastName, affiliation, groups, role,
+          });
+        }
       } else res.status(404).end('Not Found');
     } else res.status(404).end('Not Found');
   } else if (method === 'PATCH') {
