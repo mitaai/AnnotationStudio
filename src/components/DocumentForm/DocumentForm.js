@@ -137,28 +137,30 @@ const DocumentForm = ({
     >
       {(props) => (
         <Form onSubmit={props.handleSubmit} noValidate className="pt-2">
-          <Form.Row>
-            <Col>
-              <Card className="mb-2">
-                <Card.Header>
-                  <Card.Title>Paste or type directly into the form</Card.Title>
-                </Card.Header>
-                <Card.Body>
-                  <Field name="text">
-                    {({ field }) => (
-                      <QuillNoSSRWrapper
-                        theme="snow"
-                        modules={quillModules}
-                        formats={quillFormats}
-                        value={field.value}
-                        onChange={field.onChange(field.name)}
-                      />
-                    )}
-                  </Field>
-                </Card.Body>
-              </Card>
-            </Col>
-          </Form.Row>
+          {(props.values.state === 'draft' || data.state === 'draft') && (
+            <Form.Row>
+              <Col>
+                <Card className="mb-2">
+                  <Card.Header>
+                    <Card.Title>Paste or type directly into the form</Card.Title>
+                  </Card.Header>
+                  <Card.Body>
+                    <Field name="text">
+                      {({ field }) => (
+                        <QuillNoSSRWrapper
+                          theme="snow"
+                          modules={quillModules}
+                          formats={quillFormats}
+                          value={field.value}
+                          onChange={field.onChange(field.name)}
+                        />
+                      )}
+                    </Field>
+                  </Card.Body>
+                </Card>
+              </Col>
+            </Form.Row>
+          )}
           <Form.Row>
             <Col>
               <Card>
@@ -237,6 +239,7 @@ const DocumentForm = ({
                     values={props.values}
                     onChange={props.handleChange}
                     onBlur={props.handleBlur}
+                    disableDraft={data && data.state !== 'draft'}
                   />
                   {errors && errors.length > 0 && (
                     <Row className="mt-3">

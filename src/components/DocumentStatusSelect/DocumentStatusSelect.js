@@ -23,6 +23,7 @@ const DocumentStatusSelect = ({
   onChange,
   onBlur,
   session,
+  disableDraft,
 }) => (
   <Row>
     <Col>
@@ -38,6 +39,7 @@ const DocumentStatusSelect = ({
             onChange={onChange}
             onBlur={onBlur}
             as={Field}
+            disabled={disableDraft}
           />
           <FormCheck.Label>
             <PencilFill className="mb-1" />
