@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 import {
   Badge, Button, Table,
 } from 'react-bootstrap';
 import { format } from 'date-fns';
 import { getGroupNameById } from '../../../../utils/groupUtil';
+import { getUserById } from '../../../../utils/userUtil';
 
-const AdminDocumentTable = ({ document }) => {
+const AdminDocumentTable = ({ document, alerts, setAlerts }) => {
   const [groupState, setGroupState] = useState({});
+  const [namesState, setNamesState] = useState({});
 
   useEffect(() => {
     if (document) {
@@ -18,8 +21,16 @@ const AdminDocumentTable = ({ document }) => {
         });
       };
       fetchGroupState();
+      const fetchOwnerName = async () => {
+        getUserById(document.owner)
+          .then((result) => setNamesState({ ...namesState, [document.owner]: result.name }))
+          .catch((err) => setAlerts([...alerts, { text: err.message, variant: 'danger' }]));
+      };
+      if (document.owner && !namesState[document.owner]) {
+        fetchOwnerName();
+      }
     }
-  }, [document]);
+  }, [document, namesState]);
 
   return (
     <Table
@@ -51,7 +62,7 @@ const AdminDocumentTable = ({ document }) => {
         {document.authors && (
           <tr>
             <th>Authors</th>
-            <td>{document.authors && document.authors.join(', ')}</td>
+            <td>{document.authors.join(', ')}</td>
           </tr>
         )}
         {document.editors && (
@@ -60,6 +71,88 @@ const AdminDocumentTable = ({ document }) => {
             <td>{document.editors.join(', ')}</td>
           </tr>
         )}
+        {document.publication && (
+          <tr>
+            <th>Publication</th>
+            <td>{document.publication}</td>
+          </tr>
+        )}
+        {document.bookTitle && (
+          <tr>
+            <th>Book Title</th>
+            <td>{document.bookTitle}</td>
+          </tr>
+        )}
+        {document.edition && (
+          <tr>
+            <th>Edition</th>
+            <td>{document.edition}</td>
+          </tr>
+        )}
+        {document.series && (
+          <tr>
+            <th>Series</th>
+            <td>{document.series}</td>
+          </tr>
+        )}
+        {document.seriesNumber && (
+          <tr>
+            <th>Series Number</th>
+            <td>{document.seriesNumber}</td>
+          </tr>
+        )}
+        {document.volume && (
+          <tr>
+            <th>Volume</th>
+            <td>{document.volume}</td>
+          </tr>
+        )}
+        {document.issue && (
+          <tr>
+            <th>Issue</th>
+            <td>{document.issue}</td>
+          </tr>
+        )}
+        {document.pageNumbers && (
+          <tr>
+            <th>Page Numbers</th>
+            <td>{document.pageNumbers}</td>
+          </tr>
+        )}
+        {document.publisher && (
+          <tr>
+            <th>Publisher</th>
+            <td>{document.publisher}</td>
+          </tr>
+        )}
+        {document.location && (
+          <tr>
+            <th>Location</th>
+            <td>{document.location}</td>
+          </tr>
+        )}
+        {document.publicationDate && (
+          <tr>
+            <th>Publication Date</th>
+            <td>{document.publicationDate}</td>
+          </tr>
+        )}
+        {document.url && (
+          <tr>
+            <th>URL</th>
+            <td>{document.url}</td>
+          </tr>
+        )}
+        {document.accessed && (
+          <tr>
+            <th>Accessed</th>
+            <td>{document.accessed}</td>
+          </tr>
+        )}
+        <tr>
+          <th>Rights Status</th>
+          <td>{document.rightsStatus}</td>
+        </tr>
         <tr>
           <th>Created</th>
           <td>{format(new Date(document.createdAt), 'PPPppp')}</td>
@@ -84,6 +177,16 @@ const AdminDocumentTable = ({ document }) => {
                 </Badge>
               ))
               : (<Badge>[no groups]</Badge>)}
+          </td>
+        </tr>
+        <tr>
+          <th>Owner</th>
+          <td>
+            {namesState[document.owner] && (
+            <Link href={`/admin/user/${document.owner}`}>
+              {namesState[document.owner].toString()}
+            </Link>
+            )}
           </td>
         </tr>
         <tr>
