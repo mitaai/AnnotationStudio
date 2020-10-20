@@ -135,7 +135,7 @@ const DocumentForm = ({
     >
       {(props) => (
         <Form onSubmit={props.handleSubmit} noValidate className="pt-2">
-          {(props.values.state === 'draft' || data.state === 'draft') && (
+          {(props.values.state === 'draft' || (data && data.state === 'draft')) && (
             <Form.Row>
               <Col>
                 <Card className="mb-2">
