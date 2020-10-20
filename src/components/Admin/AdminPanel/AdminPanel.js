@@ -1,16 +1,18 @@
 /* eslint-disable no-underscore-dangle */
 import { useState, useEffect } from 'react';
 import {
-  Card, Pagination, Tabs, Tab,
+  Card, Pagination,
 } from 'react-bootstrap';
 import AdminDashboard from '../AdminDashboard';
 import AdminUserList from '../AdminUserList';
 import AdminDocumentList from '../AdminDocumentList';
 import AdminGroupList from '../AdminGroupList';
+import AdminHeader from '../AdminHeader';
 import { adminGetList } from '../../../utils/adminUtil';
 
-const AdminPanel = ({ alerts, setAlerts, session }) => {
-  const [key, setKey] = useState('dashboard');
+const AdminPanel = ({
+  alerts, setAlerts, session, activeKey, setKey,
+}) => {
   const [totalPages, setTotalPages] = useState(1);
   const [page, setPage] = useState(1);
   const [listLoading, setListLoading] = useState(true);
@@ -23,9 +25,9 @@ const AdminPanel = ({ alerts, setAlerts, session }) => {
         setListLoading(true);
         setPage(1);
         setTotalPages(1);
-        if (key !== 'dashboard') {
+        if (activeKey !== 'dashboard') {
           const params = `?page=${page}&perPage=${perPage}`;
-          await adminGetList(key, params)
+          await adminGetList(activeKey, params)
             .then((results) => {
               setTotalPages(Math.ceil((results.count) / perPage));
               setData(results);
@@ -36,16 +38,16 @@ const AdminPanel = ({ alerts, setAlerts, session }) => {
       }
     }
     fetchData();
-  }, [key]);
+  }, [activeKey]);
 
   useEffect(() => {
     async function fetchData() {
       if (session) {
         setListLoading(true);
         setTotalPages(1);
-        if (key !== 'dashboard') {
+        if (activeKey !== 'dashboard') {
           const params = `?page=${page}&perPage=${perPage}`;
-          await adminGetList(key, params)
+          await adminGetList(activeKey, params)
             .then((results) => {
               setTotalPages(Math.ceil((results.count) / perPage));
               setData(results);
@@ -60,22 +62,10 @@ const AdminPanel = ({ alerts, setAlerts, session }) => {
 
   return (
     <Card>
-      <Card.Header>
-        <Card.Title>Administration</Card.Title>
-        <Tabs
-          justify
-          activeKey={key}
-          onSelect={(k) => setKey(k)}
-        >
-          <Tab eventKey="dashboard" title="About" />
-          <Tab eventKey="users" title="Users" />
-          <Tab eventKey="documents" title="Documents" />
-          <Tab eventKey="groups" title="Groups" />
-        </Tabs>
-      </Card.Header>
+      <AdminHeader activeKey={activeKey} setKey={setKey} />
       <Card.Body>
-        {key === 'dashboard' && (<AdminDashboard />)}
-        {key !== 'dashboard' && (
+        {activeKey === 'dashboard' && (<AdminDashboard />)}
+        {activeKey !== 'dashboard' && (
           <Pagination style={{ justifyContent: 'center' }}>
             <Pagination.First disabled={page === 1} onClick={() => setPage(1)} />
             <Pagination.Prev disabled={page === 1} onClick={() => setPage(page - 1)} />
@@ -120,19 +110,19 @@ const AdminPanel = ({ alerts, setAlerts, session }) => {
             />
           </Pagination>
         )}
-        {key === 'users' && (
+        {activeKey === 'users' && (
           <AdminUserList
             users={data.users}
             loading={listLoading}
           />
         )}
-        {key === 'documents' && (
+        {activeKey === 'documents' && (
         <AdminDocumentList
           documents={data.documents}
           loading={listLoading}
         />
         )}
-        {key === 'groups' && (
+        {activeKey === 'groups' && (
           <AdminGroupList
             groups={data.groups}
             loading={listLoading}

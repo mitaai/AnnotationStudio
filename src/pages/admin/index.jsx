@@ -7,7 +7,9 @@ import AdminPanel from '../../components/Admin/AdminPanel';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import Layout from '../../components/Layout';
 
-const AdminView = () => {
+const AdminView = ({ props }) => {
+  const { tab } = props;
+  const [key, setKey] = useState(tab || 'dashboard');
   const [session, loading] = useSession();
   const [alerts, setAlerts] = useState([]);
   return (
@@ -27,10 +29,23 @@ const AdminView = () => {
         </Card>
       )}
       {!loading && session && session.user.role === 'admin' && (
-        <AdminPanel alerts={alerts} setAlerts={setAlerts} session={session} />
+        <AdminPanel
+          alerts={alerts}
+          setAlerts={setAlerts}
+          session={session}
+          activeKey={key}
+          setKey={setKey}
+        />
       )}
     </Layout>
   );
+};
+
+AdminView.getInitialProps = async (context) => {
+  const { tab } = context.query;
+  let props = {};
+  if (tab) props = { ...props, tab };
+  return { props };
 };
 
 export default AdminView;
