@@ -10,12 +10,14 @@ const handler = async (req, res) => {
     const token = await jwt.getToken({ req, secret });
     if (token && token.exp > 0) {
       const { db } = await connectToDatabase();
+      const userObj = await db
+        .collection('users')
+        .findOne({ _id: ObjectID(token.id) });
+      const findCondition = { _id: ObjectID(req.query.id) };
+      if (userObj.role !== 'admin') findCondition['members.id'] = token.id;
       const doc = await db
         .collection('groups')
-        .find({
-          _id: ObjectID(req.query.id),
-          'members.id': token.id,
-        })
+        .find(findCondition)
         .toArray();
       if (doc[0]) {
         const group = doc[0];
