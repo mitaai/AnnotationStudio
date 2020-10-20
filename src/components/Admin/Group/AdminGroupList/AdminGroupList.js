@@ -4,7 +4,7 @@ import {
   Table,
 } from 'react-bootstrap';
 import { format } from 'date-fns';
-import LoadingSpinner from '../../LoadingSpinner';
+import LoadingSpinner from '../../../LoadingSpinner';
 
 const AdminGroupList = (props) => {
   const { groups, loading } = props;

@@ -4,8 +4,8 @@ import {
   Table,
 } from 'react-bootstrap';
 import { format } from 'date-fns';
-import LoadingSpinner from '../../LoadingSpinner';
-import AdminRoleBadge from '../AdminRoleBadge';
+import LoadingSpinner from '../../../LoadingSpinner';
+import AdminRoleBadge from '../../AdminRoleBadge';
 
 const AdminUserList = (props) => {
   const { users, loading } = props;

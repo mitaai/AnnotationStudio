@@ -4,9 +4,9 @@ import {
   Card, Pagination,
 } from 'react-bootstrap';
 import AdminDashboard from '../AdminDashboard';
-import AdminUserList from '../AdminUserList';
-import AdminDocumentList from '../AdminDocumentList';
-import AdminGroupList from '../AdminGroupList';
+import AdminUserList from '../User/AdminUserList';
+import AdminDocumentList from '../Document/AdminDocumentList';
+import AdminGroupList from '../Group/AdminGroupList';
 import AdminHeader from '../AdminHeader';
 import { adminGetList } from '../../../utils/adminUtil';
 

@@ -5,8 +5,8 @@ import {
   Table,
 } from 'react-bootstrap';
 import { format } from 'date-fns';
-import LoadingSpinner from '../../LoadingSpinner';
-import { getUserById } from '../../../utils/userUtil';
+import LoadingSpinner from '../../../LoadingSpinner';
+import { getUserById } from '../../../../utils/userUtil';
 
 const AdminDocumentList = (props) => {
   const {
