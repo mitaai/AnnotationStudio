@@ -54,7 +54,7 @@ export async function getServerSideProps(context) {
   let props = {};
   await prefetchUserById(id, context.req.headers.cookie)
     .then((user) => {
-      props = { user };
+      props = { user: { ...user, id } };
     })
     .catch((err) => {
       props = { initAlert: [{ text: err.message, variant: 'danger' }] };
