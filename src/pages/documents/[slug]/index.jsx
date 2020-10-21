@@ -1,3 +1,5 @@
+/* eslint-disable no-param-reassign */
+/* eslint-disable no-underscore-dangle */
 /* eslint-disable no-restricted-syntax */
 import { useState } from 'react';
 import { useSession } from 'next-auth/client';
@@ -21,7 +23,7 @@ import { prefetchDocumentBySlug } from '../../../utils/docUtil';
 import { prefetchSharedAnnotationsOnDocument } from '../../../utils/annotationUtil';
 
 
-function adjustLine(from, to, line) {
+const adjustLine = (from, to, line) => {
   const fT = from.offsetTop + from.offsetHeight / 2;
   const tT = to.offsetTop 	 + to.offsetHeight / 2;
   const fL = from.offsetLeft + from.offsetWidth / 2;
@@ -30,20 +32,27 @@ function adjustLine(from, to, line) {
   const CA = Math.abs(tT - fT);
   const CO = Math.abs(tL - fL);
   const H = Math.sqrt(CA * CA + CO * CO);
-  let ANG = 180 / Math.PI * Math.acos(CA / H);
+  let ANG = (180 / Math.PI) * Math.acos(CA / H);
+  let top;
+  let left;
 
   if (tT > fT) {
-    var top = (tT - fT) / 2 + fT;
+    top = (tT - fT) / 2 + fT;
   } else {
-    var top = (fT - tT) / 2 + tT;
+    top = (fT - tT) / 2 + tT;
   }
   if (tL > fL) {
-    var left = (tL - fL) / 2 + fL;
+    left = (tL - fL) / 2 + fL;
   } else {
-    var left = (fL - tL) / 2 + tL;
+    left = (fL - tL) / 2 + tL;
   }
 
-  if ((fT < tT && fL < tL) || (tT < fT && tL < fL) || (fT > tT && fL > tL) || (tT > fT && tL > fL)) {
+  if (
+    (fT < tT && fL < tL)
+    || (tT < fT && tL < fL)
+    || (fT > tT && fL > tL)
+    || (tT > fT && tL > fL)
+  ) {
     ANG *= -1;
   }
   top -= H / 2;
@@ -56,17 +65,18 @@ function adjustLine(from, to, line) {
   line.style.top = `${top}px`;
   line.style.left = `${left}px`;
   line.style.height = `${H}px`;
-}
+};
 
-export default function DocumentPage(props) {
-  const { document, annotations, alerts } = props;
+const DocumentPage = (props) => {
+  const {
+    document, annotations, initAlerts,
+  } = props;
 
+  const [alerts, setAlerts] = useState(initAlerts || []);
   const [documentHighlightedAndLoaded, setDocumentHighlightedAndLoaded] = useState(false);
   const [channelAnnotations, setChannelAnnotations] = useState({ left: null, right: null });
   const [annotationChannel1Loaded, setAnnotationChannel1Loaded] = useState(false);
   const [annotationChannel2Loaded, setAnnotationChannel2Loaded] = useState(false);
-
-  const [myAnnotations, setMyAnnotations] = useState({ left: null, right: null });
 
   const [session, loading] = useSession();
 
@@ -99,46 +109,60 @@ export default function DocumentPage(props) {
     highlightText(obj, $('#document-content-container').get(0));
   };
 
-  function AddAnnotationToChannels(side, newAnnotation) {
+  const addAnnotationToChannels = (side, newAnnotation) => {
     // we need to figure out where we need to add this new annotation inside this annotations array
     let indexForNewAnnotation = channelAnnotations[side].findIndex((annotation) => {
-      if (newAnnotation.position.top - annotation.position.top === 0) { // if the tops are the same then we have to distinguish which annotation comes first by who has the smaller left value
+      // if the tops are the same then we have to distinguish which
+      // annotation comes first by who has the smaller left value
+      if (newAnnotation.position.top - annotation.position.top === 0) {
         return newAnnotation.position.left < annotation.position.left;
       }
       return newAnnotation.position.top < annotation.position.top;
     });
 
-    // make sure that if we can't find a place to put the new annotation we put it at the end of the existing list of annotations
-    indexForNewAnnotation = indexForNewAnnotation === -1 ? channelAnnotations[side].length : indexForNewAnnotation;
+    // make sure that if we can't find a place to put the new annotation
+    // we put it at the end of the existing list of annotations
+    indexForNewAnnotation = indexForNewAnnotation === -1
+      ? channelAnnotations[side].length
+      : indexForNewAnnotation;
 
     // updating annotation channel data with new annotation
     channelAnnotations[side].splice(indexForNewAnnotation, 0, newAnnotation);
     setChannelAnnotations(channelAnnotations);
-  }
+  };
 
-  function DeleteAnnotationFromChannels(side, annotationID) {
-    const annotationIndex = channelAnnotations[side].findIndex((annotation) => annotation._id === annotationID);
+  const deleteAnnotationFromChannels = (side, annotationID) => {
+    const annotationIndex = channelAnnotations[side]
+      .findIndex(
+        (annotation) => annotation._id === annotationID,
+      );
     channelAnnotations[side].splice(annotationIndex, 1);
     setChannelAnnotations(channelAnnotations);
-  }
+  };
 
 
-  function UpdateChannelAnnotationData(side, annotation) {
-    const annotationIndex = channelAnnotations[side].findIndex((anno) => anno._id === annotation._id);
+  const updateChannelAnnotationData = (side, annotation) => {
+    const annotationIndex = channelAnnotations[side]
+      .findIndex(
+        (anno) => anno._id === annotation._id,
+      );
     channelAnnotations[side][annotationIndex] = annotation;
     setChannelAnnotations(channelAnnotations);
-  }
+  };
 
-  function MoveAnnotationsToCorrectSpotBasedOnFocus(side, focusID) {
+  const moveAnnotationsToCorrectSpotBasedOnFocus = (side, focusID) => {
     const annos = channelAnnotations[side];
-    console.log('annos', annos);
-    // this function will focus the annotation that has been clicked on in the channel. It works very similar to the function "PlaceAnnotationsInCorrectSpot"
+    // this function will focus the annotation that has been clicked on
+    // in the channel. It works very similar to the function
+    // "PlaceAnnotationsInCorrectSpot"
 
-    // first we need to find the index of the annotation we want to focus on in the annotations array
+    // first we need to find the index of the annotation
+    // we want to focus on in the annotations array
     const focusIndex = annos.findIndex((annotation) => annotation._id === focusID);
 
 
-    // first we need to focus the annotation and then place all other annotations after it under it
+    // first we need to focus the annotation and then place all other
+    // annotations after it under it
     const tempTopAdjustment = 0;
     const documentContainerOffset = $('#document-container').offset();
     let lastHighestPoint = -1000;
@@ -146,11 +170,17 @@ export default function DocumentPage(props) {
     const adjustmentTopNumber = 6;
     let top;
     let trueTop;
-    const offsetLeftForLine1 = side === 'left' ? $('#document-card-container').offset().left + 25 : -40;
+    const offsetLeftForLine1 = side === 'left'
+      ? $('#document-card-container').offset().left + 25
+      : -40;
     for (let i = focusIndex; i < annos.length; i += 1) {
-      console.log(annos[i]);
-      const offsetLeftForLine2 = side === 'left' ? annos[i].position.left : annos[i].position.left - $(`#document-container #${annos[i]._id}`).offset().left;
-      trueTop = annos[i].position.top - documentContainerOffset.top + tempTopAdjustment - adjustmentTopNumber;
+      const offsetLeftForLine2 = side === 'left'
+        ? annos[i].position.left
+        : annos[i].position.left - $(`#document-container #${annos[i]._id}`).offset().left;
+      trueTop = annos[i].position.top
+        - documentContainerOffset.top
+        + tempTopAdjustment
+        - adjustmentTopNumber;
       if (lastHighestPoint > trueTop) {
         top = lastHighestPoint + marginBottom;
       } else {
@@ -159,29 +189,61 @@ export default function DocumentPage(props) {
 
       lastHighestPoint = top + $(`#document-container #${annos[i]._id}`).height();
       $(`#document-container #${annos[i]._id}`).css('top', `${top}px`);
-      // now that we have placed the annotation in its correct spot we need to set the line that visually connects the annotation to the text
+      // now that we have placed the annotation in its correct spot
+      // we need to set the line that visually connects the annotation to the text
 
       // setting line 1
-      adjustLine($(`#document-container #${annos[i]._id} .annotation-pointer-${side}`).get(0), {
-        offsetTop: trueTop - top + 13, offsetLeft: offsetLeftForLine1, offsetWidth: 0, offsetHeight: 0,
-      }, $(`#document-container #${annos[i]._id} .line1`).get(0));
+      adjustLine(
+        $(`#document-container #${annos[i]._id} .annotation-pointer-${side}`).get(0),
+        {
+          offsetTop: trueTop - top + 13,
+          offsetLeft: offsetLeftForLine1,
+          offsetWidth: 0,
+          offsetHeight: 0,
+        },
+        $(`#document-container #${annos[i]._id} .line1`).get(0),
+      );
       // setting line 2 which will have the beginning point of line 1 endpoint
-      adjustLine({
-        offsetTop: trueTop - top + 13, offsetLeft: offsetLeftForLine1, offsetWidth: 0, offsetHeight: 0,
-      }, {
-        offsetTop: trueTop - top + 13, offsetLeft: offsetLeftForLine2, offsetWidth: 0, offsetHeight: 0,
-      }, $(`#document-container #${annos[i]._id} .line2`).get(0));
+      adjustLine(
+        {
+          offsetTop: trueTop - top + 13,
+          offsetLeft: offsetLeftForLine1,
+          offsetWidth: 0,
+          offsetHeight: 0,
+        },
+        {
+          offsetTop: trueTop - top + 13,
+          offsetLeft: offsetLeftForLine2,
+          offsetWidth: 0,
+          offsetHeight: 0,
+        },
+        $(`#document-container #${annos[i]._id} .line2`).get(0),
+      );
     }
 
-    // the next thing we need to do is place all annotations before the focus annotation in its correct position
-    // the lowest point an annotation can reach is the current top position of the focused index annotation
-    let lastLowestPoint = annos[focusIndex].position.top - documentContainerOffset.top + tempTopAdjustment - adjustmentTopNumber;
+    // the next thing we need to do is place all annotations
+    // before the focus annotation in its correct position
+    // the lowest point an annotation can reach is the
+    // current top position of the focused index annotation
+    let lastLowestPoint = annos[focusIndex].position.top
+      - documentContainerOffset.top
+      + tempTopAdjustment
+      - adjustmentTopNumber;
     for (let i = focusIndex - 1; i >= 0; i -= 1) {
-      const offsetLeftForLine2 = side === 'left' ? annos[i].position.left : annos[i].position.left - $(`#document-container #${annos[i]._id}`).offset().left;
+      const offsetLeftForLine2 = side === 'left'
+        ? annos[i].position.left
+        : annos[i].position.left - $(`#document-container #${annos[i]._id}`).offset().left;
       // this is where the annotation wants to be
-      trueTop = annos[i].position.top - documentContainerOffset.top + tempTopAdjustment - adjustmentTopNumber;
-      // if where you are is greater than where you can be then we have to set your position to where you can be. Otherwise just set your position to where you are
-      if (lastLowestPoint - $(`#document-container #${annos[i]._id}`).height() - marginBottom < $(`#document-container #${annos[i]._id}`).position().top) {
+      trueTop = annos[i].position.top
+        - documentContainerOffset.top
+        + tempTopAdjustment
+        - adjustmentTopNumber;
+      // if where you are is greater than where you can be then we have to set your
+      // position to where you can be. Otherwise just set your position to where you are
+      if (
+        lastLowestPoint - $(`#document-container #${annos[i]._id}`).height() - marginBottom
+        < $(`#document-container #${annos[i]._id}`).position().top
+      ) {
         top = lastLowestPoint - $(`#document-container #${annos[i]._id}`).height() - marginBottom;
       } else {
         top = $(`#document-container #${annos[i]._id}`).position().top;
@@ -189,20 +251,37 @@ export default function DocumentPage(props) {
 
       lastLowestPoint = top;
       $(`#document-container #${annos[i]._id}`).css('top', `${top}px`);
-      // now that we have placed the annotation in its correct spot we need to set the line that visually connects the annotation to the text
+      // now that we have placed the annotation in its correct spot we
+      // need to set the line that visually connects the annotation to the text
 
       // setting line 1
-      adjustLine($(`#document-container #${annos[i]._id} .annotation-pointer-${side}`).get(0), {
-        offsetTop: trueTop - top + 13, offsetLeft: offsetLeftForLine1, offsetWidth: 0, offsetHeight: 0,
-      }, $(`#document-container #${annos[i]._id} .line1`).get(0));
+      adjustLine(
+        $(`#document-container #${annos[i]._id} .annotation-pointer-${side}`).get(0),
+        {
+          offsetTop: trueTop - top + 13,
+          offsetLeft: offsetLeftForLine1,
+          offsetWidth: 0,
+          offsetHeight: 0,
+        },
+        $(`#document-container #${annos[i]._id} .line1`).get(0),
+      );
       // setting line 2 which will have the beginning point of line 1 endpoint
-      adjustLine({
-        offsetTop: trueTop - top + 13, offsetLeft: offsetLeftForLine1, offsetWidth: 0, offsetHeight: 0,
-      }, {
-        offsetTop: trueTop - top + 13, offsetLeft: offsetLeftForLine2, offsetWidth: 0, offsetHeight: 0,
-      }, $(`#document-container #${annos[i]._id} .line2`).get(0));
+      adjustLine(
+        {
+          offsetTop: trueTop - top + 13,
+          offsetLeft: offsetLeftForLine1,
+          offsetWidth: 0,
+          offsetHeight: 0,
+        }, {
+          offsetTop: trueTop - top + 13,
+          offsetLeft: offsetLeftForLine2,
+          offsetWidth: 0,
+          offsetHeight: 0,
+        },
+        $(`#document-container #${annos[i]._id} .line2`).get(0),
+      );
     }
-  }
+  };
 
 
   return (
@@ -223,10 +302,10 @@ export default function DocumentPage(props) {
         <Row id="document-container">
           <Col sm={3}>
             <AnnotationChannel
-              DeleteAnnotationFromChannels={DeleteAnnotationFromChannels}
-              UpdateChannelAnnotationData={UpdateChannelAnnotationData}
+              deleteAnnotationFromChannels={deleteAnnotationFromChannels}
+              updateChannelAnnotationData={updateChannelAnnotationData}
               setAnnotationChannelLoaded={setAnnotationChannel1Loaded}
-              focusOnAnnotation={MoveAnnotationsToCorrectSpotBasedOnFocus}
+              focusOnAnnotation={moveAnnotationsToCorrectSpotBasedOnFocus}
               loaded={annotationChannel1Loaded}
               side="left"
               annotations={channelAnnotations.left}
@@ -237,19 +316,26 @@ export default function DocumentPage(props) {
             <Card id="document-card-container">
               <Card.Body>
                 <Document
-                  setChannelAnnotations={(annos) => { setChannelAnnotations(annos); setDocumentHighlightedAndLoaded(true); }}
+                  setChannelAnnotations={
+                    (annos) => {
+                      setChannelAnnotations(annos);
+                      setDocumentHighlightedAndLoaded(true);
+                    }
+                  }
                   annotations={annotations}
                   documentHighlightedAndLoaded={documentHighlightedAndLoaded}
-                  AddAnnotationToChannels={AddAnnotationToChannels}
-                  DeleteAnnotationFromChannels={DeleteAnnotationFromChannels}
-                  UpdateChannelAnnotationData={UpdateChannelAnnotationData}
-                  focusOnAnnotation={MoveAnnotationsToCorrectSpotBasedOnFocus}
+                  addAnnotationToChannels={addAnnotationToChannels}
+                  deleteAnnotationFromChannels={deleteAnnotationFromChannels}
+                  updateChannelAnnotationData={updateChannelAnnotationData}
+                  focusOnAnnotation={moveAnnotationsToCorrectSpotBasedOnFocus}
                   annotateDocument={
                     (mySelector, annotationID) => {
                       highlightTextToAnnotate(mySelector, annotationID);
                     }
                   }
-                  document={document}
+                  documentToAnnotate={document}
+                  alerts={alerts}
+                  setAlerts={setAlerts}
                   user={session ? session.user : undefined}
                 />
               </Card.Body>
@@ -257,10 +343,10 @@ export default function DocumentPage(props) {
           </Col>
           <Col sm={3}>
             <AnnotationChannel
-              DeleteAnnotationFromChannels={DeleteAnnotationFromChannels}
-              UpdateChannelAnnotationData={UpdateChannelAnnotationData}
+              deleteAnnotationFromChannels={deleteAnnotationFromChannels}
+              updateChannelAnnotationData={updateChannelAnnotationData}
               setAnnotationChannelLoaded={setAnnotationChannel2Loaded}
-              focusOnAnnotation={MoveAnnotationsToCorrectSpotBasedOnFocus}
+              focusOnAnnotation={moveAnnotationsToCorrectSpotBasedOnFocus}
               loaded={annotationChannel2Loaded}
               side="right"
               annotations={channelAnnotations.right}
@@ -345,7 +431,7 @@ export default function DocumentPage(props) {
       </style>
     </>
   );
-}
+};
 
 export async function getServerSideProps(context) {
   const { slug } = context.params;
@@ -357,7 +443,7 @@ export async function getServerSideProps(context) {
     };
   }).catch((err) => {
     props = {
-      alerts: [{ text: err.message, variant: 'danger' }],
+      initAlerts: [{ text: err.message, variant: 'danger' }],
     };
   });
 
@@ -367,10 +453,11 @@ export async function getServerSideProps(context) {
       props.annotations = annotations;
     }).catch((err) => {
       props = {
-        alerts: [{ text: err.message, variant: 'danger' }],
+        initAlerts: [{ text: err.message, variant: 'danger' }],
       };
     });
 
   return { props };
 }
 
+export default DocumentPage;
