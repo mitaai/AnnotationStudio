@@ -40,7 +40,7 @@ const AdminManageUser = (props) => {
           />
           <Card.Body>
             {user && (
-              <AdminUserTable user={user} />
+              <AdminUserTable user={user} alerts={alerts} setAlerts={setAlerts} />
             )}
           </Card.Body>
         </Card>

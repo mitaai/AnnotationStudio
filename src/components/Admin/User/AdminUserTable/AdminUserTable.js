@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import React, { useState } from 'react';
 import {
   Badge, Button, Table,
@@ -5,14 +6,26 @@ import {
 import { format } from 'date-fns';
 import AdminRoleBadge from '../../AdminRoleBadge';
 import { getDocumentsByUser } from '../../../../utils/docUtil';
+import { adminGetList } from '../../../../utils/adminUtil';
+import AdminAnnotation from './AdminAnnotation';
 
-const AdminUserTable = ({ user }) => {
+const AdminUserTable = ({ user, alerts, setAlerts }) => {
   const [docs, setDocs] = useState({});
+  const [annotations, setAnnotations] = useState({});
 
-  const fetchDocuments = async () => {
+  const fetchCreated = async (type) => {
     if (user) {
       const { id } = user;
-      setDocs({ found: await getDocumentsByUser(id) });
+      if (type === 'documents') {
+        setDocs({
+          found: await getDocumentsByUser(id)
+            .catch((err) => setAlerts([...alerts, { text: err.message, variant: 'danger' }])),
+        });
+      } else if (type === 'annotations') {
+        const params = `?userId=${id}`;
+        setAnnotations(await adminGetList('annotations', params)
+          .catch((err) => setAlerts([...alerts, { text: err.message, variant: 'danger' }])));
+      }
     }
   };
 
@@ -107,20 +120,42 @@ const AdminUserTable = ({ user }) => {
           <td>
             {docs.found && docs.found.length > 0 && (
               docs.found.map((doc) => (
-                <Button variant="link" size="sm" href={`/admin/document/${doc.slug}`}>{doc.title}</Button>
+                <Button key={doc._id} variant="link" size="sm" href={`/admin/document/${doc.slug}`}>
+                  {doc.title}
+                </Button>
               ))
             )}
             {docs.found && docs.found.length === 0 && (
-              <Button variant="text" size="sm" disabled>This user has not created any documents.</Button>
+              <Button variant="text" size="sm" disabled>
+                This user has not created any documents.
+              </Button>
             )}
             {!docs.found && (
-              <Button variant="link" size="sm" onClick={() => { fetchDocuments(); }}>Click to fetch</Button>
+              <Button variant="link" size="sm" onClick={() => { fetchCreated('documents'); }}>
+                Click to fetch
+              </Button>
             )}
           </td>
         </tr>
         <tr>
           <th>Annotations</th>
-          <td><Button variant="link" size="sm">Click to fetch</Button></td>
+          <td>
+            {annotations.found && annotations.found.length > 0 && (
+              annotations.found.map((annotation) => (
+                <AdminAnnotation annotation={annotation} />
+              ))
+            )}
+            {annotations.found && annotations.found.length === 0 && (
+              <Button variant="text" size="sm" disabled>
+                This user has not created any annotations.
+              </Button>
+            )}
+            {!annotations.found && (
+              <Button variant="link" size="sm" onClick={() => { fetchCreated('annotations'); }}>
+                Click to fetch
+              </Button>
+            )}
+          </td>
         </tr>
       </tbody>
     </Table>
