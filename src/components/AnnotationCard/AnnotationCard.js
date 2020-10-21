@@ -91,7 +91,7 @@ function AddHoverEventListenersToAllHighlightedText() {
 
 
 function AnnotationCard({
-  side, annotation, focusOnAnnotation, initializedAsEditing, user,
+  side, annotation, focusOnAnnotation, DeleteAnnotationFromChannels, UpdateChannelAnnotationData, initializedAsEditing, user,
 }) {
   const [annotationData, setAnnotationData] = useState({ ...annotation });
   const [newAnnotationTags, setNewAnnotationTags] = useState(null);
@@ -165,6 +165,8 @@ function AnnotationCard({
         // we need to save this new data to the "#document-container" dom element attribute 'annotations'
         // we also need to make the document selectable again
         $('#document-content-container').removeClass('unselectable');
+        // we need to add this new annotation data to the correct channel 
+        UpdateChannelAnnotationData(side, newAnnotationData);
         // then after everything is done we will focus on the annotation so that things get shifted to their correct spots
         focusOnAnnotation();
       }).catch((err) => {
@@ -204,17 +206,14 @@ function AnnotationCard({
       // simulating the time it takes to delete the annotation from the database and make sure the connection is secure and worked properly
       setTimeout(() => {
         // if it is a new annotation then cancel should delete the annotation
-      // we need to grab the data on the annotations and then edit it by removing the current one the user just canceled and then saving this edited version of the annotations object
-        const annotations = JSON.parse($('#document-container').attr('annotations'));
-        const indexOfAnnotationToDelete = annotations[side].findIndex((a) => a._id === annotationData._id);
-        annotations[side].splice(indexOfAnnotationToDelete, 1);
-        $('#document-container').attr('annotations', JSON.stringify(annotations));
-        // now that we have removed the annotation from the data we need to remove it from the dom
+        // first we will remove the annotation from the ui
         $(`#${annotationData._id}.annotation-card-container`).remove();
         // after we remove the annotation we need to remove the classes from the text that was highlighted and then make the document selectable again
         $('.text-currently-being-annotated.active').removeClass('text-currently-being-annotated active');
         // we also need to make the document selectable again
         $('#document-content-container').removeClass('unselectable');
+        // we need to delete this annotation from the channel it is in
+        DeleteAnnotationFromChannels(side, annotationData._id);
       }, 500);
     } else {
       setNewAnnotationTags(null);
@@ -231,14 +230,14 @@ function AnnotationCard({
     setDeletingAnnotation(true);
     deleteAnnotationById(annotationData.db_id === undefined ? annotationData._id : annotationData.db_id).then((response) => {
       console.log(response);
-      const annotations = JSON.parse($('#document-container').attr('annotations'));
-      const indexOfAnnotationToDelete = annotations[side].findIndex((a) => a._id === annotationData._id);
-      annotations[side].splice(indexOfAnnotationToDelete, 1);
-      $('#document-container').attr('annotations', JSON.stringify(annotations));
+      // now that it is removed from the data base we will first remove it from the ui and then remove it from the object that is keeping track of all the annotations
       // now that we have removed the annotation from the data we need to remove it from the dom
       $(`#${annotationData._id}.annotation-card-container`).remove();
       // now we have to remove the highlight from any text that has the annotation-id of the annotation we just removed
       $(`[annotation-id='${annotationData._id}']`).removeClass('annotation-highlighted-text');
+
+      // we need to delete this annotation from the channel it is in
+      DeleteAnnotationFromChannels(side, annotationData._id);
     }).catch((err) => {
       console.log(err);
       setDeletingAnnotation(false);
