@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { useState } from 'react';
 import { useSession } from 'next-auth/client';
 import $ from 'jquery';
@@ -31,9 +32,10 @@ export default function DocumentPage(props) {
   const highlightText = async (obj, domElement) => {
     const selector = createTextQuoteSelector(obj.selector);
     const matches = selector(domElement);
-    matches.map(async (range) => {
-      await highlightRange(range, 'span', { ...obj.props });
-    });
+    for await (const range of matches) {
+      // calls matches.next() -> Promise -> resolves -> returns -> {value: '', done: boolean}
+      highlightRange(range, 'span', { ...obj.props });
+    }
   };
 
   const highlightTextToAnnotate = async (mySelector, annotationID) => {
