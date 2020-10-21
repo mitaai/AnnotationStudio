@@ -1,3 +1,4 @@
+/* eslint-disable react/destructuring-assignment */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable react/no-danger */
 /* eslint-disable no-restricted-syntax */
@@ -305,7 +306,6 @@ export default class Document extends React.Component {
         updateChannelAnnotationData,
         documentToAnnotate,
       } = this.props;
-      const { selector } = this.state;
 
       const newAnnotation = {
         _id: rid,
@@ -336,7 +336,7 @@ export default class Document extends React.Component {
           },
           selector: {
             type: 'TextQuoteSelector',
-            ...selector, // keys -> exact, prefix, suffix
+            ...this.state.selector, // keys -> exact, prefix, suffix
           },
         },
         position: {
@@ -372,12 +372,11 @@ export default class Document extends React.Component {
 
 
   componentDidMount() {
-    const { target, show, selectedTextToAnnotate } = this.state;
     // eslint-disable-next-line no-undef
     document.addEventListener('selectionchange', debounce(async (documentContainer) => {
       // we need to make sure that the annotate button disappears
       // while the document selection is being made
-      if (target !== null || show !== false) {
+      if (this.state.target !== null || this.state.show !== false) {
         this.setState({ target: null, show: false });
       }
 
@@ -386,7 +385,7 @@ export default class Document extends React.Component {
         // to annotate then don't remove class active from a text that was selected
         // otherwise the selection change so any text that was selected by the user
         // is no longer needed so we need to remove styling
-        if (!selectedTextToAnnotate) {
+        if (!this.state.selectedTextToAnnotate) {
           // if we are making a new selection we need to make sure all old selections are removed
           $('.text-currently-being-annotated').removeClass('active');
           $('#document-content-container').removeClass('unselectable');
@@ -434,13 +433,12 @@ export default class Document extends React.Component {
 
   render() {
     const { documentToAnnotate } = this.props;
-    const { showCannotAnnotateDocumentToast, target, show } = this.state;
     return (
       <>
         <div id="show-cannot-annotate-document-toast-container">
           <Toast
             onClose={() => this.setState({ showCannotAnnotateDocumentToast: false })}
-            show={showCannotAnnotateDocumentToast}
+            show={this.state.showCannotAnnotateDocumentToast}
             // delay={8000}
             variant="warning"
           // autohide
@@ -458,7 +456,7 @@ export default class Document extends React.Component {
         <div id="document-content-container" ref={this.myRef}>
           <div dangerouslySetInnerHTML={{ __html: documentToAnnotate ? documentToAnnotate.text : '' }} />
         </div>
-        <Overlay id="annotate-document-overlay" target={target} show={show} placement="top">
+        <Overlay id="annotate-document-overlay" target={this.state.target} show={this.state.show} placement="top">
           {(props) => (
             <Tooltip
               id="annotate-document-tooltip"
@@ -466,8 +464,7 @@ export default class Document extends React.Component {
                 const { annotateDocument } = this.props;
                 if (documentToAnnotate.state !== 'draft') {
                   const rid = RID();
-                  const { selector } = this.state;
-                  annotateDocument(selector, rid);
+                  annotateDocument(this.state.selector, rid);
 
                   // when the user clicks to annotate the piece of text that is selected
                   // we need to grab information about all the annotations currently
