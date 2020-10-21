@@ -424,13 +424,6 @@ export default class Document extends React.Component {
     }
   }
 
-  /*
-  shouldComponentUpdate(nextProps) {
-    if (nextProps.documentHighlightedAndLoaded) { return false; }
-    return true;
-  }
-*/
-
   render() {
     const { documentToAnnotate } = this.props;
     return (
