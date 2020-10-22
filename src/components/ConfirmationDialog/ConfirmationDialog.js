@@ -34,6 +34,20 @@ const ConfirmationDialog = ({
     </p>
   );
 
+  const userModalBody = (
+    <>
+      <p>
+        <strong>
+          Are you sure you want to delete this user permanently?
+        </strong>
+        {' '}
+        This action cannot be undone.
+      </p>
+      This user will be removed from all groups. However, documents
+      created by this user will not be deleted automatically.
+    </>
+  );
+
   return (
     <Modal
       show={show}
@@ -50,6 +64,7 @@ const ConfirmationDialog = ({
       <Modal.Body>
         {type === 'group' && groupModalBody}
         {type === 'document' && documentModalBody}
+        {type === 'user' && userModalBody}
       </Modal.Body>
       <Modal.Footer>
         <Button variant="outline-secondary" onClick={handleCloseModal}>
@@ -61,6 +76,7 @@ const ConfirmationDialog = ({
         >
           {type === 'group' && (<>Yes, delete this group.</>)}
           {type === 'document' && (<>Yes, delete this document.</>)}
+          {type === 'user' && (<>Yes, delete this user.</>)}
         </Button>
       </Modal.Footer>
     </Modal>

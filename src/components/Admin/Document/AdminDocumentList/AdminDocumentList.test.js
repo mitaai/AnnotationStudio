@@ -10,8 +10,6 @@ test('renders documents table (empty list)', async () => {
     <AdminDocumentList
       documents={[]}
       loading={false}
-      alerts={[]}
-      setAlerts={jest.fn()}
     />,
   );
   const docsTable = getByTestId('admin-docs-table');

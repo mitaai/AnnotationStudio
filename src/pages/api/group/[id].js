@@ -109,14 +109,14 @@ const handler = async (req, res) => {
     const token = await jwt.getToken({ req, secret });
     if (token && token.exp > 0) {
       const { db } = await connectToDatabase();
+      const userObj = await db
+        .collection('users')
+        .findOne({ _id: ObjectID(token.id) });
+      const findCondition = { _id: ObjectID(req.query.id) };
+      if (userObj.role !== 'admin') findCondition.members = { $elemMatch: { id: token.id, role: 'owner' } };
       const doc = await db
         .collection('groups')
-        .findOneAndDelete(
-          {
-            _id: ObjectID(req.query.id),
-            members: { $elemMatch: { id: token.id, role: 'owner' } },
-          },
-        );
+        .findOneAndDelete(findCondition);
       res.status(200).json(doc);
     } else res.status(403).end('Invalid or expired token');
   } else res.status(405).end(`Method ${method} Not Allowed`);

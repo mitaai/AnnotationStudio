@@ -108,6 +108,22 @@ const handler = async (req, res) => {
         );
       res.status(200).json(doc);
     } else res.status(403).end('Invalid or expired token');
+  } else if (method === 'DELETE') {
+    if (token && token.exp > 0) {
+      const { db } = await connectToDatabase();
+      if (ObjectID.isValid(req.query.id)) {
+        const userObj = await db
+          .collection('users')
+          .findOne({ _id: ObjectID(token.id) });
+        const { role } = userObj;
+        if (role === 'admin') {
+          const doc = await db
+            .collection('users')
+            .findOneAndDelete({ _id: ObjectID(req.query.id) });
+          res.status(200).json(doc);
+        } else res.status(403).end('Unauthorized');
+      } else res.status(404).end('Not Found');
+    } else res.status(403).end('Invalid or expired token');
   } else res.status(405).end(`Method ${method} Not Allowed`);
 };
 

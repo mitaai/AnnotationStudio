@@ -367,9 +367,9 @@ const EditGroup = ({
                         email: yup.string().required().email(),
                       })}
                       onSubmit={(values, actions) => {
-                        setTimeout(() => {
-                          addUserToGroup(group, values.email).then((data) => {
-                            const { _id, name } = data.value;
+                        setTimeout(async () => {
+                          await addUserToGroup(group, values.email).then((data) => {
+                            const { _id, name } = data[state.members.length].value;
                             const { email } = values;
                             const member = {
                               name, email, id: _id, role: 'member',

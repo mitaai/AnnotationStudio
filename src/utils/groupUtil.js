@@ -1,3 +1,4 @@
+/* eslint-disable import/no-cycle */
 /* eslint-disable no-underscore-dangle */
 import unfetch from 'unfetch';
 import { getAllDocumentsByGroup } from './docUtil';
@@ -62,12 +63,11 @@ const addGroupToUser = async (group, user) => {
   return Promise.reject(Error(`Unable to add group to user: error ${res.status} received from server`));
 };
 
-const addUserToGroup = async (group, email) => {
-  const user = await getUserByEmail(email);
+const addUserToGroup = async (group, email) => getUserByEmail(email).then(async (user) => {
   let alreadyInGroup = false;
   alreadyInGroup = user.groups.some((userGroup) => (userGroup.id === group.id));
-  user.error = (alreadyInGroup === true) ? 'User is already in group' : undefined;
-  if (!user.error) {
+  const error = (alreadyInGroup === true) ? 'User is already in group' : undefined;
+  if (!error) {
     const url = `/api/group/${group.id}`;
     const {
       id, name,
@@ -97,10 +97,11 @@ const addUserToGroup = async (group, email) => {
         role: 'member',
       };
       return addGroupToUser(groupToAdd, user, false)
-        .then(updateMemberCounts(response.value));
+        .then(() => updateMemberCounts(response.value))
+        .catch((err) => Promise.reject(err));
     } return Promise.reject(Error(`Unable to add user to group: error ${res.status} received from server`));
-  } return Promise.reject(Error(`Unable to add user with email ${email}: ${user.error}.`));
-};
+  } return Promise.reject(Error(`Unable to add user with email ${email}: ${error}.`));
+}).catch((err) => Promise.reject(err));
 
 const removeGroupFromUser = async (group, user) => {
   const removedGroupId = group.id;
@@ -179,7 +180,7 @@ const deleteGroup = async (group) => {
   } return Promise.reject(Error(`Unable to delete group: error ${res.status} received from server`));
 };
 
-const deleteGroupFromId = async (id) => {
+const deleteGroupById = async (id) => {
   const url = `/api/group/${id}`;
   const res = await unfetch(url, {
     method: 'GET',
@@ -345,7 +346,7 @@ export {
   addUserToGroup,
   changeUserRole,
   deleteGroup,
-  deleteGroupFromId,
+  deleteGroupById,
   deleteInviteToken,
   generateInviteToken,
   getGroupNameById,

@@ -1,4 +1,6 @@
+/* eslint-disable import/no-cycle */
 import unfetch from 'unfetch';
+import { removeUserFromGroup, deleteGroupById } from './groupUtil';
 
 const getUserByEmail = async (email) => {
   const url = `/api/user/email/${email}`;
@@ -41,4 +43,31 @@ const prefetchUserById = async (id, cookie) => {
   } return Promise.reject(Error(`Unable to get user: error ${res.status} received from server`));
 };
 
-export { getUserByEmail, getUserById, prefetchUserById };
+const deleteUserById = async (id) => getUserById(id).then(async (user) => {
+  await Promise.all(user.groups.map(async (group) => {
+    await removeUserFromGroup(group, { ...user, id })
+      .then(async () => {
+        if (group.role === 'owner') {
+          await deleteGroupById(group.id);
+        }
+      })
+      .catch((err) => Promise.reject(err));
+  }))
+    .then(async () => {
+      const url = `/api/user/${id}`;
+      const res = await unfetch(url, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      if (res.status === 200) {
+        return Promise.resolve(res.json());
+      } return Promise.reject(Error(`Unable to delete user: error ${res.status} received from server`));
+    })
+    .catch((err) => Promise.reject(err));
+}).catch((err) => Promise.reject(err));
+
+export {
+  deleteUserById, getUserByEmail, getUserById, prefetchUserById,
+};

@@ -10,7 +10,7 @@ import { getUserById } from '../../../../utils/userUtil';
 
 const AdminDocumentList = (props) => {
   const {
-    documents, loading, alerts, setAlerts,
+    documents, loading,
   } = props;
   const [namesState, setNamesState] = useState({});
 
@@ -20,10 +20,8 @@ const AdminDocumentList = (props) => {
         documents.map(async (document) => {
           if (!namesState[document.owner]) {
             await getUserById(document.owner)
-              .then((result) => {
-                setNamesState({ ...namesState, [document.owner]: result.name });
-              })
-              .catch((err) => setAlerts([...alerts, { text: err.message, variant: 'danger' }]));
+              .then((result) => setNamesState({ ...namesState, [document.owner]: result.name }))
+              .catch(() => setNamesState({ ...namesState, [document.owner]: '[user not found]' }));
           }
         });
       }

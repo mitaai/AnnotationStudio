@@ -45,7 +45,7 @@ const AdminManageDocument = (props) => {
           <Card.Body>
             {document && (
               <>
-                <AdminDocumentTable document={document} alerts={alerts} setAlerts={setAlerts} />
+                <AdminDocumentTable document={document} />
                 <Container style={{ display: 'flex', justifyContent: 'space-between' }} className="p-0">
                   <Button
                     type="button"

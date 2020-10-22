@@ -7,7 +7,7 @@ import { format } from 'date-fns';
 import { getGroupNameById } from '../../../../utils/groupUtil';
 import { getUserById } from '../../../../utils/userUtil';
 
-const AdminDocumentTable = ({ document, alerts, setAlerts }) => {
+const AdminDocumentTable = ({ document }) => {
   const [groupState, setGroupState] = useState({});
   const [namesState, setNamesState] = useState({});
 
@@ -24,7 +24,7 @@ const AdminDocumentTable = ({ document, alerts, setAlerts }) => {
       const fetchOwnerName = async () => {
         getUserById(document.owner)
           .then((result) => setNamesState({ ...namesState, [document.owner]: result.name }))
-          .catch((err) => setAlerts([...alerts, { text: err.message, variant: 'danger' }]));
+          .catch(() => setNamesState({ ...namesState, [document.owner]: '[user not found]' }));
       };
       if (document.owner && !namesState[document.owner]) {
         fetchOwnerName();
