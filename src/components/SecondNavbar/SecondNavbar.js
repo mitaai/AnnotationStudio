@@ -1,7 +1,11 @@
 import {
-  Nav, Row, Col, Navbar, Breadcrumb, Container, Button,
+  Nav, Row, Col, Navbar, Breadcrumb, Container, Button, OverlayTrigger, Popover, Form, Card, ButtonGroup,
 } from 'react-bootstrap';
-import { InfoSquare, FilterSquare } from 'react-bootstrap-icons';
+import {
+  InfoSquare, Filter, ShieldFillCheck, ChatLeftQuoteFill, PeopleFill, BookmarkFill, CalendarEventFill,
+} from 'react-bootstrap-icons';
+
+import FilterPopover from '../FilterPopover';
 
 const SecondNavbar = ({
   type,
@@ -12,7 +16,7 @@ const SecondNavbar = ({
     <Navbar bg="light" variant="light" className="second-navbar">
       <Container>
         <Row>
-          <Col sm={7}>
+          <Col sm={8}>
             <Nav>
               <Breadcrumb>
                 <Breadcrumb.Item active={type === 'dashboard'} href="/">Home</Breadcrumb.Item>
@@ -44,32 +48,21 @@ const SecondNavbar = ({
                 {title && (
                   <Breadcrumb.Item active>{title}</Breadcrumb.Item>
                 )}
-              </Breadcrumb>
-            </Nav>
-          </Col>
-          {type === 'document' && title && docView && (
-            <>
-              <Col sm={1}>
+                {type === 'document' && title && docView && (
                 <span id="btn-document-more-info">
                   <InfoSquare size="1.4em" />
                 </span>
-              </Col>
-              <Col sm={2}>
-                <div id="annotations-header-label">
-                  <span>Annotations</span>
-                </div>
-              </Col>
-              <Col sm={2}>
-                <Button id="btn-filter-annotation-well" variant="link">
-                  <FilterSquare size="1em" />
-                  <span>Filter</span>
-                </Button>
-              </Col>
-            </>
-          )}
+                )}
+              </Breadcrumb>
+            </Nav>
+          </Col>
         </Row>
-
       </Container>
+      {type === 'document' && title && docView && (
+      <div style={{ position: 'absolute', right: '16px', top: '7px' }}>
+        <FilterPopover />
+      </div>
+      )}
     </Navbar>
     <style jsx global>
       {`
@@ -84,20 +77,11 @@ const SecondNavbar = ({
     
         .second-navbar #btn-document-more-info {
             float: right;
-            margin-top: 12px;
+            margin-left: 5px;
             color: #007bff;
             cursor: pointer;
         }
-        #btn-filter-annotation-well {
-          margin-top: 7px;
-          float: right;
-        }
 
-        #btn-filter-annotation-well svg {
-          margin-right: 5px;
-          position: relative;
-          top: -2px;
-        }
       `}
     </style>
   </>

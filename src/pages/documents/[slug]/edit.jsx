@@ -6,11 +6,13 @@ import Layout from '../../../components/Layout';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import DocumentForm from '../../../components/DocumentForm';
 
+import { prefetchDocumentBySlug } from '../../../utils/docUtil';
+
 const EditDocument = (props) => {
   const { document, alerts } = props;
   const [session] = useSession();
   return (
-    <Layout alerts={alerts} type="document" title={`Edit Document: ${document.title}`}>
+    <Layout alerts={alerts} type="document" title={document ? `Edit Document: ${document.title}` : 'error'}>
       <Col lg="12" className="mx-auto">
         <Card>
           {!session && (
@@ -38,30 +40,21 @@ const EditDocument = (props) => {
 
 export async function getServerSideProps(context) {
   const { slug } = context.params;
-  const url = `${process.env.SITE}/api/document/slug/${slug}`;
-  // eslint-disable-next-line no-undef
-  const res = await fetch(url, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      Cookie: context.req.headers.cookie,
-    },
+  let props = {};
+  await prefetchDocumentBySlug(slug, context.req.headers.cookie).then((response) => {
+    props = {
+      document: {
+        slug,
+        ...response,
+      },
+    };
+  }).catch((err) => {
+    props = {
+      alerts: [{ text: err.message, variant: 'danger' }],
+    };
   });
-  if (res.status === 200) {
-    const foundDoc = await res.json();
-    const document = {
-      slug,
-      ...foundDoc,
-    };
-    return {
-      props: { document },
-    };
-  }
-  return {
-    props: {
-      alerts: [{ text: `Received error code ${res.status} from server.`, variant: 'danger' }],
-    },
-  };
+
+  return { props };
 }
 
 export default EditDocument;

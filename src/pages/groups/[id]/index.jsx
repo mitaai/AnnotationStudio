@@ -66,15 +66,16 @@ const ViewGroup = ({ group }) => {
                   <Button
                     variant="outline-danger"
                     onClick={async () => {
-                      const user = await getUserByEmail(session.user.email);
-                      removeUserFromGroup(group, user).then(() => {
-                        Router.push({
-                          pathname: '/groups',
-                          query: {
-                            alert: 'leftGroup',
-                            deletedGroupId: group.id,
-                          },
-                        }, '/groups');
+                      await getUserByEmail(session.user.email).then((user) => {
+                        removeUserFromGroup(group, user).then(() => {
+                          Router.push({
+                            pathname: '/groups',
+                            query: {
+                              alert: 'leftGroup',
+                              deletedGroupId: group.id,
+                            },
+                          }, '/groups');
+                        });
                       }).catch((err) => {
                         setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
                       });

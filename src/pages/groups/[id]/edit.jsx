@@ -82,7 +82,11 @@ const EditGroup = ({
         {!session && loading && (
           <LoadingSpinner />
         )}
-        {session && !loading && (roleInGroup(session) === 'owner' || roleInGroup(session) === 'manager') && (
+        {session && !loading
+          && (session.user.role === 'admin'
+            || roleInGroup(session) === 'owner'
+            || roleInGroup(session) === 'manager')
+          && (
           <>
             <Card.Header>
               {!state.editingGroupName && (
@@ -367,9 +371,9 @@ const EditGroup = ({
                         email: yup.string().required().email(),
                       })}
                       onSubmit={(values, actions) => {
-                        setTimeout(() => {
-                          addUserToGroup(group, values.email).then((data) => {
-                            const { _id, name } = data.value;
+                        setTimeout(async () => {
+                          await addUserToGroup(group, values.email).then((data) => {
+                            const { _id, name } = data[state.members.length].value;
                             const { email } = values;
                             const member = {
                               name, email, id: _id, role: 'member',
@@ -473,7 +477,7 @@ const EditGroup = ({
               </Row>
             </Card.Body>
           </>
-        )}
+          )}
       </Card>
       <GroupRoleSummaries />
     </Layout>

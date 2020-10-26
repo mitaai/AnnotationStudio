@@ -1,3 +1,4 @@
+import { ObjectID } from 'mongodb';
 import jwt from 'next-auth/jwt';
 import { connectToDatabase } from '../../../../utils/dbUtil';
 
@@ -16,8 +17,12 @@ const handler = async (req, res) => {
         )
         .toArray();
       if (doc[0]) {
+        const userObj = await db
+          .collection('users')
+          .findOne({ _id: ObjectID(token.id) });
+        const { role } = userObj;
         const user = doc[0];
-        if (user.email === token.email) {
+        if (role === 'admin' || user.email === token.email) {
           const {
             name, firstName, lastName, affiliation, email,
           } = user;

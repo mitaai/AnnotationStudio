@@ -16,12 +16,11 @@ const handler = async (req, res) => {
       const userGroups = (userObj.groups && userObj.groups.length > 0)
         ? userObj.groups.map((group) => group.id)
         : [];
+      const findCondition = { _id: ObjectID(req.query.id) };
+      if (userObj.role !== 'admin') findCondition.$or = [{ groups: { $in: userGroups } }, { owner: token.id }];
       const doc = await db
         .collection('documents')
-        .find({
-          _id: ObjectID(req.query.id),
-          $or: [{ groups: { $in: userGroups } }, { owner: token.id }],
-        })
+        .find(findCondition)
         .toArray();
       if (doc[0]) {
         const document = doc[0];
@@ -163,12 +162,16 @@ const handler = async (req, res) => {
       updateMethods.$currentDate = { updatedAt: true };
 
       const { db } = await connectToDatabase();
+      const userObj = await db
+        .collection('users')
+        .findOne({ _id: ObjectID(token.id) });
+      const findCondition = { _id: ObjectID(req.query.id) };
+      if (userObj.role !== 'admin') findCondition.owner = token.id;
       const doc = await db
         .collection('documents')
         .findOneAndUpdate(
           {
-            _id: ObjectID(req.query.id),
-            owner: token.id,
+            ...findCondition,
             ...groupById,
           },
           updateMethods,
@@ -182,14 +185,14 @@ const handler = async (req, res) => {
     const token = await jwt.getToken({ req, secret });
     if (token && token.exp > 0) {
       const { db } = await connectToDatabase();
+      const userObj = await db
+        .collection('users')
+        .findOne({ _id: ObjectID(token.id) });
+      const findCondition = { _id: ObjectID(req.query.id) };
+      if (userObj.role !== 'admin') findCondition.owner = token.id;
       const doc = await db
         .collection('documents')
-        .findOneAndDelete(
-          {
-            _id: ObjectID(req.query.id),
-            owner: token.id,
-          },
-        );
+        .findOneAndDelete(findCondition);
       res.status(200).json(doc);
     } else res.status(403).end('Invalid or expired token');
   } else res.status(405).end(`Method ${method} Not Allowed`);

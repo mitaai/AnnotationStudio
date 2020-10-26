@@ -18,13 +18,12 @@ const handler = async (req, res) => {
           email: token.email,
           role: 'owner',
         }];
-        const documents = [{}];
         const { db } = await connectToDatabase();
         const doc = await db
           .collection('groups')
           .insertOne(
             {
-              name, members, documents, createdAt, updatedAt,
+              name, members, createdAt, updatedAt,
             },
           );
         res.status(200).json(doc);

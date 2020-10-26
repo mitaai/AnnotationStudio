@@ -17,6 +17,7 @@ function getEditProfileUrl(email) {
 function Header({
   type,
   title,
+  docView,
 }) {
   const [session, loading] = useSession();
   const router = useRouter();
@@ -73,7 +74,7 @@ function Header({
         </Container>
       </Navbar>
       {session && !loading && (
-        <SecondNavbar type={type} title={title} />
+        <SecondNavbar type={type} title={title} docView={docView} />
       )}
     </header>
   );

@@ -14,7 +14,7 @@ import ConfirmationDialog from '../../components/ConfirmationDialog';
 import GroupRoleSummaries from '../../components/GroupRoleSummaries';
 import GroupRoleBadge from '../../components/GroupRoleBadge';
 import { FirstNameLastInitial } from '../../utils/nameUtil';
-import { deleteGroupFromId, removeUserFromGroup } from '../../utils/groupUtil';
+import { deleteGroupById, removeUserFromGroup } from '../../utils/groupUtil';
 import { getUserByEmail } from '../../utils/userUtil';
 import { deepEqual } from '../../utils/objectUtil';
 
@@ -88,13 +88,14 @@ const GroupList = ({ query, initAlerts }) => {
                           <Button
                             variant="outline-danger"
                             onClick={async () => {
-                              const user = await getUserByEmail(session.user.email);
-                              removeUserFromGroup(group, user).then(() => {
-                                setGroups(groups.filter((g) => g.id !== group.id));
-                                setAlerts([...alerts, {
-                                  text: 'You have successfully left the group.',
-                                  variant: 'warning',
-                                }]);
+                              await getUserByEmail(session.user.email).then((user) => {
+                                removeUserFromGroup(group, user).then(() => {
+                                  setGroups(groups.filter((g) => g.id !== group.id));
+                                  setAlerts([...alerts, {
+                                    text: 'You have successfully left the group.',
+                                    variant: 'warning',
+                                  }]);
+                                });
                               }).catch((err) => {
                                 setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
                               });
@@ -122,7 +123,7 @@ const GroupList = ({ query, initAlerts }) => {
                               show={showModal === group.id}
                               onClick={(event) => {
                                 event.target.setAttribute('disabled', 'true');
-                                deleteGroupFromId(group.id).then(() => {
+                                deleteGroupById(group.id).then(() => {
                                   setGroups(groups.filter((g) => g.id !== group.id));
                                   setAlerts([...alerts, {
                                     text: 'You have successfully deleted the group.',
