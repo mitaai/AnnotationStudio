@@ -82,7 +82,11 @@ const EditGroup = ({
         {!session && loading && (
           <LoadingSpinner />
         )}
-        {session && !loading && (roleInGroup(session) === 'owner' || roleInGroup(session) === 'manager') && (
+        {session && !loading
+          && (session.user.role === 'admin'
+            || roleInGroup(session) === 'owner'
+            || roleInGroup(session) === 'manager')
+          && (
           <>
             <Card.Header>
               {!state.editingGroupName && (
@@ -473,7 +477,7 @@ const EditGroup = ({
               </Row>
             </Card.Body>
           </>
-        )}
+          )}
       </Card>
       <GroupRoleSummaries />
     </Layout>

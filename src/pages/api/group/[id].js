@@ -91,11 +91,16 @@ const handler = async (req, res) => {
       updateMethods.$currentDate = { updatedAt: true };
 
       const { db } = await connectToDatabase();
+      const userObj = await db
+        .collection('users')
+        .findOne({ _id: ObjectID(token.id) });
+      const findCondition = { _id: ObjectID(req.query.id) };
+      if (userObj.role !== 'admin') findCondition['members.id'] = token.id;
       const doc = await db
         .collection('groups')
         .findOneAndUpdate(
           {
-            _id: ObjectID(req.query.id),
+            ...findCondition,
             ...memberById,
           },
           updateMethods,
