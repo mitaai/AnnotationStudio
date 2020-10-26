@@ -48,6 +48,7 @@ AdminView.getInitialProps = async (context) => {
   if (alert) {
     if (alert === 'deletedDocument') props = { ...props, initAlerts: [{ text: 'Document deleted successfully', variant: 'warning' }] };
     else if (alert === 'deletedUser') props = { ...props, initAlerts: [{ text: 'User deleted successfully', variant: 'warning' }] };
+    else if (alert === 'deletedGroup') props = { ...props, initAlerts: [{ text: 'Group deleted successfully', variant: 'warning' }] };
   }
   return { props };
 };

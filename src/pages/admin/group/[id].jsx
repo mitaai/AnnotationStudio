@@ -40,7 +40,7 @@ const AdminManageGroup = (props) => {
           />
           <Card.Body>
             {group && (
-              <AdminGroupTable group={group} />
+              <AdminGroupTable group={group} alerts={alerts} setAlerts={setAlerts} />
             )}
           </Card.Body>
         </Card>
@@ -54,7 +54,7 @@ export async function getServerSideProps(context) {
   let props = {};
   await prefetchGroupById(id, context.req.headers.cookie)
     .then((group) => {
-      props = { group };
+      props = { group: { ...group, id } };
     })
     .catch((err) => {
       props = { initAlerts: [{ text: err.message, variant: 'danger' }] };
