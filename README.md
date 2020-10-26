@@ -50,6 +50,22 @@ Set up environment variables in a new file called `.env.local`. You can copy the
 
 The `ADMIN_EMAIL` variable sets the initial admin user. If you are installing Annotation Studio, this should be the email address you intend to use on sign up. That will give you access to the admin interface. If you do not set this variable before installing Annotation Studio and signing up for an account, you will need to manually set your user `role` to `"admin"` in the MongoDB shell.
 
+<details>
+  <summary>Manually set role</summary>
+
+  If you signed up without setting the `ADMIN_EMAIL` environment variable, you can enter the MongoDB shell and manually set your role.
+
+  The following assumes your database name is `as4` and your email address is `my@email.com`.
+
+  ```sh
+  $ mongo
+  ```
+  ```sh
+  > use as4
+  > db.users.updateOne({ 'email':'my@email.com' },{ $set: { 'role':'admin' } })
+  ```
+</details>
+
 The `MONGODB_URI` and `DB_NAME` relate to your MongoDB instance. The values in `env.local.sample` assume a locally-hosted DB, but it is entirely possible to use an external one. Just make sure you set the `MONGODB_URI` to the MongoDB connection string. __Note:__ `MONGODB_URI` should include the DB name at the end of the connection string. This must match the value entered in `DB_NAME`.
 
 ## Available scripts
