@@ -353,8 +353,8 @@ export default class Document extends React.Component {
         focusOnAnnotation={() => {
           focusOnAnnotation(side, newAnnotation._id);
         }}
-        DeleteAnnotationFromChannels={deleteAnnotationFromChannels}
-        UpdateChannelAnnotationData={updateChannelAnnotationData}
+        deleteAnnotationFromChannels={deleteAnnotationFromChannels}
+        updateChannelAnnotationData={updateChannelAnnotationData}
         key={newAnnotation._id}
         side={side}
         expanded={false}

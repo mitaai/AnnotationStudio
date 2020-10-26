@@ -23,7 +23,7 @@ import { postAnnotation, updateAnnotationById, deleteAnnotationById } from '../.
 
 import { FilterContext, FilterThemes } from '../../contexts/FilterContext';
 
-function AddHoverEventListenersToAllHighlightedText() {
+function addHoverEventListenersToAllHighlightedText() {
   // console.log('annotation-highlighted-text', $('.annotation-highlighted-text'));
   $('.annotation-highlighted-text').on('mouseover', (e) => {
     // highlighting all every piece of the annotation a different color by setting it to active
@@ -98,8 +98,8 @@ function AnnotationCard({
   side,
   annotation,
   focusOnAnnotation,
-  DeleteAnnotationFromChannels,
-  UpdateChannelAnnotationData,
+  deleteAnnotationFromChannels,
+  updateChannelAnnotationData,
   initializedAsEditing,
   user,
 }) {
@@ -182,12 +182,12 @@ function AnnotationCard({
         // after we have saved the annotation the highlighted text needs to change its class from  "text-currently-being-annotated active" to "annotation-highlighted-text"
         $('.text-currently-being-annotated.active').addClass('annotation-highlighted-text');
         $('.text-currently-being-annotated.active').removeClass('text-currently-being-annotated active');
-        AddHoverEventListenersToAllHighlightedText();
+        addHoverEventListenersToAllHighlightedText();
         // we need to save this new data to the "#document-container" dom element attribute 'annotations'
         // we also need to make the document selectable again
         $('#document-content-container').removeClass('unselectable');
         // we need to add this new annotation data to the correct channel
-        UpdateChannelAnnotationData(side, newAnnotationData);
+        updateChannelAnnotationData(side, newAnnotationData);
         // then after everything is done we will focus on the annotation so that things get shifted to their correct spots
         focusOnAnnotation();
       }).catch((err) => {
@@ -234,7 +234,7 @@ function AnnotationCard({
         // we also need to make the document selectable again
         $('#document-content-container').removeClass('unselectable');
         // we need to delete this annotation from the channel it is in
-        DeleteAnnotationFromChannels(side, annotationData._id);
+        deleteAnnotationFromChannels(side, annotationData._id);
       }, 500);
     } else {
       setNewAnnotationTags(null);
@@ -258,7 +258,7 @@ function AnnotationCard({
       $(`[annotation-id='${annotationData._id}']`).removeClass('annotation-highlighted-text');
 
       // we need to delete this annotation from the channel it is in
-      DeleteAnnotationFromChannels(side, annotationData._id);
+      deleteAnnotationFromChannels(side, annotationData._id);
     }).catch((err) => {
       console.log(err);
       setDeletingAnnotation(false);
