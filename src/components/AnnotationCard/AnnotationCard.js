@@ -15,8 +15,10 @@ import {
   Spinner,
   OverlayTrigger,
   Tooltip,
+  ButtonGroup,
 } from 'react-bootstrap';
 
+import { CheckCircleFill, TrashFill } from 'react-bootstrap-icons';
 import { postAnnotation, updateAnnotationById, deleteAnnotationById } from '../../utils/annotationUtil';
 
 function AddHoverEventListenersToAllHighlightedText() {
@@ -95,7 +97,7 @@ function AnnotationCard({
 }) {
   const [annotationData, setAnnotationData] = useState({ ...annotation });
   const [newAnnotationTags, setNewAnnotationTags] = useState(null);
-  const [newAnnotationPermissionsShareWithGroups, setNewAnnotationPermissionsShareWithGroups] = useState(null);
+  const [newAnnotationPermissions, setNewAnnotationPermissions] = useState(null);
   const [newAnnotationText, setNewAnnotationText] = useState(initializedAsEditing !== undefined ? '' : null);
   const [newAnnotation, setNewAnnotation] = useState(initializedAsEditing !== undefined ? initializedAsEditing : false);
   const [cancelingAnnotation, setCancelingAnnotation] = useState(false);
@@ -128,11 +130,20 @@ function AnnotationCard({
     if (newAnnotationTags !== null) {
       newAnnotationData.body.tags = newAnnotationTags.split(' ');
     }
-    if (newAnnotationPermissionsShareWithGroups !== null) {
-      if (newAnnotationPermissionsShareWithGroups) {
-        newAnnotationData.permissions.groups = newAnnotationData.target.document.groups;
-      } else {
+    if (newAnnotationPermissions !== null) {
+      if (newAnnotationPermissions === 0) {
+        // user wants the annotation to be private
         newAnnotationData.permissions.groups = [];
+        newAnnotationData.permissions.documentOwner = false;
+      } else if (newAnnotationPermissions === 1) {
+        // user wants the annotation to be shared with groups
+        // getting the intersection between the groups that have access to this specific document and the groups that the user is in
+        newAnnotationData.permissions.groups = newAnnotationData.target.document.groups.filter((value) => (user.groups.indexOf(value) != -1));
+        newAnnotationData.permissions.documentOwner = false;
+      } else if (newAnnotationPermissions === 2) {
+        // user wants annotation to be shared with document owner only
+        newAnnotationData.permissions.groups = [];
+        newAnnotationData.permissions.documentOwner = true;
       }
     }
     if (newAnnotationText !== null) {
@@ -156,7 +167,7 @@ function AnnotationCard({
 
         // after setting the annotation data we need to reset the "new" data back to null
         setNewAnnotationTags(null);
-        setNewAnnotationPermissionsShareWithGroups(null);
+        setNewAnnotationPermissions(null);
         setNewAnnotationText(null);
         // after we have saved the annotation the highlighted text needs to change its class from  "text-currently-being-annotated active" to "annotation-highlighted-text"
         $('.text-currently-being-annotated.active').addClass('annotation-highlighted-text');
@@ -165,7 +176,7 @@ function AnnotationCard({
         // we need to save this new data to the "#document-container" dom element attribute 'annotations'
         // we also need to make the document selectable again
         $('#document-content-container').removeClass('unselectable');
-        // we need to add this new annotation data to the correct channel 
+        // we need to add this new annotation data to the correct channel
         UpdateChannelAnnotationData(side, newAnnotationData);
         // then after everything is done we will focus on the annotation so that things get shifted to their correct spots
         focusOnAnnotation();
@@ -187,7 +198,7 @@ function AnnotationCard({
 
         // after setting the annotation data we need to reset the "new" data back to null
         setNewAnnotationTags(null);
-        setNewAnnotationPermissionsShareWithGroups(null);
+        setNewAnnotationPermissions(null);
         setNewAnnotationText(null);
         // then after everything is done we will focus on the annotation so that things get shifted to their correct spots
         focusOnAnnotation();
@@ -217,7 +228,7 @@ function AnnotationCard({
       }, 500);
     } else {
       setNewAnnotationTags(null);
-      setNewAnnotationPermissionsShareWithGroups(null);
+      setNewAnnotationPermissions(null);
       setNewAnnotationText(null);
       // if the annotation is not new then canceling should just return it to its previous state
       setEditing(false);
@@ -252,8 +263,8 @@ function AnnotationCard({
     setNewAnnotationText(event.target.value);
   }
 
-  function handleAnnotationPermissionsChange(event) {
-    setNewAnnotationPermissionsShareWithGroups($(event.target).prop('checked'));
+  function handleAnnotationPermissionsChange(num) {
+    setNewAnnotationPermissions(num);
   }
 
   useEffect(() => {
@@ -292,24 +303,64 @@ function AnnotationCard({
           <>
             <Card.Header className="annotation-header">
               <span className="float-left">{annotationData.creator.name}</span>
-              <span className="float-right">
-                <span>{annotationData.modified === undefined ? '' : moment(annotationData.modified.toString()).format('MM/DD/YYYY')}</span>
-                {user.email === annotationData.creator.email && !newAnnotation ? (
-                  <Dropdown className="annotation-more-options-dropdown">
-                    <Dropdown.Toggle variant="light" id="dropdown-basic">
-                      <svg width="0.8em" height="0.8em" viewBox="0 0 16 16" className="bi bi-three-dots-vertical" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                        <path fillRule="evenodd" d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z" />
-                      </svg>
-                    </Dropdown.Toggle>
+              {editing ? (
+                <>
+                  {newAnnotation ? (
+                    <TrashFill
+                      className="btn-cancel-annotation-edits float-right"
+                      size="1em"
+                      variant="secondary"
+                      onClick={CancelAnnotation}
+                    />
+                  ) : (
+                    <Button
+                      className="btn-cancel-annotation-edits float-right"
+                      variant="secondary"
+                      size="sm"
+                      onClick={CancelAnnotation}
+                    >
+                      &times;
+                    </Button>
+                  )}
 
-                    <Dropdown.Menu className="annotation-more-options-dropdown-menu">
-                      <Dropdown.Item href="#/action-1" onClick={() => { setEditing(true); setUpdateFocusOfAnnotation(true); }}>Edit</Dropdown.Item>
-                      <Dropdown.Item href="#/action-2" onClick={DeleteAnnotation}>Delete</Dropdown.Item>
-                    </Dropdown.Menu>
-                  </Dropdown>
-                ) : ''}
+                  {newAnnotationTags === null && newAnnotationPermissions === null && newAnnotationText === null ? ''
+                    : (
+                      <>
+                        <CheckCircleFill
+                          size="1em"
+                          className="btn-save-annotation-edits float-right"
+                          variant="primary"
+                          onClick={SaveAnnotation}
+                        />
+                      </>
 
-              </span>
+                    )}
+                </>
+              ) : (
+                <>
+
+                  <span className="float-right">
+
+                    <span>{annotationData.modified === undefined ? '' : moment(annotationData.modified.toString()).format('MM/DD/YYYY')}</span>
+                    {user.email === annotationData.creator.email && !newAnnotation ? (
+                      <Dropdown className="annotation-more-options-dropdown">
+                        <Dropdown.Toggle variant="light" id="dropdown-basic">
+                          <svg width="0.8em" height="0.8em" viewBox="0 0 16 16" className="bi bi-three-dots-vertical" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                            <path fillRule="evenodd" d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z" />
+                          </svg>
+                        </Dropdown.Toggle>
+
+                        <Dropdown.Menu className="annotation-more-options-dropdown-menu">
+                          <Dropdown.Item href="#/action-1" onClick={() => { setEditing(true); setUpdateFocusOfAnnotation(true); }}>Edit</Dropdown.Item>
+                          <Dropdown.Item href="#/action-2" onClick={DeleteAnnotation}>Delete</Dropdown.Item>
+                        </Dropdown.Menu>
+                      </Dropdown>
+                    ) : ''}
+
+                  </span>
+
+                </>
+              )}
             </Card.Header>
             {editing
               ? (
@@ -344,40 +395,34 @@ function AnnotationCard({
                     </ListGroup>
                     <Row>
                       <Col lg={12}>
-                        <input id="checkbox-share-annotation" type="checkbox" onChange={handleAnnotationPermissionsChange} />
-                        <span id="text-share-annotation">Share with my groups</span>
-                        {newAnnotationTags === null && newAnnotationPermissionsShareWithGroups === null && newAnnotationText === null ? ''
-                          : (
-                            <Button
-                              className="btn-save-annotation-edits float-right"
-                              onClick={SaveAnnotation}
-                              variant="primary"
-                              size="sm"
-                            >
-                              {savingAnnotation ? (
-                                <>
-                                  <span style={{ marginRight: '3px' }}>Save</span>
-                                  <Spinner animation="border" variant="light" size="sm" />
-                                </>
-                              ) : 'Save'}
-                            </Button>
-                          )}
-                        <Button
-                          className="btn-cancel-annotation-edits float-right"
-                          onClick={CancelAnnotation}
-                          variant="secondary"
-                          size="sm"
-                        >
-                          {cancelingAnnotation ? (
-                            <>
-                              <span style={{ marginRight: '3px' }}>{newAnnotation ? 'Delete' : 'Cancel'}</span>
-                              <Spinner animation="border" variant="light" size="sm" />
-                            </>
-                          ) : (newAnnotation ? 'Delete' : 'Cancel')}
-                        </Button>
+                        <ButtonGroup size="sm" style={{ margin: '0px 0px 0.3rem 0.3rem' }}>
+                          <Button
+                            onClick={() => { handleAnnotationPermissionsChange(0); }}
+                            // eslint-disable-next-line no-nested-ternary
+                            variant={newAnnotationPermissions !== null ? (newAnnotationPermissions === 0 ? 'primary' : 'outline-primary') : (!annotationData.permissions.documentOwner && annotationData.permissions.groups.length === 0 ? 'primary' : 'outline-primary')}
+                            style={{ fontSize: '10px' }}
+                          >
+                            Private
+                          </Button>
+                          <Button
+                            onClick={() => { handleAnnotationPermissionsChange(1); }}
+                            // eslint-disable-next-line no-nested-ternary
+                            variant={newAnnotationPermissions !== null ? (newAnnotationPermissions === 1 ? 'primary' : 'outline-primary') : (!annotationData.permissions.documentOwner && annotationData.permissions.groups.length !== 0 ? 'primary' : 'outline-primary')}
+                            style={{ fontSize: '10px' }}
+                          >
+                            Share With Groups
+                          </Button>
+                          <Button
+                            onClick={() => { handleAnnotationPermissionsChange(2); }}
+                            // eslint-disable-next-line no-nested-ternary
+                            variant={newAnnotationPermissions !== null ? (newAnnotationPermissions === 2 ? 'primary' : 'outline-primary') : (annotationData.permissions.documentOwner && annotationData.permissions.groups.length === 0 ? 'primary' : 'outline-primary')}
+                            style={{ fontSize: '10px' }}
+                          >
+                            Share with doc owner
+                          </Button>
+                        </ButtonGroup>
                       </Col>
                     </Row>
-
                   </Form>
                 </>
               )
@@ -496,9 +541,23 @@ function AnnotationCard({
             border: 1px solid #007bff;
         }
 
+        .btn-save-annotation-edits {
+          color: #007bff;
+          margin-right: 3px;
+          font-size: 18px;
+        }
 
-        .btn-save-annotation-edits, .btn-cancel-annotation-edits {
-            margin: 0px 5px 5px 0px;
+
+        .btn-cancel-annotation-edits {
+          font-size: 18px;
+          border-radius: 50%;
+          line-height: 7px;
+          padding-left: 2.8px;
+          width: 18px;
+          height: 18px;
+          padding-top: 2.3px;
+          background-color: transparent;
+          color: #6c757d;
         }
 
         .annotation-more-options-dropdown-menu {
@@ -509,10 +568,6 @@ function AnnotationCard({
             font-size: 12px;
             top: -2px;
             position: relative;
-        }
-
-        #checkbox-share-annotation {
-            margin: 0px 5px 0px 10px;
         }
 
         #input-group-share-annotation {
@@ -588,12 +643,12 @@ function AnnotationCard({
           }
 
           .annotation-body {
-            padding: 0.30rem 0.60rem !important;
+            padding: 0.30rem 0.3rem !important;
             font-size: 12px;
           }
 
           .annotation-tags {
-            padding: 0.30rem 0.60rem !important;
+            padding: 0.30rem 0.30rem !important;
             font-size: 16px;
             font-weight: 500 !important;
           }
