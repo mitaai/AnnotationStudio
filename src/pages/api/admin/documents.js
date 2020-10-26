@@ -26,14 +26,14 @@ const handler = async (req, res) => {
         }
         const sortBy = sort ? { [sort]: direction } : { _id: direction };
         const doc = await db
-          .collection('groups')
+          .collection('documents')
           .find()
           .sort(sortBy)
           .skip(page > 0 ? ((page - 1) * perPage) : 0)
           .limit(parseInt(perPage, 10))
           .toArray();
-        const count = await db.collection('groups').countDocuments({});
-        res.status(200).json({ groups: JSON.parse(JSON.stringify(doc)), count });
+        const count = await db.collection('documents').countDocuments({});
+        res.status(200).json({ documents: JSON.parse(JSON.stringify(doc)), count });
       } else res.status(403).end('Unauthorized');
     } else res.status(403).end('Invalid or expired token');
   } else res.status(405).end(`Method ${method} Not Allowed`);

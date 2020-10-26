@@ -16,24 +16,12 @@ const handler = async (req, res) => {
       const { role } = userObj;
       if (role === 'admin') {
         const { query } = req;
-        const {
-          sort, order, page, perPage,
-        } = query;
-        let direction = -1;
-        if (order) {
-          if (order === 'asc') direction = 1;
-          else if (order === 'desc') direction = -1;
-        }
-        const sortBy = sort ? { [sort]: direction } : { _id: direction };
+        const { userId } = query;
         const doc = await db
-          .collection('groups')
-          .find()
-          .sort(sortBy)
-          .skip(page > 0 ? ((page - 1) * perPage) : 0)
-          .limit(parseInt(perPage, 10))
+          .collection('annotations')
+          .find({ 'creator.id': userId })
           .toArray();
-        const count = await db.collection('groups').countDocuments({});
-        res.status(200).json({ groups: JSON.parse(JSON.stringify(doc)), count });
+        res.status(200).json({ found: JSON.parse(JSON.stringify(doc)) });
       } else res.status(403).end('Unauthorized');
     } else res.status(403).end('Invalid or expired token');
   } else res.status(405).end(`Method ${method} Not Allowed`);

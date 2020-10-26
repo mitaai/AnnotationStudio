@@ -16,12 +16,11 @@ const handler = async (req, res) => {
       const userGroups = (userObj.groups && userObj.groups.length > 0)
         ? userObj.groups.map((group) => group.id)
         : [];
+      const findCondition = { slug: req.query.slug };
+      if (userObj.role !== 'admin') findCondition.$or = [{ groups: { $in: userGroups } }, { owner: token.id }];
       const doc = await db
         .collection('documents')
-        .find({
-          slug: req.query.slug,
-          $or: [{ groups: { $in: userGroups } }, { owner: token.id }],
-        })
+        .find(findCondition)
         .toArray();
       if (doc[0]) {
         const document = doc[0];

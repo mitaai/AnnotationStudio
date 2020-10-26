@@ -1,5 +1,6 @@
+/* eslint-disable import/no-cycle */
 /* eslint-disable no-underscore-dangle */
-import fetch from 'unfetch';
+import unfetch from 'unfetch';
 import { getAllDocumentsByGroup } from './docUtil';
 import { getUserByEmail } from './userUtil';
 
@@ -15,7 +16,7 @@ const updateMemberCounts = async (group) => {
         updatedGroupId,
         memberCount,
       };
-      const res = await fetch(url, {
+      const res = await unfetch(url, {
         method: 'PATCH',
         body: JSON.stringify(body),
         headers: {
@@ -48,7 +49,7 @@ const addGroupToUser = async (group, user) => {
       role,
     },
   };
-  const res = await fetch(url, {
+  const res = await unfetch(url, {
     method: 'PATCH',
     body: JSON.stringify(body),
     headers: {
@@ -62,12 +63,11 @@ const addGroupToUser = async (group, user) => {
   return Promise.reject(Error(`Unable to add group to user: error ${res.status} received from server`));
 };
 
-const addUserToGroup = async (group, email) => {
-  const user = await getUserByEmail(email);
+const addUserToGroup = async (group, email) => getUserByEmail(email).then(async (user) => {
   let alreadyInGroup = false;
   alreadyInGroup = user.groups.some((userGroup) => (userGroup.id === group.id));
-  user.error = (alreadyInGroup === true) ? 'User is already in group' : undefined;
-  if (!user.error) {
+  const error = (alreadyInGroup === true) ? 'User is already in group' : undefined;
+  if (!error) {
     const url = `/api/group/${group.id}`;
     const {
       id, name,
@@ -78,7 +78,7 @@ const addUserToGroup = async (group, email) => {
         id, name, email, role,
       },
     };
-    const res = await fetch(url, {
+    const res = await unfetch(url, {
       method: 'PATCH',
       body: JSON.stringify(body),
       headers: {
@@ -97,16 +97,17 @@ const addUserToGroup = async (group, email) => {
         role: 'member',
       };
       return addGroupToUser(groupToAdd, user, false)
-        .then(updateMemberCounts(response.value));
+        .then(() => updateMemberCounts(response.value))
+        .catch((err) => Promise.reject(err));
     } return Promise.reject(Error(`Unable to add user to group: error ${res.status} received from server`));
-  } return Promise.reject(Error(`Unable to add user with email ${email}: ${user.error}.`));
-};
+  } return Promise.reject(Error(`Unable to add user with email ${email}: ${error}.`));
+}).catch((err) => Promise.reject(err));
 
 const removeGroupFromUser = async (group, user) => {
   const removedGroupId = group.id;
   const url = `/api/user/${user.id}`;
   const body = { removedGroupId };
-  const res = await fetch(url, {
+  const res = await unfetch(url, {
     method: 'PATCH',
     body: JSON.stringify(body),
     headers: {
@@ -123,7 +124,7 @@ const removeUserFromGroup = async (group, user) => {
   const removedUserId = user.id;
   const url = `/api/group/${group.id}`;
   const body = { removedUserId };
-  const res = await fetch(url, {
+  const res = await unfetch(url, {
     method: 'PATCH',
     body: JSON.stringify(body),
     headers: {
@@ -145,7 +146,7 @@ const removeGroupFromDocuments = async (group) => {
         const body = {
           removedGroupId: group.id,
         };
-        const res = await fetch(url, {
+        const res = await unfetch(url, {
           method: 'PATCH',
           body: JSON.stringify(body),
           headers: {
@@ -164,7 +165,7 @@ const removeGroupFromDocuments = async (group) => {
 const deleteGroup = async (group) => {
   const { members } = group;
   const url = `/api/group/${group.id}`;
-  const res = await fetch(url, {
+  const res = await unfetch(url, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
@@ -179,9 +180,9 @@ const deleteGroup = async (group) => {
   } return Promise.reject(Error(`Unable to delete group: error ${res.status} received from server`));
 };
 
-const deleteGroupFromId = async (id) => {
+const deleteGroupById = async (id) => {
   const url = `/api/group/${id}`;
-  const res = await fetch(url, {
+  const res = await unfetch(url, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -197,7 +198,7 @@ const deleteGroupFromId = async (id) => {
 const changeUserRole = async (group, member, role) => {
   const url = `/api/group/${group.id}`;
   const body = { memberToChangeRoleId: member.id, role };
-  const res = await fetch(url, {
+  const res = await unfetch(url, {
     method: 'PATCH',
     body: JSON.stringify(body),
     headers: {
@@ -207,7 +208,7 @@ const changeUserRole = async (group, member, role) => {
   if (res.status === 200) {
     const memberUrl = `/api/user/${member.id}`;
     const memberBody = { updatedGroupId: group.id, role };
-    const memberRes = await fetch(memberUrl, {
+    const memberRes = await unfetch(memberUrl, {
       method: 'PATCH',
       body: JSON.stringify(memberBody),
       headers: {
@@ -224,7 +225,7 @@ const changeUserRole = async (group, member, role) => {
 const renameGroupInMember = async (group, member, newName) => {
   const url = `/api/user/${member.id}`;
   const body = { updatedGroupId: group.id, groupName: newName };
-  const res = await fetch(url, {
+  const res = await unfetch(url, {
     method: 'PATCH',
     body: JSON.stringify(body),
     headers: {
@@ -241,7 +242,7 @@ const renameGroup = async (group, newName) => {
   const { members } = group;
   const url = `/api/group/${group.id}`;
   const body = { name: newName };
-  const res = await fetch(url, {
+  const res = await unfetch(url, {
     method: 'PATCH',
     body: JSON.stringify(body),
     headers: {
@@ -259,7 +260,7 @@ const generateInviteToken = async (group) => {
   const { id } = group;
   const url = '/api/invite';
   const body = { group: id };
-  const res = await fetch(url, {
+  const res = await unfetch(url, {
     method: 'POST',
     body: JSON.stringify(body),
     headers: {
@@ -273,7 +274,7 @@ const generateInviteToken = async (group) => {
     }
     const groupUrl = `/api/group/${id}`;
     const groupBody = { inviteToken: response.ops[0].token };
-    const groupRes = await fetch(groupUrl, {
+    const groupRes = await unfetch(groupUrl, {
       method: 'PATCH',
       body: JSON.stringify(groupBody),
       headers: {
@@ -290,13 +291,13 @@ const generateInviteToken = async (group) => {
 const deleteInviteToken = async (group) => {
   const { inviteToken } = group;
   const url = `/api/invite/${inviteToken}`;
-  const res = await fetch(url, {
+  const res = await unfetch(url, {
     method: 'DELETE',
   });
   if (res.status === 200) {
     const groupUrl = `/api/group/${group.id}`;
     const body = { tokenToRemove: inviteToken };
-    const groupRes = await fetch(groupUrl, {
+    const groupRes = await unfetch(groupUrl, {
       method: 'PATCH',
       body: JSON.stringify(body),
       headers: {
@@ -312,7 +313,7 @@ const deleteInviteToken = async (group) => {
 
 const getGroupNameById = async (id) => {
   const url = `/api/group/${id}`;
-  const res = await fetch(url, {
+  const res = await unfetch(url, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -325,15 +326,31 @@ const getGroupNameById = async (id) => {
   } return Promise.reject(Error(`Unable to find group with id ${id}: error ${res.status} received from server`));
 };
 
+const prefetchGroupById = async (id, cookie) => {
+  const url = `${process.env.SITE}/api/group/${id}`;
+  // eslint-disable-next-line no-undef
+  const res = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Cookie: cookie,
+    },
+  });
+  if (res.status === 200) {
+    return Promise.resolve(res.json());
+  } return Promise.reject(Error(`Unable to get : error ${res.status} received from server`));
+};
+
 export {
   addGroupToUser,
   addUserToGroup,
   changeUserRole,
   deleteGroup,
-  deleteGroupFromId,
+  deleteGroupById,
   deleteInviteToken,
   generateInviteToken,
   getGroupNameById,
+  prefetchGroupById,
   removeUserFromGroup,
   renameGroup,
 };

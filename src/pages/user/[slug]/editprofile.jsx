@@ -125,7 +125,12 @@ const EditProfile = ({ user }) => {
                         Email
                       </Form.Label>
                       <Col>
-                        <Form.Control name="email" plaintext readOnly value={session.user.email} />
+                        <Form.Control
+                          name="email"
+                          plaintext
+                          readOnly
+                          value={user ? user.email : session.user.email}
+                        />
                       </Col>
                     </Form.Group>
 
