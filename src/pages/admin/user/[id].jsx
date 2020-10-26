@@ -40,7 +40,12 @@ const AdminManageUser = (props) => {
           />
           <Card.Body>
             {user && (
-              <AdminUserTable user={user} alerts={alerts} setAlerts={setAlerts} />
+              <AdminUserTable
+                user={user}
+                alerts={alerts}
+                setAlerts={setAlerts}
+                isSelf={session.user.email === user.email}
+              />
             )}
           </Card.Body>
         </Card>

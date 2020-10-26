@@ -7,18 +7,34 @@ import {
 import { format } from 'date-fns';
 import AdminRoleBadge from '../../AdminRoleBadge';
 import { getDocumentsByUser } from '../../../../utils/docUtil';
-import { deleteUserById } from '../../../../utils/userUtil';
+import { deleteUserById, changeUserRole } from '../../../../utils/userUtil';
 import { adminGetList } from '../../../../utils/adminUtil';
 import ConfirmationDialog from '../../../ConfirmationDialog';
 import AdminAnnotation from './AdminAnnotation';
 
-const AdminUserTable = ({ user, alerts, setAlerts }) => {
+const AdminUserTable = ({
+  user, alerts, setAlerts, isSelf,
+}) => {
   const [docs, setDocs] = useState({});
   const [annotations, setAnnotations] = useState({});
 
   const [showModal, setShowModal] = useState(false);
   const handleCloseModal = () => setShowModal(false);
   const handleShowModal = () => setShowModal(true);
+
+  const handleChangeRole = async (role) => {
+    await changeUserRole(user.id, role)
+      .then(() => {
+        Router.push({
+          pathname: '/admin',
+          query: {
+            alert: 'userChangedRole',
+            tab: 'users',
+          },
+        });
+      })
+      .catch((err) => setAlerts([...alerts, { text: err.message, variant: 'danger' }]));
+  };
 
   const fetchCreated = async (type) => {
     if (user) {
@@ -58,8 +74,17 @@ const AdminUserTable = ({ user, alerts, setAlerts }) => {
                 title="Actions"
               >
                 <Dropdown.Item eventKey="1" href={`/user/${user.slug}/editprofile`}>Modify user</Dropdown.Item>
-                <Dropdown.Item eventKey="2" disabled={user.role === 'admin'}>Promote to admin</Dropdown.Item>
-                <Dropdown.Item eventKey="3" onClick={handleShowModal}>Delete user</Dropdown.Item>
+                {!isSelf && (
+                  <>
+                    {user.role !== 'admin' && (
+                      <Dropdown.Item eventKey="2" onClick={() => handleChangeRole('admin')}>Promote to admin</Dropdown.Item>
+                    )}
+                    {user.role === 'admin' && (
+                      <Dropdown.Item eventKey="4" onClick={() => handleChangeRole('user')}>Demote to user</Dropdown.Item>
+                    )}
+                    <Dropdown.Item eventKey="3" onClick={handleShowModal}>Delete user</Dropdown.Item>
+                  </>
+                )}
               </DropdownButton>
             </div>
           </tr>

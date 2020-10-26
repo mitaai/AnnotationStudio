@@ -68,6 +68,21 @@ const deleteUserById = async (id) => getUserById(id).then(async (user) => {
     .catch((err) => Promise.reject(err));
 }).catch((err) => Promise.reject(err));
 
+const changeUserRole = async (id, role) => {
+  const url = `/api/user/${id}`;
+  const body = { newRole: role };
+  const res = await unfetch(url, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (res.status === 200) {
+    return Promise.resolve(res.json());
+  } return Promise.reject(Error(`Unable to modify user: error ${res.status} received from server`));
+};
+
 export {
-  deleteUserById, getUserByEmail, getUserById, prefetchUserById,
+  changeUserRole, deleteUserById, getUserByEmail, getUserById, prefetchUserById,
 };

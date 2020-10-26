@@ -61,6 +61,9 @@ const handler = async (req, res) => {
       const groupToPull = req.body.removedGroupId
         ? { groups: { id: req.body.removedGroupId } }
         : {};
+      const roleToUpdate = req.body.newRole
+        ? { role: req.body.newRole }
+        : {};
       let groupById = {};
       let groupToUpdate = {};
       if (req.body.updatedGroupId) {
@@ -91,7 +94,7 @@ const handler = async (req, res) => {
       if (Object.keys(fieldsToPush).length !== 0) updateMethods.$push = fieldsToPush;
       const fieldsToPull = { ...groupToPull };
       if (Object.keys(fieldsToPull).length !== 0) updateMethods.$pull = fieldsToPull;
-      const fieldsToSet = { ...groupToUpdate };
+      const fieldsToSet = { ...groupToUpdate, ...roleToUpdate };
       if (Object.keys(fieldsToSet).length !== 0) updateMethods.$set = fieldsToSet;
       updateMethods.$currentDate = { updatedAt: true };
       const doc = await db
