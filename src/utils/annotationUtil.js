@@ -124,11 +124,42 @@ const updateAnnotationById = async (id, annotation) => {
   } return Promise.reject(Error(`Unable to update annotation: error ${res.status} received from server`));
 };
 
+const reassignAnnotationsToUser = async (sourceUser, destinationEmail) => {
+  const url = `/api/user/email/${destinationEmail}`;
+  const res = await unfetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (res.status === 200) {
+    const destinationUser = await res.json();
+    const { id, name } = destinationUser;
+    const body = { oldCreatorId: sourceUser.id, newCreator: { id, name, email: destinationEmail }, mode: 'reassign' };
+    const annotationsUrl = '/api/annotations';
+    const annotationsRes = await unfetch(annotationsUrl, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    if (annotationsRes.status === 200) {
+      const response = await annotationsRes.json();
+      const { annotations } = response;
+      return Promise.resolve(annotations);
+    } if (annotationsRes.status === 404) {
+      return Promise.resolve([]);
+    } return Promise.reject(Error(`Unable to update annotations: error ${annotationsRes.status} received from server`));
+  } return Promise.reject(Error(`Unable to find user with email ${destinationEmail}: error ${res.status} received from server`));
+};
+
 export {
   deleteAnnotationById,
   getAnnotationById,
   postAnnotation,
   prefetchSharedAnnotationsOnDocument,
+  reassignAnnotationsToUser,
   updateAllAnnotationsByUser,
   updateAllAnnotationsOnDocument,
   updateAnnotationById,

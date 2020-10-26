@@ -50,6 +50,7 @@ AdminView.getInitialProps = async (context) => {
     else if (alert === 'deletedUser') props = { ...props, initAlerts: [{ text: 'User deleted successfully', variant: 'warning' }] };
     else if (alert === 'deletedGroup') props = { ...props, initAlerts: [{ text: 'Group deleted successfully', variant: 'warning' }] };
     else if (alert === 'userChangedRole') props = { ...props, initAlerts: [{ text: 'User role changed successfully', variant: 'success' }] };
+    else if (alert === 'userReassignedAnnotations') props = { ...props, initAlerts: [{ text: 'Annotations reassigned successfully', variant: 'success' }] };
   }
   return { props };
 };

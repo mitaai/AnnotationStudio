@@ -84,5 +84,9 @@ const changeUserRole = async (id, role) => {
 };
 
 export {
-  changeUserRole, deleteUserById, getUserByEmail, getUserById, prefetchUserById,
+  changeUserRole,
+  deleteUserById,
+  getUserByEmail,
+  getUserById,
+  prefetchUserById,
 };

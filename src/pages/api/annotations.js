@@ -82,6 +82,36 @@ const handler = async (req, res) => {
           else res.status(404).end('Not found');
         }
       } else res.status(403).end('Invalid or expired token');
+    } else if (req.body.mode === 'reassign' && req.body.oldCreatorId && req.body.newCreator) {
+      const { oldCreatorId, newCreator } = req.body;
+      const token = await jwt.getToken({ req, secret });
+      if (token && token.exp > 0) {
+        const { db } = await connectToDatabase();
+        const userObj = await db
+          .collection('users')
+          .findOne({ _id: ObjectID(token.id) });
+        const { role } = userObj;
+        if (role !== 'admin' && oldCreatorId !== token.id) {
+          res.status(403).end('Not authorized');
+        } else {
+          const findCondition = { 'creator.id': oldCreatorId };
+          const arr = await db
+            .collection('annotations')
+            .updateMany(
+              findCondition,
+              {
+                $set: {
+                  'creator.id': newCreator.id,
+                  'creator.name': newCreator.name,
+                  'creator.email': newCreator.email,
+                },
+                $currentDate: { modified: true },
+              },
+            );
+          if (arr !== null) res.status(200).json({ annotations: arr });
+          else res.status(404).end('Not found');
+        }
+      } else res.status(403).end('Invalid or expired token');
     } else res.status(400).end('Bad request body');
   } else res.status(405).end(`Method ${method} Not Allowed`);
 };
