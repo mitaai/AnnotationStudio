@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import $ from 'jquery';
 import moment from 'moment';
 import {
@@ -20,6 +20,8 @@ import {
 
 import { CheckCircleFill, TrashFill } from 'react-bootstrap-icons';
 import { postAnnotation, updateAnnotationById, deleteAnnotationById } from '../../utils/annotationUtil';
+
+import { FilterContext, FilterThemes } from '../../contexts/FilterContext';
 
 function AddHoverEventListenersToAllHighlightedText() {
   // console.log('annotation-highlighted-text', $('.annotation-highlighted-text'));
@@ -93,7 +95,13 @@ function AddHoverEventListenersToAllHighlightedText() {
 
 
 function AnnotationCard({
-  side, annotation, focusOnAnnotation, DeleteAnnotationFromChannels, UpdateChannelAnnotationData, initializedAsEditing, user,
+  side,
+  annotation,
+  focusOnAnnotation,
+  DeleteAnnotationFromChannels,
+  UpdateChannelAnnotationData,
+  initializedAsEditing,
+  user,
 }) {
   const [annotationData, setAnnotationData] = useState({ ...annotation });
   const [newAnnotationTags, setNewAnnotationTags] = useState(null);
@@ -107,6 +115,8 @@ function AnnotationCard({
   const [expanded, setExpanded] = useState(initializedAsEditing !== undefined ? initializedAsEditing : false);
   const [updateFocusOfAnnotation, setUpdateFocusOfAnnotation] = useState(initializedAsEditing !== undefined ? initializedAsEditing : false);
 
+  // const [filterContext, setFilterContext] = useContext(FilterContext);
+  const filterContext = 'unfiltered';
   function AddClassActive(id) {
     // changing color of annotation
     $(`#${id}`).addClass('active');
@@ -511,16 +521,16 @@ function AnnotationCard({
 
 
         .annotation-card-container.active .line1, .annotation-card-container.active .line2 {
-            background-color: #007bff;
+            background-color: ${FilterThemes[filterContext].color};
             z-index: 3;
         }
 
         .annotation-card-container.active .annotation-pointer-background-left {
-            border-left-color: #007bff;
+            border-left-color: ${FilterThemes[filterContext].color};
         }
 
         .annotation-card-container.active .annotation-pointer-background-right {
-            border-right-color: #007bff;
+            border-right-color: ${FilterThemes[filterContext].color};
         }
 
         .annotation-card-container .form-group {
@@ -538,7 +548,7 @@ function AnnotationCard({
         }
 
         .annotation-card-container.active {
-            border: 1px solid #007bff;
+            border: 1px solid ${FilterThemes[filterContext].color};
         }
 
         .btn-save-annotation-edits {
