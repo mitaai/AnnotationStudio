@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import fetch from 'unfetch';
 import { Formik, Field } from 'formik';
@@ -9,7 +9,9 @@ import * as yup from 'yup';
 import slugify from '@sindresorhus/slugify';
 import cryptoRandomString from 'crypto-random-string';
 import { Dropdown } from 'semantic-ui-react';
-import QuillNoSSRWrapper from '../QuillNoSSRWrapper';
+import { createEditor } from 'slate';
+import { Slate, Editable, withReact } from 'slate-react';
+import { withHistory } from 'slate-history';
 import SemanticField from '../SemanticField';
 import DocumentMetadata from '../DocumentMetadata';
 import DocumentStatusSelect from '../DocumentStatusSelect';
@@ -74,26 +76,13 @@ const DocumentForm = ({
     groups: [''],
     state: 'draft',
   };
-  const quillModules = {
-    toolbar: [
-      [{ header: [1, 2, false] }],
-      ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-      [{ list: 'ordered' }, { list: 'bullet' }, { indent: '-1' }, { indent: '+1' }],
-      ['link', 'image'],
-      ['clean'],
-    ],
-  };
 
-  const quillFormats = [
-    'header',
-    'bold', 'italic', 'underline', 'strike', 'blockquote',
-    'list', 'bullet', 'indent',
-    'link', 'image',
-  ];
+  const [slateValue, setSlateValue] = useState([{ children: [{ text: '' }] }]);
+
+  const editor = useMemo(() => withHistory(withReact(createEditor())), []);
 
   const schema = yup.object({
     title: yup.string().required('Required'),
-    text: yup.string().required('Required'),
     resourceType: yup.string().required('Required'),
     rightsStatus: yup.string().required('Required'),
     state: yup.string().required('Required'),
@@ -147,13 +136,23 @@ const DocumentForm = ({
                   <Card.Body>
                     <Field name="text">
                       {({ field }) => (
-                        <QuillNoSSRWrapper
-                          theme="snow"
-                          modules={quillModules}
-                          formats={quillFormats}
-                          value={field.value}
-                          onChange={field.onChange(field.name)}
-                        />
+                        <Slate
+                          className="slateInDocument"
+                          editor={editor}
+                          value={slateValue}
+                          onChange={(value) => {
+                            setSlateValue(value);
+                            props.setFieldValue(
+                              field.name,
+                              value[0].children[0].text,
+                            );
+                          }}
+                        >
+                          <Editable
+                            placeholder="Enter some plain text..."
+                            id={field.name}
+                          />
+                        </Slate>
                       )}
                     </Field>
                   </Card.Body>

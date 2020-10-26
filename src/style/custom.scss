@@ -10,5 +10,17 @@ $theme-colors: (
   min-height: 30px; 
 }
 
+.slateInDocument img {
+  display: block;
+  max-width: 100%;
+  max-height: 20em;
+  .imgSelected {
+    box-shadow: '0 0 0 2px blue;';
+  }
+  :not(.imgSelected){
+    box-shadow: none;
+  }
+}
+
 /* import bootstrap */
 @import "~bootstrap/scss/bootstrap";
