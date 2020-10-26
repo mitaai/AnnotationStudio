@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import React, { useState } from 'react';
 import Router from 'next/router';
 import {
@@ -5,12 +6,23 @@ import {
 } from 'react-bootstrap';
 import { format } from 'date-fns';
 import ConfirmationDialog from '../../../ConfirmationDialog';
+import { getAllDocumentsByGroup } from '../../../../utils/docUtil';
 import { deleteGroupById } from '../../../../utils/groupUtil';
 
 const AdminGroupTable = ({ group, alerts, setAlerts }) => {
   const [showModal, setShowModal] = useState(false);
   const handleCloseModal = () => setShowModal(false);
   const handleShowModal = () => setShowModal(true);
+  const [docs, setDocs] = useState({});
+
+  const fetchDocuments = async () => {
+    if (group) {
+      setDocs({
+        found: await getAllDocumentsByGroup([group])
+          .catch((err) => setAlerts([...alerts, { text: err.message, variant: 'danger' }])),
+      });
+    }
+  };
 
   return (
     <>
@@ -85,6 +97,28 @@ const AdminGroupTable = ({ group, alerts, setAlerts }) => {
                   );
                 })
                 : (<Badge>[no members]</Badge>)}
+            </td>
+          </tr>
+          <tr>
+            <th>Documents</th>
+            <td>
+              {docs.found && docs.found.length > 0 && (
+                docs.found.map((doc) => (
+                  <Button key={doc._id} variant="link" size="sm" href={`/admin/document/${doc.slug}`}>
+                    {doc.title}
+                  </Button>
+                ))
+              )}
+              {docs.found && docs.found.length === 0 && (
+                <Button variant="text" size="sm" disabled>
+                  This group has no attached documents.
+                </Button>
+              )}
+              {!docs.found && (
+                <Button variant="link" size="sm" onClick={() => { fetchDocuments(); }}>
+                  Click to fetch
+                </Button>
+              )}
             </td>
           </tr>
         </tbody>
