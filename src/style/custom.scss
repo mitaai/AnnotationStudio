@@ -10,11 +10,14 @@ $theme-colors: (
   min-height: 30px;
 }
 
-.slateInDocument {
+.slate-editor {
   padding: 0.375rem 0.75rem;
   resize: vertical;
   border: 1px solid #ced4da;
+  border-top: none;
   border-radius: 0.25rem;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
   -webkit-transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
   &:focus {
@@ -32,6 +35,32 @@ $theme-colors: (
     :not(.imgSelected) {
       box-shadow: none;
     }
+  }
+}
+
+.slate-toolbar {
+  svg {
+    width: 1.15rem;
+    height: 1.15rem;
+    &.type-caret {
+      margin-left: 3px;
+      width: 0.5rem;
+      height: 0.5rem;
+    }
+    &.group-end {
+      margin-right: 15px;
+    }
+  }
+  padding: 6px 18px 10px;
+  border-top-left-radius: 0.25rem;
+  border-top-right-radius: 0.25rem;
+  background-color: rgba(0, 0, 0, 0.08);
+  border: 1px solid #ced4da;
+  & > * {
+    display: inline-block;
+  }
+  & > * + * {
+    margin-left: 15px;
   }
 }
 

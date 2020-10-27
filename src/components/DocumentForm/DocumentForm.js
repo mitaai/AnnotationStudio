@@ -6,6 +6,21 @@ import { Formik, Field } from 'formik';
 import {
   Button, Container, Card, Col, Form, Row,
 } from 'react-bootstrap';
+import {
+  CameraVideoFill,
+  CaretDownFill,
+  CodeSquare,
+  Image,
+  Link45deg,
+  ListOl,
+  ListUl,
+  Table,
+  Type,
+  TypeBold,
+  TypeItalic,
+  TypeStrikethrough,
+  TypeUnderline,
+} from 'react-bootstrap-icons';
 import * as yup from 'yup';
 import slugify from '@sindresorhus/slugify';
 import cryptoRandomString from 'crypto-random-string';
@@ -157,11 +172,28 @@ const DocumentForm = ({
                             props.setFieldValue(field.name, value);
                           }}
                         >
+                          <div
+                            className="slate-toolbar"
+                          >
+                            <Type />
+                            <CaretDownFill className="type-caret" />
+                            <TypeBold />
+                            <TypeItalic />
+                            <TypeUnderline />
+                            <TypeStrikethrough className="group-end" />
+                            <ListUl />
+                            <ListOl className="group-end" />
+                            <Table className="group-end" />
+                            <Link45deg />
+                            <Image />
+                            <CameraVideoFill className="group-end" />
+                            <CodeSquare />
+                          </div>
                           <Editable
                             placeholder="Paste or type here"
                             id={field.name}
-                            className="slateInDocument"
-                            style={{ minHeight: 300, margin: 10 }}
+                            className="slate-editor"
+                            style={{ minHeight: 300 }}
                             renderElement={renderElement}
                             renderLeaf={renderLeaf}
                           />
