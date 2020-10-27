@@ -158,7 +158,7 @@ const DocumentForm = ({
                           }}
                         >
                           <Editable
-                            placeholder="Enter some plain text..."
+                            placeholder="Paste or type here"
                             id={field.name}
                             className="slateInDocument"
                             style={{ minHeight: 300, margin: 10 }}

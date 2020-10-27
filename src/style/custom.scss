@@ -11,8 +11,17 @@ $theme-colors: (
 }
 
 .slateInDocument {
-  padding: 1em;
-  border: 1px solid gray;
+  padding: 0.375rem 0.75rem;
+  resize: vertical;
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  -webkit-transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  &:focus {
+    border-color: #80bdff;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  }
   img {
     display: block;
     max-width: 100%;
