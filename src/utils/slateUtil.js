@@ -2,12 +2,68 @@
 /* eslint-disable jsx-a11y/alt-text */
 /* eslint-disable no-param-reassign */
 import { jsx } from 'slate-hyperscript';
-import { Transforms } from 'slate';
+import { Transforms, Text } from 'slate';
 import {
   useSelected,
   useFocused,
 } from 'slate-react';
-import { DOMParser } from 'jsdom';
+import escapeHtml from 'escape-html';
+
+const serialize = (node) => {
+  if (Text.isText(node)) {
+    return escapeHtml(node.text);
+  }
+
+  const children = (!node.children || node.children.length === 0)
+    ? '<br />'
+    : node.children.map((n) => serialize(n)).join('');
+
+  if (children === '') {
+    return '<br />';
+  }
+
+  switch (node.type) {
+    default:
+      return `<p>${children}</p>`;
+    case 'quote':
+      return `<blockquote>${children}</blockquote>`;
+    case 'code':
+      return (
+        `<pre>
+          <code>${children}</code>
+        </pre>`
+      );
+    case 'bulleted-list':
+      return `<ul>${children}</ul>`;
+    case 'heading-one':
+      return `<h1>${children}</h1>`;
+    case 'heading-two':
+      return `<h2>${children}</h2>`;
+    case 'heading-three':
+      return `<h3>${children}</h3>`;
+    case 'heading-four':
+      return `<h4>${children}</h4>`;
+    case 'heading-five':
+      return `<h5>${children}</h5>`;
+    case 'heading-six':
+      return `<h6>${children}</h6>`;
+    case 'list-item':
+      return `<li>${children}</li>`;
+    case 'numbered-list':
+      return `<ol>${children}</ol>`;
+    case 'link':
+      return (
+        `<a href="${escapeHtml(node.url)}">${children}</a>`
+      );
+    case 'image':
+      return `<div>
+      ${children}
+      <img
+        src=${escapeHtml(node.url)}
+      />
+    </div>`;
+  }
+};
 
 const ELEMENT_TAGS = {
   A: (el) => ({ type: 'link', url: el.getAttribute('href') }),
@@ -89,6 +145,7 @@ const withHtml = (editor) => {
     const html = data.getData('text/html');
 
     if (html) {
+      // eslint-disable-next-line no-undef
       const parsed = new DOMParser().parseFromString(html, 'text/html');
       const fragment = deserialize(parsed.body);
       Transforms.insertFragment(editor, fragment);
@@ -102,7 +159,12 @@ const withHtml = (editor) => {
 };
 
 const Element = (props) => {
-  const { attributes, children, element } = props;
+  const { attributes, element } = props;
+  let { children } = props;
+
+  if (children.length === 0) {
+    children = [{ text: '' }];
+  }
 
   switch (element.type) {
     default:
@@ -182,4 +244,6 @@ const Leaf = ({ attributes, children, leaf }) => {
   return <span {...attributes}>{children}</span>;
 };
 
-export { withHtml, Element, Leaf };
+export {
+  withHtml, Element, Leaf, deserialize, serialize,
+};

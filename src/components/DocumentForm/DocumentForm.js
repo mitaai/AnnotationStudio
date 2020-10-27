@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+/* eslint-disable react/jsx-props-no-spreading */
+import React, { useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import fetch from 'unfetch';
 import { Formik, Field } from 'formik';
@@ -18,6 +19,9 @@ import DocumentStatusSelect from '../DocumentStatusSelect';
 import { deleteDocumentById } from '../../utils/docUtil';
 import ConfirmationDialog from '../ConfirmationDialog';
 import { updateAllAnnotationsOnDocument } from '../../utils/annotationUtil';
+import {
+  withHtml, Element, Leaf, deserialize, serialize,
+} from '../../utils/slateUtil';
 
 const DocumentForm = ({
   session,
@@ -29,14 +33,21 @@ const DocumentForm = ({
   const [showModal, setShowModal] = useState(false);
   const handleCloseModal = () => setShowModal(false);
   const handleShowModal = () => setShowModal(true);
+  const [slateValue, setSlateValue] = useState([{ children: [{ text: '' }] }]);
+  const renderElement = useCallback((props) => <Element {...props} />, []);
+  const renderLeaf = useCallback((props) => <Leaf {...props} />, []);
+
+  const editor = useMemo(() => withHtml(withHistory(withReact(createEditor()))), []);
 
   const createDocument = async (values) => {
     const slug = `${slugify(values.title)}-${cryptoRandomString({ length: 5, type: 'hex' })}`;
     const postUrl = '/api/document';
+    const valuesWithSerializedText = { ...values, text: ({ children: values.text }) };
+    console.log(valuesWithSerializedText);
     const res = await fetch(postUrl, {
       method: 'POST',
       body: JSON.stringify({
-        ...values,
+        ...valuesWithSerializedText,
         slug,
       }),
       headers: {
@@ -53,33 +64,37 @@ const DocumentForm = ({
   const editDocument = async (values) => {
     const { id, slug } = data;
     const patchUrl = `/api/document/${id}`;
+    const valuesWithSerializedText = { ...values, text: serialize({ children: values.text }) };
+    console.log(valuesWithSerializedText);
     const res = await fetch(patchUrl, {
       method: 'PATCH',
-      body: JSON.stringify(values),
+      body: JSON.stringify(valuesWithSerializedText),
       headers: {
         'Content-Type': 'application/json',
       },
     });
     if (res.status === 200) {
       await res.json();
-      const documentToUpdate = { ...values, slug };
+      const documentToUpdate = { ...valuesWithSerializedText, slug };
       return Promise.resolve(await updateAllAnnotationsOnDocument(documentToUpdate));
     }
     return Promise.reject(Error(`Unable to edit document: error ${res.status} received from server`));
   };
 
-  const getInitialValues = (mode === 'edit' && data) ? data : {
-    text: '',
-    resourceType: 'Book',
-    rightsStatus: 'Copyrighted',
-    title: '',
-    groups: [''],
-    state: 'draft',
-  };
-
-  const [slateValue, setSlateValue] = useState([{ children: [{ text: '' }] }]);
-
-  const editor = useMemo(() => withHistory(withReact(createEditor())), []);
+  const getInitialValues = (mode === 'edit' && data)
+    ? {
+      ...data,
+      // eslint-disable-next-line no-undef
+      text: deserialize(new DOMParser().parseFromString(data.text, 'text/html')),
+    }
+    : {
+      text: { children: [{ text: '' }] },
+      resourceType: 'Book',
+      rightsStatus: 'Copyrighted',
+      title: '',
+      groups: [''],
+      state: 'draft',
+    };
 
   const schema = yup.object({
     title: yup.string().required('Required'),
@@ -137,20 +152,20 @@ const DocumentForm = ({
                     <Field name="text">
                       {({ field }) => (
                         <Slate
-                          className="slateInDocument"
                           editor={editor}
                           value={slateValue}
                           onChange={(value) => {
                             setSlateValue(value);
-                            props.setFieldValue(
-                              field.name,
-                              value[0].children[0].text,
-                            );
+                            props.setFieldValue(field.name, value);
                           }}
                         >
                           <Editable
                             placeholder="Enter some plain text..."
                             id={field.name}
+                            className="slateInDocument"
+                            style={{ minHeight: 300, margin: 10 }}
+                            renderElement={renderElement}
+                            renderLeaf={renderLeaf}
                           />
                         </Slate>
                       )}

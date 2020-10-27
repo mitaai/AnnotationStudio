@@ -1,24 +1,28 @@
 /* custom colors */
 $theme-colors: (
-  "ans-color": #FCCE02,
-  "dark": #000000
+  "ans-color": #fcce02,
+  "dark": #000000,
 );
 
-.footer .logo { 
-  height: 30px; 
-  max-height: 30px; 
-  min-height: 30px; 
+.footer .logo {
+  height: 30px;
+  max-height: 30px;
+  min-height: 30px;
 }
 
-.slateInDocument img {
-  display: block;
-  max-width: 100%;
-  max-height: 20em;
-  .imgSelected {
-    box-shadow: '0 0 0 2px blue;';
-  }
-  :not(.imgSelected){
-    box-shadow: none;
+.slateInDocument {
+  padding: 1em;
+  border: 1px solid gray;
+  img {
+    display: block;
+    max-width: 100%;
+    max-height: 20em;
+    .imgSelected {
+      box-shadow: "0 0 0 2px blue;";
+    }
+    :not(.imgSelected) {
+      box-shadow: none;
+    }
   }
 }
 
