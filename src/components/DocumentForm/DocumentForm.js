@@ -43,7 +43,6 @@ const DocumentForm = ({
     const slug = `${slugify(values.title)}-${cryptoRandomString({ length: 5, type: 'hex' })}`;
     const postUrl = '/api/document';
     const valuesWithSerializedText = { ...values, text: ({ children: values.text }) };
-    console.log(valuesWithSerializedText);
     const res = await fetch(postUrl, {
       method: 'POST',
       body: JSON.stringify({
@@ -65,7 +64,6 @@ const DocumentForm = ({
     const { id, slug } = data;
     const patchUrl = `/api/document/${id}`;
     const valuesWithSerializedText = { ...values, text: serialize({ children: values.text }) };
-    console.log(valuesWithSerializedText);
     const res = await fetch(patchUrl, {
       method: 'PATCH',
       body: JSON.stringify(valuesWithSerializedText),
