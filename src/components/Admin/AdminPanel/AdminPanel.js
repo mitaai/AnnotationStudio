@@ -34,6 +34,7 @@ const AdminPanel = ({
       setListLoading(true);
       if (effect !== 'page') setPage(1);
       if (effect !== 'sortState') setTotalPages(1);
+      if (effect === 'activeKey') setSortState({ field: 'createdAt', direction: 'desc' });
       if (activeKey !== 'dashboard') {
         const { field, direction } = sortState;
         let params = '';
