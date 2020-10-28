@@ -47,11 +47,8 @@ $theme-colors: (
       width: 0.5rem;
       height: 0.5rem;
     }
-    &.group-end {
-      margin-right: 15px;
-    }
   }
-  padding: 6px 18px 10px;
+  padding: 0.5rem 18px 0.5rem;
   border-top-left-radius: 0.25rem;
   border-top-right-radius: 0.25rem;
   background-color: rgba(0, 0, 0, 0.08);
@@ -59,8 +56,11 @@ $theme-colors: (
   & > * {
     display: inline-block;
   }
-  & > * + * {
-    margin-left: 15px;
+  button {
+    margin-right: 0.25rem;
+  }
+  button.group-end {
+    margin-right: 1rem;
   }
 }
 

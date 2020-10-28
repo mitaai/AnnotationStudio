@@ -25,8 +25,12 @@ import * as yup from 'yup';
 import slugify from '@sindresorhus/slugify';
 import cryptoRandomString from 'crypto-random-string';
 import { Dropdown } from 'semantic-ui-react';
-import { createEditor } from 'slate';
-import { Slate, Editable, withReact } from 'slate-react';
+import {
+  Editor, Transforms, createEditor,
+} from 'slate';
+import {
+  Slate, Editable, useSlate, withReact,
+} from 'slate-react';
 import { withHistory } from 'slate-history';
 import SemanticField from '../SemanticField';
 import DocumentMetadata from '../DocumentMetadata';
@@ -175,19 +179,44 @@ const DocumentForm = ({
                           <div
                             className="slate-toolbar"
                           >
-                            <Type />
-                            <CaretDownFill className="type-caret" />
-                            <TypeBold />
-                            <TypeItalic />
-                            <TypeUnderline />
-                            <TypeStrikethrough className="group-end" />
-                            <ListUl />
-                            <ListOl className="group-end" />
-                            <Table className="group-end" />
-                            <Link45deg />
-                            <Image />
-                            <CameraVideoFill className="group-end" />
-                            <CodeSquare />
+                            <Button disabled size="sm" variant="outline-secondary" className="group-end">
+                              <Type />
+                              <CaretDownFill className="type-caret" />
+                            </Button>
+                            <MarkButton format="bold">
+                              <TypeBold />
+                            </MarkButton>
+                            <MarkButton format="italic">
+                              <TypeItalic />
+                            </MarkButton>
+                            <MarkButton format="underline">
+                              <TypeUnderline />
+                            </MarkButton>
+                            <MarkButton format="strikethrough" className="group-end">
+                              <TypeStrikethrough />
+                            </MarkButton>
+                            <BlockButton format="bulleted-list">
+                              <ListUl />
+                            </BlockButton>
+                            <BlockButton format="numbered-list" className="group-end">
+                              <ListOl />
+                            </BlockButton>
+                            <Button disabled size="sm" variant="outline-secondary" className="group-end">
+                              <Table />
+                              <CaretDownFill className="type-caret" />
+                            </Button>
+                            <Button disabled size="sm" variant="outline-secondary">
+                              <Link45deg />
+                            </Button>
+                            <Button disabled size="sm" variant="outline-secondary">
+                              <Image />
+                            </Button>
+                            <Button disabled size="sm" variant="outline-secondary" className="group-end">
+                              <CameraVideoFill className="group-end" />
+                            </Button>
+                            <Button disabled size="sm" variant="outline-secondary">
+                              <CodeSquare />
+                            </Button>
                           </div>
                           <Editable
                             placeholder="Paste or type here"
@@ -357,5 +386,95 @@ const DocumentForm = ({
     </Formik>
   );
 };
+
+const LIST_TYPES = ['numbered-list', 'bulleted-list'];
+
+const isBlockActive = (editor, format) => {
+  const [match] = Editor.nodes(editor, {
+    match: (n) => n.type === format,
+  });
+
+  return !!match;
+};
+
+const isMarkActive = (editor, format) => {
+  const marks = Editor.marks(editor);
+  return marks ? marks[format] === true : false;
+};
+
+
+const toggleBlock = (editor, format) => {
+  const isActive = isBlockActive(editor, format);
+  const isList = LIST_TYPES.includes(format);
+
+  Transforms.unwrapNodes(editor, {
+    match: (n) => LIST_TYPES.includes(n.type),
+    split: true,
+  });
+
+  let type = format;
+
+  if (isActive) {
+    type = 'paragraph';
+  } else if (isList) {
+    type = 'list-item';
+  }
+
+  Transforms.setNodes(editor, { type });
+
+  if (!isActive && isList) {
+    const block = { type: format, children: [] };
+    Transforms.wrapNodes(editor, block);
+  }
+};
+
+const toggleMark = (editor, format) => {
+  const isActive = isMarkActive(editor, format);
+
+  if (isActive) {
+    Editor.removeMark(editor, format);
+  } else {
+    Editor.addMark(editor, format, true);
+  }
+};
+
+const BlockButton = ({ format, className, children }) => {
+  const editor = useSlate();
+  return (
+    <Button
+      type="button"
+      size="sm"
+      variant="outline-secondary"
+      className={className}
+      active={isBlockActive(editor, format)}
+      onMouseDown={(event) => {
+        event.preventDefault();
+        toggleBlock(editor, format);
+      }}
+    >
+      {children}
+    </Button>
+  );
+};
+
+const MarkButton = ({ format, className, children }) => {
+  const editor = useSlate();
+  return (
+    <Button
+      type="button"
+      size="sm"
+      variant="outline-secondary"
+      className={className}
+      active={isMarkActive(editor, format)}
+      onMouseDown={(event) => {
+        event.preventDefault();
+        toggleMark(editor, format);
+      }}
+    >
+      {children}
+    </Button>
+  );
+};
+
 
 export default DocumentForm;
