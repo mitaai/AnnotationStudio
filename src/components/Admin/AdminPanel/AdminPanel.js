@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import { useState, useEffect } from 'react';
 import {
-  Card, Pagination, Table,
+  Card, Pagination,
 } from 'react-bootstrap';
 import { ArrowDown, ArrowDownUp, ArrowUp } from 'react-bootstrap-icons';
 import AdminDashboard from '../AdminDashboard';
@@ -125,65 +125,12 @@ const AdminPanel = ({
           />
         )}
         {!listLoading && activeKey === 'groups' && data.groups && (
-          <Table
-            striped
-            bordered
-            hover
-            size="sm"
-            variant="light"
-            style={{ borderCollapse: 'unset' }}
-          >
-            <thead>
-              <tr>
-                <th
-                  onClick={() => {
-                    setSortState({
-                      field: 'name',
-                      direction: sortState.direction === 'desc' ? 'asc' : 'desc',
-                    });
-                  }}
-                  style={{ cursor: 'pointer' }}
-                >
-                  Name
-                  {' '}
-                  <SortIcon field="name" />
-                </th>
-                <th
-                  onClick={() => {
-                    setSortState({
-                      field: 'owner',
-                      direction: sortState.direction === 'desc' ? 'asc' : 'desc',
-                    });
-                  }}
-                  style={{ cursor: 'pointer' }}
-                >
-                  Owner
-                  {' '}
-                  <SortIcon field="owner" />
-                </th>
-                <th>
-                  Members
-                </th>
-                <th
-                  onClick={() => {
-                    setSortState({
-                      field: 'createdAt',
-                      direction: sortState.direction === 'desc' ? 'asc' : 'desc',
-                    });
-                  }}
-                  style={{ cursor: 'pointer' }}
-                >
-                  Created
-                  {' '}
-                  <SortIcon field="createdAt" />
-                </th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <AdminGroupList
-              groups={data.groups}
-            />
-          </Table>
+          <AdminGroupList
+            groups={data.groups}
+            sortState={sortState}
+            setSortState={setSortState}
+            SortIcon={SortIcon}
+          />
         )}
       </Card.Body>
     </Card>
