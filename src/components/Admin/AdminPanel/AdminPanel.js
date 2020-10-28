@@ -54,9 +54,7 @@ const AdminPanel = ({
   };
 
   useEffect(() => { fetchData('activeKey'); }, [activeKey]);
-
   useEffect(() => { fetchData('page'); }, [page]);
-
   useEffect(() => { fetchData('sortState'); }, [sortState]);
 
   return (
@@ -112,16 +110,20 @@ const AdminPanel = ({
             />
           </Pagination>
         )}
-        {!listLoading && activeKey === 'users' && (
+        {!listLoading && activeKey === 'users' && data.users && (
           <AdminUserList
             users={data.users}
-            loading={listLoading}
+            sortState={sortState}
+            setSortState={setSortState}
+            SortIcon={SortIcon}
           />
         )}
-        {!listLoading && activeKey === 'documents' && (
+        {!listLoading && activeKey === 'documents' && data.documents && (
           <AdminDocumentList
             documents={data.documents}
-            loading={listLoading}
+            sortState={sortState}
+            setSortState={setSortState}
+            SortIcon={SortIcon}
           />
         )}
         {!listLoading && activeKey === 'groups' && data.groups && (

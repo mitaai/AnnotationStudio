@@ -4,6 +4,7 @@ import {
   Table,
 } from 'react-bootstrap';
 import { format } from 'date-fns';
+import SortableHeader from '../../SortableHeader';
 
 const AdminGroupList = (props) => {
   const {
@@ -12,6 +13,7 @@ const AdminGroupList = (props) => {
     setSortState,
     SortIcon,
   } = props;
+
   return (
     <Table
       striped
@@ -23,48 +25,33 @@ const AdminGroupList = (props) => {
     >
       <thead>
         <tr>
-          <th
-            onClick={() => {
-              setSortState({
-                field: 'name',
-                direction: sortState.direction === 'desc' ? 'asc' : 'desc',
-              });
-            }}
-            style={{ cursor: 'pointer' }}
+          <SortableHeader
+            field="name"
+            sortState={sortState}
+            setSortState={setSortState}
+            SortIcon={SortIcon}
           >
             Name
-            {' '}
-            <SortIcon field="name" />
-          </th>
-          <th
-            onClick={() => {
-              setSortState({
-                field: 'owner',
-                direction: sortState.direction === 'desc' ? 'asc' : 'desc',
-              });
-            }}
-            style={{ cursor: 'pointer' }}
+          </SortableHeader>
+          <SortableHeader
+            field="owner"
+            sortState={sortState}
+            setSortState={setSortState}
+            SortIcon={SortIcon}
           >
             Owner
-            {' '}
-            <SortIcon field="owner" />
-          </th>
+          </SortableHeader>
           <th>
             Members
           </th>
-          <th
-            onClick={() => {
-              setSortState({
-                field: 'createdAt',
-                direction: sortState.direction === 'desc' ? 'asc' : 'desc',
-              });
-            }}
-            style={{ cursor: 'pointer' }}
+          <SortableHeader
+            field="createdAt"
+            sortState={sortState}
+            setSortState={setSortState}
+            SortIcon={SortIcon}
           >
             Created
-            {' '}
-            <SortIcon field="createdAt" />
-          </th>
+          </SortableHeader>
           <th>Actions</th>
         </tr>
       </thead>
