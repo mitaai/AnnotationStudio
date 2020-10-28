@@ -29,83 +29,35 @@ const AdminPanel = ({
     } return <ArrowDownUp style={{ fill: 'gray' }} />;
   };
 
-  useEffect(() => {
-    async function fetchData() {
-      if (session) {
-        setListLoading(true);
-        setPage(1);
-        setTotalPages(1);
-        if (activeKey !== 'dashboard') {
-          const { field, direction } = sortState;
-          let params = '';
-          if (field === 'createdAt') {
-            params = `?page=${page}&perPage=${perPage}&order=${direction}`;
-          } else {
-            params = `?page=${page}&perPage=${perPage}&sort=${field}&order=${direction}`;
-          }
-          await adminGetList(activeKey, params)
-            .then((results) => {
-              setTotalPages(Math.ceil((results.count) / perPage));
-              setData(results);
-              setListLoading(false);
-            })
-            .catch((err) => setAlerts([...alerts, { text: err.message, variant: 'danger' }]));
+  const fetchData = async (effect) => {
+    if (session) {
+      setListLoading(true);
+      if (effect !== 'page') setPage(1);
+      if (effect !== 'sortState') setTotalPages(1);
+      if (activeKey !== 'dashboard') {
+        const { field, direction } = sortState;
+        let params = '';
+        if (field === 'createdAt') {
+          params = `?page=${page}&perPage=${perPage}&order=${direction}`;
+        } else {
+          params = `?page=${page}&perPage=${perPage}&sort=${field}&order=${direction}`;
         }
+        await adminGetList(activeKey, params)
+          .then((results) => {
+            if (effect !== 'sortState') setTotalPages(Math.ceil((results.count) / perPage));
+            setData(results);
+            setListLoading(false);
+          })
+          .catch((err) => setAlerts([...alerts, { text: err.message, variant: 'danger' }]));
       }
     }
-    fetchData();
-  }, [activeKey]);
+  };
 
-  useEffect(() => {
-    async function fetchData() {
-      if (session) {
-        setListLoading(true);
-        setTotalPages(1);
-        if (activeKey !== 'dashboard') {
-          const { field, direction } = sortState;
-          let params = '';
-          if (field === 'createdAt') {
-            params = `?page=${page}&perPage=${perPage}&order=${direction}`;
-          } else {
-            params = `?page=${page}&perPage=${perPage}&sort=${field}&order=${direction}`;
-          }
-          await adminGetList(activeKey, params)
-            .then((results) => {
-              setTotalPages(Math.ceil((results.count) / perPage));
-              setData(results);
-              setListLoading(false);
-            })
-            .catch((err) => setAlerts([...alerts, { text: err.message, variant: 'danger' }]));
-        }
-      }
-    }
-    fetchData();
-  }, [page]);
+  useEffect(() => { fetchData('activeKey'); }, [activeKey]);
 
-  useEffect(() => {
-    async function fetchData() {
-      if (session) {
-        setListLoading(true);
-        setPage(1);
-        if (activeKey !== 'dashboard') {
-          const { field, direction } = sortState;
-          let params = '';
-          if (field === 'createdAt') {
-            params = `?page=${page}&perPage=${perPage}&order=${direction}`;
-          } else {
-            params = `?page=${page}&perPage=${perPage}&sort=${field}&order=${direction}`;
-          }
-          await adminGetList(activeKey, params)
-            .then((results) => {
-              setData(results);
-              setListLoading(false);
-            })
-            .catch((err) => setAlerts([...alerts, { text: err.message, variant: 'danger' }]));
-        }
-      }
-    }
-    fetchData();
-  }, [sortState]);
+  useEffect(() => { fetchData('page'); }, [page]);
+
+  useEffect(() => { fetchData('sortState'); }, [sortState]);
 
   return (
     <Card>
