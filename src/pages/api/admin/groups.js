@@ -24,7 +24,10 @@ const handler = async (req, res) => {
           if (order === 'asc') direction = 1;
           else if (order === 'desc') direction = -1;
         }
-        const sortBy = sort ? { [sort]: direction } : { _id: direction };
+        let sortBy = sort ? { [sort]: direction } : { _id: direction };
+        if (sort === 'owner') {
+          sortBy = { 'members.0.name': direction };
+        }
         const doc = await db
           .collection('groups')
           .find()
