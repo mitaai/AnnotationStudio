@@ -25,11 +25,9 @@ import * as yup from 'yup';
 import slugify from '@sindresorhus/slugify';
 import cryptoRandomString from 'crypto-random-string';
 import { Dropdown } from 'semantic-ui-react';
+import { createEditor } from 'slate';
 import {
-  Editor, Transforms, createEditor,
-} from 'slate';
-import {
-  Slate, Editable, useSlate, withReact,
+  Slate, Editable, withReact,
 } from 'slate-react';
 import { withHistory } from 'slate-history';
 import SemanticField from '../SemanticField';
@@ -39,7 +37,13 @@ import { deleteDocumentById } from '../../utils/docUtil';
 import ConfirmationDialog from '../ConfirmationDialog';
 import { updateAllAnnotationsOnDocument } from '../../utils/annotationUtil';
 import {
-  withHtml, Element, Leaf, deserialize, serialize,
+  BlockButton,
+  Element,
+  Leaf,
+  MarkButton,
+  deserialize,
+  serialize,
+  withHtml,
 } from '../../utils/slateUtil';
 
 const DocumentForm = ({
@@ -386,95 +390,5 @@ const DocumentForm = ({
     </Formik>
   );
 };
-
-const LIST_TYPES = ['numbered-list', 'bulleted-list'];
-
-const isBlockActive = (editor, format) => {
-  const [match] = Editor.nodes(editor, {
-    match: (n) => n.type === format,
-  });
-
-  return !!match;
-};
-
-const isMarkActive = (editor, format) => {
-  const marks = Editor.marks(editor);
-  return marks ? marks[format] === true : false;
-};
-
-
-const toggleBlock = (editor, format) => {
-  const isActive = isBlockActive(editor, format);
-  const isList = LIST_TYPES.includes(format);
-
-  Transforms.unwrapNodes(editor, {
-    match: (n) => LIST_TYPES.includes(n.type),
-    split: true,
-  });
-
-  let type = format;
-
-  if (isActive) {
-    type = 'paragraph';
-  } else if (isList) {
-    type = 'list-item';
-  }
-
-  Transforms.setNodes(editor, { type });
-
-  if (!isActive && isList) {
-    const block = { type: format, children: [] };
-    Transforms.wrapNodes(editor, block);
-  }
-};
-
-const toggleMark = (editor, format) => {
-  const isActive = isMarkActive(editor, format);
-
-  if (isActive) {
-    Editor.removeMark(editor, format);
-  } else {
-    Editor.addMark(editor, format, true);
-  }
-};
-
-const BlockButton = ({ format, className, children }) => {
-  const editor = useSlate();
-  return (
-    <Button
-      type="button"
-      size="sm"
-      variant="outline-secondary"
-      className={className}
-      active={isBlockActive(editor, format)}
-      onMouseDown={(event) => {
-        event.preventDefault();
-        toggleBlock(editor, format);
-      }}
-    >
-      {children}
-    </Button>
-  );
-};
-
-const MarkButton = ({ format, className, children }) => {
-  const editor = useSlate();
-  return (
-    <Button
-      type="button"
-      size="sm"
-      variant="outline-secondary"
-      className={className}
-      active={isMarkActive(editor, format)}
-      onMouseDown={(event) => {
-        event.preventDefault();
-        toggleMark(editor, format);
-      }}
-    >
-      {children}
-    </Button>
-  );
-};
-
 
 export default DocumentForm;

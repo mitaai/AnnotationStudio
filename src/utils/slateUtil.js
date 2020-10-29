@@ -2,12 +2,54 @@
 /* eslint-disable jsx-a11y/alt-text */
 /* eslint-disable no-param-reassign */
 import { jsx } from 'slate-hyperscript';
-import { Transforms, Text } from 'slate';
 import {
-  useSelected,
+  Editor,
+  Point,
+  Range,
+  Transforms,
+  Text,
+} from 'slate';
+import {
   useFocused,
+  useSelected,
+  useSlate,
 } from 'slate-react';
+import { Button } from 'react-bootstrap';
 import escapeHtml from 'escape-html';
+
+// Helper constants
+
+const ELEMENT_TAGS = {
+  A: (el) => ({ type: 'link', url: el.getAttribute('href') }),
+  BLOCKQUOTE: () => ({ type: 'quote' }),
+  H1: () => ({ type: 'heading-one' }),
+  H2: () => ({ type: 'heading-two' }),
+  H3: () => ({ type: 'heading-three' }),
+  H4: () => ({ type: 'heading-four' }),
+  H5: () => ({ type: 'heading-five' }),
+  H6: () => ({ type: 'heading-six' }),
+  IMG: (el) => ({ type: 'image', url: el.getAttribute('src') }),
+  LI: () => ({ type: 'list-item' }),
+  OL: () => ({ type: 'numbered-list' }),
+  P: () => ({ type: 'paragraph' }),
+  PRE: () => ({ type: 'code' }),
+  UL: () => ({ type: 'bulleted-list' }),
+};
+
+// COMPAT: `B` is omitted here because Google Docs uses `<b>` in weird ways.
+const TEXT_TAGS = {
+  CODE: () => ({ code: true }),
+  DEL: () => ({ strikethrough: true }),
+  EM: () => ({ italic: true }),
+  I: () => ({ italic: true }),
+  S: () => ({ strikethrough: true }),
+  STRONG: () => ({ bold: true }),
+  U: () => ({ underline: true }),
+};
+
+const LIST_TYPES = ['numbered-list', 'bulleted-list'];
+
+// Serailization and deserialization functions
 
 const serialize = (node) => {
   if (Text.isText(node)) {
@@ -62,35 +104,15 @@ const serialize = (node) => {
         src=${escapeHtml(node.url)}
       />
     </div>`;
+    case 'table':
+      return `<table>
+          <tbody>${children}</tbody>
+        </table>`;
+    case 'table-row':
+      return `<tr>${children}</tr>`;
+    case 'table-cell':
+      return `<td>${children}</td>`;
   }
-};
-
-const ELEMENT_TAGS = {
-  A: (el) => ({ type: 'link', url: el.getAttribute('href') }),
-  BLOCKQUOTE: () => ({ type: 'quote' }),
-  H1: () => ({ type: 'heading-one' }),
-  H2: () => ({ type: 'heading-two' }),
-  H3: () => ({ type: 'heading-three' }),
-  H4: () => ({ type: 'heading-four' }),
-  H5: () => ({ type: 'heading-five' }),
-  H6: () => ({ type: 'heading-six' }),
-  IMG: (el) => ({ type: 'image', url: el.getAttribute('src') }),
-  LI: () => ({ type: 'list-item' }),
-  OL: () => ({ type: 'numbered-list' }),
-  P: () => ({ type: 'paragraph' }),
-  PRE: () => ({ type: 'code' }),
-  UL: () => ({ type: 'bulleted-list' }),
-};
-
-// COMPAT: `B` is omitted here because Google Docs uses `<b>` in weird ways.
-const TEXT_TAGS = {
-  CODE: () => ({ code: true }),
-  DEL: () => ({ strikethrough: true }),
-  EM: () => ({ italic: true }),
-  I: () => ({ italic: true }),
-  S: () => ({ strikethrough: true }),
-  STRONG: () => ({ bold: true }),
-  U: () => ({ underline: true }),
 };
 
 const deserialize = (el) => {
@@ -134,29 +156,58 @@ const deserialize = (el) => {
   return children;
 };
 
-const withHtml = (editor) => {
-  const { insertData, isInline, isVoid } = editor;
+// Helper functions
 
-  editor.isInline = (element) => (element.type === 'link' ? true : isInline(element));
+const isBlockActive = (editor, format) => {
+  const [match] = Editor.nodes(editor, {
+    match: (n) => n.type === format,
+  });
 
-  editor.isVoid = (element) => (element.type === 'image' ? true : isVoid(element));
-
-  editor.insertData = (data) => {
-    const html = data.getData('text/html');
-
-    if (html) {
-      // eslint-disable-next-line no-undef
-      const parsed = new DOMParser().parseFromString(html, 'text/html');
-      const fragment = deserialize(parsed.body);
-      Transforms.insertFragment(editor, fragment);
-      return;
-    }
-
-    insertData(data);
-  };
-
-  return editor;
+  return !!match;
 };
+
+const isMarkActive = (editor, format) => {
+  const marks = Editor.marks(editor);
+  return marks ? marks[format] === true : false;
+};
+
+
+const toggleBlock = (editor, format) => {
+  const isActive = isBlockActive(editor, format);
+  const isList = LIST_TYPES.includes(format);
+
+  Transforms.unwrapNodes(editor, {
+    match: (n) => LIST_TYPES.includes(n.type),
+    split: true,
+  });
+
+  let type = format;
+
+  if (isActive) {
+    type = 'paragraph';
+  } else if (isList) {
+    type = 'list-item';
+  }
+
+  Transforms.setNodes(editor, { type });
+
+  if (!isActive && isList) {
+    const block = { type: format, children: [] };
+    Transforms.wrapNodes(editor, block);
+  }
+};
+
+const toggleMark = (editor, format) => {
+  const isActive = isMarkActive(editor, format);
+
+  if (isActive) {
+    Editor.removeMark(editor, format);
+  } else {
+    Editor.addMark(editor, format, true);
+  }
+};
+
+// Defining Element and Leaf
 
 const Element = (props) => {
   const { attributes, element } = props;
@@ -203,6 +254,16 @@ const Element = (props) => {
       );
     case 'image':
       return <ImageElement {...props} />;
+    case 'table':
+      return (
+        <table>
+          <tbody {...attributes}>{children}</tbody>
+        </table>
+      );
+    case 'table-row':
+      return <tr {...attributes}>{children}</tr>;
+    case 'table-cell':
+      return <td {...attributes}>{children}</td>;
   }
 };
 
@@ -244,6 +305,129 @@ const Leaf = ({ attributes, children, leaf }) => {
   return <span {...attributes}>{children}</span>;
 };
 
+// Plugins
+
+const withHtml = (editor) => {
+  const { insertData, isInline, isVoid } = editor;
+
+  editor.isInline = (element) => (element.type === 'link' ? true : isInline(element));
+
+  editor.isVoid = (element) => (element.type === 'image' ? true : isVoid(element));
+
+  editor.insertData = (data) => {
+    const html = data.getData('text/html');
+
+    if (html) {
+      // eslint-disable-next-line no-undef
+      const parsed = new DOMParser().parseFromString(html, 'text/html');
+      const fragment = deserialize(parsed.body);
+      Transforms.insertFragment(editor, fragment);
+      return;
+    }
+
+    insertData(data);
+  };
+
+  return editor;
+};
+
+const withTables = (editor) => {
+  const { deleteBackward, deleteForward, insertBreak } = editor;
+
+  editor.deleteBackward = (unit) => {
+    const { selection } = editor;
+    if (selection && Range.isCollapsed(selection)) {
+      const [cell] = Editor.nodes(editor, {
+        match: (n) => n.type === 'table-cell',
+      });
+      if (cell) {
+        const [, cellPath] = cell;
+        const start = Editor.start(editor, cellPath);
+        if (Point.equals(selection.anchor, start)) {
+          return;
+        }
+      }
+    }
+    deleteBackward(unit);
+  };
+
+  editor.deleteForward = (unit) => {
+    const { selection } = editor;
+    if (selection && Range.isCollapsed(selection)) {
+      const [cell] = Editor.nodes(editor, {
+        match: (n) => n.type === 'table-cell',
+      });
+      if (cell) {
+        const [, cellPath] = cell;
+        const end = Editor.end(editor, cellPath);
+        if (Point.equals(selection.anchor, end)) {
+          return;
+        }
+      }
+    }
+    deleteForward(unit);
+  };
+
+  editor.insertBreak = () => {
+    const { selection } = editor;
+    if (selection) {
+      const [table] = Editor.nodes(editor, { match: (n) => n.type === 'table' });
+      if (table) {
+        return;
+      }
+    }
+    insertBreak();
+  };
+  return editor;
+};
+
+// Toolbar UI elements
+
+const BlockButton = ({ format, className, children }) => {
+  const editor = useSlate();
+  return (
+    <Button
+      type="button"
+      size="sm"
+      variant="outline-secondary"
+      className={className}
+      active={isBlockActive(editor, format)}
+      onMouseDown={(event) => {
+        event.preventDefault();
+        toggleBlock(editor, format);
+      }}
+    >
+      {children}
+    </Button>
+  );
+};
+
+const MarkButton = ({ format, className, children }) => {
+  const editor = useSlate();
+  return (
+    <Button
+      type="button"
+      size="sm"
+      variant="outline-secondary"
+      className={className}
+      active={isMarkActive(editor, format)}
+      onMouseDown={(event) => {
+        event.preventDefault();
+        toggleMark(editor, format);
+      }}
+    >
+      {children}
+    </Button>
+  );
+};
+
 export {
-  withHtml, Element, Leaf, deserialize, serialize,
+  BlockButton,
+  Element,
+  Leaf,
+  MarkButton,
+  deserialize,
+  serialize,
+  withHtml,
+  withTables,
 };
