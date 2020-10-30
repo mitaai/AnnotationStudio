@@ -33,6 +33,11 @@ const ELEMENT_TAGS = {
   OL: () => ({ type: 'numbered-list' }),
   P: () => ({ type: 'paragraph' }),
   PRE: () => ({ type: 'code' }),
+  // TABLE: () => ({ type: 'table' }),
+  // TBODY: () => ({ type: 'table-body' }),
+  // TD: (el) => ({ type: 'table-cell', colspan: el.getAttribute('colspan') }),
+  // TH: (el) => ({ type: 'table-header', colspan: el.getAttribute('colspan') }),
+  // TR: () => ({ type: 'table-row' }),
   UL: () => ({ type: 'bulleted-list' }),
 };
 
@@ -104,14 +109,17 @@ const serialize = (node) => {
         src=${escapeHtml(node.url)}
       />
     </div>`;
-    case 'table':
-      return `<table>
-          <tbody>${children}</tbody>
-        </table>`;
-    case 'table-row':
-      return `<tr>${children}</tr>`;
-    case 'table-cell':
-      return `<td>${children}</td>`;
+    // case 'table':
+    //   return `<table>${children}
+    //     </table>`;
+    // case 'table-body':
+    //   return `<tbody>${children}</tbody>`;
+    // case 'table-row':
+    //   return `<tr>${children}</tr>`;
+    // case 'table-cell':
+    //   return `<td colspan="${node.colspan ? node.colspan : ''}">${children}</td>`;
+    // case 'table-header':
+    //   return `<th colspan="${node.colspan ? node.colspan : ''}>${children}</th>`;
   }
 };
 
@@ -254,16 +262,20 @@ const Element = (props) => {
       );
     case 'image':
       return <ImageElement {...props} />;
-    case 'table':
-      return (
-        <table>
-          <tbody {...attributes}>{children}</tbody>
-        </table>
-      );
-    case 'table-row':
-      return <tr {...attributes}>{children}</tr>;
-    case 'table-cell':
-      return <td {...attributes}>{children}</td>;
+    // case 'table':
+    //   return (
+    //     <table {...attributes} style={{ border: '1px solid #333' }}>{children}</table>
+    //   );
+    // case 'table-body':
+    //   return (
+    //     <tbody {...attributes}>{children}</tbody>
+    //   );
+    // case 'table-row':
+    //   return <tr {...attributes}>{children}</tr>;
+    // case 'table-cell':
+    //   return <td colSpan={element.colspan} {...attributes}>{children}</td>;
+    // case 'table-header':
+    //   return <th colSpan={element.colspan} {...attributes}>{children}</th>;
   }
 };
 
