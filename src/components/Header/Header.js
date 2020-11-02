@@ -1,4 +1,5 @@
 /* eslint-disable max-len */
+import React from 'react';
 import { useSession } from 'next-auth/client';
 import { useRouter } from 'next/router';
 import Container from 'react-bootstrap/Container';
@@ -18,6 +19,7 @@ function Header({
   type,
   title,
   docView,
+  newReg,
 }) {
   const [session, loading] = useSession();
   const router = useRouter();
@@ -62,10 +64,13 @@ function Header({
                       </NavDropdown.Item>
                     </NavDropdown>
                   )}
-                  {!session.user.name && router.pathname !== '/user/newuser' && (
+                  {!newReg && !session.user.name && router.pathname !== '/user/newuser' && (
                     <Nav.Link href="/user/newuser" className="text-danger">
                       Complete Registration
                     </Nav.Link>
+                  )}
+                  {newReg && !session.user.name && (
+                    <Nav.Link onClick={() => router.reload()} className="text-warning">Refresh this page</Nav.Link>
                   )}
                 </>
               )}
