@@ -85,7 +85,7 @@ function PlaceAnnotationsInCorrectSpot(annotations, side) {
 }
 
 const AnnotationChannel = ({
-  side, annotations, setAnnotationChannelLoaded, user, DeleteAnnotationFromChannels, UpdateChannelAnnotationData, focusOnAnnotation,
+  side, annotations, setAnnotationChannelLoaded, user, deleteAnnotationFromChannels, updateChannelAnnotationData, focusOnAnnotation,
 }) => {
   let sortedAnnotations = [];
   if (annotations !== null) {
@@ -114,8 +114,8 @@ const AnnotationChannel = ({
         {sortedAnnotations.map((annotation) => (
           <AnnotationCard
             focusOnAnnotation={() => { focusOnAnnotation(side, annotation._id); }}
-            DeleteAnnotationFromChannels={DeleteAnnotationFromChannels}
-            UpdateChannelAnnotationData={UpdateChannelAnnotationData}
+            deleteAnnotationFromChannels={deleteAnnotationFromChannels}
+            updateChannelAnnotationData={updateChannelAnnotationData}
             key={annotation._id}
             side={side}
             expanded={false}
