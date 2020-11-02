@@ -27,6 +27,10 @@ const options = {
         });
       },
     }),
+    Providers.Google({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    }),
   ],
 
   adapter: Adapters.TypeORM.Adapter(process.env.MONGODB_URI,
@@ -51,7 +55,6 @@ const options = {
 
   pages: {
     newUser: '/user/newuser',
-    signIn: '/auth/email-signin',
   },
 
   callbacks: {
