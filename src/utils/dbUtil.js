@@ -1,43 +1,54 @@
 /* eslint-disable import/prefer-default-export */
+
 import { MongoClient } from 'mongodb';
 
-const uri = process.env.MONGODB_URI;
-const dbName = process.env.DB_NAME;
+const { MONGODB_URI, DB_NAME } = process.env;
 
-let cachedClient = null;
-let cachedDb = null;
-
-if (!uri) {
+if (!MONGODB_URI) {
   throw new Error(
     'Please define the MONGODB_URI environment variable inside .env.local',
   );
 }
 
-if (!dbName) {
+if (!DB_NAME) {
   throw new Error(
     'Please define the DB_NAME environment variable inside .env.local',
   );
 }
 
+/**
+ * Global is used here to maintain a cached connection across hot reloads
+ * in development. This prevents connections growing exponentiatlly
+ * during API Route usage.
+ */
+let cached = global.mongo;
+if (!cached) {
+  global.mongo = {};
+  cached = global.mongo;
+}
+
 export async function connectToDatabase() {
-  if (cachedClient && cachedDb) {
-    return { client: cachedClient, db: cachedDb };
+  if (cached.conn) return cached.conn;
+  if (!cached.promise) {
+    const conn = {};
+    const opts = {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    };
+    cached.promise = MongoClient.connect(MONGODB_URI, opts)
+      .then((client) => {
+        conn.client = client;
+        return client.db(DB_NAME);
+      })
+      .then((db) => {
+        db.collection('users').createIndex({ email: 1 }, { unique: true });
+        db.collection('users').createIndex({ slug: 1 }, { unique: true });
+        db.collection('documents').createIndex({ groups: 1 });
+        db.collection('documents').createIndex({ owner: 1 });
+        conn.db = db;
+        cached.conn = conn;
+      });
   }
-
-  const client = await MongoClient.connect(uri, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
-
-  const db = await client.db(dbName);
-
-  cachedClient = client;
-  cachedDb = db;
-
-  db.collection('users').createIndex({ email: 1 }, { unique: true });
-  db.collection('users').createIndex({ slug: 1 }, { unique: true });
-  db.collection('documents').createIndex({ groups: 1 });
-  db.collection('documents').createIndex({ owner: 1 });
-
-  return { client, db };
+  await cached.promise;
+  return cached.conn;
 }
