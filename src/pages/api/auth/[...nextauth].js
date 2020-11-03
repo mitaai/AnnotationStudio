@@ -12,6 +12,7 @@ const options = {
       server: {
         host: process.env.EMAIL_SERVER_HOST,
         port: process.env.EMAIL_SERVER_PORT,
+        secure: true,
         auth: {
           user: process.env.EMAIL_SERVER_USER,
           pass: process.env.EMAIL_SERVER_PASSWORD,
@@ -81,6 +82,7 @@ const options = {
         const user = await res.json();
         session.user.id = id;
         session.user.name = user.name;
+        session.user.firstName = user.firstName;
         session.user.groups = user.groups;
         session.user.role = user.role ? user.role : 'user';
       } else {
