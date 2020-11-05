@@ -1,5 +1,3 @@
-// .gitnignore
-
 # Cache
 .DS_STORE
 .eslintcache
@@ -40,3 +38,6 @@ yarn-error.log*
 
 # Jest
 globalConfig.json
+
+# vercel
+.vercel

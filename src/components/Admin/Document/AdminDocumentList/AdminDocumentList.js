@@ -5,12 +5,15 @@ import {
   Table,
 } from 'react-bootstrap';
 import { format } from 'date-fns';
-import LoadingSpinner from '../../../LoadingSpinner';
 import { getUserById } from '../../../../utils/userUtil';
+import SortableHeader from '../../SortableHeader';
 
 const AdminDocumentList = (props) => {
   const {
-    documents, loading,
+    documents,
+    sortState,
+    setSortState,
+    SortIcon,
   } = props;
   const [namesState, setNamesState] = useState({});
 
@@ -29,49 +32,56 @@ const AdminDocumentList = (props) => {
     fetchData();
   }, [documents, namesState]);
   return (
-    <>
-      {loading && (
-        <LoadingSpinner />
-      )}
-      {!loading && documents && (
-        <Table
-          striped
-          bordered
-          hover
-          size="sm"
-          variant="light"
-          style={{ borderCollapse: 'unset' }}
-          data-testid="admin-docs-table"
-        >
-          <thead>
-            <tr>
-              <th>Title</th>
-              <th>Owner</th>
-              <th>Created</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {documents.map((document) => (
-              <tr key={document._id}>
-                <td style={{ width: '40%' }}>
-                  {document.title}
-                </td>
-                <td style={{ width: '25%' }}>
-                  {namesState[document.owner] || 'Loading...'}
-                </td>
-                <td style={{ width: '25%' }}>
-                  {format(new Date(document.createdAt), 'MM/dd/yyyy')}
-                </td>
-                <td style={{ width: '10%' }}>
-                  <Link href={`/admin/document/${document.slug}`}>View</Link>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-      )}
-    </>
+    <Table
+      striped
+      bordered
+      hover
+      size="sm"
+      variant="light"
+      style={{ borderCollapse: 'unset' }}
+      data-testid="admin-docs-table"
+    >
+      <thead>
+        <tr>
+          <SortableHeader
+            field="title"
+            sortState={sortState}
+            setSortState={setSortState}
+            SortIcon={SortIcon}
+          >
+            Title
+          </SortableHeader>
+          <th>Owner</th>
+          <SortableHeader
+            field="createdAt"
+            sortState={sortState}
+            setSortState={setSortState}
+            SortIcon={SortIcon}
+          >
+            Created
+          </SortableHeader>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {documents.map((document) => (
+          <tr key={document._id}>
+            <td style={{ width: '40%' }}>
+              {document.title}
+            </td>
+            <td style={{ width: '25%' }}>
+              {namesState[document.owner] || 'Loading...'}
+            </td>
+            <td style={{ width: '25%' }}>
+              {format(new Date(document.createdAt), 'MM/dd/yyyy')}
+            </td>
+            <td style={{ width: '10%' }}>
+              <Link href={`/admin/document/${document.slug}`}>View</Link>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </Table>
   );
 };
 

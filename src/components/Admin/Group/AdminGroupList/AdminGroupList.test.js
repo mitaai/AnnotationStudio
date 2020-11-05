@@ -9,7 +9,6 @@ test('renders groups table (empty list)', async () => {
   const { getByTestId } = render(
     <AdminGroupList
       groups={[]}
-      loading={false}
     />,
   );
   const groupsTable = getByTestId('admin-groups-table');
