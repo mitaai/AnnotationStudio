@@ -84,6 +84,11 @@ const DocumentPage = (props) => {
   const [filterContext, setFilterContext] = useState('unfiltered');
 
   const [session, loading] = useSession();
+  
+  const saveAnnotationChanges = (anno, side) => {
+    const index = channelAnnotations[side].findIndex((a) => a._id === anno._id);
+    console.log(index);
+  }
 
   const highlightText = async (obj, domElement) => {
     const selector = createTextQuoteSelector(obj.selector);
@@ -315,6 +320,7 @@ const DocumentPage = (props) => {
               loaded={annotationChannel1Loaded}
               side="left"
               annotations={channelAnnotations.left}
+              saveAnnotationChanges={saveAnnotationChanges}
               user={session ? session.user : undefined}
             />
           </Col>

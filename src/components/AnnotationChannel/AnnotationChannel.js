@@ -85,7 +85,7 @@ function PlaceAnnotationsInCorrectSpot(annotations, side) {
 }
 
 const AnnotationChannel = ({
-  side, annotations, setAnnotationChannelLoaded, user, deleteAnnotationFromChannels, updateChannelAnnotationData, focusOnAnnotation,
+  side, annotations, setAnnotationChannelLoaded, user, deleteAnnotationFromChannels, updateChannelAnnotationData, focusOnAnnotation, saveAnnotationChanges,
 }) => {
   let sortedAnnotations = [];
   if (annotations !== null) {
@@ -120,6 +120,7 @@ const AnnotationChannel = ({
             side={side}
             expanded={false}
             annotation={annotation}
+            saveAnnotationChanges={saveAnnotationChanges}
             user={user}
           />
         ))}

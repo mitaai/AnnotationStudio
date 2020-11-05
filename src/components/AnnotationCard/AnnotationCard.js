@@ -102,6 +102,7 @@ function AnnotationCard({
   updateChannelAnnotationData,
   initializedAsEditing,
   user,
+  saveAnnotationChanges,
 }) {
   const [annotationData, setAnnotationData] = useState({ ...annotation });
   const [newAnnotationTags, setNewAnnotationTags] = useState(null);
@@ -174,6 +175,7 @@ function AnnotationCard({
         setEditing(false);
         // once the new annotation data saves properly on the database then we can update the annotation data
         setAnnotationData(newAnnotationData);
+        saveAnnotationChanges(newAnnotationData);
 
         // after setting the annotation data we need to reset the "new" data back to null
         setNewAnnotationTags(null);
@@ -205,6 +207,7 @@ function AnnotationCard({
         setEditing(false);
         // once the new annotation data saves properly on the database then we can update the annotation data
         setAnnotationData(newAnnotationData);
+        saveAnnotationChanges(newAnnotationData);
 
         // after setting the annotation data we need to reset the "new" data back to null
         setNewAnnotationTags(null);
