@@ -37,8 +37,8 @@ function ByPermissionsFilterMatch(user_email, email, permissions, cf) { // AND F
     return true;
   }
 
-  if (cf.permissions === 2) { // shared with owner
-
+  if (cf.permissions === 2 && permissions.documentOwner) { // shared with owner
+    return true;
   }
 }
 
@@ -51,6 +51,10 @@ function ByTagFilterMatch(tags, cf) { // OR FUNCTION
     return true;
   }
 
+  if (tags === undefined) {
+    return false;
+  }
+
   for (let i = 0; i < tags.length; i += 1) {
     if (cf.byTags.includes(tags[i])) {
       return true;
@@ -59,9 +63,7 @@ function ByTagFilterMatch(tags, cf) { // OR FUNCTION
   return false;
 }
 
-const AnnotationMatchesFilters = (user_email, a, filters) => AnnotatedByFilterMatch(a.creator.email, filters)
-&& ByTagFilterMatch(a.tags, filters)
-&& ByPermissionsFilterMatch(user_email, a.creator.email, a.permissions, filters);
+const AnnotationMatchesFilters = (user_email, a, filters) => AnnotatedByFilterMatch(a.creator.email, filters) && ByTagFilterMatch(a.body.tags, filters) && ByPermissionsFilterMatch(user_email, a.creator.email, a.permissions, filters);
 
 const FilterAnnotations = (user_email, annotations, filters) => {
   const annotationIds = { left: [], right: [] };
@@ -121,7 +123,7 @@ function FilterPopover({ session, annotations }) {
   const [byTagsTypeheadMarginTop, setByTagsTypeheadMarginTop] = useState(0);
   const [byTagsTypeheadMarginBottom, setByTagsTypeheadMarginBottom] = useState(0);
 
-  const [filtersApplied, setFiltersApplied] = useState(1);// 0 means no filters applied, 1 means filters applied, 2 means loading
+  const [filtersApplied, setFiltersApplied] = useState(0);// 0 means no filters applied, 1 means filters applied, 2 means loading
 
   const [selectedPermissions, setSelectedPermissions] = useState(0);
 
@@ -136,8 +138,6 @@ function FilterPopover({ session, annotations }) {
     permissions: selectedPermissions,
   });
 
-  console.log('g', g);
-
   const [filterOptions, setFilterOptions] = useState({ annotatedBy: [], byTags: [] });
 
   useEffect(() => {
@@ -146,14 +146,18 @@ function FilterPopover({ session, annotations }) {
 
 
   const updateFilters = (type, selected) => {
-    filters[type] = selected;
+    if (type !== 'permissions') {
+      filters[type] = selected;
+      setFilters(filters);
+    } else {
+      setSelectedPermissions(selected);
+    }
     const annotationIds = FilterAnnotations(session.user.email, annotations, {
       annotatedBy: filters.annotatedBy.map((opt) => opt.email),
       byTags: filters.byTags.map((opt) => opt.name),
       permissions: selectedPermissions,
     });
     console.log('annotationIds', annotationIds);
-    setFilters(filters);
   };
 
   const renderMenu = (results, menuProps) => (
@@ -197,19 +201,19 @@ function FilterPopover({ session, annotations }) {
                     <ButtonGroup size="sm" aria-label="Basic example">
                       <Button
                         variant={selectedPermissions === 0 ? 'primary' : 'outline-primary'}
-                        onClick={() => { setSelectedPermissions(0); }}
+                        onClick={() => { updateFilters('permissions', 0); }}
                       >
                         Mine
                       </Button>
                       <Button
                         variant={selectedPermissions === 1 ? 'primary' : 'outline-primary'}
-                        onClick={() => { setSelectedPermissions(1); }}
+                        onClick={() => { updateFilters('permissions', 1); }}
                       >
                         Shared
                       </Button>
                       <Button
                         variant={selectedPermissions === 2 ? 'primary' : 'outline-primary'}
-                        onClick={() => { setSelectedPermissions(2); }}
+                        onClick={() => { updateFilters('permissions', 2); }}
                       >
                         Shared With Owner
                       </Button>

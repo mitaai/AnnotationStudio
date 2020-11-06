@@ -319,7 +319,8 @@ export default class Document extends React.Component {
         },
         permissions: {
           groups: [],
-          documentOwner: documentToAnnotate.owner === user.id,
+          documentOwner: false,
+          private: true,
         },
         created: undefined,
         modified: undefined,
@@ -517,12 +518,12 @@ export default class Document extends React.Component {
             }
 
             .annotation-highlighted-text {
-              background-color: ${FilterThemes.filtered.highlight};
+              background-color: rgba(255,255,10, 0.5);
               transition: background-color 0.5s;
             }
 
             .annotation-highlighted-text.active,  .annotation-highlighted-text.active * {
-              background-color: rgba(0, 123, 255, 0.5) !important;
+              border-bottom: 1px solid #616161;
             }
 
             #document-content-container.unselectable {

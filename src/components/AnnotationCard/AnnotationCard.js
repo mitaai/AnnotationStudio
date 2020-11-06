@@ -145,15 +145,18 @@ function AnnotationCard({
       if (newAnnotationPermissions === 0) {
         // user wants the annotation to be private
         newAnnotationData.permissions.groups = [];
+        newAnnotationData.permissions.private = true;
         newAnnotationData.permissions.documentOwner = false;
       } else if (newAnnotationPermissions === 1) {
         // user wants the annotation to be shared with groups
         // getting the intersection between the groups that have access to this specific document and the groups that the user is in
         newAnnotationData.permissions.groups = newAnnotationData.target.document.groups.filter((value) => (user.groups.indexOf(value) != -1));
         newAnnotationData.permissions.documentOwner = false;
+        newAnnotationData.permissions.private = false;
       } else if (newAnnotationPermissions === 2) {
         // user wants annotation to be shared with document owner only
         newAnnotationData.permissions.groups = [];
+        newAnnotationData.permissions.private = false;
         newAnnotationData.permissions.documentOwner = true;
       }
     }
@@ -412,7 +415,7 @@ function AnnotationCard({
                           <Button
                             onClick={() => { handleAnnotationPermissionsChange(0); }}
                             // eslint-disable-next-line no-nested-ternary
-                            variant={newAnnotationPermissions !== null ? (newAnnotationPermissions === 0 ? 'primary' : 'outline-primary') : (!annotationData.permissions.documentOwner && annotationData.permissions.groups.length === 0 ? 'primary' : 'outline-primary')}
+                            variant={newAnnotationPermissions !== null ? (newAnnotationPermissions === 0 ? 'primary' : 'outline-primary') : (annotationData.permissions.private ? 'primary' : 'outline-primary')}
                             style={{ fontSize: '10px' }}
                           >
                             Private
@@ -420,7 +423,7 @@ function AnnotationCard({
                           <Button
                             onClick={() => { handleAnnotationPermissionsChange(1); }}
                             // eslint-disable-next-line no-nested-ternary
-                            variant={newAnnotationPermissions !== null ? (newAnnotationPermissions === 1 ? 'primary' : 'outline-primary') : (!annotationData.permissions.documentOwner && annotationData.permissions.groups.length !== 0 ? 'primary' : 'outline-primary')}
+                            variant={newAnnotationPermissions !== null ? (newAnnotationPermissions === 1 ? 'primary' : 'outline-primary') : (!annotationData.permissions.documentOwner && !annotationData.permissions.private ? 'primary' : 'outline-primary')}
                             style={{ fontSize: '10px' }}
                           >
                             Share With Groups
@@ -428,7 +431,7 @@ function AnnotationCard({
                           <Button
                             onClick={() => { handleAnnotationPermissionsChange(2); }}
                             // eslint-disable-next-line no-nested-ternary
-                            variant={newAnnotationPermissions !== null ? (newAnnotationPermissions === 2 ? 'primary' : 'outline-primary') : (annotationData.permissions.documentOwner && annotationData.permissions.groups.length === 0 ? 'primary' : 'outline-primary')}
+                            variant={newAnnotationPermissions !== null ? (newAnnotationPermissions === 2 ? 'primary' : 'outline-primary') : (annotationData.permissions.documentOwner ? 'primary' : 'outline-primary')}
                             style={{ fontSize: '10px' }}
                           >
                             Share with doc owner
