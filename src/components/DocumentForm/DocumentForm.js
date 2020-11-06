@@ -27,8 +27,60 @@ import cryptoRandomString from 'crypto-random-string';
 import { Dropdown } from 'semantic-ui-react';
 import { createEditor } from 'slate';
 import {
-  Slate, Editable, withReact,
+  Slate, withReact,
 } from 'slate-react';
+import {
+  AlignPlugin,
+  BlockquotePlugin,
+  BoldPlugin,
+  CodeBlockPlugin,
+  CodePlugin,
+  EditablePlugins,
+  HeadingPlugin,
+  ImagePlugin,
+  ItalicPlugin,
+  LinkPlugin,
+  ListPlugin,
+  // MARK_BOLD,
+  // MARK_CODE,
+  // MARK_ITALIC,
+  // MARK_STRIKETHROUGH,
+  // MARK_SUBSCRIPT,
+  // MARK_SUPERSCRIPT,
+  // MARK_UNDERLINE,
+  MediaEmbedPlugin,
+  ParagraphPlugin,
+  StrikethroughPlugin,
+  SubscriptPlugin,
+  SuperscriptPlugin,
+  TablePlugin,
+  TodoListPlugin,
+  UnderlinePlugin,
+  pipe,
+  withDeserializeHTML,
+  withImageUpload,
+  withLink,
+  withList,
+  withMarks,
+  withTable,
+  DEFAULTS_ALIGN,
+  DEFAULTS_BOLD,
+  DEFAULTS_BLOCKQUOTE,
+  DEFAULTS_CODE,
+  DEFAULTS_CODE_BLOCK,
+  DEFAULTS_HEADING,
+  DEFAULTS_ITALIC,
+  DEFAULTS_LINK,
+  DEFAULTS_LIST,
+  DEFAULTS_IMAGE,
+  DEFAULTS_MEDIA_EMBED,
+  DEFAULTS_PARAGRAPH,
+  DEFAULTS_STRIKETHROUGH,
+  DEFAULTS_SUBSUPSCRIPT,
+  DEFAULTS_TABLE,
+  DEFAULTS_TODO_LIST,
+  DEFAULTS_UNDERLINE,
+} from '@udecode/slate-plugins';
 import { withHistory } from 'slate-history';
 import SemanticField from '../SemanticField';
 import DocumentMetadata from '../DocumentMetadata';
@@ -43,7 +95,6 @@ import {
   MarkButton,
   deserialize,
   serialize,
-  withHtml,
 } from '../../utils/slateUtil';
 
 const DocumentForm = ({
@@ -56,16 +107,51 @@ const DocumentForm = ({
   const [showModal, setShowModal] = useState(false);
   const handleCloseModal = () => setShowModal(false);
   const handleShowModal = () => setShowModal(true);
-  const [slateValue, setSlateValue] = useState([{ children: [{ text: '' }] }]);
+  const [slateValue, setSlateValue] = useState([
+    {
+      children: [{ text: '' }],
+    },
+  ]);
   const renderElement = useCallback((props) => <Element {...props} />, []);
   const renderLeaf = useCallback((props) => <Leaf {...props} />, []);
 
-  const editor = useMemo(() => withHtml(withHistory(withReact(createEditor()))), []);
+  const plugins = [
+    AlignPlugin(DEFAULTS_ALIGN),
+    BoldPlugin(DEFAULTS_BOLD),
+    BlockquotePlugin(DEFAULTS_BLOCKQUOTE),
+    CodePlugin(DEFAULTS_CODE),
+    CodeBlockPlugin(DEFAULTS_CODE_BLOCK),
+    HeadingPlugin(DEFAULTS_HEADING),
+    ImagePlugin(DEFAULTS_IMAGE),
+    ItalicPlugin(DEFAULTS_ITALIC),
+    LinkPlugin(DEFAULTS_LINK),
+    ListPlugin(DEFAULTS_LIST),
+    MediaEmbedPlugin(DEFAULTS_MEDIA_EMBED),
+    ParagraphPlugin(DEFAULTS_PARAGRAPH),
+    StrikethroughPlugin(DEFAULTS_STRIKETHROUGH),
+    SubscriptPlugin(DEFAULTS_SUBSUPSCRIPT),
+    SuperscriptPlugin(DEFAULTS_SUBSUPSCRIPT),
+    TablePlugin(DEFAULTS_TABLE),
+    TodoListPlugin(DEFAULTS_TODO_LIST),
+    UnderlinePlugin(DEFAULTS_UNDERLINE),
+  ];
+
+  const withPlugins = [
+    withReact,
+    withHistory,
+    withImageUpload(),
+    withLink(),
+    withList(DEFAULTS_LIST),
+    withMarks(),
+    withTable(DEFAULTS_TABLE),
+    withDeserializeHTML({ plugins }),
+  ];
+  const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
   const createDocument = async (values) => {
     const slug = `${slugify(values.title)}-${cryptoRandomString({ length: 5, type: 'hex' })}`;
     const postUrl = '/api/document';
-    const valuesWithSerializedText = { ...values, text: ({ children: values.text }) };
+    const valuesWithSerializedText = { ...values, text: { children: values.text } };
     const res = await fetch(postUrl, {
       method: 'POST',
       body: JSON.stringify({
@@ -222,13 +308,14 @@ const DocumentForm = ({
                               <CodeSquare />
                             </Button>
                           </div>
-                          <Editable
+                          <EditablePlugins
+                            plugins={plugins}
                             placeholder="Paste or type here"
                             id={field.name}
                             className="slate-editor"
                             style={{ minHeight: 300 }}
-                            renderElement={renderElement}
-                            renderLeaf={renderLeaf}
+                            renderElement={[renderElement]}
+                            renderLeaf={[renderLeaf]}
                           />
                         </Slate>
                       )}

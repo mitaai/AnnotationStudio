@@ -4,8 +4,6 @@
 import { jsx } from 'slate-hyperscript';
 import {
   Editor,
-  Point,
-  Range,
   Transforms,
   Text,
 } from 'slate';
@@ -33,11 +31,6 @@ const ELEMENT_TAGS = {
   OL: () => ({ type: 'numbered-list' }),
   P: () => ({ type: 'paragraph' }),
   PRE: () => ({ type: 'code' }),
-  // TABLE: () => ({ type: 'table' }),
-  // TBODY: () => ({ type: 'table-body' }),
-  // TD: (el) => ({ type: 'table-cell', colspan: el.getAttribute('colspan') }),
-  // TH: (el) => ({ type: 'table-header', colspan: el.getAttribute('colspan') }),
-  // TR: () => ({ type: 'table-row' }),
   UL: () => ({ type: 'bulleted-list' }),
 };
 
@@ -109,17 +102,6 @@ const serialize = (node) => {
         src=${escapeHtml(node.url)}
       />
     </div>`;
-    // case 'table':
-    //   return `<table>${children}
-    //     </table>`;
-    // case 'table-body':
-    //   return `<tbody>${children}</tbody>`;
-    // case 'table-row':
-    //   return `<tr>${children}</tr>`;
-    // case 'table-cell':
-    //   return `<td colspan="${node.colspan ? node.colspan : ''}">${children}</td>`;
-    // case 'table-header':
-    //   return `<th colspan="${node.colspan ? node.colspan : ''}>${children}</th>`;
   }
 };
 
@@ -262,20 +244,6 @@ const Element = (props) => {
       );
     case 'image':
       return <ImageElement {...props} />;
-    // case 'table':
-    //   return (
-    //     <table {...attributes} style={{ border: '1px solid #333' }}>{children}</table>
-    //   );
-    // case 'table-body':
-    //   return (
-    //     <tbody {...attributes}>{children}</tbody>
-    //   );
-    // case 'table-row':
-    //   return <tr {...attributes}>{children}</tr>;
-    // case 'table-cell':
-    //   return <td colSpan={element.colspan} {...attributes}>{children}</td>;
-    // case 'table-header':
-    //   return <th colSpan={element.colspan} {...attributes}>{children}</th>;
   }
 };
 
@@ -343,56 +311,6 @@ const withHtml = (editor) => {
   return editor;
 };
 
-const withTables = (editor) => {
-  const { deleteBackward, deleteForward, insertBreak } = editor;
-
-  editor.deleteBackward = (unit) => {
-    const { selection } = editor;
-    if (selection && Range.isCollapsed(selection)) {
-      const [cell] = Editor.nodes(editor, {
-        match: (n) => n.type === 'table-cell',
-      });
-      if (cell) {
-        const [, cellPath] = cell;
-        const start = Editor.start(editor, cellPath);
-        if (Point.equals(selection.anchor, start)) {
-          return;
-        }
-      }
-    }
-    deleteBackward(unit);
-  };
-
-  editor.deleteForward = (unit) => {
-    const { selection } = editor;
-    if (selection && Range.isCollapsed(selection)) {
-      const [cell] = Editor.nodes(editor, {
-        match: (n) => n.type === 'table-cell',
-      });
-      if (cell) {
-        const [, cellPath] = cell;
-        const end = Editor.end(editor, cellPath);
-        if (Point.equals(selection.anchor, end)) {
-          return;
-        }
-      }
-    }
-    deleteForward(unit);
-  };
-
-  editor.insertBreak = () => {
-    const { selection } = editor;
-    if (selection) {
-      const [table] = Editor.nodes(editor, { match: (n) => n.type === 'table' });
-      if (table) {
-        return;
-      }
-    }
-    insertBreak();
-  };
-  return editor;
-};
-
 // Toolbar UI elements
 
 const BlockButton = ({ format, className, children }) => {
@@ -441,5 +359,4 @@ export {
   deserialize,
   serialize,
   withHtml,
-  withTables,
 };
