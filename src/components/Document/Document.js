@@ -523,7 +523,7 @@ export default class Document extends React.Component {
             }
 
             .annotation-highlighted-text.active,  .annotation-highlighted-text.active * {
-              border-bottom: 1px solid #616161;
+              border: 1px solid #616161;
             }
 
             #document-content-container.unselectable {

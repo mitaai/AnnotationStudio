@@ -21,8 +21,7 @@ import AnnotationChannel from '../../../components/AnnotationChannel';
 import Document from '../../../components/Document';
 import { prefetchDocumentBySlug } from '../../../utils/docUtil';
 import { prefetchSharedAnnotationsOnDocument } from '../../../utils/annotationUtil';
-
-import { FilterContext, FilterThemes } from '../../../contexts/FilterContext';
+import DocumentAnnotationsContext from '../../../contexts/DocumentAnnotationsContext';
 
 
 const adjustLine = (from, to, line) => {
@@ -295,7 +294,7 @@ const DocumentPage = (props) => {
 
 
   return (
-    <>
+    <DocumentAnnotationsContext.Provider value={[channelAnnotations, setChannelAnnotations]}>
       {!session && loading && (
       <LoadingSpinner />
       )}
@@ -442,7 +441,8 @@ const DocumentPage = (props) => {
           
         `}
       </style>
-    </>
+    </DocumentAnnotationsContext.Provider>
+
   );
 };
 

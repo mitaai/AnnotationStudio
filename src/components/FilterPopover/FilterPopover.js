@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable guard-for-in */
 /* eslint-disable no-restricted-syntax */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import $ from 'jquery';
 import {
   Nav,
@@ -25,6 +25,9 @@ import { Filter } from 'react-bootstrap-icons';
 import {
   Typeahead, Menu, MenuItem, Token,
 } from 'react-bootstrap-typeahead';
+
+import DocumentAnnotationsContext from '../../contexts/DocumentAnnotationsContext';
+
 // Import as a module in your JS
 import 'react-bootstrap-typeahead/css/Typeahead.css';
 
@@ -119,7 +122,8 @@ const GenerateFilterOptions = (user_email, annotations, filters) => {
 };
 
 
-function FilterPopover({ session, annotations }) {
+function FilterPopover({ session }) {
+  const [channelAnnotations, setChannelAnnotations] = useContext(DocumentAnnotationsContext);
   const [byTagsTypeheadMarginTop, setByTagsTypeheadMarginTop] = useState(0);
   const [byTagsTypeheadMarginBottom, setByTagsTypeheadMarginBottom] = useState(0);
 
@@ -132,7 +136,7 @@ function FilterPopover({ session, annotations }) {
     byTags: [], // list of filter options that have been selected by user
   });
 
-  const g = GenerateFilterOptions(session.user.email, annotations, {
+  const g = GenerateFilterOptions(session.user.email, channelAnnotations, {
     annotatedBy: filters.annotatedBy.map((opt) => opt.email),
     byTags: filters.byTags.map((opt) => opt.name),
     permissions: selectedPermissions,
@@ -142,7 +146,7 @@ function FilterPopover({ session, annotations }) {
 
   useEffect(() => {
     setFilterOptions(g);
-  }, [annotations]);
+  }, [channelAnnotations]);
 
 
   const updateFilters = (type, selected) => {
@@ -152,7 +156,7 @@ function FilterPopover({ session, annotations }) {
     } else {
       setSelectedPermissions(selected);
     }
-    const annotationIds = FilterAnnotations(session.user.email, annotations, {
+    const annotationIds = FilterAnnotations(session.user.email, channelAnnotations, {
       annotatedBy: filters.annotatedBy.map((opt) => opt.email),
       byTags: filters.byTags.map((opt) => opt.name),
       permissions: selectedPermissions,
