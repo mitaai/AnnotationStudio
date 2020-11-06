@@ -1,7 +1,20 @@
 import React, { useState } from 'react';
 import $ from 'jquery';
 import {
-  Nav, Row, Col, Navbar, Breadcrumb, Container, Button, OverlayTrigger, Popover, Form, Card, ButtonGroup,
+  Nav,
+  Row,
+  Col,
+  Navbar,
+  Breadcrumb,
+  Container,
+  Button,
+  OverlayTrigger,
+  Popover,
+  Form,
+  Card,
+  ButtonGroup,
+  Badge,
+  Spinner,
 } from 'react-bootstrap';
 
 import { Filter } from 'react-bootstrap-icons';
@@ -15,6 +28,8 @@ import 'react-bootstrap-typeahead/css/Typeahead.css';
 function FilterPopover() {
   const [byTagsTypeheadMarginTop, setByTagsTypeheadMarginTop] = useState(0);
   const [byTagsTypeheadMarginBottom, setByTagsTypeheadMarginBottom] = useState(0);
+
+  const [filtersApplied, setFiltersApplied] = useState(1);// 0 means no filters applied, 1 means filters applied, 2 means loading
 
   const [selectedPermissions, setSelectedPermissions] = useState(0);
 
@@ -163,9 +178,26 @@ function FilterPopover() {
           </Popover>
                   )}
       >
-        <Button id="btn-filter-annotation-well" variant="outline-primary">
+        <Button
+          id="btn-filter-annotation-well"
+          size="sm"
+          variant={filtersApplied === 0 ? 'outline-primary' : 'outline-success'}
+
+        >
           <Filter size="1em" />
-          <span>Filter</span>
+          {filtersApplied === 0 && <span>Filter</span>}
+          {filtersApplied === 1 && <span>Filters Applied</span>}
+          {filtersApplied === 2 && (
+          <>
+            <span>Filtering</span>
+            <Spinner
+              animation="border"
+              style={{
+                color: 'inherit !important', width: '1rem', height: '1rem', marginLeft: '5px',
+              }}
+            />
+          </>
+          )}
         </Button>
       </OverlayTrigger>
 

@@ -14,6 +14,8 @@ import {
 
 import AnnotationCard from '../AnnotationCard';
 
+import { FilterContext, FilterThemes } from '../../contexts/FilterContext';
+
 const debounce = (func, wait, options) => {
   let timeout;
   return function executedFunction() {
@@ -351,8 +353,8 @@ export default class Document extends React.Component {
         focusOnAnnotation={() => {
           focusOnAnnotation(side, newAnnotation._id);
         }}
-        DeleteAnnotationFromChannels={deleteAnnotationFromChannels}
-        UpdateChannelAnnotationData={updateChannelAnnotationData}
+        deleteAnnotationFromChannels={deleteAnnotationFromChannels}
+        updateChannelAnnotationData={updateChannelAnnotationData}
         key={newAnnotation._id}
         side={side}
         expanded={false}
@@ -515,7 +517,7 @@ export default class Document extends React.Component {
             }
 
             .annotation-highlighted-text {
-              background-color: rgba(255,255,10, 0.3);
+              background-color: ${FilterThemes.filtered.highlight};
               transition: background-color 0.5s;
             }
 

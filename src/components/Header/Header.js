@@ -1,4 +1,5 @@
 /* eslint-disable max-len */
+import React from 'react';
 import { useSession } from 'next-auth/client';
 import { useRouter } from 'next/router';
 import Container from 'react-bootstrap/Container';
@@ -18,6 +19,7 @@ function Header({
   type,
   title,
   docView,
+  newReg,
 }) {
   const [session, loading] = useSession();
   const router = useRouter();
@@ -53,7 +55,7 @@ function Header({
                       <GearWideConnected className="align-text-bottom ml-1" />
                     </Nav.Link>
                   )}
-                  {session.user.name && (
+                  {session.user.firstName && (
                     <NavDropdown title={session.user.name} id="basic-nav-dropdown" data-testid="nav-profile-dropdown">
                       <NavDropdown.Item href={getEditProfileUrl(session.user.email)}>My Profile</NavDropdown.Item>
                       <NavDropdown.Item href="/api/auth/signout" data-testid="nav-login-link">
@@ -62,10 +64,13 @@ function Header({
                       </NavDropdown.Item>
                     </NavDropdown>
                   )}
-                  {!session.user.name && router.pathname !== '/user/newuser' && (
+                  {!newReg && !session.user.firstName && router.pathname !== '/user/newuser' && (
                     <Nav.Link href="/user/newuser" className="text-danger">
                       Complete Registration
                     </Nav.Link>
+                  )}
+                  {newReg && !session.user.firstName && (
+                    <Nav.Link onClick={() => router.reload()} className="text-warning">Refresh this page</Nav.Link>
                   )}
                 </>
               )}

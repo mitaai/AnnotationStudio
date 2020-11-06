@@ -12,6 +12,7 @@ import DashboardDocumentList from '../components/Dashboard/DashboardDocumentList
 import DashboardGroupList from '../components/Dashboard/DashboardGroupList';
 
 export default function Home({
+  query,
   initAlerts,
   groupId,
 }) {
@@ -19,7 +20,7 @@ export default function Home({
   const [alerts, setAlerts] = useState(initAlerts || []);
 
   return (
-    <Layout alerts={alerts} type="dashboard">
+    <Layout alerts={alerts} type="dashboard" newReg={query.alert === 'completeRegistration'}>
       {loading && (
         <Card>
           <Card.Body>
@@ -83,13 +84,13 @@ Home.getInitialProps = async (context) => {
   let groupId = '';
   let initAlerts = [];
   if (query.alert === 'completeRegistration') {
-    destroyCookie(context, 'ans_grouptoken', {
-      path: '/',
-    });
     initAlerts = [{
       text: 'You have successfully registered for Annotation Studio. Welcome!',
       variant: 'success',
     }];
+    destroyCookie(context, 'ans_grouptoken', {
+      path: '/',
+    });
   } else if (cookies.ans_grouptoken) {
     const url = `${process.env.SITE}/api/invite/${cookies.ans_grouptoken}`;
     const res = await fetch(url, {
@@ -109,10 +110,8 @@ Home.getInitialProps = async (context) => {
     }];
   }
   return {
-    props: {
-      query,
-      groupId,
-      initAlerts,
-    },
+    query,
+    groupId,
+    initAlerts,
   };
 };
