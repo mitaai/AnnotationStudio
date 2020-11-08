@@ -27,28 +27,7 @@ import {
   Slate, withReact,
 } from 'slate-react';
 import {
-  AlignPlugin,
-  BlockquotePlugin,
-  BoldPlugin,
-  CodeBlockPlugin,
-  CodePlugin,
   EditablePlugins,
-  ExitBreakPlugin,
-  HeadingPlugin,
-  ImagePlugin,
-  ItalicPlugin,
-  LinkPlugin,
-  ListPlugin,
-  // MARK_CODE,
-  MediaEmbedPlugin,
-  ParagraphPlugin,
-  SoftBreakPlugin,
-  StrikethroughPlugin,
-  SubscriptPlugin,
-  SuperscriptPlugin,
-  TablePlugin,
-  TodoListPlugin,
-  UnderlinePlugin,
   pipe,
   withDeserializeHTML,
   withImageUpload,
@@ -57,29 +36,10 @@ import {
   withList,
   withMarks,
   withTable,
-  DEFAULTS_ALIGN,
-  DEFAULTS_BOLD,
-  DEFAULTS_BLOCKQUOTE,
-  DEFAULTS_CODE,
-  DEFAULTS_CODE_BLOCK,
-  DEFAULTS_HEADING,
-  DEFAULTS_ITALIC,
   DEFAULTS_LINK,
   DEFAULTS_LIST,
   DEFAULTS_IMAGE,
-  DEFAULTS_MEDIA_EMBED,
-  DEFAULTS_PARAGRAPH,
-  DEFAULTS_STRIKETHROUGH,
-  DEFAULTS_SUBSUPSCRIPT,
   DEFAULTS_TABLE,
-  DEFAULTS_TODO_LIST,
-  DEFAULTS_UNDERLINE,
-  ELEMENT_H1,
-  ELEMENT_H2,
-  ELEMENT_H3,
-  ELEMENT_H4,
-  ELEMENT_H5,
-  ELEMENT_H6,
   ToolbarList,
   ToolbarLink,
   ToolbarImage,
@@ -96,6 +56,7 @@ import { updateAllAnnotationsOnDocument } from '../../utils/annotationUtil';
 import {
   BlockButton,
   MarkButton,
+  plugins,
 } from '../../utils/slateUtil';
 
 const DocumentForm = ({
@@ -108,75 +69,6 @@ const DocumentForm = ({
   const [showModal, setShowModal] = useState(false);
   const handleCloseModal = () => setShowModal(false);
   const handleShowModal = () => setShowModal(true);
-
-  const plugins = [
-    AlignPlugin(DEFAULTS_ALIGN),
-    BoldPlugin({
-      bold: {
-        ...DEFAULTS_BOLD.bold,
-        rootProps: {
-          as: 'strong',
-        },
-      },
-    }),
-    BlockquotePlugin(DEFAULTS_BLOCKQUOTE),
-    CodePlugin(DEFAULTS_CODE),
-    CodeBlockPlugin(DEFAULTS_CODE_BLOCK),
-    HeadingPlugin(DEFAULTS_HEADING),
-    ImagePlugin(DEFAULTS_IMAGE),
-    ItalicPlugin(DEFAULTS_ITALIC),
-    LinkPlugin(DEFAULTS_LINK),
-    ListPlugin(DEFAULTS_LIST),
-    MediaEmbedPlugin(DEFAULTS_MEDIA_EMBED),
-    ParagraphPlugin(DEFAULTS_PARAGRAPH),
-    StrikethroughPlugin(DEFAULTS_STRIKETHROUGH),
-    SubscriptPlugin(DEFAULTS_SUBSUPSCRIPT),
-    SuperscriptPlugin(DEFAULTS_SUBSUPSCRIPT),
-    TablePlugin(DEFAULTS_TABLE),
-    TodoListPlugin(DEFAULTS_TODO_LIST),
-    UnderlinePlugin(DEFAULTS_UNDERLINE),
-    SoftBreakPlugin({
-      rules: [
-        { hotkey: 'shift+enter' },
-        {
-          hotkey: 'enter',
-          query: {
-            allow: [
-              DEFAULTS_CODE_BLOCK.code_block.type,
-              DEFAULTS_BLOCKQUOTE.blockquote.type,
-              DEFAULTS_TABLE.td.type,
-            ],
-          },
-        },
-      ],
-    }),
-    ExitBreakPlugin({
-      rules: [
-        {
-          hotkey: 'mod+enter',
-        },
-        {
-          hotkey: 'mod+shift+enter',
-          before: true,
-        },
-        {
-          hotkey: 'enter',
-          query: {
-            start: true,
-            end: true,
-            allow: [
-              ELEMENT_H1,
-              ELEMENT_H2,
-              ELEMENT_H3,
-              ELEMENT_H4,
-              ELEMENT_H5,
-              ELEMENT_H6,
-            ],
-          },
-        },
-      ],
-    }),
-  ];
 
   const withPlugins = [
     withReact,
