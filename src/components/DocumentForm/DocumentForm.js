@@ -4,11 +4,10 @@ import { useRouter } from 'next/router';
 import fetch from 'unfetch';
 import { Formik, Field } from 'formik';
 import {
-  Button, Container, Card, Col, Form, Row,
+  Button, Dropdown, Container, Card, Col, Form, Row,
 } from 'react-bootstrap';
 import {
   CameraVideoFill,
-  CaretDownFill,
   CodeSquare,
   Image,
   Link45deg,
@@ -23,7 +22,6 @@ import {
 import * as yup from 'yup';
 import slugify from '@sindresorhus/slugify';
 import cryptoRandomString from 'crypto-random-string';
-import { Dropdown } from 'semantic-ui-react';
 import { createEditor } from 'slate';
 import {
   Slate, withReact,
@@ -42,8 +40,6 @@ import {
   LinkPlugin,
   ListPlugin,
   // MARK_CODE,
-  // MARK_SUBSCRIPT,
-  // MARK_SUPERSCRIPT,
   MediaEmbedPlugin,
   ParagraphPlugin,
   SoftBreakPlugin,
@@ -331,10 +327,25 @@ const DocumentForm = ({
                           <div
                             className="slate-toolbar"
                           >
-                            <Button disabled size="sm" variant="outline-secondary" className="group-end">
-                              <Type />
-                              <CaretDownFill className="type-caret" />
-                            </Button>
+                            <Dropdown>
+                              <Dropdown.Toggle
+                                disabled
+                                size="sm"
+                                variant="outline-secondary"
+                                className="group-end"
+                              >
+                                <Type />
+                              </Dropdown.Toggle>
+                              <Dropdown.Menu>
+                                <Dropdown.Item>Heading 1</Dropdown.Item>
+                                <Dropdown.Item>Heading 2</Dropdown.Item>
+                                <Dropdown.Item>Heading 3</Dropdown.Item>
+                                <Dropdown.Item>Heading 4</Dropdown.Item>
+                                <Dropdown.Item>Heading 5</Dropdown.Item>
+                                <Dropdown.Item>Quote</Dropdown.Item>
+                                <Dropdown.Item>Code</Dropdown.Item>
+                              </Dropdown.Menu>
+                            </Dropdown>
                             <MarkButton format="bold">
                               <TypeBold />
                             </MarkButton>
