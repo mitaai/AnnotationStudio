@@ -13,6 +13,8 @@ $theme-colors: (
 .slate-editor {
   padding: 0.375rem 0.75rem;
   resize: vertical;
+  height: 350px;
+  overflow-y: scroll;
   border: 1px solid #ced4da;
   border-top: none;
   border-radius: 0.25rem;
