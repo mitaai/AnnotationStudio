@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import fetch from 'unfetch';
 import { Formik, Field } from 'formik';
@@ -14,7 +14,6 @@ import {
   Link45deg,
   ListOl,
   ListUl,
-  Table,
   Type,
   TypeBold,
   TypeItalic,
@@ -36,20 +35,18 @@ import {
   CodeBlockPlugin,
   CodePlugin,
   EditablePlugins,
+  ExitBreakPlugin,
   HeadingPlugin,
   ImagePlugin,
   ItalicPlugin,
   LinkPlugin,
   ListPlugin,
-  // MARK_BOLD,
   // MARK_CODE,
-  // MARK_ITALIC,
-  // MARK_STRIKETHROUGH,
   // MARK_SUBSCRIPT,
   // MARK_SUPERSCRIPT,
-  // MARK_UNDERLINE,
   MediaEmbedPlugin,
   ParagraphPlugin,
+  SoftBreakPlugin,
   StrikethroughPlugin,
   SubscriptPlugin,
   SuperscriptPlugin,
@@ -59,6 +56,7 @@ import {
   pipe,
   withDeserializeHTML,
   withImageUpload,
+  withInlineVoid,
   withLink,
   withList,
   withMarks,
@@ -80,6 +78,17 @@ import {
   DEFAULTS_TABLE,
   DEFAULTS_TODO_LIST,
   DEFAULTS_UNDERLINE,
+  ELEMENT_H1,
+  ELEMENT_H2,
+  ELEMENT_H3,
+  ELEMENT_H4,
+  ELEMENT_H5,
+  ELEMENT_H6,
+  ToolbarList,
+  ToolbarLink,
+  ToolbarImage,
+  serializeHTMLFromNodes,
+  deserializeHTMLToDocument,
 } from '@udecode/slate-plugins';
 import { withHistory } from 'slate-history';
 import SemanticField from '../SemanticField';
@@ -90,11 +99,7 @@ import ConfirmationDialog from '../ConfirmationDialog';
 import { updateAllAnnotationsOnDocument } from '../../utils/annotationUtil';
 import {
   BlockButton,
-  Element,
-  Leaf,
   MarkButton,
-  deserialize,
-  serialize,
 } from '../../utils/slateUtil';
 
 const DocumentForm = ({
@@ -107,17 +112,17 @@ const DocumentForm = ({
   const [showModal, setShowModal] = useState(false);
   const handleCloseModal = () => setShowModal(false);
   const handleShowModal = () => setShowModal(true);
-  const [slateValue, setSlateValue] = useState([
-    {
-      children: [{ text: '' }],
-    },
-  ]);
-  const renderElement = useCallback((props) => <Element {...props} />, []);
-  const renderLeaf = useCallback((props) => <Leaf {...props} />, []);
 
   const plugins = [
     AlignPlugin(DEFAULTS_ALIGN),
-    BoldPlugin(DEFAULTS_BOLD),
+    BoldPlugin({
+      bold: {
+        ...DEFAULTS_BOLD.bold,
+        rootProps: {
+          as: 'strong',
+        },
+      },
+    }),
     BlockquotePlugin(DEFAULTS_BLOCKQUOTE),
     CodePlugin(DEFAULTS_CODE),
     CodeBlockPlugin(DEFAULTS_CODE_BLOCK),
@@ -134,12 +139,54 @@ const DocumentForm = ({
     TablePlugin(DEFAULTS_TABLE),
     TodoListPlugin(DEFAULTS_TODO_LIST),
     UnderlinePlugin(DEFAULTS_UNDERLINE),
+    SoftBreakPlugin({
+      rules: [
+        { hotkey: 'shift+enter' },
+        {
+          hotkey: 'enter',
+          query: {
+            allow: [
+              DEFAULTS_CODE_BLOCK.code_block.type,
+              DEFAULTS_BLOCKQUOTE.blockquote.type,
+              DEFAULTS_TABLE.td.type,
+            ],
+          },
+        },
+      ],
+    }),
+    ExitBreakPlugin({
+      rules: [
+        {
+          hotkey: 'mod+enter',
+        },
+        {
+          hotkey: 'mod+shift+enter',
+          before: true,
+        },
+        {
+          hotkey: 'enter',
+          query: {
+            start: true,
+            end: true,
+            allow: [
+              ELEMENT_H1,
+              ELEMENT_H2,
+              ELEMENT_H3,
+              ELEMENT_H4,
+              ELEMENT_H5,
+              ELEMENT_H6,
+            ],
+          },
+        },
+      ],
+    }),
   ];
 
   const withPlugins = [
     withReact,
     withHistory,
     withImageUpload(),
+    withInlineVoid({ plugins }),
     withLink(),
     withList(DEFAULTS_LIST),
     withMarks(),
@@ -151,7 +198,10 @@ const DocumentForm = ({
   const createDocument = async (values) => {
     const slug = `${slugify(values.title)}-${cryptoRandomString({ length: 5, type: 'hex' })}`;
     const postUrl = '/api/document';
-    const valuesWithSerializedText = { ...values, text: { children: values.text } };
+    const valuesWithSerializedText = {
+      ...values,
+      text: serializeHTMLFromNodes({ plugins, nodes: values.text }),
+    };
     const res = await fetch(postUrl, {
       method: 'POST',
       body: JSON.stringify({
@@ -172,7 +222,10 @@ const DocumentForm = ({
   const editDocument = async (values) => {
     const { id, slug } = data;
     const patchUrl = `/api/document/${id}`;
-    const valuesWithSerializedText = { ...values, text: serialize({ children: values.text }) };
+    const valuesWithSerializedText = {
+      ...values,
+      text: serializeHTMLFromNodes({ plugins, nodes: values.text }),
+    };
     const res = await fetch(patchUrl, {
       method: 'PATCH',
       body: JSON.stringify(valuesWithSerializedText),
@@ -188,11 +241,20 @@ const DocumentForm = ({
     return Promise.reject(Error(`Unable to edit document: error ${res.status} received from server`));
   };
 
+  // eslint-disable-next-line no-undef
+  const txtHtml = new DOMParser().parseFromString(data.text, 'text/html');
+  const [slateValue, setSlateValue] = (mode === 'edit' && data)
+    ? useState(deserializeHTMLToDocument({ plugins, element: txtHtml.body }))
+    : useState([
+      {
+        children: [{ text: '' }],
+      },
+    ]);
+
   const getInitialValues = (mode === 'edit' && data)
     ? {
       ...data,
-      // eslint-disable-next-line no-undef
-      text: deserialize(new DOMParser().parseFromString(data.text, 'text/html')),
+      text: deserializeHTMLToDocument({ plugins, element: txtHtml.body }),
     }
     : {
       text: { children: [{ text: '' }] },
@@ -285,24 +347,25 @@ const DocumentForm = ({
                             <MarkButton format="strikethrough" className="group-end">
                               <TypeStrikethrough />
                             </MarkButton>
-                            <BlockButton format="bulleted-list">
-                              <ListUl />
-                            </BlockButton>
-                            <BlockButton format="numbered-list" className="group-end">
-                              <ListOl />
-                            </BlockButton>
+                            <ToolbarList
+                              typeList={DEFAULTS_LIST.ul.type}
+                              icon={<BlockButton format="bulleted-list"><ListUl /></BlockButton>}
+                            />
+                            <ToolbarList
+                              typeList={DEFAULTS_LIST.ol.type}
+                              className="group-end"
+                              icon={<BlockButton format="numbered-list"><ListOl /></BlockButton>}
+                            />
+                            <ToolbarLink
+                              options={DEFAULTS_LINK}
+                              icon={<BlockButton format="link"><Link45deg /></BlockButton>}
+                            />
+                            <ToolbarImage
+                              options={DEFAULTS_IMAGE}
+                              icon={<BlockButton format="image"><Image /></BlockButton>}
+                            />
                             <Button disabled size="sm" variant="outline-secondary" className="group-end">
-                              <Table />
-                              <CaretDownFill className="type-caret" />
-                            </Button>
-                            <Button disabled size="sm" variant="outline-secondary">
-                              <Link45deg />
-                            </Button>
-                            <Button disabled size="sm" variant="outline-secondary">
-                              <Image />
-                            </Button>
-                            <Button disabled size="sm" variant="outline-secondary" className="group-end">
-                              <CameraVideoFill className="group-end" />
+                              <CameraVideoFill />
                             </Button>
                             <Button disabled size="sm" variant="outline-secondary">
                               <CodeSquare />
@@ -314,8 +377,6 @@ const DocumentForm = ({
                             id={field.name}
                             className="slate-editor"
                             style={{ minHeight: 300 }}
-                            renderElement={[renderElement]}
-                            renderLeaf={[renderLeaf]}
                           />
                         </Slate>
                       )}

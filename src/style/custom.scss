@@ -59,9 +59,19 @@ $theme-colors: (
   button {
     margin-right: 0.25rem;
   }
-  button.group-end {
+  .group-end {
     margin-right: 1rem;
   }
+}
+
+.slate-ToolbarButton {
+  width: 2.3rem;
+  margin-right: 0.25rem;
+  height: 2rem;
+}
+
+#document-content-container img {
+  max-width: 100%;
 }
 
 /* import bootstrap */

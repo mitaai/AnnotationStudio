@@ -45,8 +45,6 @@ const TEXT_TAGS = {
   U: () => ({ underline: true }),
 };
 
-const LIST_TYPES = ['numbered-list', 'bulleted-list'];
-
 // Serailization and deserialization functions
 
 const serialize = (node) => {
@@ -159,32 +157,6 @@ const isBlockActive = (editor, format) => {
 const isMarkActive = (editor, format) => {
   const marks = Editor.marks(editor);
   return marks ? marks[format] === true : false;
-};
-
-
-const toggleBlock = (editor, format) => {
-  const isActive = isBlockActive(editor, format);
-  const isList = LIST_TYPES.includes(format);
-
-  Transforms.unwrapNodes(editor, {
-    match: (n) => LIST_TYPES.includes(n.type),
-    split: true,
-  });
-
-  let type = format;
-
-  if (isActive) {
-    type = 'paragraph';
-  } else if (isList) {
-    type = 'list-item';
-  }
-
-  Transforms.setNodes(editor, { type });
-
-  if (!isActive && isList) {
-    const block = { type: format, children: [] };
-    Transforms.wrapNodes(editor, block);
-  }
 };
 
 const toggleMark = (editor, format) => {
@@ -324,7 +296,6 @@ const BlockButton = ({ format, className, children }) => {
       active={isBlockActive(editor, format)}
       onMouseDown={(event) => {
         event.preventDefault();
-        toggleBlock(editor, format);
       }}
     >
       {children}
