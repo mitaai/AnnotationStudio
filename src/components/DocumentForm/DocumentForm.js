@@ -130,7 +130,7 @@ const DocumentForm = ({
   };
 
   // eslint-disable-next-line no-undef
-  const txtHtml = new DOMParser().parseFromString(data.text, 'text/html');
+  const txtHtml = (mode === 'edit' && data) ? new DOMParser().parseFromString(data.text, 'text/html') : undefined;
   const [slateValue, setSlateValue] = (mode === 'edit' && data)
     ? useState(deserializeHTMLToDocument({ plugins, element: txtHtml.body }))
     : useState([
