@@ -10,9 +10,20 @@ $theme-colors: (
   min-height: 30px;
 }
 
+#slate-container {
+  width: 670px;
+}
+
+#slate-container-card {
+  display: flex;
+  justify-content: center;
+}
+
 .slate-editor {
-  padding: 0.375rem 0.75rem;
+  padding: 0.375rem 54.5px;
   resize: vertical;
+  height: 350px;
+  overflow-y: scroll;
   border: 1px solid #ced4da;
   border-top: none;
   border-radius: 0.25rem;
@@ -28,7 +39,8 @@ $theme-colors: (
   img {
     display: block;
     max-width: 100%;
-    max-height: 20em;
+    padding: 10px 0px;
+    max-height: none;
     .imgSelected {
       box-shadow: "0 0 0 2px blue;";
     }
@@ -59,8 +71,116 @@ $theme-colors: (
   button {
     margin-right: 0.25rem;
   }
-  button.group-end {
+  .group-end {
     margin-right: 1rem;
+  }
+}
+
+.slate-ToolbarButton {
+  width: 2.3rem;
+  margin-right: 0.25rem;
+  height: 2rem;
+}
+
+.slate-h1,
+.slate-h2,
+.slate-h3,
+.slate-h4,
+.slate-h5,
+.slate-h6 {
+  font-family: "source-sans-pro", sans-serif;
+  font-style: normal;
+  font-weight: 300;
+  line-height: 1.1;
+}
+
+.slate-h1,
+.slate-h2,
+.slate-h3 {
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+.slate-h4,
+.slate-h5,
+.slate-h6 {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.dropdown-item {
+  .slate-h1,
+  .slate-h2,
+  .slate-h3,
+  .slate-h4,
+  .slate-h5,
+  .slate-h6,
+  .slate-blockquote,
+  .slate-code-block {
+    margin-top: auto;
+    margin-bottom: auto;
+  }
+}
+
+.slate-h1 {
+  font-size: 36px;
+}
+
+.slate-h2 {
+  font-size: 30px;
+}
+
+.slate-h3 {
+  font-size: 24px;
+}
+
+.slate-h4 {
+  font-size: 18px;
+}
+
+.slate-h5 {
+  font-size: 14px;
+}
+
+.slate-h6 {
+  font-size: 12px;
+}
+
+.slate-blockquote {
+  font-family: "source-sans-pro", sans-serif;
+  font-style: normal;
+  font-weight: 300;
+  padding: 10px 20px;
+  margin: 0 0 20px;
+  font-size: 17.5px;
+  border-left: 5px solid #eee;
+}
+
+.slate-code-block {
+  font-size: 14px;
+  padding: 12px 16px;
+  background-color: rgb(247, 246, 243);
+  border-radius: 3px;
+  white-space: pre-wrap;
+  font-family: SFMono-Regular, Consolas, Monaco, "Liberation Mono", Menlo, Courier, monospace;
+  tab-size: 2;
+  line-height: normal;
+}
+
+.slate-p {
+  font-size: 1.15em;
+  font-family: "calluna", serif;
+}
+
+.slate-align-center {
+  text-align: center;
+}
+
+.slate-img {
+  max-width: 100%;
+  padding: 10px 0px;
+  img {
+    max-width: 100%;
   }
 }
 

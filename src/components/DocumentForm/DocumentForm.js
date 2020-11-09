@@ -1,20 +1,18 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import fetch from 'unfetch';
 import { Formik, Field } from 'formik';
 import {
-  Button, Container, Card, Col, Form, Row,
+  Button, Dropdown, Container, Card, Col, Form, Row,
 } from 'react-bootstrap';
 import {
   CameraVideoFill,
-  CaretDownFill,
   CodeSquare,
   Image,
   Link45deg,
   ListOl,
   ListUl,
-  Table,
   Type,
   TypeBold,
   TypeItalic,
@@ -24,11 +22,35 @@ import {
 import * as yup from 'yup';
 import slugify from '@sindresorhus/slugify';
 import cryptoRandomString from 'crypto-random-string';
-import { Dropdown } from 'semantic-ui-react';
 import { createEditor } from 'slate';
 import {
-  Slate, Editable, withReact,
+  Slate, withReact,
 } from 'slate-react';
+import {
+  EditablePlugins,
+  pipe,
+  withDeserializeHTML,
+  withImageUpload,
+  withInlineVoid,
+  withLink,
+  withList,
+  withMarks,
+  withTable,
+  DEFAULTS_BLOCKQUOTE,
+  DEFAULTS_CODE_BLOCK,
+  DEFAULTS_HEADING,
+  DEFAULTS_IMAGE,
+  DEFAULTS_LINK,
+  DEFAULTS_LIST,
+  DEFAULTS_TABLE,
+  ToolbarList,
+  ToolbarLink,
+  ToolbarImage,
+  serializeHTMLFromNodes,
+  deserializeHTMLToDocument,
+  isNodeTypeIn,
+  toggleNodeType,
+} from '@udecode/slate-plugins';
 import { withHistory } from 'slate-history';
 import SemanticField from '../SemanticField';
 import DocumentMetadata from '../DocumentMetadata';
@@ -38,12 +60,8 @@ import ConfirmationDialog from '../ConfirmationDialog';
 import { updateAllAnnotationsOnDocument } from '../../utils/annotationUtil';
 import {
   BlockButton,
-  Element,
-  Leaf,
   MarkButton,
-  deserialize,
-  serialize,
-  withHtml,
+  plugins,
 } from '../../utils/slateUtil';
 
 const DocumentForm = ({
@@ -56,16 +74,27 @@ const DocumentForm = ({
   const [showModal, setShowModal] = useState(false);
   const handleCloseModal = () => setShowModal(false);
   const handleShowModal = () => setShowModal(true);
-  const [slateValue, setSlateValue] = useState([{ children: [{ text: '' }] }]);
-  const renderElement = useCallback((props) => <Element {...props} />, []);
-  const renderLeaf = useCallback((props) => <Leaf {...props} />, []);
 
-  const editor = useMemo(() => withHtml(withHistory(withReact(createEditor()))), []);
+  const withPlugins = [
+    withReact,
+    withHistory,
+    withImageUpload(),
+    withInlineVoid({ plugins }),
+    withLink(),
+    withList(DEFAULTS_LIST),
+    withMarks(),
+    withTable(DEFAULTS_TABLE),
+    withDeserializeHTML({ plugins }),
+  ];
+  const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
   const createDocument = async (values) => {
     const slug = `${slugify(values.title)}-${cryptoRandomString({ length: 5, type: 'hex' })}`;
     const postUrl = '/api/document';
-    const valuesWithSerializedText = { ...values, text: ({ children: values.text }) };
+    const valuesWithSerializedText = {
+      ...values,
+      text: serializeHTMLFromNodes({ plugins, nodes: values.text }),
+    };
     const res = await fetch(postUrl, {
       method: 'POST',
       body: JSON.stringify({
@@ -86,7 +115,10 @@ const DocumentForm = ({
   const editDocument = async (values) => {
     const { id, slug } = data;
     const patchUrl = `/api/document/${id}`;
-    const valuesWithSerializedText = { ...values, text: serialize({ children: values.text }) };
+    const valuesWithSerializedText = {
+      ...values,
+      text: serializeHTMLFromNodes({ plugins, nodes: values.text }),
+    };
     const res = await fetch(patchUrl, {
       method: 'PATCH',
       body: JSON.stringify(valuesWithSerializedText),
@@ -102,11 +134,20 @@ const DocumentForm = ({
     return Promise.reject(Error(`Unable to edit document: error ${res.status} received from server`));
   };
 
+  // eslint-disable-next-line no-undef
+  const txtHtml = (mode === 'edit' && data) ? new DOMParser().parseFromString(data.text, 'text/html') : undefined;
+  const [slateValue, setSlateValue] = (mode === 'edit' && data)
+    ? useState(deserializeHTMLToDocument({ plugins, element: txtHtml.body }))
+    : useState([
+      {
+        children: [{ text: '' }],
+      },
+    ]);
+
   const getInitialValues = (mode === 'edit' && data)
     ? {
       ...data,
-      // eslint-disable-next-line no-undef
-      text: deserialize(new DOMParser().parseFromString(data.text, 'text/html')),
+      text: deserializeHTMLToDocument({ plugins, element: txtHtml.body }),
     }
     : {
       text: { children: [{ text: '' }] },
@@ -169,70 +210,189 @@ const DocumentForm = ({
                   <Card.Header>
                     <Card.Title>Paste or type directly into the form</Card.Title>
                   </Card.Header>
-                  <Card.Body>
-                    <Field name="text">
-                      {({ field }) => (
-                        <Slate
-                          editor={editor}
-                          value={slateValue}
-                          onChange={(value) => {
-                            setSlateValue(value);
-                            props.setFieldValue(field.name, value);
-                          }}
-                        >
-                          <div
-                            className="slate-toolbar"
+                  <Card.Body id="slate-container-card">
+                    <div id="slate-container">
+                      <Field name="text">
+                        {({ field }) => (
+                          <Slate
+                            editor={editor}
+                            value={slateValue}
+                            onChange={(value) => {
+                              setSlateValue(value);
+                              props.setFieldValue(field.name, value);
+                            }}
                           >
-                            <Button disabled size="sm" variant="outline-secondary" className="group-end">
-                              <Type />
-                              <CaretDownFill className="type-caret" />
-                            </Button>
-                            <MarkButton format="bold">
-                              <TypeBold />
-                            </MarkButton>
-                            <MarkButton format="italic">
-                              <TypeItalic />
-                            </MarkButton>
-                            <MarkButton format="underline">
-                              <TypeUnderline />
-                            </MarkButton>
-                            <MarkButton format="strikethrough" className="group-end">
-                              <TypeStrikethrough />
-                            </MarkButton>
-                            <BlockButton format="bulleted-list">
-                              <ListUl />
-                            </BlockButton>
-                            <BlockButton format="numbered-list" className="group-end">
-                              <ListOl />
-                            </BlockButton>
-                            <Button disabled size="sm" variant="outline-secondary" className="group-end">
-                              <Table />
-                              <CaretDownFill className="type-caret" />
-                            </Button>
-                            <Button disabled size="sm" variant="outline-secondary">
-                              <Link45deg />
-                            </Button>
-                            <Button disabled size="sm" variant="outline-secondary">
-                              <Image />
-                            </Button>
-                            <Button disabled size="sm" variant="outline-secondary" className="group-end">
-                              <CameraVideoFill className="group-end" />
-                            </Button>
-                            <Button disabled size="sm" variant="outline-secondary">
-                              <CodeSquare />
-                            </Button>
-                          </div>
-                          <Editable
-                            placeholder="Paste or type here"
-                            id={field.name}
-                            className="slate-editor"
-                            style={{ minHeight: 300 }}
-                            renderElement={renderElement}
-                            renderLeaf={renderLeaf}
-                          />
-                        </Slate>
-                      )}
-                    </Field>
+                            <div
+                              className="slate-toolbar"
+                            >
+                              <Dropdown>
+                                <Dropdown.Toggle
+                                  size="sm"
+                                  variant="outline-secondary"
+                                  className="group-end"
+                                >
+                                  <Type />
+                                </Dropdown.Toggle>
+                                <Dropdown.Menu>
+                                  <Dropdown.Item
+                                    active={
+                                      isNodeTypeIn(editor, DEFAULTS_BLOCKQUOTE.blockquote.type)
+                                    }
+                                    onMouseDown={
+                                      (e) => {
+                                        e.preventDefault();
+                                        toggleNodeType(editor, {
+                                          activeType: DEFAULTS_BLOCKQUOTE.blockquote.type,
+                                        });
+                                      }
+                                    }
+                                  >
+                                    <blockquote className="slate-blockquote">Quote</blockquote>
+                                  </Dropdown.Item>
+                                  <Dropdown.Item
+                                    active={
+                                      isNodeTypeIn(editor, DEFAULTS_CODE_BLOCK.code_block.type)
+                                    }
+                                    onMouseDown={
+                                      (e) => {
+                                        e.preventDefault();
+                                        toggleNodeType(editor, {
+                                          activeType: DEFAULTS_CODE_BLOCK.code_block.type,
+                                        });
+                                      }
+                                    }
+                                  >
+                                    <pre className="slate-code-block">Code</pre>
+                                  </Dropdown.Item>
+                                  <Dropdown.Item
+                                    active={
+                                      isNodeTypeIn(editor, DEFAULTS_HEADING.h1.type)
+                                    }
+                                    onMouseDown={
+                                      (e) => {
+                                        e.preventDefault();
+                                        toggleNodeType(editor, {
+                                          activeType: DEFAULTS_HEADING.h1.type,
+                                        });
+                                      }
+                                    }
+                                  >
+                                    <h1 className="slate-h1">Heading 1</h1>
+                                  </Dropdown.Item>
+                                  <Dropdown.Item
+                                    active={isNodeTypeIn(editor, DEFAULTS_HEADING.h2.type)}
+                                    onMouseDown={
+                                      (e) => {
+                                        e.preventDefault();
+                                        toggleNodeType(editor, {
+                                          activeType: DEFAULTS_HEADING.h2.type,
+                                        });
+                                      }
+                                    }
+                                  >
+                                    <h2 className="slate-h2">Heading 2</h2>
+                                  </Dropdown.Item>
+                                  <Dropdown.Item
+                                    active={isNodeTypeIn(editor, DEFAULTS_HEADING.h3.type)}
+                                    onMouseDown={
+                                      (e) => {
+                                        e.preventDefault();
+                                        toggleNodeType(editor, {
+                                          activeType: DEFAULTS_HEADING.h3.type,
+                                        });
+                                      }
+                                    }
+                                  >
+                                    <h3 className="slate-h3">Heading 3</h3>
+                                  </Dropdown.Item>
+                                  <Dropdown.Item
+                                    active={isNodeTypeIn(editor, DEFAULTS_HEADING.h4.type)}
+                                    onMouseDown={
+                                      (e) => {
+                                        e.preventDefault();
+                                        toggleNodeType(editor, {
+                                          activeType: DEFAULTS_HEADING.h4.type,
+                                        });
+                                      }
+                                    }
+                                  >
+                                    <h4 className="slate-h4">Heading 4</h4>
+                                  </Dropdown.Item>
+                                  <Dropdown.Item
+                                    active={isNodeTypeIn(editor, DEFAULTS_HEADING.h5.type)}
+                                    onMouseDown={
+                                      (e) => {
+                                        e.preventDefault();
+                                        toggleNodeType(editor, {
+                                          activeType: DEFAULTS_HEADING.h5.type,
+                                        });
+                                      }
+                                    }
+                                  >
+                                    <h5 className="slate-h5">Heading 5</h5>
+                                  </Dropdown.Item>
+                                  <Dropdown.Item
+                                    active={isNodeTypeIn(editor, DEFAULTS_HEADING.h6.type)}
+                                    onMouseDown={
+                                      (e) => {
+                                        e.preventDefault();
+                                        toggleNodeType(editor, {
+                                          activeType: DEFAULTS_HEADING.h6.type,
+                                        });
+                                      }
+                                    }
+                                  >
+                                    <h6 className="slate-h6">Heading 6</h6>
+                                  </Dropdown.Item>
+                                </Dropdown.Menu>
+                              </Dropdown>
+                              <MarkButton format="bold">
+                                <TypeBold />
+                              </MarkButton>
+                              <MarkButton format="italic">
+                                <TypeItalic />
+                              </MarkButton>
+                              <MarkButton format="underline">
+                                <TypeUnderline />
+                              </MarkButton>
+                              <MarkButton format="strikethrough" className="group-end">
+                                <TypeStrikethrough />
+                              </MarkButton>
+                              <ToolbarList
+                                typeList={DEFAULTS_LIST.ul.type}
+                                icon={<BlockButton format="bulleted-list"><ListUl /></BlockButton>}
+                              />
+                              <ToolbarList
+                                typeList={DEFAULTS_LIST.ol.type}
+                                className="group-end"
+                                icon={<BlockButton format="numbered-list"><ListOl /></BlockButton>}
+                              />
+                              <ToolbarLink
+                                options={DEFAULTS_LINK}
+                                icon={<BlockButton format="link"><Link45deg /></BlockButton>}
+                              />
+                              <ToolbarImage
+                                options={DEFAULTS_IMAGE}
+                                icon={<BlockButton format="image"><Image /></BlockButton>}
+                              />
+                              <Button disabled size="sm" variant="outline-secondary" className="group-end">
+                                <CameraVideoFill />
+                              </Button>
+                              <Button disabled size="sm" variant="outline-secondary">
+                                <CodeSquare />
+                              </Button>
+                            </div>
+                            <EditablePlugins
+                              plugins={plugins}
+                              placeholder="Paste or type here"
+                              id={field.name}
+                              className="slate-editor"
+                              style={{ minHeight: 300 }}
+                            />
+                          </Slate>
+                        )}
+                      </Field>
+                    </div>
                   </Card.Body>
                 </Card>
               </Col>
