@@ -95,7 +95,7 @@ const ExitBreakPluginOptions = {
   ],
 };
 
-const tooltipContent = {
+const tooltipText = {
   bold: 'Bold',
   italic: 'Italic',
   underline: 'Underline',
@@ -137,7 +137,7 @@ const toggleMark = (editor, format) => {
 const BlockButton = ({ format, className, children }) => {
   const editor = useSlate();
   return (
-    <OverlayTrigger overlay={<Tooltip>{tooltipContent[format]}</Tooltip>}>
+    <OverlayTrigger overlay={<Tooltip>{tooltipText[format]}</Tooltip>}>
       <Button
         type="button"
         size="sm"
@@ -157,7 +157,7 @@ const BlockButton = ({ format, className, children }) => {
 const MarkButton = ({ format, className, children }) => {
   const editor = useSlate();
   return (
-    <OverlayTrigger overlay={<Tooltip>{tooltipContent[format]}</Tooltip>}>
+    <OverlayTrigger overlay={<Tooltip>{tooltipText[format]}</Tooltip>}>
       <Button
         type="button"
         size="sm"

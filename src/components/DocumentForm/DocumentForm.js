@@ -4,24 +4,8 @@ import { useRouter } from 'next/router';
 import fetch from 'unfetch';
 import { Formik, Field } from 'formik';
 import {
-  Button, Dropdown, Container, Card, Col, Form, Row, OverlayTrigger, Tooltip,
+  Button, Dropdown, Container, Card, Col, Form, Row,
 } from 'react-bootstrap';
-import {
-  CameraVideoFill,
-  CodeSquare,
-  Image,
-  Link45deg,
-  ListOl,
-  ListUl,
-  TextCenter,
-  TextLeft,
-  TextRight,
-  Type,
-  TypeBold,
-  TypeItalic,
-  TypeStrikethrough,
-  TypeUnderline,
-} from 'react-bootstrap-icons';
 import * as yup from 'yup';
 import slugify from '@sindresorhus/slugify';
 import cryptoRandomString from 'crypto-random-string';
@@ -39,22 +23,11 @@ import {
   withList,
   withMarks,
   withTable,
-  DEFAULTS_ALIGN,
-  DEFAULTS_BLOCKQUOTE,
-  DEFAULTS_CODE_BLOCK,
-  DEFAULTS_HEADING,
-  DEFAULTS_IMAGE,
-  DEFAULTS_LINK,
   DEFAULTS_LIST,
   DEFAULTS_TABLE,
-  ToolbarAlign,
-  ToolbarList,
-  ToolbarLink,
-  ToolbarImage,
   serializeHTMLFromNodes,
   deserializeHTMLToDocument,
-  isNodeTypeIn,
-  toggleNodeType,
+  DEFAULTS_PARAGRAPH,
 } from '@udecode/slate-plugins';
 import { withHistory } from 'slate-history';
 import SemanticField from '../SemanticField';
@@ -63,11 +36,8 @@ import DocumentStatusSelect from '../DocumentStatusSelect';
 import { deleteDocumentById } from '../../utils/docUtil';
 import ConfirmationDialog from '../ConfirmationDialog';
 import { updateAllAnnotationsOnDocument } from '../../utils/annotationUtil';
-import {
-  BlockButton,
-  MarkButton,
-  plugins,
-} from '../../utils/slateUtil';
+import { plugins } from '../../utils/slateUtil';
+import SlateToolbar from '../SlateToolbar';
 
 const DocumentForm = ({
   session,
@@ -141,13 +111,15 @@ const DocumentForm = ({
 
   // eslint-disable-next-line no-undef
   const txtHtml = (mode === 'edit' && data) ? new DOMParser().parseFromString(data.text, 'text/html') : undefined;
+  const slateInitialValue = [
+    {
+      children: [{ text: '' }],
+      type: DEFAULTS_PARAGRAPH.p.type,
+    },
+  ];
   const [slateValue, setSlateValue] = (mode === 'edit' && data)
     ? useState(deserializeHTMLToDocument({ plugins, element: txtHtml.body }))
-    : useState([
-      {
-        children: [{ text: '' }],
-      },
-    ]);
+    : useState(slateInitialValue);
 
   const getInitialValues = (mode === 'edit' && data)
     ? {
@@ -155,7 +127,7 @@ const DocumentForm = ({
       text: deserializeHTMLToDocument({ plugins, element: txtHtml.body }),
     }
     : {
-      text: { children: [{ text: '' }] },
+      text: slateInitialValue,
       resourceType: 'Book',
       rightsStatus: 'Copyrighted',
       title: '',
@@ -227,197 +199,7 @@ const DocumentForm = ({
                               props.setFieldValue(field.name, value);
                             }}
                           >
-                            <div
-                              className="slate-toolbar"
-                            >
-                              <Dropdown>
-                                <OverlayTrigger overlay={<Tooltip>Styles</Tooltip>}>
-                                  <Dropdown.Toggle
-                                    size="sm"
-                                    variant="outline-secondary"
-                                    className="group-end"
-                                  >
-                                    <Type />
-                                  </Dropdown.Toggle>
-                                </OverlayTrigger>
-                                <Dropdown.Menu>
-                                  <Dropdown.Item
-                                    active={
-                                      isNodeTypeIn(editor, DEFAULTS_BLOCKQUOTE.blockquote.type)
-                                    }
-                                    onMouseDown={
-                                      (e) => {
-                                        e.preventDefault();
-                                        toggleNodeType(editor, {
-                                          activeType: DEFAULTS_BLOCKQUOTE.blockquote.type,
-                                        });
-                                      }
-                                    }
-                                  >
-                                    <blockquote className="slate-blockquote">Quote</blockquote>
-                                  </Dropdown.Item>
-                                  <Dropdown.Item
-                                    active={
-                                      isNodeTypeIn(editor, DEFAULTS_CODE_BLOCK.code_block.type)
-                                    }
-                                    onMouseDown={
-                                      (e) => {
-                                        e.preventDefault();
-                                        toggleNodeType(editor, {
-                                          activeType: DEFAULTS_CODE_BLOCK.code_block.type,
-                                        });
-                                      }
-                                    }
-                                  >
-                                    <pre className="slate-code-block">Code</pre>
-                                  </Dropdown.Item>
-                                  <Dropdown.Item
-                                    active={
-                                      isNodeTypeIn(editor, DEFAULTS_HEADING.h1.type)
-                                    }
-                                    onMouseDown={
-                                      (e) => {
-                                        e.preventDefault();
-                                        toggleNodeType(editor, {
-                                          activeType: DEFAULTS_HEADING.h1.type,
-                                        });
-                                      }
-                                    }
-                                  >
-                                    <h1 className="slate-h1">Heading 1</h1>
-                                  </Dropdown.Item>
-                                  <Dropdown.Item
-                                    active={isNodeTypeIn(editor, DEFAULTS_HEADING.h2.type)}
-                                    onMouseDown={
-                                      (e) => {
-                                        e.preventDefault();
-                                        toggleNodeType(editor, {
-                                          activeType: DEFAULTS_HEADING.h2.type,
-                                        });
-                                      }
-                                    }
-                                  >
-                                    <h2 className="slate-h2">Heading 2</h2>
-                                  </Dropdown.Item>
-                                  <Dropdown.Item
-                                    active={isNodeTypeIn(editor, DEFAULTS_HEADING.h3.type)}
-                                    onMouseDown={
-                                      (e) => {
-                                        e.preventDefault();
-                                        toggleNodeType(editor, {
-                                          activeType: DEFAULTS_HEADING.h3.type,
-                                        });
-                                      }
-                                    }
-                                  >
-                                    <h3 className="slate-h3">Heading 3</h3>
-                                  </Dropdown.Item>
-                                  <Dropdown.Item
-                                    active={isNodeTypeIn(editor, DEFAULTS_HEADING.h4.type)}
-                                    onMouseDown={
-                                      (e) => {
-                                        e.preventDefault();
-                                        toggleNodeType(editor, {
-                                          activeType: DEFAULTS_HEADING.h4.type,
-                                        });
-                                      }
-                                    }
-                                  >
-                                    <h4 className="slate-h4">Heading 4</h4>
-                                  </Dropdown.Item>
-                                  <Dropdown.Item
-                                    active={isNodeTypeIn(editor, DEFAULTS_HEADING.h5.type)}
-                                    onMouseDown={
-                                      (e) => {
-                                        e.preventDefault();
-                                        toggleNodeType(editor, {
-                                          activeType: DEFAULTS_HEADING.h5.type,
-                                        });
-                                      }
-                                    }
-                                  >
-                                    <h5 className="slate-h5">Heading 5</h5>
-                                  </Dropdown.Item>
-                                  <Dropdown.Item
-                                    active={isNodeTypeIn(editor, DEFAULTS_HEADING.h6.type)}
-                                    onMouseDown={
-                                      (e) => {
-                                        e.preventDefault();
-                                        toggleNodeType(editor, {
-                                          activeType: DEFAULTS_HEADING.h6.type,
-                                        });
-                                      }
-                                    }
-                                  >
-                                    <h6 className="slate-h6">Heading 6</h6>
-                                  </Dropdown.Item>
-                                </Dropdown.Menu>
-                              </Dropdown>
-                              <MarkButton format="bold">
-                                <TypeBold />
-                              </MarkButton>
-                              <OverlayTrigger overlay={<Tooltip>Italic</Tooltip>}>
-                                <MarkButton format="italic">
-                                  <TypeItalic />
-                                </MarkButton>
-                              </OverlayTrigger>
-                              <OverlayTrigger overlay={<Tooltip>Underline</Tooltip>}>
-                                <MarkButton format="underline">
-                                  <TypeUnderline />
-                                </MarkButton>
-                              </OverlayTrigger>
-                              <OverlayTrigger overlay={<Tooltip>Strikethrough</Tooltip>}>
-                                <MarkButton format="strikethrough" className="group-end">
-                                  <TypeStrikethrough />
-                                </MarkButton>
-                              </OverlayTrigger>
-                              <ToolbarAlign
-                                type={DEFAULTS_ALIGN.align_left.type}
-                                icon={<BlockButton format="align-left"><TextLeft /></BlockButton>}
-                              />
-                              <ToolbarAlign
-                                type={DEFAULTS_ALIGN.align_center.type}
-                                icon={<BlockButton format="align-center"><TextCenter /></BlockButton>}
-                              />
-                              <ToolbarAlign
-                                type={DEFAULTS_ALIGN.align_right.type}
-                                className="group-end"
-                                icon={<BlockButton format="align-right"><TextRight /></BlockButton>}
-                              />
-                              <ToolbarList
-                                typeList={DEFAULTS_LIST.ul.type}
-                                icon={<BlockButton format="bulleted-list"><ListUl /></BlockButton>}
-                              />
-                              <ToolbarList
-                                typeList={DEFAULTS_LIST.ol.type}
-                                className="group-end"
-                                icon={<BlockButton format="numbered-list"><ListOl /></BlockButton>}
-                              />
-                              <ToolbarLink
-                                options={DEFAULTS_LINK}
-                                icon={<BlockButton format="link"><Link45deg /></BlockButton>}
-                              />
-                              <ToolbarImage
-                                options={DEFAULTS_IMAGE}
-                                icon={<BlockButton format="image"><Image /></BlockButton>}
-                              />
-                              <OverlayTrigger
-                                overlay={<Tooltip>Video embed (coming soon)</Tooltip>}
-                              >
-                                <span className="d-inline-block">
-                                  <Button disabled size="sm" variant="outline-secondary" className="group-end" style={{ pointerEvents: 'none' }}>
-                                    <CameraVideoFill />
-                                  </Button>
-                                </span>
-                              </OverlayTrigger>
-                              <OverlayTrigger overlay={<Tooltip>Code view (coming soon?)</Tooltip>}>
-                                <span className="d-inline-block">
-                                  <Button disabled size="sm" variant="outline-secondary" style={{ pointerEvents: 'none' }}>
-                                    <CodeSquare />
-                                  </Button>
-                                </span>
-                              </OverlayTrigger>
-                            </div>
+                            <SlateToolbar />
                             <EditablePlugins
                               plugins={plugins}
                               placeholder="Paste or type here"
