@@ -49,7 +49,7 @@ import {
   ELEMENT_H5,
   ELEMENT_H6,
 } from '@udecode/slate-plugins';
-import { Button } from 'react-bootstrap';
+import { Button, OverlayTrigger, Tooltip } from 'react-bootstrap';
 
 // Helper constants
 const SoftBreakPluginOptions = {
@@ -95,6 +95,20 @@ const ExitBreakPluginOptions = {
   ],
 };
 
+const tooltipContent = {
+  bold: 'Bold',
+  italic: 'Italic',
+  underline: 'Underline',
+  strikethrough: 'Strikethrough',
+  'align-left': 'Align left',
+  'align-right': 'Align right',
+  'align-center': 'Align center',
+  'bulleted-list': 'Unordered list',
+  'numbered-list': 'Ordered list',
+  link: 'Link',
+  image: 'Insert image',
+};
+
 // Helper functions
 const isBlockActive = (editor, format) => {
   const [match] = Editor.nodes(editor, {
@@ -123,37 +137,41 @@ const toggleMark = (editor, format) => {
 const BlockButton = ({ format, className, children }) => {
   const editor = useSlate();
   return (
-    <Button
-      type="button"
-      size="sm"
-      variant="outline-secondary"
-      className={className}
-      active={isBlockActive(editor, format)}
-      onMouseDown={(event) => {
-        event.preventDefault();
-      }}
-    >
-      {children}
-    </Button>
+    <OverlayTrigger overlay={<Tooltip>{tooltipContent[format]}</Tooltip>}>
+      <Button
+        type="button"
+        size="sm"
+        variant="outline-secondary"
+        className={className}
+        active={isBlockActive(editor, format)}
+        onMouseDown={(event) => {
+          event.preventDefault();
+        }}
+      >
+        {children}
+      </Button>
+    </OverlayTrigger>
   );
 };
 
 const MarkButton = ({ format, className, children }) => {
   const editor = useSlate();
   return (
-    <Button
-      type="button"
-      size="sm"
-      variant="outline-secondary"
-      className={className}
-      active={isMarkActive(editor, format)}
-      onMouseDown={(event) => {
-        event.preventDefault();
-        toggleMark(editor, format);
-      }}
-    >
-      {children}
-    </Button>
+    <OverlayTrigger overlay={<Tooltip>{tooltipContent[format]}</Tooltip>}>
+      <Button
+        type="button"
+        size="sm"
+        variant="outline-secondary"
+        className={className}
+        active={isMarkActive(editor, format)}
+        onMouseDown={(event) => {
+          event.preventDefault();
+          toggleMark(editor, format);
+        }}
+      >
+        {children}
+      </Button>
+    </OverlayTrigger>
   );
 };
 

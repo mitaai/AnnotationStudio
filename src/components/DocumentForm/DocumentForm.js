@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import fetch from 'unfetch';
 import { Formik, Field } from 'formik';
 import {
-  Button, Dropdown, Container, Card, Col, Form, Row,
+  Button, Dropdown, Container, Card, Col, Form, Row, OverlayTrigger, Tooltip,
 } from 'react-bootstrap';
 import {
   CameraVideoFill,
@@ -231,13 +231,15 @@ const DocumentForm = ({
                               className="slate-toolbar"
                             >
                               <Dropdown>
-                                <Dropdown.Toggle
-                                  size="sm"
-                                  variant="outline-secondary"
-                                  className="group-end"
-                                >
-                                  <Type />
-                                </Dropdown.Toggle>
+                                <OverlayTrigger overlay={<Tooltip>Styles</Tooltip>}>
+                                  <Dropdown.Toggle
+                                    size="sm"
+                                    variant="outline-secondary"
+                                    className="group-end"
+                                  >
+                                    <Type />
+                                  </Dropdown.Toggle>
+                                </OverlayTrigger>
                                 <Dropdown.Menu>
                                   <Dropdown.Item
                                     active={
@@ -354,15 +356,21 @@ const DocumentForm = ({
                               <MarkButton format="bold">
                                 <TypeBold />
                               </MarkButton>
-                              <MarkButton format="italic">
-                                <TypeItalic />
-                              </MarkButton>
-                              <MarkButton format="underline">
-                                <TypeUnderline />
-                              </MarkButton>
-                              <MarkButton format="strikethrough" className="group-end">
-                                <TypeStrikethrough />
-                              </MarkButton>
+                              <OverlayTrigger overlay={<Tooltip>Italic</Tooltip>}>
+                                <MarkButton format="italic">
+                                  <TypeItalic />
+                                </MarkButton>
+                              </OverlayTrigger>
+                              <OverlayTrigger overlay={<Tooltip>Underline</Tooltip>}>
+                                <MarkButton format="underline">
+                                  <TypeUnderline />
+                                </MarkButton>
+                              </OverlayTrigger>
+                              <OverlayTrigger overlay={<Tooltip>Strikethrough</Tooltip>}>
+                                <MarkButton format="strikethrough" className="group-end">
+                                  <TypeStrikethrough />
+                                </MarkButton>
+                              </OverlayTrigger>
                               <ToolbarAlign
                                 type={DEFAULTS_ALIGN.align_left.type}
                                 icon={<BlockButton format="align-left"><TextLeft /></BlockButton>}
@@ -393,12 +401,22 @@ const DocumentForm = ({
                                 options={DEFAULTS_IMAGE}
                                 icon={<BlockButton format="image"><Image /></BlockButton>}
                               />
-                              <Button disabled size="sm" variant="outline-secondary" className="group-end">
-                                <CameraVideoFill />
-                              </Button>
-                              <Button disabled size="sm" variant="outline-secondary">
-                                <CodeSquare />
-                              </Button>
+                              <OverlayTrigger
+                                overlay={<Tooltip>Video embed (coming soon)</Tooltip>}
+                              >
+                                <span className="d-inline-block">
+                                  <Button disabled size="sm" variant="outline-secondary" className="group-end" style={{ pointerEvents: 'none' }}>
+                                    <CameraVideoFill />
+                                  </Button>
+                                </span>
+                              </OverlayTrigger>
+                              <OverlayTrigger overlay={<Tooltip>Code view (coming soon?)</Tooltip>}>
+                                <span className="d-inline-block">
+                                  <Button disabled size="sm" variant="outline-secondary" style={{ pointerEvents: 'none' }}>
+                                    <CodeSquare />
+                                  </Button>
+                                </span>
+                              </OverlayTrigger>
                             </div>
                             <EditablePlugins
                               plugins={plugins}
