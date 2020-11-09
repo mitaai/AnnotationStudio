@@ -13,6 +13,9 @@ import {
   Link45deg,
   ListOl,
   ListUl,
+  TextCenter,
+  TextLeft,
+  TextRight,
   Type,
   TypeBold,
   TypeItalic,
@@ -36,6 +39,7 @@ import {
   withList,
   withMarks,
   withTable,
+  DEFAULTS_ALIGN,
   DEFAULTS_BLOCKQUOTE,
   DEFAULTS_CODE_BLOCK,
   DEFAULTS_HEADING,
@@ -43,6 +47,7 @@ import {
   DEFAULTS_LINK,
   DEFAULTS_LIST,
   DEFAULTS_TABLE,
+  ToolbarAlign,
   ToolbarList,
   ToolbarLink,
   ToolbarImage,
@@ -358,6 +363,19 @@ const DocumentForm = ({
                               <MarkButton format="strikethrough" className="group-end">
                                 <TypeStrikethrough />
                               </MarkButton>
+                              <ToolbarAlign
+                                type={DEFAULTS_ALIGN.align_left.type}
+                                icon={<BlockButton format="align-left"><TextLeft /></BlockButton>}
+                              />
+                              <ToolbarAlign
+                                type={DEFAULTS_ALIGN.align_center.type}
+                                icon={<BlockButton format="align-center"><TextCenter /></BlockButton>}
+                              />
+                              <ToolbarAlign
+                                type={DEFAULTS_ALIGN.align_right.type}
+                                className="group-end"
+                                icon={<BlockButton format="align-right"><TextRight /></BlockButton>}
+                              />
                               <ToolbarList
                                 typeList={DEFAULTS_LIST.ul.type}
                                 icon={<BlockButton format="bulleted-list"><ListUl /></BlockButton>}

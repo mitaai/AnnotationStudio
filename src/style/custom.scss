@@ -20,7 +20,7 @@ $theme-colors: (
 }
 
 .slate-editor {
-  padding: 0.375rem 54.5px;
+  padding: 2rem 54.5px;
   resize: vertical;
   height: 350px;
   overflow-y: scroll;
@@ -60,7 +60,7 @@ $theme-colors: (
       height: 0.5rem;
     }
   }
-  padding: 0.5rem 18px 0.5rem;
+  padding: 0.5rem 10px 0.5rem;
   border-top-left-radius: 0.25rem;
   border-top-right-radius: 0.25rem;
   background-color: rgba(0, 0, 0, 0.08);
@@ -69,7 +69,8 @@ $theme-colors: (
     display: inline-block;
   }
   button {
-    margin-right: 0.25rem;
+    margin-left: 0.125rem;
+    margin-right: 0.125rem;
   }
   .group-end {
     margin-right: 1rem;
