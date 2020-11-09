@@ -10,12 +10,17 @@ $theme-colors: (
   min-height: 30px;
 }
 
-#document-content-container img {
-  max-width: 100%;
+#slate-container {
+  width: 670px;
+}
+
+#slate-container-card {
+  display: flex;
+  justify-content: center;
 }
 
 .slate-editor {
-  padding: 0.375rem 0.75rem;
+  padding: 0.375rem 66px;
   resize: vertical;
   height: 350px;
   overflow-y: scroll;
@@ -34,7 +39,8 @@ $theme-colors: (
   img {
     display: block;
     max-width: 100%;
-    max-height: 20em;
+    padding: 10px 0px;
+    max-height: none;
     .imgSelected {
       box-shadow: "0 0 0 2px blue;";
     }
@@ -159,6 +165,23 @@ $theme-colors: (
   font-family: SFMono-Regular, Consolas, Monaco, "Liberation Mono", Menlo, Courier, monospace;
   tab-size: 2;
   line-height: normal;
+}
+
+.slate-p {
+  font-size: 1.15em;
+  font-family: "calluna", serif;
+}
+
+.slate-align-center {
+  text-align: center;
+}
+
+.slate-img {
+  max-width: 100%;
+  padding: 10px 0px;
+  img {
+    max-width: 100%;
+  }
 }
 
 /* import bootstrap */
