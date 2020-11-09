@@ -36,15 +36,20 @@ import {
   withList,
   withMarks,
   withTable,
+  DEFAULTS_BLOCKQUOTE,
+  DEFAULTS_CODE_BLOCK,
+  DEFAULTS_HEADING,
+  DEFAULTS_IMAGE,
   DEFAULTS_LINK,
   DEFAULTS_LIST,
-  DEFAULTS_IMAGE,
   DEFAULTS_TABLE,
   ToolbarList,
   ToolbarLink,
   ToolbarImage,
   serializeHTMLFromNodes,
   deserializeHTMLToDocument,
+  isNodeTypeIn,
+  toggleNodeType,
 } from '@udecode/slate-plugins';
 import { withHistory } from 'slate-history';
 import SemanticField from '../SemanticField';
@@ -221,7 +226,6 @@ const DocumentForm = ({
                           >
                             <Dropdown>
                               <Dropdown.Toggle
-                                disabled
                                 size="sm"
                                 variant="outline-secondary"
                                 className="group-end"
@@ -229,13 +233,110 @@ const DocumentForm = ({
                                 <Type />
                               </Dropdown.Toggle>
                               <Dropdown.Menu>
-                                <Dropdown.Item>Heading 1</Dropdown.Item>
-                                <Dropdown.Item>Heading 2</Dropdown.Item>
-                                <Dropdown.Item>Heading 3</Dropdown.Item>
-                                <Dropdown.Item>Heading 4</Dropdown.Item>
-                                <Dropdown.Item>Heading 5</Dropdown.Item>
-                                <Dropdown.Item>Quote</Dropdown.Item>
-                                <Dropdown.Item>Code</Dropdown.Item>
+                                <Dropdown.Item
+                                  active={isNodeTypeIn(editor, DEFAULTS_BLOCKQUOTE.blockquote.type)}
+                                  onMouseDown={
+                                    (e) => {
+                                      e.preventDefault();
+                                      toggleNodeType(editor, {
+                                        activeType: DEFAULTS_BLOCKQUOTE.blockquote.type,
+                                      });
+                                    }
+                                  }
+                                >
+                                  <blockquote className="slate-blockquote">Quote</blockquote>
+                                </Dropdown.Item>
+                                <Dropdown.Item
+                                  active={isNodeTypeIn(editor, DEFAULTS_CODE_BLOCK.code_block.type)}
+                                  onMouseDown={
+                                    (e) => {
+                                      e.preventDefault();
+                                      toggleNodeType(editor, {
+                                        activeType: DEFAULTS_CODE_BLOCK.code_block.type,
+                                      });
+                                    }
+                                  }
+                                >
+                                  <pre className="slate-code-block">Code</pre>
+                                </Dropdown.Item>
+                                <Dropdown.Item
+                                  active={isNodeTypeIn(editor, DEFAULTS_HEADING.h1.type)}
+                                  onMouseDown={
+                                    (e) => {
+                                      e.preventDefault();
+                                      toggleNodeType(editor, {
+                                        activeType: DEFAULTS_HEADING.h1.type,
+                                      });
+                                    }
+                                  }
+                                >
+                                  <h1 className="slate-h1">Heading 1</h1>
+                                </Dropdown.Item>
+                                <Dropdown.Item
+                                  active={isNodeTypeIn(editor, DEFAULTS_HEADING.h2.type)}
+                                  onMouseDown={
+                                    (e) => {
+                                      e.preventDefault();
+                                      toggleNodeType(editor, {
+                                        activeType: DEFAULTS_HEADING.h2.type,
+                                      });
+                                    }
+                                  }
+                                >
+                                  <h2 className="slate-h2">Heading 2</h2>
+                                </Dropdown.Item>
+                                <Dropdown.Item
+                                  active={isNodeTypeIn(editor, DEFAULTS_HEADING.h3.type)}
+                                  onMouseDown={
+                                    (e) => {
+                                      e.preventDefault();
+                                      toggleNodeType(editor, {
+                                        activeType: DEFAULTS_HEADING.h3.type,
+                                      });
+                                    }
+                                  }
+                                >
+                                  <h3 className="slate-h3">Heading 3</h3>
+                                </Dropdown.Item>
+                                <Dropdown.Item
+                                  active={isNodeTypeIn(editor, DEFAULTS_HEADING.h4.type)}
+                                  onMouseDown={
+                                    (e) => {
+                                      e.preventDefault();
+                                      toggleNodeType(editor, {
+                                        activeType: DEFAULTS_HEADING.h4.type,
+                                      });
+                                    }
+                                  }
+                                >
+                                  <h4 className="slate-h4">Heading 4</h4>
+                                </Dropdown.Item>
+                                <Dropdown.Item
+                                  active={isNodeTypeIn(editor, DEFAULTS_HEADING.h5.type)}
+                                  onMouseDown={
+                                    (e) => {
+                                      e.preventDefault();
+                                      toggleNodeType(editor, {
+                                        activeType: DEFAULTS_HEADING.h5.type,
+                                      });
+                                    }
+                                  }
+                                >
+                                  <h5 className="slate-h5">Heading 5</h5>
+                                </Dropdown.Item>
+                                <Dropdown.Item
+                                  active={isNodeTypeIn(editor, DEFAULTS_HEADING.h6.type)}
+                                  onMouseDown={
+                                    (e) => {
+                                      e.preventDefault();
+                                      toggleNodeType(editor, {
+                                        activeType: DEFAULTS_HEADING.h6.type,
+                                      });
+                                    }
+                                  }
+                                >
+                                  <h6 className="slate-h6">Heading 6</h6>
+                                </Dropdown.Item>
                               </Dropdown.Menu>
                             </Dropdown>
                             <MarkButton format="bold">

@@ -10,6 +10,10 @@ $theme-colors: (
   min-height: 30px;
 }
 
+#document-content-container img {
+  max-width: 100%;
+}
+
 .slate-editor {
   padding: 0.375rem 0.75rem;
   resize: vertical;
@@ -72,8 +76,89 @@ $theme-colors: (
   height: 2rem;
 }
 
-#document-content-container img {
-  max-width: 100%;
+.slate-h1,
+.slate-h2,
+.slate-h3,
+.slate-h4,
+.slate-h5,
+.slate-h6 {
+  font-family: "source-sans-pro", sans-serif;
+  font-style: normal;
+  font-weight: 300;
+  line-height: 1.1;
+}
+
+.slate-h1,
+.slate-h2,
+.slate-h3 {
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+.slate-h4,
+.slate-h5,
+.slate-h6 {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.dropdown-item {
+  .slate-h1,
+  .slate-h2,
+  .slate-h3,
+  .slate-h4,
+  .slate-h5,
+  .slate-h6,
+  .slate-blockquote,
+  .slate-code-block {
+    margin-top: auto;
+    margin-bottom: auto;
+  }
+}
+
+.slate-h1 {
+  font-size: 36px;
+}
+
+.slate-h2 {
+  font-size: 30px;
+}
+
+.slate-h3 {
+  font-size: 24px;
+}
+
+.slate-h4 {
+  font-size: 18px;
+}
+
+.slate-h5 {
+  font-size: 14px;
+}
+
+.slate-h6 {
+  font-size: 12px;
+}
+
+.slate-blockquote {
+  font-family: "source-sans-pro", sans-serif;
+  font-style: normal;
+  font-weight: 300;
+  padding: 10px 20px;
+  margin: 0 0 20px;
+  font-size: 17.5px;
+  border-left: 5px solid #eee;
+}
+
+.slate-code-block {
+  font-size: 14px;
+  padding: 12px 16px;
+  background-color: rgb(247, 246, 243);
+  border-radius: 3px;
+  white-space: pre-wrap;
+  font-family: SFMono-Regular, Consolas, Monaco, "Liberation Mono", Menlo, Courier, monospace;
+  tab-size: 2;
+  line-height: normal;
 }
 
 /* import bootstrap */
