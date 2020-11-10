@@ -48,6 +48,10 @@ import {
   ELEMENT_H5,
   ELEMENT_H6,
   ELEMENT_MEDIA_EMBED,
+  getElementDeserializer,
+  getRenderElement,
+  getRenderElements,
+  StyledElement,
 } from '@udecode/slate-plugins';
 import { Button, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import SlateMediaEmbedElement from '../components/SlateMediaEmbedElement';
@@ -163,6 +167,50 @@ const insertVideoEmbed = (editor, url) => {
   Transforms.insertNodes(editor, video);
 };
 
+const deserializeDiv = (options) => ({
+  element: getElementDeserializer({
+    type: 'div',
+    rules: [{ nodeNames: 'DIV' }],
+    ...options?.div?.deserialize,
+  }),
+});
+
+const DivPlugin = (options) => ({
+  renderElement: getRenderElement(options.div),
+  deserialize: deserializeDiv(options),
+});
+
+const StyledDivElement = ({ children, className, as = 'div' }) => {
+  const Tag = as;
+  return (
+    <Tag className={className}>
+      {children !== []
+        ? children
+        : [{ text: '' }]}
+    </Tag>
+  );
+};
+
+const deserializeFigure = (options) => ({
+  element: [
+    ...getElementDeserializer({
+      type: 'figure',
+      rules: [{ nodeNames: 'FIGURE' }],
+      ...options?.figure?.deserialize,
+    }),
+    ...getElementDeserializer({
+      type: 'figcaption',
+      rules: [{ nodeNames: 'FIGCAPTION' }],
+      ...options?.figcaption?.deserialize,
+    }),
+  ],
+});
+
+const FigurePlugin = (options) => ({
+  renderElement: getRenderElements([options.figure, options.figcaption]),
+  deserialize: deserializeFigure(options),
+});
+
 // Toolbar UI elements
 const BlockButton = ({ format, className, children }) => {
   const editor = useSlate();
@@ -226,6 +274,31 @@ const plugins = [
   LinkPlugin(DEFAULTS_LINK),
   ListPlugin(DEFAULTS_LIST),
   MediaEmbedPlugin(customMediaEmbedPluginOptions),
+  DivPlugin({
+    div: {
+      component: StyledDivElement,
+      type: 'div',
+      rootProps: {
+        className: 'slate-p',
+      },
+    },
+  }),
+  FigurePlugin({
+    figure: {
+      component: StyledElement,
+      type: 'figure',
+      rootProps: {
+        className: 'slate-figure',
+      },
+    },
+    figcaption: {
+      component: StyledElement,
+      type: 'figcaption',
+      rootProps: {
+        className: 'slate-h5',
+      },
+    },
+  }),
   ParagraphPlugin(DEFAULTS_PARAGRAPH),
   StrikethroughPlugin(DEFAULTS_STRIKETHROUGH),
   SubscriptPlugin(DEFAULTS_SUBSUPSCRIPT),
