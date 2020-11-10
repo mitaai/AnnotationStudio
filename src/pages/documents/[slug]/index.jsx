@@ -253,6 +253,11 @@ const DocumentPage = (props) => {
       + tempTopAdjustment
       - adjustmentTopNumber;
     for (let i = focusIndex - 1; i >= 0; i -= 1) {
+      
+      if (documentFilters.annotationIds[side] !== null) { // this means that there are filters applied to the document
+        if (!documentFilters.annotationIds[side].includes(annos[i]._id)) { continue; }
+      }
+
       const offsetLeftForLine2 = side === 'left'
         ? annos[i].position.left
         : annos[i].position.left - $(`#document-container #${annos[i]._id}`).offset().left;

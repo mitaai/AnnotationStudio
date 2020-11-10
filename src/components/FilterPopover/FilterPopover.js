@@ -67,6 +67,23 @@ function ByTagFilterMatch(tags, cf) { // OR FUNCTION
   return false;
 }
 
+function ByTagFilterMatchAndOperator(tags, cf) { // OR FUNCTION
+  if (cf.byTags.length === 0) {
+    return true;
+  }
+
+  if (tags === undefined) {
+    return false;
+  }
+
+  for (let i = 0; i < cf.byTags.length; i += 1) {
+    if (!tags.includes(cf.byTags[i])) {
+      return false;
+    }
+  }
+  return true;
+}
+
 function DeepCopyObj(obj) {
   return JSON.parse(JSON.stringify(obj));
 }
@@ -75,7 +92,7 @@ function onlyUnique(value, index, self) {
   return self.indexOf(value) === index;
 }
 
-const AnnotationMatchesFilters = (user_email, a, filters) => AnnotatedByFilterMatch(a.creator.email, filters) && ByTagFilterMatch(a.body.tags, filters) && ByPermissionsFilterMatch(user_email, a.creator.email, a.permissions, filters);
+const AnnotationMatchesFilters = (user_email, a, filters) => AnnotatedByFilterMatch(a.creator.email, filters) && ByTagFilterMatchAndOperator(a.body.tags, filters) && ByPermissionsFilterMatch(user_email, a.creator.email, a.permissions, filters);
 
 const FilterAnnotations = (user_email, annotations, filters) => {
   const annotationIds = { left: [], right: [] };
@@ -103,6 +120,13 @@ const GetNumberOfMatchesForThisEmail = (user_email, annotations, currentFilters,
 // OR filter
 const GetNumberOfMatchesForThisTag = (user_email, annotations, currentFilters, filterTag) => {
   const f = Object.assign(DeepCopyObj(currentFilters), { byTags: [filterTag] });
+  const ids = FilterAnnotations(user_email, annotations, f);
+  return ids.left.length + ids.right.length;
+};
+
+const GetNumberOfMatchesForThisTagAndOperator = (user_email, annotations, currentFilters, filterTag) => {
+  let f = DeepCopyObj(currentFilters);
+  f.byTags.push(filterTag);
   const ids = FilterAnnotations(user_email, annotations, f);
   return ids.left.length + ids.right.length;
 };
@@ -139,7 +163,7 @@ const GenerateFilterOptions = (user_email, annotations, filters, filteredAnnotat
           filterOptions.byTags.push({
             id: tag,
             name: tag,
-            matches: GetNumberOfMatchesForThisTag(user_email, annotations, filters, tag),
+            matches: GetNumberOfMatchesForThisTagAndOperator(user_email, annotations, filters, tag),
           });
         }
       }
