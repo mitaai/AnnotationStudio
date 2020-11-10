@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import fetch from 'unfetch';
 import { Formik, Field } from 'formik';
 import {
-  Button, Dropdown, Container, Card, Col, Form, Row,
+  Button, Container, Card, Col, Form, Row,
 } from 'react-bootstrap';
 import * as yup from 'yup';
 import slugify from '@sindresorhus/slugify';
@@ -30,6 +30,7 @@ import {
   withTable,
 } from '@udecode/slate-plugins';
 import { withHistory } from 'slate-history';
+import { Dropdown as SemanticUIDropdown } from 'semantic-ui-react';
 import SemanticField from '../SemanticField';
 import DocumentMetadata from '../DocumentMetadata';
 import DocumentStatusSelect from '../DocumentStatusSelect';
@@ -262,7 +263,7 @@ const DocumentForm = ({
                         Select the group(s) to which you wish to assign this document.
                         <SemanticField
                           name="groups"
-                          component={Dropdown}
+                          component={SemanticUIDropdown}
                           className="mt-2"
                           placeholder="Groups"
                           fluid
