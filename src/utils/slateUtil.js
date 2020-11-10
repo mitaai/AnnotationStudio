@@ -189,9 +189,17 @@ const StyledDivElement = ({ children, className, as = 'div' }) => {
   const Tag = as;
   return (
     <Tag className={className}>
-      {children !== []
+      {(children && children !== [])
         ? children
-        : [{ text: '' }]}
+        : (
+          <p data-slate-node="element" className="slate-p">
+            <span data-slate-node="text">
+              <span data-slate-leaf="true">
+                <span data-slate-zero-width="n" data-slate-length="0" />
+              </span>
+            </span>
+          </p>
+        )}
     </Tag>
   );
 };
