@@ -115,10 +115,12 @@ const tooltipText = {
 };
 
 const customMediaEmbedPluginOptions = {
-  component: SlateMediaEmbedElement,
-  type: ELEMENT_MEDIA_EMBED,
-  rootProps: {
-    className: 'slate-media-embed',
+  media_embed: {
+    component: SlateMediaEmbedElement,
+    type: ELEMENT_MEDIA_EMBED,
+    rootProps: {
+      className: 'slate-media-embed',
+    },
   },
 };
 
@@ -155,7 +157,7 @@ const videoURLtoEmbedURL = (url) => {
   }
   if (url.includes('vimeo.com')) {
     const urlSplit = /vimeo.*\/(\d+)/i.exec(url);
-    const videoId = urlSplit ? null : urlSplit[1];
+    const videoId = !urlSplit ? null : urlSplit[1];
     return (videoId === null || !videoId) ? null : `https://player.vimeo.com/video/${videoId}?title=0&byline=0&portrait=0`;
   }
   return null;
@@ -163,7 +165,10 @@ const videoURLtoEmbedURL = (url) => {
 
 const insertVideoEmbed = (editor, url) => {
   const text = { text: '' };
-  const video = { type: ELEMENT_MEDIA_EMBED, url, children: [text] };
+  const video = [
+    { type: ELEMENT_MEDIA_EMBED, url, children: [text] },
+    { type: DEFAULTS_PARAGRAPH.p.type, children: [text] },
+  ];
   Transforms.insertNodes(editor, video);
 };
 
@@ -210,6 +215,10 @@ const FigurePlugin = (options) => ({
   renderElement: getRenderElements([options.figure, options.figcaption]),
   deserialize: deserializeFigure(options),
 });
+
+// const CustomMediaEmbedPlugin = (options) => ({
+//   renderElement: getRenderElement({ options. }),
+// });
 
 // Toolbar UI elements
 const BlockButton = ({ format, className, children }) => {

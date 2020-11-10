@@ -232,7 +232,7 @@ const SlateToolbar = () => {
         onMouseDown={(event) => {
           event.preventDefault();
           // eslint-disable-next-line no-undef, no-alert
-          const url = window.prompt('Enter the URL of the video:');
+          const url = window.prompt('Enter the URL of the video (Vimeo or YouTube only):');
           if (!url) return;
           const embedUrl = videoURLtoEmbedURL(url);
           if (!embedUrl || embedUrl === null) return;
