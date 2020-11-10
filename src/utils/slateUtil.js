@@ -1,5 +1,5 @@
 import {
-  Editor,
+  Editor, Transforms,
 } from 'slate';
 import {
   useSlate,
@@ -35,7 +35,6 @@ import {
   DEFAULTS_LINK,
   DEFAULTS_LIST,
   DEFAULTS_IMAGE,
-  DEFAULTS_MEDIA_EMBED,
   DEFAULTS_PARAGRAPH,
   DEFAULTS_STRIKETHROUGH,
   DEFAULTS_SUBSUPSCRIPT,
@@ -48,8 +47,10 @@ import {
   ELEMENT_H4,
   ELEMENT_H5,
   ELEMENT_H6,
+  ELEMENT_MEDIA_EMBED,
 } from '@udecode/slate-plugins';
 import { Button, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import SlateMediaEmbedElement from '../components/SlateMediaEmbedElement';
 
 // Helper constants
 const SoftBreakPluginOptions = {
@@ -109,6 +110,14 @@ const tooltipText = {
   image: 'Insert image',
 };
 
+const customMediaEmbedPluginOptions = {
+  component: SlateMediaEmbedElement,
+  type: ELEMENT_MEDIA_EMBED,
+  rootProps: {
+    className: 'slate-media-embed',
+  },
+};
+
 // Helper functions
 const isBlockActive = (editor, format) => {
   const [match] = Editor.nodes(editor, {
@@ -131,6 +140,27 @@ const toggleMark = (editor, format) => {
   } else {
     Editor.addMark(editor, format, true);
   }
+};
+
+const videoURLtoEmbedURL = (url) => {
+  if (url.includes('youtube.com') || url.includes('youtu.be')) {
+    const urlSplit = url.replace(/(>|<)/gi, '').split(/(vi\/|v=|\/v\/|youtu\.be\/|\/embed\/)/);
+    // eslint-disable-next-line no-useless-escape
+    const videoId = urlSplit[2] ? urlSplit[2].split(/[^0-9a-z_\-]/i)[0] : urlSplit;
+    return (videoId === null || !videoId) ? null : `https://www.youtube.com/embed/${videoId}?modestbranding=1`;
+  }
+  if (url.includes('vimeo.com')) {
+    const urlSplit = /vimeo.*\/(\d+)/i.exec(url);
+    const videoId = urlSplit ? null : urlSplit[1];
+    return (videoId === null || !videoId) ? null : `https://player.vimeo.com/video/${videoId}?title=0&byline=0&portrait=0`;
+  }
+  return null;
+};
+
+const insertVideoEmbed = (editor, url) => {
+  const text = { text: '' };
+  const video = { type: ELEMENT_MEDIA_EMBED, url, children: [text] };
+  Transforms.insertNodes(editor, video);
 };
 
 // Toolbar UI elements
@@ -195,7 +225,7 @@ const plugins = [
   ItalicPlugin(DEFAULTS_ITALIC),
   LinkPlugin(DEFAULTS_LINK),
   ListPlugin(DEFAULTS_LIST),
-  MediaEmbedPlugin(DEFAULTS_MEDIA_EMBED),
+  MediaEmbedPlugin(customMediaEmbedPluginOptions),
   ParagraphPlugin(DEFAULTS_PARAGRAPH),
   StrikethroughPlugin(DEFAULTS_STRIKETHROUGH),
   SubscriptPlugin(DEFAULTS_SUBSUPSCRIPT),
@@ -211,4 +241,6 @@ export {
   BlockButton,
   MarkButton,
   plugins,
+  videoURLtoEmbedURL,
+  insertVideoEmbed,
 };

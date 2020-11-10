@@ -26,7 +26,9 @@ import {
   DEFAULTS_IMAGE,
   DEFAULTS_LINK,
   DEFAULTS_LIST,
+  ELEMENT_MEDIA_EMBED,
   ToolbarAlign,
+  ToolbarButton,
   ToolbarList,
   ToolbarLink,
   ToolbarImage,
@@ -36,6 +38,8 @@ import {
 import {
   BlockButton,
   MarkButton,
+  videoURLtoEmbedURL,
+  insertVideoEmbed,
 } from '../../utils/slateUtil';
 
 const SlateToolbar = () => {
@@ -215,15 +219,26 @@ const SlateToolbar = () => {
         options={DEFAULTS_IMAGE}
         icon={<BlockButton format="image"><Image /></BlockButton>}
       />
-      <OverlayTrigger
-        overlay={<Tooltip>Video embed (coming soon)</Tooltip>}
-      >
-        <span className="d-inline-block">
-          <Button disabled size="sm" variant="outline-secondary" className="group-end" style={{ pointerEvents: 'none' }}>
-            <CameraVideoFill />
-          </Button>
-        </span>
-      </OverlayTrigger>
+      <ToolbarButton
+        type={ELEMENT_MEDIA_EMBED}
+        className="group-end"
+        icon={(
+          <OverlayTrigger
+            overlay={<Tooltip>Video embed</Tooltip>}
+          >
+            <Button size="sm" variant="outline-secondary"><CameraVideoFill /></Button>
+          </OverlayTrigger>
+        )}
+        onMouseDown={(event) => {
+          event.preventDefault();
+          // eslint-disable-next-line no-undef, no-alert
+          const url = window.prompt('Enter the URL of the video:');
+          if (!url) return;
+          const embedUrl = videoURLtoEmbedURL(url);
+          if (!embedUrl || embedUrl === null) return;
+          insertVideoEmbed(editor, embedUrl);
+        }}
+      />
       <OverlayTrigger overlay={<Tooltip>Code view (coming soon?)</Tooltip>}>
         <span className="d-inline-block">
           <Button disabled size="sm" variant="outline-secondary" style={{ pointerEvents: 'none' }}>

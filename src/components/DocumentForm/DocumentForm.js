@@ -14,8 +14,13 @@ import {
   Slate, withReact,
 } from 'slate-react';
 import {
+  DEFAULTS_LIST,
+  DEFAULTS_PARAGRAPH,
+  DEFAULTS_TABLE,
   EditablePlugins,
+  deserializeHTMLToDocument,
   pipe,
+  serializeHTMLFromNodes,
   withDeserializeHTML,
   withImageUpload,
   withInlineVoid,
@@ -23,11 +28,6 @@ import {
   withList,
   withMarks,
   withTable,
-  DEFAULTS_LIST,
-  DEFAULTS_TABLE,
-  serializeHTMLFromNodes,
-  deserializeHTMLToDocument,
-  DEFAULTS_PARAGRAPH,
 } from '@udecode/slate-plugins';
 import { withHistory } from 'slate-history';
 import SemanticField from '../SemanticField';
