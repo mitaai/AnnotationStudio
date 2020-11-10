@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import { useEffect, useState } from 'react';
 
 import $ from 'jquery';
@@ -85,18 +86,17 @@ function PlaceAnnotationsInCorrectSpot(annotations, side) {
 }
 
 const AnnotationChannel = ({
-  side, annotations, setAnnotationChannelLoaded, user, deleteAnnotationFromChannels, updateChannelAnnotationData, focusOnAnnotation, saveAnnotationChanges,
+  side, annotations, setAnnotationChannelLoaded, user, deleteAnnotationFromChannels, updateChannelAnnotationData, focusOnAnnotation, documentFilters,
 }) => {
-  let sortedAnnotations = [];
-  if (annotations !== null) {
-    // the first thing we need to is sort these anntotations by their position
-    sortedAnnotations = annotations.sort((a, b) => {
-      if (a.position.top - b.position.top === 0) { // if the tops are the same then we have to distinguish which annotation comes first by who has the smaller left value
-        return a.position.left - b.position.left;
-      }
-      return a.position.top - b.position.top;
-    });
-  }
+  // first we filter annotations if there are any filters applied
+  let sortedAnnotations = annotations !== null ? annotations.filter((anno) => (documentFilters.annotationIds[side] !== null ? documentFilters.annotationIds[side].includes(anno._id) : true)) : [];
+  // the first thing we need to is sort these anntotations by their position
+  sortedAnnotations = sortedAnnotations.sort((a, b) => {
+    if (a.position.top - b.position.top === 0) { // if the tops are the same then we have to distinguish which annotation comes first by who has the smaller left value
+      return a.position.left - b.position.left;
+    }
+    return a.position.top - b.position.top;
+  });
 
   useEffect(() => {
     if (annotations !== null) {
@@ -120,7 +120,6 @@ const AnnotationChannel = ({
             side={side}
             expanded={false}
             annotation={annotation}
-            saveAnnotationChanges={saveAnnotationChanges}
             user={user}
           />
         ))}
@@ -135,6 +134,7 @@ const AnnotationChannel = ({
 };
 
 function shouldNotRender(prevProps, nextProps) {
+  return false;
   return nextProps.loaded; // if the channel has already loaded then it shouldn't rerender
 }
 

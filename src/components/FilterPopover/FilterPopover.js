@@ -27,6 +27,7 @@ import {
 } from 'react-bootstrap-typeahead';
 
 import DocumentAnnotationsContext from '../../contexts/DocumentAnnotationsContext';
+import DocumentFiltersContext from '../../contexts/DocumentFiltersContext';
 
 // Import as a module in your JS
 import 'react-bootstrap-typeahead/css/Typeahead.css';
@@ -66,6 +67,14 @@ function ByTagFilterMatch(tags, cf) { // OR FUNCTION
   return false;
 }
 
+function DeepCopyObj(obj) {
+  return JSON.parse(JSON.stringify(obj));
+}
+
+function onlyUnique(value, index, self) {
+  return self.indexOf(value) === index;
+}
+
 const AnnotationMatchesFilters = (user_email, a, filters) => AnnotatedByFilterMatch(a.creator.email, filters) && ByTagFilterMatch(a.body.tags, filters) && ByPermissionsFilterMatch(user_email, a.creator.email, a.permissions, filters);
 
 const FilterAnnotations = (user_email, annotations, filters) => {
@@ -75,7 +84,7 @@ const FilterAnnotations = (user_email, annotations, filters) => {
     if (Array.isArray(annotations[side])) {
       for (const a of annotations[side]) {
         if (AnnotationMatchesFilters(user_email, a, filters)) {
-          annotationIds[side].push(annotations[side]._id);
+          annotationIds[side].push(a._id);
         }
       }
     }
@@ -84,35 +93,54 @@ const FilterAnnotations = (user_email, annotations, filters) => {
   return annotationIds;
 };
 
+// OR filter
+const GetNumberOfMatchesForThisEmail = (user_email, annotations, currentFilters, filterEmail) => {
+  const f = Object.assign(DeepCopyObj(currentFilters), { annotatedBy: [filterEmail] });
+  const ids = FilterAnnotations(user_email, annotations, f);
+  return ids.left.length + ids.right.length;
+};
 
-const GenerateFilterOptions = (user_email, annotations, filters) => {
+// OR filter
+const GetNumberOfMatchesForThisTag = (user_email, annotations, currentFilters, filterTag) => {
+  const f = Object.assign(DeepCopyObj(currentFilters), { byTags: [filterTag] });
+  const ids = FilterAnnotations(user_email, annotations, f);
+  return ids.left.length + ids.right.length;
+};
+
+const GenerateFilterOptions = (user_email, annotations, filters, filteredAnnotationIds) => {
   // this function takes in a list of annotations and returns an object of all the filter options that are available for this list of annotations and how many matches each option has with the current filtres applied
   const filterOptions = {
     annotatedBy: [],
     byTags: [],
   };
 
-  let index; let
-    annotationMatches;
+  let index;
   // eslint-disable-next-line guard-for-in
   for (const side in annotations) {
     if (Array.isArray(annotations[side])) {
       for (const a of annotations[side]) {
         // first we will add this annotations annotatedBy filterOption
         index = filterOptions.annotatedBy.findIndex((opt) => opt.email === a.creator.email);
-        annotationMatches = AnnotationMatchesFilters(user_email, a, filters);
         if (index === -1) {
-          filterOptions.annotatedBy.push({ name: a.creator.name, email: a.creator.email, matches: annotationMatches ? 1 : 0 });
-        } else {
-          filterOptions.annotatedBy[index].matches += annotationMatches ? 1 : 0;
+          filterOptions.annotatedBy.push({
+            id: a.creator.email,
+            name: a.creator.name,
+            email: a.creator.email,
+            matches: GetNumberOfMatchesForThisEmail(user_email, annotations, filters, a.creator.email),
+          });
         }
 
 
         // second we will add this annotations byTags filterOption
-        const newTags = a.body.tags.filter((tag) => filterOptions.byTags.findIndex((opt) => opt.name === tag) === -1);
+        const uniqueBodyTags = a.body.tags.filter(onlyUnique);
+        const newTags = uniqueBodyTags.filter((tag) => filterOptions.byTags.findIndex((opt) => opt.name === tag) === -1);
         // take these new tags and map them into an object and add them to the existing list of byTags array
         for (const tag of newTags) {
-          filterOptions.byTags.push({ name: tag, matches: 1 });
+          filterOptions.byTags.push({
+            id: tag,
+            name: tag,
+            matches: GetNumberOfMatchesForThisTag(user_email, annotations, filters, tag),
+          });
         }
       }
     }
@@ -123,45 +151,35 @@ const GenerateFilterOptions = (user_email, annotations, filters) => {
 
 
 function FilterPopover({ session }) {
-  const [channelAnnotations, setChannelAnnotations] = useContext(DocumentAnnotationsContext);
+  const [channelAnnotations] = useContext(DocumentAnnotationsContext);
+  const [documentFilters, setDocumentFilters] = useContext(DocumentFiltersContext);
   const [byTagsTypeheadMarginTop, setByTagsTypeheadMarginTop] = useState(0);
   const [byTagsTypeheadMarginBottom, setByTagsTypeheadMarginBottom] = useState(0);
 
   const [filtersApplied, setFiltersApplied] = useState(0);// 0 means no filters applied, 1 means filters applied, 2 means loading
 
-  const [selectedPermissions, setSelectedPermissions] = useState(0);
+  const filterOptions = GenerateFilterOptions(session.user.email, channelAnnotations, {
+    annotatedBy: documentFilters.filters.annotatedBy.map((opt) => opt.email),
+    byTags: documentFilters.filters.byTags.map((opt) => opt.name),
+    permissions: documentFilters.filters.permissions,
+  }, documentFilters.annotationIds);
 
-  const [filters, setFilters] = useState({
-    annotatedBy: [], // list of filter options that have been selected by user
-    byTags: [], // list of filter options that have been selected by user
+  const UpdateSelectedTokensMatchesValue = (type, selected) => selected.map((s) => {
+    const m = filterOptions[type].find((opt) => opt.id === s.id).matches;
+    return Object.assign(s, { matches: m });
   });
-
-  const g = GenerateFilterOptions(session.user.email, channelAnnotations, {
-    annotatedBy: filters.annotatedBy.map((opt) => opt.email),
-    byTags: filters.byTags.map((opt) => opt.name),
-    permissions: selectedPermissions,
-  });
-
-  const [filterOptions, setFilterOptions] = useState({ annotatedBy: [], byTags: [] });
-
-  useEffect(() => {
-    setFilterOptions(g);
-  }, [channelAnnotations]);
 
 
   const updateFilters = (type, selected) => {
-    if (type !== 'permissions') {
-      filters[type] = selected;
-      setFilters(filters);
-    } else {
-      setSelectedPermissions(selected);
-    }
+    documentFilters.filters[type] = selected;
+
     const annotationIds = FilterAnnotations(session.user.email, channelAnnotations, {
-      annotatedBy: filters.annotatedBy.map((opt) => opt.email),
-      byTags: filters.byTags.map((opt) => opt.name),
-      permissions: selectedPermissions,
+      annotatedBy: documentFilters.filters.annotatedBy.map((opt) => opt.email),
+      byTags: documentFilters.filters.byTags.map((opt) => opt.name),
+      permissions: documentFilters.filters.permissions,
     });
-    console.log('annotationIds', annotationIds);
+
+    setDocumentFilters({ annotationIds, filters: documentFilters.filters });
   };
 
   const renderMenu = (results, menuProps) => (
@@ -204,19 +222,19 @@ function FilterPopover({ session }) {
                   <Card.Subtitle className="mb-2 text-muted">
                     <ButtonGroup size="sm" aria-label="Basic example">
                       <Button
-                        variant={selectedPermissions === 0 ? 'primary' : 'outline-primary'}
+                        variant={documentFilters.filters.permissions === 0 ? 'primary' : 'outline-primary'}
                         onClick={() => { updateFilters('permissions', 0); }}
                       >
                         Mine
                       </Button>
                       <Button
-                        variant={selectedPermissions === 1 ? 'primary' : 'outline-primary'}
+                        variant={documentFilters.filters.permissions === 1 ? 'primary' : 'outline-primary'}
                         onClick={() => { updateFilters('permissions', 1); }}
                       >
                         Shared
                       </Button>
                       <Button
-                        variant={selectedPermissions === 2 ? 'primary' : 'outline-primary'}
+                        variant={documentFilters.filters.permissions === 2 ? 'primary' : 'outline-primary'}
                         onClick={() => { updateFilters('permissions', 2); }}
                       >
                         Shared With Owner
@@ -235,6 +253,7 @@ function FilterPopover({ session }) {
                           multiple
                           clearButton
                           highlightOnlyResult
+                          selected={UpdateSelectedTokensMatchesValue('annotatedBy', DeepCopyObj(documentFilters.filters.annotatedBy))}
                           onChange={(selected) => { updateFilters('annotatedBy', selected); }}
                           onMenuToggle={(isOpen) => {
                             if (isOpen) {
@@ -262,6 +281,7 @@ function FilterPopover({ session }) {
                           multiple
                           clearButton
                           highlightOnlyResult
+                          selected={UpdateSelectedTokensMatchesValue('byTags', DeepCopyObj(documentFilters.filters.byTags))}
                           onChange={(selected) => { updateFilters('byTags', selected); }}
                           onMenuToggle={(isOpen) => {
                             if (isOpen) {

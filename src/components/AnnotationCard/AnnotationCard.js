@@ -22,6 +22,7 @@ import { CheckCircleFill, TrashFill } from 'react-bootstrap-icons';
 import { postAnnotation, updateAnnotationById, deleteAnnotationById } from '../../utils/annotationUtil';
 
 import { FilterContext, FilterThemes } from '../../contexts/FilterContext';
+import DocumentAnnotationsContext from '../../contexts/DocumentAnnotationsContext';
 
 function addHoverEventListenersToAllHighlightedText() {
   // console.log('annotation-highlighted-text', $('.annotation-highlighted-text'));
@@ -102,8 +103,8 @@ function AnnotationCard({
   updateChannelAnnotationData,
   initializedAsEditing,
   user,
-  saveAnnotationChanges,
 }) {
+  const [channelAnnotations, setChannelAnnotations, saveAnnotationChanges] = useContext(DocumentAnnotationsContext);
   const [annotationData, setAnnotationData] = useState({ ...annotation });
   const [newAnnotationTags, setNewAnnotationTags] = useState(null);
   const [newAnnotationPermissions, setNewAnnotationPermissions] = useState(null);
@@ -178,7 +179,7 @@ function AnnotationCard({
         setEditing(false);
         // once the new annotation data saves properly on the database then we can update the annotation data
         setAnnotationData(newAnnotationData);
-        saveAnnotationChanges(newAnnotationData);
+        saveAnnotationChanges(newAnnotationData, side);
 
         // after setting the annotation data we need to reset the "new" data back to null
         setNewAnnotationTags(null);
@@ -210,7 +211,7 @@ function AnnotationCard({
         setEditing(false);
         // once the new annotation data saves properly on the database then we can update the annotation data
         setAnnotationData(newAnnotationData);
-        saveAnnotationChanges(newAnnotationData);
+        saveAnnotationChanges(newAnnotationData, side);
 
         // after setting the annotation data we need to reset the "new" data back to null
         setNewAnnotationTags(null);
