@@ -18,17 +18,7 @@ const SlateMediaEmbedElement = ({
           />
         </div>
       </div>
-      {children && children !== []
-        ? children
-        : (
-          <p data-slate-node="element" className="slate-p">
-            <span data-slate-node="text">
-              <span data-slate-leaf="true">
-                <span data-slate-zero-width="n" data-slate-length="0" />
-              </span>
-            </span>
-          </p>
-        )}
+      {children}
     </div>
   );
 };

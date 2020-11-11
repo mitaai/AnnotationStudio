@@ -224,10 +224,6 @@ const FigurePlugin = (options) => ({
   deserialize: deserializeFigure(options),
 });
 
-// const CustomMediaEmbedPlugin = (options) => ({
-//   renderElement: getRenderElement({ options. }),
-// });
-
 // Toolbar UI elements
 const BlockButton = ({ format, className, children }) => {
   const editor = useSlate();
