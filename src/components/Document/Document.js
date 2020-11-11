@@ -303,14 +303,13 @@ export default class Document extends React.Component {
       const {
         user,
         addAnnotationToChannels,
-        focusOnAnnotation,
-        deleteAnnotationFromChannels,
-        updateChannelAnnotationData,
         documentToAnnotate,
       } = this.props;
 
       const newAnnotation = {
         _id: rid,
+        new: true,
+        editing: true,
         type: 'Annotation',
         creator: {
           id: user.id,
@@ -350,25 +349,6 @@ export default class Document extends React.Component {
 
       addAnnotationToChannels(side, newAnnotation);
 
-      ReactDOM.render(<AnnotationCard
-        focusOnAnnotation={() => {
-          focusOnAnnotation(side, newAnnotation._id);
-        }}
-        deleteAnnotationFromChannels={deleteAnnotationFromChannels}
-        updateChannelAnnotationData={updateChannelAnnotationData}
-        key={newAnnotation._id}
-        side={side}
-        expanded={false}
-        initializedAsEditing
-        annotation={newAnnotation}
-        user={user}
-      />, document.getElementById(`new-annotation-holder-${side}`)); // eslint-disable-line no-undef
-      // after the new annotation has been added to the dom we need to remove it
-      // from the the "new-annotation-holder-${side}" and allow it to exist where
-      // all the other annoations exist. We do this by unwrapping it
-      $(`#${newAnnotation._id}`).unwrap(`#new-annotation-holder-${side}`);
-      // once we unwrap the annotation from its holder we need to add the holder back into the dom
-      $(`#annotation-channel-${side}`).prepend(`<div id='new-annotation-holder-${side}'></div>`);
       this.setState({ selectedTextToAnnotate: true });
     };
   }

@@ -92,7 +92,7 @@ function onlyUnique(value, index, self) {
   return self.indexOf(value) === index;
 }
 
-const AnnotationMatchesFilters = (user_email, a, filters) => AnnotatedByFilterMatch(a.creator.email, filters) && ByTagFilterMatchAndOperator(a.body.tags, filters) && ByPermissionsFilterMatch(user_email, a.creator.email, a.permissions, filters);
+const AnnotationMatchesFilters = (user_email, a, filters) => AnnotatedByFilterMatch(a.creator.email, filters) && ByTagFilterMatch(a.body.tags, filters) && ByPermissionsFilterMatch(user_email, a.creator.email, a.permissions, filters);
 
 const FilterAnnotations = (user_email, annotations, filters) => {
   const annotationIds = { left: [], right: [] };
@@ -163,7 +163,7 @@ const GenerateFilterOptions = (user_email, annotations, filters, filteredAnnotat
           filterOptions.byTags.push({
             id: tag,
             name: tag,
-            matches: GetNumberOfMatchesForThisTagAndOperator(user_email, annotations, filters, tag),
+            matches: GetNumberOfMatchesForThisTag(user_email, annotations, filters, tag),
           });
         }
       }

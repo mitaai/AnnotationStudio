@@ -1,5 +1,5 @@
 /* eslint-disable no-underscore-dangle */
-import { useEffect, useState } from 'react';
+import { useEffect, useContext } from 'react';
 
 import $ from 'jquery';
 
@@ -10,6 +10,8 @@ import {
   ButtonGroup,
   Button,
 } from 'react-bootstrap';
+
+import DocumentAnnotationsContext from '../../contexts/DocumentAnnotationsContext';
 
 import AnnotationCard from '../AnnotationCard';
 
@@ -86,10 +88,12 @@ function PlaceAnnotationsInCorrectSpot(annotations, side) {
 }
 
 const AnnotationChannel = ({
-  side, annotations, setAnnotationChannelLoaded, user, deleteAnnotationFromChannels, updateChannelAnnotationData, focusOnAnnotation, documentFilters,
+  side, setAnnotationChannelLoaded, user, deleteAnnotationFromChannels, focusOnAnnotation, documentFilters,
 }) => {
+  const [channelAnnotations, setChannelAnnotations, saveAnnotationChanges] = useContext(DocumentAnnotationsContext);
+  console.log('channelAnnotations', channelAnnotations);
   // first we filter annotations if there are any filters applied
-  let sortedAnnotations = annotations !== null ? annotations.filter((anno) => (documentFilters.annotationIds[side] !== null ? documentFilters.annotationIds[side].includes(anno._id) : true)) : [];
+  let sortedAnnotations = channelAnnotations[side] !== null ? channelAnnotations[side].filter((anno) => (documentFilters.annotationIds[side] !== null ? documentFilters.annotationIds[side].includes(anno._id) : true)) : [];
   // the first thing we need to is sort these anntotations by their position
   sortedAnnotations = sortedAnnotations.sort((a, b) => {
     if (a.position.top - b.position.top === 0) { // if the tops are the same then we have to distinguish which annotation comes first by who has the smaller left value
@@ -99,7 +103,7 @@ const AnnotationChannel = ({
   });
 
   useEffect(() => {
-    if (annotations !== null) {
+    if (channelAnnotations[side] !== null) {
       // after the channel renders we need to take these annotations and place them in their correct spot
       PlaceAnnotationsInCorrectSpot(sortedAnnotations, side);
       // after we have placed everything in the correct spot then the channel is fully loaded
@@ -115,7 +119,6 @@ const AnnotationChannel = ({
           <AnnotationCard
             focusOnAnnotation={() => { focusOnAnnotation(side, annotation._id); }}
             deleteAnnotationFromChannels={deleteAnnotationFromChannels}
-            updateChannelAnnotationData={updateChannelAnnotationData}
             key={annotation._id}
             side={side}
             expanded={false}
@@ -138,6 +141,6 @@ function shouldNotRender(prevProps, nextProps) {
   return nextProps.loaded; // if the channel has already loaded then it shouldn't rerender
 }
 
-const MemoAnnotationChannel = React.memo(AnnotationChannel, shouldNotRender);
+// const MemoAnnotationChannel = React.memo(AnnotationChannel, shouldNotRender);
 
-export default MemoAnnotationChannel;
+export default AnnotationChannel;

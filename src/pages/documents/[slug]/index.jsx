@@ -70,6 +70,10 @@ const adjustLine = (from, to, line) => {
   line.style.height = `${H}px`;
 };
 
+function DeepCopyObj(obj) {
+  return JSON.parse(JSON.stringify(obj));
+}
+
 
 const DocumentPage = (props) => {
   const {
@@ -144,9 +148,12 @@ const DocumentPage = (props) => {
       ? channelAnnotations[side].length
       : indexForNewAnnotation;
 
+
     // updating annotation channel data with new annotation
-    channelAnnotations[side].splice(indexForNewAnnotation, 0, newAnnotation);
-    setChannelAnnotations(channelAnnotations);
+
+    let newChannelAnnotations = DeepCopyObj(channelAnnotations);
+    newChannelAnnotations[side].splice(indexForNewAnnotation, 0, newAnnotation);
+    setChannelAnnotations(newChannelAnnotations);
   };
 
   const deleteAnnotationFromChannels = (side, annotationID) => {
@@ -154,18 +161,10 @@ const DocumentPage = (props) => {
       .findIndex(
         (annotation) => annotation._id === annotationID,
       );
-    channelAnnotations[side].splice(annotationIndex, 1);
-    setChannelAnnotations(channelAnnotations);
-  };
-
-
-  const updateChannelAnnotationData = (side, annotation) => {
-    const annotationIndex = channelAnnotations[side]
-      .findIndex(
-        (anno) => anno._id === annotation._id,
-      );
-    channelAnnotations[side][annotationIndex] = annotation;
-    setChannelAnnotations(channelAnnotations);
+     
+    let newChannelAnnotations = DeepCopyObj(channelAnnotations);
+    newChannelAnnotations[side].splice(annotationIndex, 1);
+    setChannelAnnotations(newChannelAnnotations);
   };
 
   const moveAnnotationsToCorrectSpotBasedOnFocus = (side, focusID) => {
@@ -253,7 +252,7 @@ const DocumentPage = (props) => {
       + tempTopAdjustment
       - adjustmentTopNumber;
     for (let i = focusIndex - 1; i >= 0; i -= 1) {
-      
+
       if (documentFilters.annotationIds[side] !== null) { // this means that there are filters applied to the document
         if (!documentFilters.annotationIds[side].includes(annos[i]._id)) { continue; }
       }
@@ -333,7 +332,6 @@ const DocumentPage = (props) => {
             <Col sm={3}>
               <AnnotationChannel
                 deleteAnnotationFromChannels={deleteAnnotationFromChannels}
-                updateChannelAnnotationData={updateChannelAnnotationData}
                 setAnnotationChannelLoaded={setAnnotationChannel1Loaded}
                 focusOnAnnotation={moveAnnotationsToCorrectSpotBasedOnFocus}
                 loaded={annotationChannel1Loaded}
@@ -356,9 +354,6 @@ const DocumentPage = (props) => {
                     annotations={annotations}
                     documentHighlightedAndLoaded={documentHighlightedAndLoaded}
                     addAnnotationToChannels={addAnnotationToChannels}
-                    deleteAnnotationFromChannels={deleteAnnotationFromChannels}
-                    updateChannelAnnotationData={updateChannelAnnotationData}
-                    focusOnAnnotation={moveAnnotationsToCorrectSpotBasedOnFocus}
                     annotateDocument={
                     (mySelector, annotationID) => {
                       highlightTextToAnnotate(mySelector, annotationID);
@@ -375,7 +370,6 @@ const DocumentPage = (props) => {
             <Col sm={3}>
               <AnnotationChannel
                 deleteAnnotationFromChannels={deleteAnnotationFromChannels}
-                updateChannelAnnotationData={updateChannelAnnotationData}
                 setAnnotationChannelLoaded={setAnnotationChannel2Loaded}
                 focusOnAnnotation={moveAnnotationsToCorrectSpotBasedOnFocus}
                 loaded={annotationChannel2Loaded}

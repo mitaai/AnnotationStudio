@@ -100,24 +100,20 @@ function AnnotationCard({
   annotation,
   focusOnAnnotation,
   deleteAnnotationFromChannels,
-  updateChannelAnnotationData,
-  initializedAsEditing,
   user,
+  newAnnotation,
 }) {
   const [channelAnnotations, setChannelAnnotations, saveAnnotationChanges] = useContext(DocumentAnnotationsContext);
   const [annotationData, setAnnotationData] = useState({ ...annotation });
   const [newAnnotationTags, setNewAnnotationTags] = useState(null);
   const [newAnnotationPermissions, setNewAnnotationPermissions] = useState(null);
-  const [newAnnotationText, setNewAnnotationText] = useState(initializedAsEditing !== undefined ? '' : null);
-  const [newAnnotation, setNewAnnotation] = useState(initializedAsEditing !== undefined ? initializedAsEditing : false);
+  const [newAnnotationText, setNewAnnotationText] = useState(annotation.editing !== undefined ? '' : null);
   const [cancelingAnnotation, setCancelingAnnotation] = useState(false);
   const [savingAnnotation, setSavingAnnotation] = useState(false);
   const [deletingAnnotation, setDeletingAnnotation] = useState(false);
-  const [editing, setEditing] = useState(initializedAsEditing !== undefined ? initializedAsEditing : false);
-  const [expanded, setExpanded] = useState(initializedAsEditing !== undefined ? initializedAsEditing : false);
-  const [updateFocusOfAnnotation, setUpdateFocusOfAnnotation] = useState(initializedAsEditing !== undefined ? initializedAsEditing : false);
+  const [expanded, setExpanded] = useState(annotation.editing);
+  const [updateFocusOfAnnotation, setUpdateFocusOfAnnotation] = useState(annotation.editing);
 
-  // const [filterContext, setFilterContext] = useContext(FilterContext);
   const filterContext = 'unfiltered';
   function AddClassActive(id) {
     // changing color of annotation
@@ -131,6 +127,11 @@ function AnnotationCard({
     $(`#${id}`).removeClass('active');
     // setting color of highlighted text back to default
     $(`.annotation-highlighted-text[annotation-id='${id}']`).removeClass('active');
+  }
+
+  function SetAndSaveAnnotationData(anno) {
+    setAnnotationData(anno);
+    saveAnnotationChanges(anno, side);
   }
 
   function SaveAnnotation() {
@@ -165,7 +166,7 @@ function AnnotationCard({
       newAnnotationData.body.value = newAnnotationText;
     }
 
-    if (newAnnotation) {
+    if (annotationData.new) {
       postAnnotation({
         creator: newAnnotationData.creator,
         permissions: newAnnotationData.permissions,
@@ -174,13 +175,11 @@ function AnnotationCard({
       }).then((response) => {
         newAnnotationData.db_id = response.insertedId;// the new annotation already has an id but this id relates to the
         newAnnotationData.modified = new Date();
+        newAnnotationData.new = false;
+        newAnnotationData.editing = false;
         setSavingAnnotation(false);
-        setNewAnnotation(false);
-        setEditing(false);
         // once the new annotation data saves properly on the database then we can update the annotation data
-        setAnnotationData(newAnnotationData);
-        saveAnnotationChanges(newAnnotationData, side);
-
+        SetAndSaveAnnotationData(newAnnotationData);
         // after setting the annotation data we need to reset the "new" data back to null
         setNewAnnotationTags(null);
         setNewAnnotationPermissions(null);
@@ -192,8 +191,6 @@ function AnnotationCard({
         // we need to save this new data to the "#document-container" dom element attribute 'annotations'
         // we also need to make the document selectable again
         $('#document-content-container').removeClass('unselectable');
-        // we need to add this new annotation data to the correct channel
-        updateChannelAnnotationData(side, newAnnotationData);
         // then after everything is done we will focus on the annotation so that things get shifted to their correct spots
         focusOnAnnotation();
       }).catch((err) => {
@@ -206,12 +203,11 @@ function AnnotationCard({
         newAnnotationData,
       ).then((response) => {
         newAnnotationData.modified = new Date();
+        newAnnotationData.editing = false;
+        newAnnotationData.new = false;
         setSavingAnnotation(false);
-        setNewAnnotation(false);
-        setEditing(false);
         // once the new annotation data saves properly on the database then we can update the annotation data
-        setAnnotationData(newAnnotationData);
-        saveAnnotationChanges(newAnnotationData, side);
+        SetAndSaveAnnotationData(newAnnotationData);
 
         // after setting the annotation data we need to reset the "new" data back to null
         setNewAnnotationTags(null);
@@ -229,13 +225,11 @@ function AnnotationCard({
   function CancelAnnotation() {
     if (cancelingAnnotation || savingAnnotation) { return; }// if we are already canceling the annotation then don't try to run the function again
 
-    if (newAnnotation) {
+    if (annotationData.new) {
       setCancelingAnnotation(true);
       // simulating the time it takes to delete the annotation from the database and make sure the connection is secure and worked properly
       setTimeout(() => {
         // if it is a new annotation then cancel should delete the annotation
-        // first we will remove the annotation from the ui
-        $(`#${annotationData._id}.annotation-card-container`).remove();
         // after we remove the annotation we need to remove the classes from the text that was highlighted and then make the document selectable again
         $('.text-currently-being-annotated.active').removeClass('text-currently-being-annotated active');
         // we also need to make the document selectable again
@@ -248,7 +242,8 @@ function AnnotationCard({
       setNewAnnotationPermissions(null);
       setNewAnnotationText(null);
       // if the annotation is not new then canceling should just return it to its previous state
-      setEditing(false);
+      annotationData.editing = false;
+      SetAndSaveAnnotationData(annotationData);
       setUpdateFocusOfAnnotation(true);
     }
   }
@@ -257,13 +252,8 @@ function AnnotationCard({
     if (deletingAnnotation || savingAnnotation) { return; }// if we are already canceling the annotation then don't try to run the function again
     setDeletingAnnotation(true);
     deleteAnnotationById(annotationData.db_id === undefined ? annotationData._id : annotationData.db_id).then((response) => {
-      console.log(response);
-      // now that it is removed from the data base we will first remove it from the ui and then remove it from the object that is keeping track of all the annotations
-      // now that we have removed the annotation from the data we need to remove it from the dom
-      $(`#${annotationData._id}.annotation-card-container`).remove();
-      // now we have to remove the highlight from any text that has the annotation-id of the annotation we just removed
+      // now that it is removed from the data base we will first remove any highlighted text related to the annotation remove it from the object that is keeping track of all the annotations
       $(`[annotation-id='${annotationData._id}']`).removeClass('annotation-highlighted-text');
-
       // we need to delete this annotation from the channel it is in
       deleteAnnotationFromChannels(side, annotationData._id);
     }).catch((err) => {
@@ -320,7 +310,7 @@ function AnnotationCard({
           <>
             <Card.Header className="annotation-header">
               <span className="float-left">{annotationData.creator.name}</span>
-              {editing ? (
+              {annotationData.editing ? (
                 <>
                   {newAnnotation ? (
                     <TrashFill
@@ -368,7 +358,7 @@ function AnnotationCard({
                         </Dropdown.Toggle>
 
                         <Dropdown.Menu className="annotation-more-options-dropdown-menu">
-                          <Dropdown.Item href="#/action-1" onClick={() => { setEditing(true); setUpdateFocusOfAnnotation(true); }}>Edit</Dropdown.Item>
+                          <Dropdown.Item href="#/action-1" onClick={() => { annotationData.editing = true; SetAndSaveAnnotationData(annotationData); setUpdateFocusOfAnnotation(true); }}>Edit</Dropdown.Item>
                           <Dropdown.Item href="#/action-2" onClick={DeleteAnnotation}>Delete</Dropdown.Item>
                         </Dropdown.Menu>
                       </Dropdown>
@@ -379,7 +369,7 @@ function AnnotationCard({
                 </>
               )}
             </Card.Header>
-            {editing
+            {annotationData.editing
               ? (
                 <>
                   <Form>
