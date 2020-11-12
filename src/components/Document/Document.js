@@ -497,13 +497,13 @@ export default class Document extends React.Component {
                 cursor: pointer;
             }
 
-            .annotation-highlighted-text {
+            .annotation-highlighted-text.filtered {
               background-color: rgba(255,255,10, 0.5);
               transition: background-color 0.5s;
             }
 
-            .annotation-highlighted-text.active,  .annotation-highlighted-text.active * {
-              border: 1px solid #616161;
+            .annotation-highlighted-text.active, .annotation-highlighted-text.active * {
+              /*border: 1px solid #616161;*/
             }
 
             #document-content-container.unselectable {

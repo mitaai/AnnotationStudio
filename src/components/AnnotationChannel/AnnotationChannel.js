@@ -90,8 +90,7 @@ function PlaceAnnotationsInCorrectSpot(annotations, side) {
 const AnnotationChannel = ({
   side, setAnnotationChannelLoaded, user, deleteAnnotationFromChannels, focusOnAnnotation, documentFilters,
 }) => {
-  const [channelAnnotations, setChannelAnnotations, saveAnnotationChanges] = useContext(DocumentAnnotationsContext);
-  console.log('channelAnnotations', channelAnnotations);
+  const [channelAnnotations] = useContext(DocumentAnnotationsContext);
   // first we filter annotations if there are any filters applied
   let sortedAnnotations = channelAnnotations[side] !== null ? channelAnnotations[side].filter((anno) => (documentFilters.annotationIds[side] !== null ? documentFilters.annotationIds[side].includes(anno._id) : true)) : [];
   // the first thing we need to is sort these anntotations by their position
@@ -106,6 +105,19 @@ const AnnotationChannel = ({
     if (channelAnnotations[side] !== null) {
       // after the channel renders we need to take these annotations and place them in their correct spot
       PlaceAnnotationsInCorrectSpot(sortedAnnotations, side);
+      // once everything is placed in the correct spot we need to make sure the correct text has the
+      // highlights it needs and remove highlights from text that doesn't need it
+      let displayTextHighlighted;
+      let anno;
+      for (let i = 0; i < channelAnnotations[side].length; i += 1) {
+        anno = channelAnnotations[side][i];
+        displayTextHighlighted = documentFilters.annotationIds[side] !== null ? documentFilters.annotationIds[side].includes(anno._id) : true;
+        if (displayTextHighlighted) {
+          $(`.annotation-highlighted-text[annotation-id='${anno._id}']`).addClass('filtered');
+        } else {
+          $(`.annotation-highlighted-text[annotation-id='${anno._id}']`).removeClass('filtered');
+        }
+      }
       // after we have placed everything in the correct spot then the channel is fully loaded
       setTimeout(setAnnotationChannelLoaded, 500, true);
     }
