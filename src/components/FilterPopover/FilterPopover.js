@@ -125,7 +125,7 @@ const GetNumberOfMatchesForThisTag = (user_email, annotations, currentFilters, f
 };
 
 const GetNumberOfMatchesForThisTagAndOperator = (user_email, annotations, currentFilters, filterTag) => {
-  let f = DeepCopyObj(currentFilters);
+  const f = DeepCopyObj(currentFilters);
   f.byTags.push(filterTag);
   const ids = FilterAnnotations(user_email, annotations, f);
   return ids.left.length + ids.right.length;
@@ -180,8 +180,6 @@ function FilterPopover({ session }) {
   const [byTagsTypeheadMarginTop, setByTagsTypeheadMarginTop] = useState(0);
   const [byTagsTypeheadMarginBottom, setByTagsTypeheadMarginBottom] = useState(0);
 
-  const [filtersApplied, setFiltersApplied] = useState(0);// 0 means no filters applied, 1 means filters applied, 2 means loading
-
   const filterOptions = GenerateFilterOptions(session.user.email, channelAnnotations, {
     annotatedBy: documentFilters.filters.annotatedBy.map((opt) => opt.email),
     byTags: documentFilters.filters.byTags.map((opt) => opt.name),
@@ -189,9 +187,26 @@ function FilterPopover({ session }) {
   }, documentFilters.annotationIds);
 
   const UpdateSelectedTokensMatchesValue = (type, selected) => selected.map((s) => {
-    const m = filterOptions[type].find((opt) => opt.id === s.id).matches;
-    return Object.assign(s, { matches: m });
+    const obj = filterOptions[type].find((opt) => opt.id === s.id);
+    return Object.assign(s, { matches: obj === undefined ? 0 : obj.matches });
   });
+
+  const FilterOnInit = () => {
+    const annotationIds = FilterAnnotations(session.user.email, channelAnnotations, {
+      annotatedBy: documentFilters.filters.annotatedBy.map((opt) => opt.email),
+      byTags: documentFilters.filters.byTags.map((opt) => opt.name),
+      permissions: documentFilters.filters.permissions,
+    });
+    setDocumentFilters({ annotationIds, filters: documentFilters.filters });
+  };
+
+  useEffect(() => {
+    if (documentFilters.filterOnInit) {
+      FilterOnInit();
+    }
+  });
+
+  
 
 
   const updateFilters = (type, selected) => {
@@ -330,23 +345,12 @@ function FilterPopover({ session }) {
         <Button
           id="btn-filter-annotation-well"
           size="sm"
-          variant={filtersApplied === 0 ? 'outline-primary' : 'outline-success'}
+          variant="outline-primary"
 
         >
           <Filter size="1em" />
-          {filtersApplied === 0 && <span>Filter</span>}
-          {filtersApplied === 1 && <span>Filters Applied</span>}
-          {filtersApplied === 2 && (
-          <>
-            <span>Filtering</span>
-            <Spinner
-              animation="border"
-              style={{
-                color: 'inherit !important', width: '1rem', height: '1rem', marginLeft: '5px',
-              }}
-            />
-          </>
-          )}
+          <span>Filter</span>
+
         </Button>
       </OverlayTrigger>
 

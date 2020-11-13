@@ -502,8 +502,8 @@ export default class Document extends React.Component {
               transition: background-color 0.5s;
             }
 
-            .annotation-highlighted-text.active, .annotation-highlighted-text.active * {
-              /*border: 1px solid #616161;*/
+            .annotation-highlighted-text.filtered.active, .annotation-highlighted-text.filtered.active * {
+              background-color: rgba(255, 194, 10, 0.5);
             }
 
             #document-content-container.unselectable {

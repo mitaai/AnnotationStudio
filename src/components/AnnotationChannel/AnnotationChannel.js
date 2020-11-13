@@ -107,6 +107,7 @@ const AnnotationChannel = ({
       PlaceAnnotationsInCorrectSpot(sortedAnnotations, side);
       // once everything is placed in the correct spot we need to make sure the correct text has the
       // highlights it needs and remove highlights from text that doesn't need it
+      console.log('useEffect', documentFilters.annotationIds[side]);
       let displayTextHighlighted;
       let anno;
       for (let i = 0; i < channelAnnotations[side].length; i += 1) {
@@ -125,7 +126,6 @@ const AnnotationChannel = ({
 
   return (
     <div id={`annotation-channel-${side}`}>
-      <div id={`new-annotation-holder-${side}`} />
       <div>
         {sortedAnnotations.map((annotation) => (
           <AnnotationCard
@@ -141,7 +141,7 @@ const AnnotationChannel = ({
       </div>
       <style jsx global>
         {`
-          
+
         `}
       </style>
     </div>

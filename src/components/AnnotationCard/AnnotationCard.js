@@ -21,8 +21,8 @@ import {
 import { CheckCircleFill, TrashFill } from 'react-bootstrap-icons';
 import { postAnnotation, updateAnnotationById, deleteAnnotationById } from '../../utils/annotationUtil';
 
-import { FilterContext, FilterThemes } from '../../contexts/FilterContext';
 import DocumentAnnotationsContext from '../../contexts/DocumentAnnotationsContext';
+import DocumentFiltersContext from '../../contexts/DocumentFiltersContext';
 
 function addHoverEventListenersToAllHighlightedText() {
   // console.log('annotation-highlighted-text', $('.annotation-highlighted-text'));
@@ -51,6 +51,10 @@ function addHoverEventListenersToAllHighlightedText() {
       $(`#${$(elmnt).attr('annotation-id')}`).removeClass('active');
     });
   });
+}
+
+function DeepCopyObj(obj) {
+  return JSON.parse(JSON.stringify(obj));
 }
 
 
@@ -104,6 +108,7 @@ function AnnotationCard({
   newAnnotation,
 }) {
   const [channelAnnotations, setChannelAnnotations, saveAnnotationChanges] = useContext(DocumentAnnotationsContext);
+  const [documentFilters, setDocumentFilters] = useContext(DocumentFiltersContext);
   const [annotationData, setAnnotationData] = useState({ ...annotation });
   const [newAnnotationTags, setNewAnnotationTags] = useState(null);
   const [newAnnotationPermissions, setNewAnnotationPermissions] = useState(null);
@@ -114,7 +119,6 @@ function AnnotationCard({
   const [expanded, setExpanded] = useState(annotation.editing);
   const [updateFocusOfAnnotation, setUpdateFocusOfAnnotation] = useState(annotation.editing);
 
-  const filterContext = 'unfiltered';
   function AddClassActive(id) {
     // changing color of annotation
     $(`#${id}`).addClass('active');
@@ -132,6 +136,7 @@ function AnnotationCard({
   function SetAndSaveAnnotationData(anno) {
     setAnnotationData(anno);
     saveAnnotationChanges(anno, side);
+    setDocumentFilters(Object.assign(DeepCopyObj(documentFilters), { filterOnInit: true }));
   }
 
   function SaveAnnotation() {
@@ -178,8 +183,6 @@ function AnnotationCard({
         newAnnotationData.new = false;
         newAnnotationData.editing = false;
         setSavingAnnotation(false);
-        // once the new annotation data saves properly on the database then we can update the annotation data
-        SetAndSaveAnnotationData(newAnnotationData);
         // after setting the annotation data we need to reset the "new" data back to null
         setNewAnnotationTags(null);
         setNewAnnotationPermissions(null);
@@ -191,6 +194,8 @@ function AnnotationCard({
         // we need to save this new data to the "#document-container" dom element attribute 'annotations'
         // we also need to make the document selectable again
         $('#document-content-container').removeClass('unselectable');
+        // once the new annotation data saves properly on the database then we can update the annotation data
+        SetAndSaveAnnotationData(newAnnotationData);
         // then after everything is done we will focus on the annotation so that things get shifted to their correct spots
         focusOnAnnotation();
       }).catch((err) => {
@@ -289,7 +294,7 @@ function AnnotationCard({
         onMouseOver={() => { AddClassActive(annotationData._id); }}
         onMouseOut={() => { RemoveClassActive(annotationData._id); }}
         className={`annotation-card-container ${newAnnotation ? 'new-annotation' : ''}`}
-        style={side === 'left' ? { left: '5px' } : { right: '5px' }}
+        style={side === 'left' ? { left: '50px' } : { right: '50px' }}
       >
         <div className="line1" />
         <div className="line2" />
@@ -436,17 +441,15 @@ function AnnotationCard({
               : (
                 <>
                   <ListGroup variant="flush" style={{ borderTop: 'none' }}>
-                    {annotationData.body.value.length > 0 ? (
-                      <ListGroup.Item className="annotation-body">
-                        {annotationData.body.value}
-                        <span
-                          style={{ margin: '0px 0px 0px 5px', color: '#007bff' }}
-                          onClick={() => { setExpanded(false); setUpdateFocusOfAnnotation(true); }}
-                        >
-                          show less
-                        </span>
-                      </ListGroup.Item>
-                    ) : ''}
+                    <ListGroup.Item className="annotation-body">
+                      {annotationData.body.value}
+                      <span
+                        style={{ margin: '0px 0px 0px 5px', color: '#007bff' }}
+                        onClick={() => { setExpanded(false); setUpdateFocusOfAnnotation(true); }}
+                      >
+                        show less
+                      </span>
+                    </ListGroup.Item>
                     {annotationData.body.tags.join('').length > 0 ? (
                       <>
                         <ListGroup.Item className="annotation-tags">
@@ -474,7 +477,7 @@ function AnnotationCard({
       )}
             >
               <Card.Header className="annotation-header" onClick={() => { setExpanded(true); }}>
-                <div className="truncated-annotation">{annotationData.body.value}</div>
+                <div className="truncated-annotation">{annotationData.body.value.length === 0 ? <span>&nbsp;</span> : annotationData.body.value}</div>
               </Card.Header>
             </OverlayTrigger>
           </>
@@ -518,16 +521,16 @@ function AnnotationCard({
 
 
         .annotation-card-container.active .line1, .annotation-card-container.active .line2 {
-            background-color: ${FilterThemes[filterContext].color};
+            background-color: rgba(255, 194, 10, 0.5);
             z-index: 3;
         }
 
         .annotation-card-container.active .annotation-pointer-background-left {
-            border-left-color: ${FilterThemes[filterContext].color};
+            border-left-color: rgba(255, 194, 10, 0.5);
         }
 
         .annotation-card-container.active .annotation-pointer-background-right {
-            border-right-color: ${FilterThemes[filterContext].color};
+            border-right-color: rgba(255, 194, 10, 0.5);
         }
 
         .annotation-card-container .form-group {
@@ -539,13 +542,13 @@ function AnnotationCard({
             cursor: pointer;
             border: 1px solid rgb(220, 220, 220);
             border-radius: 0px;
-            width: 100%;
+            width: calc(100% - 50px);
             transition: border-color 0.5s;
             transition: top 0.5s;
         }
 
         .annotation-card-container.active {
-            border: 1px solid ${FilterThemes[filterContext].color};
+            border: 1px solid rgba(255, 194, 10, 0.5);
         }
 
         .btn-save-annotation-edits {
