@@ -155,6 +155,7 @@ const DocumentPage = (props) => {
     let newChannelAnnotations = DeepCopyObj(channelAnnotations);
     newChannelAnnotations[side].splice(indexForNewAnnotation, 0, newAnnotation);
     setChannelAnnotations(newChannelAnnotations);
+    setDocumentFilters(Object.assign(DeepCopyObj(documentFilters), { filterOnInit: true }));
   };
 
   const deleteAnnotationFromChannels = (side, annotationID) => {

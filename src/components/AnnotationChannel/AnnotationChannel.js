@@ -12,6 +12,7 @@ import {
 } from 'react-bootstrap';
 
 import DocumentAnnotationsContext from '../../contexts/DocumentAnnotationsContext';
+import DocumentFiltersContext from '../../contexts/DocumentFiltersContext';
 
 import AnnotationCard from '../AnnotationCard';
 
@@ -88,9 +89,10 @@ function PlaceAnnotationsInCorrectSpot(annotations, side) {
 }
 
 const AnnotationChannel = ({
-  side, setAnnotationChannelLoaded, user, deleteAnnotationFromChannels, focusOnAnnotation, documentFilters,
+  side, setAnnotationChannelLoaded, user, deleteAnnotationFromChannels, focusOnAnnotation,
 }) => {
   const [channelAnnotations] = useContext(DocumentAnnotationsContext);
+  const [documentFilters, setDocumentFilters] = useContext(DocumentFiltersContext);
   // first we filter annotations if there are any filters applied
   let sortedAnnotations = channelAnnotations[side] !== null ? channelAnnotations[side].filter((anno) => (documentFilters.annotationIds[side] !== null ? documentFilters.annotationIds[side].includes(anno._id) : true)) : [];
   // the first thing we need to is sort these anntotations by their position
@@ -107,7 +109,6 @@ const AnnotationChannel = ({
       PlaceAnnotationsInCorrectSpot(sortedAnnotations, side);
       // once everything is placed in the correct spot we need to make sure the correct text has the
       // highlights it needs and remove highlights from text that doesn't need it
-      console.log('useEffect', documentFilters.annotationIds[side]);
       let displayTextHighlighted;
       let anno;
       for (let i = 0; i < channelAnnotations[side].length; i += 1) {

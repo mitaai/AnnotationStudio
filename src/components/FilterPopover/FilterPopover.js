@@ -192,6 +192,7 @@ function FilterPopover({ session }) {
   });
 
   const FilterOnInit = () => {
+    console.log('filter on init');
     const annotationIds = FilterAnnotations(session.user.email, channelAnnotations, {
       annotatedBy: documentFilters.filters.annotatedBy.map((opt) => opt.email),
       byTags: documentFilters.filters.byTags.map((opt) => opt.name),
