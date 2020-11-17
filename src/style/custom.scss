@@ -11,7 +11,7 @@ $theme-colors: (
 }
 
 #slate-container {
-  width: 670px;
+  width: 750px;
 }
 
 #slate-container-card {
@@ -60,6 +60,8 @@ $theme-colors: (
       height: 0.5rem;
     }
   }
+  display: flex;
+  justify-content: center;
   padding: 0.5rem 10px 0.5rem;
   border-top-left-radius: 0.25rem;
   border-top-right-radius: 0.25rem;
