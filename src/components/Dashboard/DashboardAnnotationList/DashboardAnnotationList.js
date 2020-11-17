@@ -8,6 +8,7 @@ import { format } from 'date-fns';
 import LoadingSpinner from '../../LoadingSpinner';
 import { getSharedAnnotations, getOwnAnnotations } from '../../../utils/annotationUtil';
 import { getGroupNameById } from '../../../utils/groupUtil';
+import { FirstNameLastInitial } from '../../../utils/nameUtil';
 
 const DashboardAnnotationList = ({
   session,
@@ -15,7 +16,7 @@ const DashboardAnnotationList = ({
   setAlerts,
 }) => {
   const [groupState, setGroupState] = useState({});
-  const [key, setKey] = useState('shared');
+  const [key, setKey] = useState('mine');
   const [listLoading, setListLoading] = useState(true);
   const [annotations, setAnnotations] = useState([]);
 
@@ -72,38 +73,55 @@ const DashboardAnnotationList = ({
         <LoadingSpinner />
       )}
       {!listLoading && annotations && annotations.length > 0 && (
-      <ListGroup>
-        {annotations.sort((a, b) => new Date(b.created) - new Date(a.created)).map(
-          (annotation) => (
-            <ListGroup.Item key={annotation._id}>
-              <Row>
-                <Col>
-                  <Link href={`/documents/${annotation.target.document.slug}`}>{annotation.target.document.title}</Link>
-                </Col>
-                <Col className="text-right">
-                  {annotation.permissions.groups && annotation.permissions.groups.length > 0 && (
-                  <Badge
-                    variant="info"
-                    key={annotation.permissions.groups.sort()[0]}
-                    className="mr-2"
-                  >
-                    {groupState[annotation.permissions.groups.sort()[0]]}
-                  </Badge>
-                  )}
-                  <>
-                    {format(new Date(annotation.created), 'MM/dd/yyyy')}
-                  </>
-                </Col>
-              </Row>
-            </ListGroup.Item>
-          ),
-        )}
-        <ListGroup.Item style={{ fontWeight: 'bold' }} key="all-docs">
+      <>
+        <ListGroup>
+          {annotations.sort((a, b) => new Date(b.created) - new Date(a.created)).map(
+            (annotation) => (
+              <ListGroup.Item key={annotation._id}>
+                <Row>
+                  <Col className="ellipsis" xl={8}>
+                    <Link href={`/documents/${annotation.target.document.slug}?mine=${key === 'mine'}#${annotation._id}`}>
+                      {annotation.target.selector.exact}
+                    </Link>
+                  </Col>
+                  <Col className="text-right" xl={4}>
+                    {annotation.permissions.groups && annotation.permissions.groups.length > 0 && (
+                    <Badge
+                      variant="info"
+                      key={annotation.permissions.groups.sort()[0]}
+                      className="mr-2"
+                    >
+                      {groupState[annotation.permissions.groups.sort()[0]]}
+                    </Badge>
+                    )}
+                    <small style={{ whiteSpace: 'nowrap' }}>{format(new Date(annotation.created), 'Ppp')}</small>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col className="paragraph-ellipsis">
+                    {annotation.body.value}
+                  </Col>
+                </Row>
+                <Row>
+                  <Col>
+                    <small className="text-muted">
+                      {annotation.target.document.title}
+                      {' ('}
+                      {FirstNameLastInitial(annotation.creator.name)}
+                      )
+                    </small>
+                  </Col>
+                </Row>
+              </ListGroup.Item>
+            ),
+          )}
+        </ListGroup>
+        <Card.Footer style={{ fontWeight: 'bold', borderTop: 0 }} key="all-annotations">
           <Link href={`/annotations?tab=${key}`} disabled>
             {`See all ${key === 'shared' ? key : 'created'} annotations...`}
           </Link>
-        </ListGroup.Item>
-      </ListGroup>
+        </Card.Footer>
+      </>
       )}
       {!listLoading && (!annotations || annotations.length === 0) && (
         <Card.Body>
