@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+/* eslint-disable react/jsx-props-no-spreading */
+import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import fetch from 'unfetch';
 import { Formik, Field } from 'formik';
@@ -8,14 +9,35 @@ import {
 import * as yup from 'yup';
 import slugify from '@sindresorhus/slugify';
 import cryptoRandomString from 'crypto-random-string';
-import { Dropdown } from 'semantic-ui-react';
-import QuillNoSSRWrapper from '../QuillNoSSRWrapper';
+import { createEditor } from 'slate';
+import {
+  Slate, withReact,
+} from 'slate-react';
+import {
+  DEFAULTS_LIST,
+  DEFAULTS_PARAGRAPH,
+  DEFAULTS_TABLE,
+  EditablePlugins,
+  deserializeHTMLToDocument,
+  pipe,
+  serializeHTMLFromNodes,
+  withDeserializeHTML,
+  withImageUpload,
+  withInlineVoid,
+  withList,
+  withMarks,
+  withTable,
+} from '@udecode/slate-plugins';
+import { withHistory } from 'slate-history';
+import { Dropdown as SemanticUIDropdown } from 'semantic-ui-react';
 import SemanticField from '../SemanticField';
 import DocumentMetadata from '../DocumentMetadata';
 import DocumentStatusSelect from '../DocumentStatusSelect';
 import { deleteDocumentById } from '../../utils/docUtil';
 import ConfirmationDialog from '../ConfirmationDialog';
 import { updateAllAnnotationsOnDocument } from '../../utils/annotationUtil';
+import { plugins } from '../../utils/slateUtil';
+import SlateToolbar from '../SlateToolbar';
 
 const DocumentForm = ({
   session,
@@ -28,13 +50,29 @@ const DocumentForm = ({
   const handleCloseModal = () => setShowModal(false);
   const handleShowModal = () => setShowModal(true);
 
+  const withPlugins = [
+    withReact,
+    withHistory,
+    withImageUpload(),
+    withInlineVoid({ plugins }),
+    withList(DEFAULTS_LIST),
+    withMarks(),
+    withTable(DEFAULTS_TABLE),
+    withDeserializeHTML({ plugins }),
+  ];
+  const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
+
   const createDocument = async (values) => {
     const slug = `${slugify(values.title)}-${cryptoRandomString({ length: 5, type: 'hex' })}`;
     const postUrl = '/api/document';
+    const valuesWithSerializedText = {
+      ...values,
+      text: serializeHTMLFromNodes({ plugins, nodes: values.text }),
+    };
     const res = await fetch(postUrl, {
       method: 'POST',
       body: JSON.stringify({
-        ...values,
+        ...valuesWithSerializedText,
         slug,
       }),
       headers: {
@@ -51,49 +89,53 @@ const DocumentForm = ({
   const editDocument = async (values) => {
     const { id, slug } = data;
     const patchUrl = `/api/document/${id}`;
+    const valuesWithSerializedText = {
+      ...values,
+      text: serializeHTMLFromNodes({ plugins, nodes: values.text }),
+    };
     const res = await fetch(patchUrl, {
       method: 'PATCH',
-      body: JSON.stringify(values),
+      body: JSON.stringify(valuesWithSerializedText),
       headers: {
         'Content-Type': 'application/json',
       },
     });
     if (res.status === 200) {
       await res.json();
-      const documentToUpdate = { ...values, slug };
+      const documentToUpdate = { ...valuesWithSerializedText, slug };
       return Promise.resolve(await updateAllAnnotationsOnDocument(documentToUpdate));
     }
     return Promise.reject(Error(`Unable to edit document: error ${res.status} received from server`));
   };
 
-  const getInitialValues = (mode === 'edit' && data) ? data : {
-    text: '',
-    resourceType: 'Book',
-    rightsStatus: 'Copyrighted',
-    title: '',
-    groups: [''],
-    state: 'draft',
-  };
-  const quillModules = {
-    toolbar: [
-      [{ header: [1, 2, false] }],
-      ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-      [{ list: 'ordered' }, { list: 'bullet' }, { indent: '-1' }, { indent: '+1' }],
-      ['link', 'image'],
-      ['clean'],
-    ],
-  };
-
-  const quillFormats = [
-    'header',
-    'bold', 'italic', 'underline', 'strike', 'blockquote',
-    'list', 'bullet', 'indent',
-    'link', 'image',
+  // eslint-disable-next-line no-undef
+  const txtHtml = (mode === 'edit' && data) ? new DOMParser().parseFromString(data.text, 'text/html') : undefined;
+  const slateInitialValue = [
+    {
+      children: [{ text: '' }],
+      type: DEFAULTS_PARAGRAPH.p.type,
+    },
   ];
+  const [slateValue, setSlateValue] = (mode === 'edit' && data)
+    ? useState(deserializeHTMLToDocument({ plugins, element: txtHtml.body }))
+    : useState(slateInitialValue);
+
+  const getInitialValues = (mode === 'edit' && data)
+    ? {
+      ...data,
+      text: deserializeHTMLToDocument({ plugins, element: txtHtml.body }),
+    }
+    : {
+      text: slateInitialValue,
+      resourceType: 'Book',
+      rightsStatus: 'Copyrighted',
+      title: '',
+      groups: [''],
+      state: 'draft',
+    };
 
   const schema = yup.object({
     title: yup.string().required('Required'),
-    text: yup.string().required('Required'),
     resourceType: yup.string().required('Required'),
     rightsStatus: yup.string().required('Required'),
     state: yup.string().required('Required'),
@@ -144,18 +186,30 @@ const DocumentForm = ({
                   <Card.Header>
                     <Card.Title>Paste or type directly into the form</Card.Title>
                   </Card.Header>
-                  <Card.Body>
-                    <Field name="text">
-                      {({ field }) => (
-                        <QuillNoSSRWrapper
-                          theme="snow"
-                          modules={quillModules}
-                          formats={quillFormats}
-                          value={field.value}
-                          onChange={field.onChange(field.name)}
-                        />
-                      )}
-                    </Field>
+                  <Card.Body id="slate-container-card">
+                    <div id="slate-container">
+                      <Field name="text">
+                        {({ field }) => (
+                          <Slate
+                            editor={editor}
+                            value={slateValue}
+                            onChange={(value) => {
+                              setSlateValue(value);
+                              props.setFieldValue(field.name, value);
+                            }}
+                          >
+                            <SlateToolbar />
+                            <EditablePlugins
+                              plugins={plugins}
+                              placeholder="Paste or type here"
+                              id={field.name}
+                              className="slate-editor"
+                              style={{ minHeight: 300 }}
+                            />
+                          </Slate>
+                        )}
+                      </Field>
+                    </div>
                   </Card.Body>
                 </Card>
               </Col>
@@ -207,7 +261,7 @@ const DocumentForm = ({
                         Select the group(s) to which you wish to assign this document.
                         <SemanticField
                           name="groups"
-                          component={Dropdown}
+                          component={SemanticUIDropdown}
                           className="mt-2"
                           placeholder="Groups"
                           fluid
