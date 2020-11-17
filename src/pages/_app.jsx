@@ -6,7 +6,6 @@ import 'semantic-ui-css/components/transition.min.css';
 import 'semantic-ui-css/components/label.min.css';
 import 'semantic-ui-css/components/icon.min.css';
 import '../style/custom.scss';
-import 'react-quill/dist/quill.snow.css';
 
 export default function MyApp({ Component, pageProps }) {
   return (

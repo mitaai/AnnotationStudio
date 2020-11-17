@@ -303,14 +303,13 @@ export default class Document extends React.Component {
       const {
         user,
         addAnnotationToChannels,
-        focusOnAnnotation,
-        deleteAnnotationFromChannels,
-        updateChannelAnnotationData,
         documentToAnnotate,
       } = this.props;
 
       const newAnnotation = {
         _id: rid,
+        new: true,
+        editing: true,
         type: 'Annotation',
         creator: {
           id: user.id,
@@ -319,7 +318,8 @@ export default class Document extends React.Component {
         },
         permissions: {
           groups: [],
-          documentOwner: documentToAnnotate.owner === user.id,
+          documentOwner: false,
+          private: true,
         },
         created: undefined,
         modified: undefined,
@@ -349,25 +349,6 @@ export default class Document extends React.Component {
 
       addAnnotationToChannels(side, newAnnotation);
 
-      ReactDOM.render(<AnnotationCard
-        focusOnAnnotation={() => {
-          focusOnAnnotation(side, newAnnotation._id);
-        }}
-        deleteAnnotationFromChannels={deleteAnnotationFromChannels}
-        updateChannelAnnotationData={updateChannelAnnotationData}
-        key={newAnnotation._id}
-        side={side}
-        expanded={false}
-        initializedAsEditing
-        annotation={newAnnotation}
-        user={user}
-      />, document.getElementById(`new-annotation-holder-${side}`)); // eslint-disable-line no-undef
-      // after the new annotation has been added to the dom we need to remove it
-      // from the the "new-annotation-holder-${side}" and allow it to exist where
-      // all the other annoations exist. We do this by unwrapping it
-      $(`#${newAnnotation._id}`).unwrap(`#new-annotation-holder-${side}`);
-      // once we unwrap the annotation from its holder we need to add the holder back into the dom
-      $(`#annotation-channel-${side}`).prepend(`<div id='new-annotation-holder-${side}'></div>`);
       this.setState({ selectedTextToAnnotate: true });
     };
   }
@@ -516,13 +497,13 @@ export default class Document extends React.Component {
                 cursor: pointer;
             }
 
-            .annotation-highlighted-text {
-              background-color: ${FilterThemes.filtered.highlight};
+            .annotation-highlighted-text.filtered {
+              background-color: rgba(255,255,10, 0.5);
               transition: background-color 0.5s;
             }
 
-            .annotation-highlighted-text.active,  .annotation-highlighted-text.active * {
-              background-color: rgba(0, 123, 255, 0.5) !important;
+            .annotation-highlighted-text.filtered.active, .annotation-highlighted-text.filtered.active * {
+              background-color: rgba(255, 194, 10, 0.5);
             }
 
             #document-content-container.unselectable {

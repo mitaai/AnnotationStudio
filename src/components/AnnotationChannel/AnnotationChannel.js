@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+/* eslint-disable no-underscore-dangle */
+import { useEffect, useContext } from 'react';
 
 import $ from 'jquery';
 
@@ -9,6 +10,9 @@ import {
   ButtonGroup,
   Button,
 } from 'react-bootstrap';
+
+import DocumentAnnotationsContext from '../../contexts/DocumentAnnotationsContext';
+import DocumentFiltersContext from '../../contexts/DocumentFiltersContext';
 
 import AnnotationCard from '../AnnotationCard';
 
@@ -85,23 +89,37 @@ function PlaceAnnotationsInCorrectSpot(annotations, side) {
 }
 
 const AnnotationChannel = ({
-  side, annotations, setAnnotationChannelLoaded, user, deleteAnnotationFromChannels, updateChannelAnnotationData, focusOnAnnotation,
+  side, setAnnotationChannelLoaded, user, deleteAnnotationFromChannels, focusOnAnnotation,
 }) => {
-  let sortedAnnotations = [];
-  if (annotations !== null) {
-    // the first thing we need to is sort these anntotations by their position
-    sortedAnnotations = annotations.sort((a, b) => {
-      if (a.position.top - b.position.top === 0) { // if the tops are the same then we have to distinguish which annotation comes first by who has the smaller left value
-        return a.position.left - b.position.left;
-      }
-      return a.position.top - b.position.top;
-    });
-  }
+  const [channelAnnotations] = useContext(DocumentAnnotationsContext);
+  const [documentFilters, setDocumentFilters] = useContext(DocumentFiltersContext);
+  // first we filter annotations if there are any filters applied
+  let sortedAnnotations = channelAnnotations[side] !== null ? channelAnnotations[side].filter((anno) => (documentFilters.annotationIds[side] !== null ? documentFilters.annotationIds[side].includes(anno._id) || anno.new : true)) : [];
+  // the first thing we need to is sort these anntotations by their position
+  sortedAnnotations = sortedAnnotations.sort((a, b) => {
+    if (a.position.top - b.position.top === 0) { // if the tops are the same then we have to distinguish which annotation comes first by who has the smaller left value
+      return a.position.left - b.position.left;
+    }
+    return a.position.top - b.position.top;
+  });
 
   useEffect(() => {
-    if (annotations !== null) {
+    if (channelAnnotations[side] !== null) {
       // after the channel renders we need to take these annotations and place them in their correct spot
       PlaceAnnotationsInCorrectSpot(sortedAnnotations, side);
+      // once everything is placed in the correct spot we need to make sure the correct text has the
+      // highlights it needs and remove highlights from text that doesn't need it
+      let displayTextHighlighted;
+      let anno;
+      for (let i = 0; i < channelAnnotations[side].length; i += 1) {
+        anno = channelAnnotations[side][i];
+        displayTextHighlighted = documentFilters.annotationIds[side] !== null ? documentFilters.annotationIds[side].includes(anno._id) : true;
+        if (displayTextHighlighted) {
+          $(`.annotation-highlighted-text[annotation-id='${anno._id}']`).addClass('filtered');
+        } else {
+          $(`.annotation-highlighted-text[annotation-id='${anno._id}']`).removeClass('filtered');
+        }
+      }
       // after we have placed everything in the correct spot then the channel is fully loaded
       setTimeout(setAnnotationChannelLoaded, 500, true);
     }
@@ -109,13 +127,11 @@ const AnnotationChannel = ({
 
   return (
     <div id={`annotation-channel-${side}`}>
-      <div id={`new-annotation-holder-${side}`} />
       <div>
         {sortedAnnotations.map((annotation) => (
           <AnnotationCard
             focusOnAnnotation={() => { focusOnAnnotation(side, annotation._id); }}
             deleteAnnotationFromChannels={deleteAnnotationFromChannels}
-            updateChannelAnnotationData={updateChannelAnnotationData}
             key={annotation._id}
             side={side}
             expanded={false}
@@ -126,7 +142,7 @@ const AnnotationChannel = ({
       </div>
       <style jsx global>
         {`
-          
+
         `}
       </style>
     </div>
@@ -134,9 +150,10 @@ const AnnotationChannel = ({
 };
 
 function shouldNotRender(prevProps, nextProps) {
+  return false;
   return nextProps.loaded; // if the channel has already loaded then it shouldn't rerender
 }
 
-const MemoAnnotationChannel = React.memo(AnnotationChannel, shouldNotRender);
+// const MemoAnnotationChannel = React.memo(AnnotationChannel, shouldNotRender);
 
-export default MemoAnnotationChannel;
+export default AnnotationChannel;
