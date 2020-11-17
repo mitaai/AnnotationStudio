@@ -21,7 +21,8 @@ import {
 import { CheckCircleFill, TrashFill } from 'react-bootstrap-icons';
 import { postAnnotation, updateAnnotationById, deleteAnnotationById } from '../../utils/annotationUtil';
 
-import { FilterContext, FilterThemes } from '../../contexts/FilterContext';
+import DocumentAnnotationsContext from '../../contexts/DocumentAnnotationsContext';
+import DocumentFiltersContext from '../../contexts/DocumentFiltersContext';
 
 function addHoverEventListenersToAllHighlightedText() {
   // console.log('annotation-highlighted-text', $('.annotation-highlighted-text'));
@@ -50,6 +51,10 @@ function addHoverEventListenersToAllHighlightedText() {
       $(`#${$(elmnt).attr('annotation-id')}`).removeClass('active');
     });
   });
+}
+
+function DeepCopyObj(obj) {
+  return JSON.parse(JSON.stringify(obj));
 }
 
 
@@ -99,25 +104,24 @@ function AnnotationCard({
   annotation,
   focusOnAnnotation,
   deleteAnnotationFromChannels,
-  updateChannelAnnotationData,
-  initializedAsEditing,
   user,
+  newAnnotation,
 }) {
+  const [channelAnnotations, setChannelAnnotations, saveAnnotationChanges] = useContext(DocumentAnnotationsContext);
+  const [documentFilters, setDocumentFilters] = useContext(DocumentFiltersContext);
   const [annotationData, setAnnotationData] = useState({ ...annotation });
   const [newAnnotationTags, setNewAnnotationTags] = useState(null);
   const [newAnnotationPermissions, setNewAnnotationPermissions] = useState(null);
-  const [newAnnotationText, setNewAnnotationText] = useState(initializedAsEditing !== undefined ? '' : null);
-  const [newAnnotation, setNewAnnotation] = useState(initializedAsEditing !== undefined ? initializedAsEditing : false);
+  const [newAnnotationText, setNewAnnotationText] = useState(annotation.editing !== undefined ? '' : null);
   const [cancelingAnnotation, setCancelingAnnotation] = useState(false);
   const [savingAnnotation, setSavingAnnotation] = useState(false);
   const [deletingAnnotation, setDeletingAnnotation] = useState(false);
-  const [editing, setEditing] = useState(initializedAsEditing !== undefined ? initializedAsEditing : false);
-  const [expanded, setExpanded] = useState(initializedAsEditing !== undefined ? initializedAsEditing : false);
-  const [updateFocusOfAnnotation, setUpdateFocusOfAnnotation] = useState(initializedAsEditing !== undefined ? initializedAsEditing : false);
+  const [expanded, setExpanded] = useState(annotation.editing);
+  const [updateFocusOfAnnotation, setUpdateFocusOfAnnotation] = useState(annotation.editing);
 
-  // const [filterContext, setFilterContext] = useContext(FilterContext);
-  const filterContext = 'unfiltered';
   function AddClassActive(id) {
+    // remove active from other annotations
+    $('.annotation-card-container').removeClass('active');
     // changing color of annotation
     $(`#${id}`).addClass('active');
     // changing color of highlighted text
@@ -129,6 +133,12 @@ function AnnotationCard({
     $(`#${id}`).removeClass('active');
     // setting color of highlighted text back to default
     $(`.annotation-highlighted-text[annotation-id='${id}']`).removeClass('active');
+  }
+
+  function SetAndSaveAnnotationData(anno) {
+    setAnnotationData(anno);
+    saveAnnotationChanges(anno, side);
+    setDocumentFilters(Object.assign(DeepCopyObj(documentFilters), { filterOnInit: true }));
   }
 
   function SaveAnnotation() {
@@ -144,15 +154,18 @@ function AnnotationCard({
       if (newAnnotationPermissions === 0) {
         // user wants the annotation to be private
         newAnnotationData.permissions.groups = [];
+        newAnnotationData.permissions.private = true;
         newAnnotationData.permissions.documentOwner = false;
       } else if (newAnnotationPermissions === 1) {
         // user wants the annotation to be shared with groups
         // getting the intersection between the groups that have access to this specific document and the groups that the user is in
         newAnnotationData.permissions.groups = newAnnotationData.target.document.groups.filter((value) => (user.groups.indexOf(value) != -1));
         newAnnotationData.permissions.documentOwner = false;
+        newAnnotationData.permissions.private = false;
       } else if (newAnnotationPermissions === 2) {
         // user wants annotation to be shared with document owner only
         newAnnotationData.permissions.groups = [];
+        newAnnotationData.permissions.private = false;
         newAnnotationData.permissions.documentOwner = true;
       }
     }
@@ -160,7 +173,7 @@ function AnnotationCard({
       newAnnotationData.body.value = newAnnotationText;
     }
 
-    if (newAnnotation) {
+    if (annotationData.new) {
       postAnnotation({
         creator: newAnnotationData.creator,
         permissions: newAnnotationData.permissions,
@@ -169,12 +182,9 @@ function AnnotationCard({
       }).then((response) => {
         newAnnotationData.db_id = response.insertedId;// the new annotation already has an id but this id relates to the
         newAnnotationData.modified = new Date();
+        newAnnotationData.new = false;
+        newAnnotationData.editing = false;
         setSavingAnnotation(false);
-        setNewAnnotation(false);
-        setEditing(false);
-        // once the new annotation data saves properly on the database then we can update the annotation data
-        setAnnotationData(newAnnotationData);
-
         // after setting the annotation data we need to reset the "new" data back to null
         setNewAnnotationTags(null);
         setNewAnnotationPermissions(null);
@@ -186,8 +196,8 @@ function AnnotationCard({
         // we need to save this new data to the "#document-container" dom element attribute 'annotations'
         // we also need to make the document selectable again
         $('#document-content-container').removeClass('unselectable');
-        // we need to add this new annotation data to the correct channel
-        updateChannelAnnotationData(side, newAnnotationData);
+        // once the new annotation data saves properly on the database then we can update the annotation data
+        SetAndSaveAnnotationData(newAnnotationData);
         // then after everything is done we will focus on the annotation so that things get shifted to their correct spots
         focusOnAnnotation();
       }).catch((err) => {
@@ -200,11 +210,11 @@ function AnnotationCard({
         newAnnotationData,
       ).then((response) => {
         newAnnotationData.modified = new Date();
+        newAnnotationData.editing = false;
+        newAnnotationData.new = false;
         setSavingAnnotation(false);
-        setNewAnnotation(false);
-        setEditing(false);
         // once the new annotation data saves properly on the database then we can update the annotation data
-        setAnnotationData(newAnnotationData);
+        SetAndSaveAnnotationData(newAnnotationData);
 
         // after setting the annotation data we need to reset the "new" data back to null
         setNewAnnotationTags(null);
@@ -222,13 +232,11 @@ function AnnotationCard({
   function CancelAnnotation() {
     if (cancelingAnnotation || savingAnnotation) { return; }// if we are already canceling the annotation then don't try to run the function again
 
-    if (newAnnotation) {
+    if (annotationData.new) {
       setCancelingAnnotation(true);
       // simulating the time it takes to delete the annotation from the database and make sure the connection is secure and worked properly
       setTimeout(() => {
         // if it is a new annotation then cancel should delete the annotation
-        // first we will remove the annotation from the ui
-        $(`#${annotationData._id}.annotation-card-container`).remove();
         // after we remove the annotation we need to remove the classes from the text that was highlighted and then make the document selectable again
         $('.text-currently-being-annotated.active').removeClass('text-currently-being-annotated active');
         // we also need to make the document selectable again
@@ -241,7 +249,8 @@ function AnnotationCard({
       setNewAnnotationPermissions(null);
       setNewAnnotationText(null);
       // if the annotation is not new then canceling should just return it to its previous state
-      setEditing(false);
+      annotationData.editing = false;
+      SetAndSaveAnnotationData(annotationData);
       setUpdateFocusOfAnnotation(true);
     }
   }
@@ -250,13 +259,8 @@ function AnnotationCard({
     if (deletingAnnotation || savingAnnotation) { return; }// if we are already canceling the annotation then don't try to run the function again
     setDeletingAnnotation(true);
     deleteAnnotationById(annotationData.db_id === undefined ? annotationData._id : annotationData.db_id).then((response) => {
-      console.log(response);
-      // now that it is removed from the data base we will first remove it from the ui and then remove it from the object that is keeping track of all the annotations
-      // now that we have removed the annotation from the data we need to remove it from the dom
-      $(`#${annotationData._id}.annotation-card-container`).remove();
-      // now we have to remove the highlight from any text that has the annotation-id of the annotation we just removed
+      // now that it is removed from the data base we will first remove any highlighted text related to the annotation remove it from the object that is keeping track of all the annotations
       $(`[annotation-id='${annotationData._id}']`).removeClass('annotation-highlighted-text');
-
       // we need to delete this annotation from the channel it is in
       deleteAnnotationFromChannels(side, annotationData._id);
     }).catch((err) => {
@@ -292,7 +296,7 @@ function AnnotationCard({
         onMouseOver={() => { AddClassActive(annotationData._id); }}
         onMouseOut={() => { RemoveClassActive(annotationData._id); }}
         className={`annotation-card-container ${newAnnotation ? 'new-annotation' : ''}`}
-        style={side === 'left' ? { left: '5px' } : { right: '5px' }}
+        style={side === 'left' ? { left: '50px' } : { right: '50px' }}
       >
         <div className="line1" />
         <div className="line2" />
@@ -313,7 +317,7 @@ function AnnotationCard({
           <>
             <Card.Header className="annotation-header">
               <span className="float-left">{annotationData.creator.name}</span>
-              {editing ? (
+              {annotationData.editing ? (
                 <>
                   {newAnnotation ? (
                     <TrashFill
@@ -361,7 +365,7 @@ function AnnotationCard({
                         </Dropdown.Toggle>
 
                         <Dropdown.Menu className="annotation-more-options-dropdown-menu">
-                          <Dropdown.Item href="#/action-1" onClick={() => { setEditing(true); setUpdateFocusOfAnnotation(true); }}>Edit</Dropdown.Item>
+                          <Dropdown.Item href="#/action-1" onClick={() => { annotationData.editing = true; SetAndSaveAnnotationData(annotationData); setUpdateFocusOfAnnotation(true); }}>Edit</Dropdown.Item>
                           <Dropdown.Item href="#/action-2" onClick={DeleteAnnotation}>Delete</Dropdown.Item>
                         </Dropdown.Menu>
                       </Dropdown>
@@ -372,7 +376,7 @@ function AnnotationCard({
                 </>
               )}
             </Card.Header>
-            {editing
+            {annotationData.editing
               ? (
                 <>
                   <Form>
@@ -409,7 +413,7 @@ function AnnotationCard({
                           <Button
                             onClick={() => { handleAnnotationPermissionsChange(0); }}
                             // eslint-disable-next-line no-nested-ternary
-                            variant={newAnnotationPermissions !== null ? (newAnnotationPermissions === 0 ? 'primary' : 'outline-primary') : (!annotationData.permissions.documentOwner && annotationData.permissions.groups.length === 0 ? 'primary' : 'outline-primary')}
+                            variant={newAnnotationPermissions !== null ? (newAnnotationPermissions === 0 ? 'primary' : 'outline-primary') : (annotationData.permissions.private ? 'primary' : 'outline-primary')}
                             style={{ fontSize: '10px' }}
                           >
                             Private
@@ -417,7 +421,7 @@ function AnnotationCard({
                           <Button
                             onClick={() => { handleAnnotationPermissionsChange(1); }}
                             // eslint-disable-next-line no-nested-ternary
-                            variant={newAnnotationPermissions !== null ? (newAnnotationPermissions === 1 ? 'primary' : 'outline-primary') : (!annotationData.permissions.documentOwner && annotationData.permissions.groups.length !== 0 ? 'primary' : 'outline-primary')}
+                            variant={newAnnotationPermissions !== null ? (newAnnotationPermissions === 1 ? 'primary' : 'outline-primary') : (!annotationData.permissions.documentOwner && !annotationData.permissions.private ? 'primary' : 'outline-primary')}
                             style={{ fontSize: '10px' }}
                           >
                             Share With Groups
@@ -425,7 +429,7 @@ function AnnotationCard({
                           <Button
                             onClick={() => { handleAnnotationPermissionsChange(2); }}
                             // eslint-disable-next-line no-nested-ternary
-                            variant={newAnnotationPermissions !== null ? (newAnnotationPermissions === 2 ? 'primary' : 'outline-primary') : (annotationData.permissions.documentOwner && annotationData.permissions.groups.length === 0 ? 'primary' : 'outline-primary')}
+                            variant={newAnnotationPermissions !== null ? (newAnnotationPermissions === 2 ? 'primary' : 'outline-primary') : (annotationData.permissions.documentOwner ? 'primary' : 'outline-primary')}
                             style={{ fontSize: '10px' }}
                           >
                             Share with doc owner
@@ -439,17 +443,15 @@ function AnnotationCard({
               : (
                 <>
                   <ListGroup variant="flush" style={{ borderTop: 'none' }}>
-                    {annotationData.body.value.length > 0 ? (
-                      <ListGroup.Item className="annotation-body">
-                        {annotationData.body.value}
-                        <span
-                          style={{ margin: '0px 0px 0px 5px', color: '#007bff' }}
-                          onClick={() => { setExpanded(false); setUpdateFocusOfAnnotation(true); }}
-                        >
-                          show less
-                        </span>
-                      </ListGroup.Item>
-                    ) : ''}
+                    <ListGroup.Item className="annotation-body">
+                      {annotationData.body.value}
+                      <span
+                        style={{ margin: '0px 0px 0px 5px', color: '#007bff' }}
+                        onClick={() => { setExpanded(false); setUpdateFocusOfAnnotation(true); }}
+                      >
+                        show less
+                      </span>
+                    </ListGroup.Item>
                     {annotationData.body.tags.join('').length > 0 ? (
                       <>
                         <ListGroup.Item className="annotation-tags">
@@ -477,7 +479,7 @@ function AnnotationCard({
       )}
             >
               <Card.Header className="annotation-header" onClick={() => { setExpanded(true); }}>
-                <div className="truncated-annotation">{annotationData.body.value}</div>
+                <div className="truncated-annotation">{annotationData.body.value.length === 0 ? <span>&nbsp;</span> : annotationData.body.value}</div>
               </Card.Header>
             </OverlayTrigger>
           </>
@@ -521,16 +523,16 @@ function AnnotationCard({
 
 
         .annotation-card-container.active .line1, .annotation-card-container.active .line2 {
-            background-color: ${FilterThemes[filterContext].color};
+            background-color: rgba(255, 194, 10, 0.5);
             z-index: 3;
         }
 
         .annotation-card-container.active .annotation-pointer-background-left {
-            border-left-color: ${FilterThemes[filterContext].color};
+            border-left-color: rgba(255, 194, 10, 0.5);
         }
 
         .annotation-card-container.active .annotation-pointer-background-right {
-            border-right-color: ${FilterThemes[filterContext].color};
+            border-right-color: rgba(255, 194, 10, 0.5);
         }
 
         .annotation-card-container .form-group {
@@ -542,13 +544,13 @@ function AnnotationCard({
             cursor: pointer;
             border: 1px solid rgb(220, 220, 220);
             border-radius: 0px;
-            width: 100%;
+            width: calc(100% - 50px);
             transition: border-color 0.5s;
             transition: top 0.5s;
         }
 
         .annotation-card-container.active {
-            border: 1px solid ${FilterThemes[filterContext].color};
+            border: 1px solid rgba(255, 194, 10, 0.5);
         }
 
         .btn-save-annotation-edits {

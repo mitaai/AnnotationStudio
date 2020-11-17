@@ -1,4 +1,7 @@
-import React, { useState } from 'react';
+/* eslint-disable no-underscore-dangle */
+/* eslint-disable guard-for-in */
+/* eslint-disable no-restricted-syntax */
+import React, { useState, useContext, useEffect } from 'react';
 import $ from 'jquery';
 import {
   Nav,
@@ -22,42 +25,200 @@ import { Filter } from 'react-bootstrap-icons';
 import {
   Typeahead, Menu, MenuItem, Token,
 } from 'react-bootstrap-typeahead';
+
+import DocumentAnnotationsContext from '../../contexts/DocumentAnnotationsContext';
+import DocumentFiltersContext from '../../contexts/DocumentFiltersContext';
+import DocumentContext from '../../contexts/DocumentContext';
+
 // Import as a module in your JS
 import 'react-bootstrap-typeahead/css/Typeahead.css';
 
-function FilterPopover() {
+function ByPermissionsFilterMatch(user_email, email, permissions, cf) { // AND FUNCTION
+  if (cf.permissions === 0 && user_email === email) { // mine
+    return true;
+  }
+
+  if (cf.permissions === 1 && !permissions.private && !permissions.documentOwner) { // shared
+    return true;
+  }
+
+  if (cf.permissions === 2 && permissions.documentOwner) { // shared with owner
+    return true;
+  }
+}
+
+function AnnotatedByFilterMatch(email, cf) { // AND FUNCTION
+  return cf.annotatedBy.length === 0 ? true : cf.annotatedBy.includes(email);
+}
+
+function ByTagFilterMatch(tags, cf) { // OR FUNCTION
+  if (cf.byTags.length === 0) {
+    return true;
+  }
+
+  if (tags === undefined) {
+    return false;
+  }
+
+  for (let i = 0; i < tags.length; i += 1) {
+    if (cf.byTags.includes(tags[i])) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function ByTagFilterMatchAndOperator(tags, cf) { // OR FUNCTION
+  if (cf.byTags.length === 0) {
+    return true;
+  }
+
+  if (tags === undefined) {
+    return false;
+  }
+
+  for (let i = 0; i < cf.byTags.length; i += 1) {
+    if (!tags.includes(cf.byTags[i])) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function DeepCopyObj(obj) {
+  return JSON.parse(JSON.stringify(obj));
+}
+
+function onlyUnique(value, index, self) {
+  return self.indexOf(value) === index;
+}
+
+const AnnotationMatchesFilters = (user_email, a, filters) => AnnotatedByFilterMatch(a.creator.email, filters) && ByTagFilterMatch(a.body.tags, filters) && ByPermissionsFilterMatch(user_email, a.creator.email, a.permissions, filters);
+
+const FilterAnnotations = (user_email, annotations, filters) => {
+  const annotationIds = { left: [], right: [] };
+
+  for (const side in annotationIds) {
+    if (Array.isArray(annotations[side])) {
+      for (const a of annotations[side]) {
+        if (AnnotationMatchesFilters(user_email, a, filters)) {
+          annotationIds[side].push(a._id);
+        }
+      }
+    }
+  }
+
+  return annotationIds;
+};
+
+// OR filter
+const GetNumberOfMatchesForThisEmail = (user_email, annotations, currentFilters, filterEmail) => {
+  const f = Object.assign(DeepCopyObj(currentFilters), { annotatedBy: [filterEmail] });
+  const ids = FilterAnnotations(user_email, annotations, f);
+  return ids.left.length + ids.right.length;
+};
+
+// OR filter
+const GetNumberOfMatchesForThisTag = (user_email, annotations, currentFilters, filterTag) => {
+  const f = Object.assign(DeepCopyObj(currentFilters), { byTags: [filterTag] });
+  const ids = FilterAnnotations(user_email, annotations, f);
+  return ids.left.length + ids.right.length;
+};
+
+const GetNumberOfMatchesForThisTagAndOperator = (user_email, annotations, currentFilters, filterTag) => {
+  const f = DeepCopyObj(currentFilters);
+  f.byTags.push(filterTag);
+  const ids = FilterAnnotations(user_email, annotations, f);
+  return ids.left.length + ids.right.length;
+};
+
+const GenerateFilterOptions = (user_email, annotations, filters, filteredAnnotationIds) => {
+  // this function takes in a list of annotations and returns an object of all the filter options that are available for this list of annotations and how many matches each option has with the current filtres applied
+  const filterOptions = {
+    annotatedBy: [],
+    byTags: [],
+  };
+
+  let index;
+  // eslint-disable-next-line guard-for-in
+  for (const side in annotations) {
+    if (Array.isArray(annotations[side])) {
+      for (const a of annotations[side]) {
+        // first we will add this annotations annotatedBy filterOption
+        index = filterOptions.annotatedBy.findIndex((opt) => opt.email === a.creator.email);
+        if (index === -1) {
+          filterOptions.annotatedBy.push({
+            id: a.creator.email,
+            name: a.creator.name,
+            email: a.creator.email,
+            matches: GetNumberOfMatchesForThisEmail(user_email, annotations, filters, a.creator.email),
+          });
+        }
+
+
+        // second we will add this annotations byTags filterOption
+        const uniqueBodyTags = a.body.tags.filter(onlyUnique);
+        const newTags = uniqueBodyTags.filter((tag) => filterOptions.byTags.findIndex((opt) => opt.name === tag) === -1);
+        // take these new tags and map them into an object and add them to the existing list of byTags array
+        for (const tag of newTags) {
+          filterOptions.byTags.push({
+            id: tag,
+            name: tag,
+            matches: GetNumberOfMatchesForThisTag(user_email, annotations, filters, tag),
+          });
+        }
+      }
+    }
+  }
+
+  return filterOptions;
+};
+
+
+function FilterPopover({ session }) {
+  const document = useContext(DocumentContext);
+  const [channelAnnotations] = useContext(DocumentAnnotationsContext);
+  const [documentFilters, setDocumentFilters] = useContext(DocumentFiltersContext);
   const [byTagsTypeheadMarginTop, setByTagsTypeheadMarginTop] = useState(0);
   const [byTagsTypeheadMarginBottom, setByTagsTypeheadMarginBottom] = useState(0);
 
-  const [filtersApplied, setFiltersApplied] = useState(1);// 0 means no filters applied, 1 means filters applied, 2 means loading
+  const filterOptions = GenerateFilterOptions(session.user.email, channelAnnotations, {
+    annotatedBy: documentFilters.filters.annotatedBy.map((opt) => opt.email),
+    byTags: documentFilters.filters.byTags.map((opt) => opt.name),
+    permissions: documentFilters.filters.permissions,
+  }, documentFilters.annotationIds);
 
-  const [selectedPermissions, setSelectedPermissions] = useState(0);
+  const UpdateSelectedTokensMatchesValue = (type, selected) => selected.map((s) => {
+    const obj = filterOptions[type].find((opt) => opt.id === s.id);
+    return Object.assign(s, { matches: obj === undefined ? 0 : obj.matches });
+  });
 
-  const annotatedByOptions = [
-    { name: 'Ben S.', matches: 14 },
-    { name: 'Courtney L.', matches: 6 },
-    { name: 'Joshua M.', matches: 0 },
-    { name: 'Kurt F.', matches: 1 },
-  ];
+  const FilterOnInit = () => {
+    const annotationIds = FilterAnnotations(session.user.email, channelAnnotations, {
+      annotatedBy: documentFilters.filters.annotatedBy.map((opt) => opt.email),
+      byTags: documentFilters.filters.byTags.map((opt) => opt.name),
+      permissions: documentFilters.filters.permissions,
+    });
+    setDocumentFilters({ annotationIds, filters: documentFilters.filters });
+  };
 
-  const byTagsOptions = [
-    { name: 'analogy', matches: 4 },
-    { name: 'dark', matches: 6 },
-    { name: 'dialog', matches: 0 },
-    { name: 'metaphor', matches: 1 },
-    { name: 'monologue', matches: 0 },
-    { name: 'rhetorical device', matches: 10 },
-    { name: 'simile', matches: 7 },
-    { name: 'spooky', matches: 2 },
-    { name: 'analogy2', matches: 4 },
-    { name: 'dark2', matches: 6 },
-    { name: 'dialog2', matches: 0 },
-    { name: 'metaphor2', matches: 1 },
-    { name: 'monologue2', matches: 0 },
-    { name: 'rhetorical device2', matches: 10 },
-    { name: 'simile2', matches: 7 },
-    { name: 'spooky2', matches: 2 },
-  ];
+  useEffect(() => {
+    if (documentFilters.filterOnInit) {
+      FilterOnInit();
+    }
+  });
+
+  const updateFilters = (type, selected) => {
+    documentFilters.filters[type] = selected;
+
+    const annotationIds = FilterAnnotations(session.user.email, channelAnnotations, {
+      annotatedBy: documentFilters.filters.annotatedBy.map((opt) => opt.email),
+      byTags: documentFilters.filters.byTags.map((opt) => opt.name),
+      permissions: documentFilters.filters.permissions,
+    });
+
+    setDocumentFilters({ annotationIds, filters: documentFilters.filters });
+  };
 
   const renderMenu = (results, menuProps) => (
     <Menu
@@ -99,23 +260,25 @@ function FilterPopover() {
                   <Card.Subtitle className="mb-2 text-muted">
                     <ButtonGroup size="sm" aria-label="Basic example">
                       <Button
-                        variant={selectedPermissions === 0 ? 'primary' : 'outline-primary'}
-                        onClick={() => { setSelectedPermissions(0); }}
+                        variant={documentFilters.filters.permissions === 0 ? 'primary' : 'outline-primary'}
+                        onClick={() => { updateFilters('permissions', 0); }}
                       >
                         Mine
                       </Button>
                       <Button
-                        variant={selectedPermissions === 1 ? 'primary' : 'outline-primary'}
-                        onClick={() => { setSelectedPermissions(1); }}
+                        variant={documentFilters.filters.permissions === 1 ? 'primary' : 'outline-primary'}
+                        onClick={() => { updateFilters('permissions', 1); }}
                       >
                         Shared
                       </Button>
+                      {session.user.id === document.owner && (
                       <Button
-                        variant={selectedPermissions === 2 ? 'primary' : 'outline-primary'}
-                        onClick={() => { setSelectedPermissions(2); }}
+                        variant={documentFilters.filters.permissions === 2 ? 'primary' : 'outline-primary'}
+                        onClick={() => { updateFilters('permissions', 2); }}
                       >
                         Shared With Owner
                       </Button>
+                      )}
                     </ButtonGroup>
                   </Card.Subtitle>
                   <Row>
@@ -130,7 +293,8 @@ function FilterPopover() {
                           multiple
                           clearButton
                           highlightOnlyResult
-                          onChange={() => {}}
+                          selected={UpdateSelectedTokensMatchesValue('annotatedBy', DeepCopyObj(documentFilters.filters.annotatedBy))}
+                          onChange={(selected) => { updateFilters('annotatedBy', selected); }}
                           onMenuToggle={(isOpen) => {
                             if (isOpen) {
                               setByTagsTypeheadMarginTop($('#typehead-annotated-by').height() + 10);
@@ -139,7 +303,7 @@ function FilterPopover() {
                             }
                           }}
                           onInputChange={() => { setByTagsTypeheadMarginTop($('#typehead-annotated-by').height() + 10); }}
-                          options={annotatedByOptions}
+                          options={filterOptions.annotatedBy}
                           placeholder="Choose several users"
                         />
                       </Form.Group>
@@ -157,7 +321,8 @@ function FilterPopover() {
                           multiple
                           clearButton
                           highlightOnlyResult
-                          onChange={() => {}}
+                          selected={UpdateSelectedTokensMatchesValue('byTags', DeepCopyObj(documentFilters.filters.byTags))}
+                          onChange={(selected) => { updateFilters('byTags', selected); }}
                           onMenuToggle={(isOpen) => {
                             if (isOpen) {
                               setByTagsTypeheadMarginBottom($('#typehead-by-tags').height() + 20);
@@ -166,7 +331,7 @@ function FilterPopover() {
                             }
                           }}
                           onInputChange={() => { setByTagsTypeheadMarginBottom($('#typehead-by-tags').height() + 20); }}
-                          options={byTagsOptions}
+                          options={filterOptions.byTags}
                           placeholder="Choose several tags"
                         />
                       </Form.Group>
@@ -181,23 +346,12 @@ function FilterPopover() {
         <Button
           id="btn-filter-annotation-well"
           size="sm"
-          variant={filtersApplied === 0 ? 'outline-primary' : 'outline-success'}
+          variant="outline-primary"
 
         >
           <Filter size="1em" />
-          {filtersApplied === 0 && <span>Filter</span>}
-          {filtersApplied === 1 && <span>Filters Applied</span>}
-          {filtersApplied === 2 && (
-          <>
-            <span>Filtering</span>
-            <Spinner
-              animation="border"
-              style={{
-                color: 'inherit !important', width: '1rem', height: '1rem', marginLeft: '5px',
-              }}
-            />
-          </>
-          )}
+          <span>Filter</span>
+
         </Button>
       </OverlayTrigger>
 

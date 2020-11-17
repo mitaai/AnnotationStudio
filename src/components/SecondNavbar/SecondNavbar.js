@@ -8,6 +8,7 @@ import {
 import FilterPopover from '../FilterPopover';
 
 const SecondNavbar = ({
+  session,
   type,
   title,
   docView,
@@ -60,7 +61,7 @@ const SecondNavbar = ({
       </Container>
       {type === 'document' && title && docView && (
       <div style={{ position: 'absolute', right: '16px', top: '7px' }}>
-        <FilterPopover />
+        <FilterPopover session={session} />
       </div>
       )}
     </Navbar>

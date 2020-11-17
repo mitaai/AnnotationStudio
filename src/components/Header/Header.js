@@ -19,6 +19,7 @@ function Header({
   type,
   title,
   docView,
+  annotations,
   newReg,
 }) {
   const [session, loading] = useSession();
@@ -79,7 +80,7 @@ function Header({
         </Container>
       </Navbar>
       {session && !loading && (
-        <SecondNavbar type={type} title={title} docView={docView} />
+        <SecondNavbar session={session} type={type} title={title} docView={docView} annotations={annotations} />
       )}
     </header>
   );
