@@ -25,7 +25,7 @@ import DocumentAnnotationsContext from '../../contexts/DocumentAnnotationsContex
 import DocumentFiltersContext from '../../contexts/DocumentFiltersContext';
 
 function addHoverEventListenersToAllHighlightedText() {
-  // console.log('annotation-highlighted-text', $('.annotation-highlighted-text'));
+
   $('.annotation-highlighted-text').on('mouseover', (e) => {
     // highlighting all every piece of the annotation a different color by setting it to active
     $(`.annotation-highlighted-text[annotation-id='${$(e.target).attr('annotation-id')}']`).addClass('active');
@@ -184,6 +184,9 @@ function AnnotationCard({
         newAnnotationData.modified = new Date();
         newAnnotationData.new = false;
         newAnnotationData.editing = false;
+        $($(`#document-content-container span[annotation-id='${newAnnotationData._id}']`).get(-1)).prepend("<span class='annotation-ending-marker'></span>");
+        const annotationEnding = $(`#document-content-container span[annotation-id='${annotation._id}'] .annotation-ending-marker`);
+        newAnnotationData.position.height = (annotationEnding.offset().top - newAnnotationData.position.top) + 18;
         setSavingAnnotation(false);
         // after setting the annotation data we need to reset the "new" data back to null
         setNewAnnotationTags(null);

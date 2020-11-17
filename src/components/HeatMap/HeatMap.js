@@ -39,29 +39,46 @@ function HeatMap() {
     if (channelAnnotations[side] !== null) {
       for (const anno of channelAnnotations[side]) {
         if (documentFilters.annotationIds[side] === null || documentFilters.annotationIds[side].includes(anno._id)) {
-          // now we have to convert the annotations position and height into starting and ending indexs for the map
-          let startIndex = Math.floor((anno.position.top - offsetTop) / grandularity);
-          startIndex = startIndex < 0 ? 0 : startIndex;
-          const endIndex = Math.floor((anno.position.top + anno.position.height - offsetTop) / grandularity);
-          for (let i = startIndex; i <= endIndex; i += 1) {
-            if (map[i] === undefined) {
-              map[i] = 0;
+          if (anno.position.height !== undefined) {
+            // now we have to convert the annotations position and height into starting and ending indexs for the map
+            let startIndex = Math.floor((anno.position.top - offsetTop) / grandularity);
+            startIndex = startIndex < 0 ? 0 : startIndex;
+            const endIndex = Math.floor((anno.position.top + anno.position.height - offsetTop) / grandularity);
+            for (let i = startIndex; i <= endIndex; i += 1) {
+              if (map[i] === undefined) {
+                map[i] = 0;
+              }
+              map[i] += 1;
             }
-            map[i] += 1;
           }
         }
       }
     }
   }
 
-  console.log(map);
-
 
   return (
     <>
+      <div id="heat-map" style={{ height: (map.length * lineHeight * scaleFactor) + 10 }}>
+        {map.map((v, i) => <div className="stroke" style={{ height: lineHeight * scaleFactor, top: i * lineHeight * scaleFactor, opacity: v * 0.2 }} />)}
+      </div>
+
       <style jsx global>
         {`
         
+        #heat-map {
+          margin-top: -8px;
+          background: #007bff;
+          position: absolute;
+          right: 3px;
+          width: 8px;
+        }
+
+        #heat-map .stroke {
+          position: absolute;
+          background: rgb(255, 255, 10);
+          width: 100%;
+        }
         
         `}
       </style>

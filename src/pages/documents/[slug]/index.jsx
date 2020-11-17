@@ -99,7 +99,6 @@ const DocumentPage = (props) => {
   const [session, loading] = useSession();
 
   const saveAnnotationChanges = (anno, side) => {
-    console.log('saveAnnotationChanges');
     const index = channelAnnotations[side].findIndex((a) => a._id === anno._id);
     channelAnnotations[side][index] = DeepCopyObj(anno);
     setChannelAnnotations(DeepCopyObj(channelAnnotations));

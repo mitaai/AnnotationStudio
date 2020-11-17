@@ -193,7 +193,7 @@ export default class Document extends React.Component {
         $($(`#document-content-container span[annotation-id='${annotation._id}']`).get(0))
           .prepend("<span class='annotation-beginning-marker'></span>");
         $($(`#document-content-container span[annotation-id='${annotation._id}']`).get(-1))
-          .prepend("<span class='annotation-ending-marker'></span>");
+          .append("<span class='annotation-ending-marker'></span>");
         // so now that we have added the beginning marker we are going to get
         // the position of the begginning marker then remove it from the dom
         const annotationBeginning = $(`#document-content-container span[annotation-id='${annotation._id}'] .annotation-beginning-marker`);
@@ -203,7 +203,6 @@ export default class Document extends React.Component {
         } else {
           const annotationBeginningPosition = annotationBeginning.offset();
           const annotationEndingPosition = annotationEnding.offset();
-          console.log('annotationEndingPosition', annotationEndingPosition);
           // this takes into account if the user was scrolling through the document
           // as the it was being populated with annotations
           annotationBeginningPosition.top += $('#document-container').scrollTop();
@@ -217,7 +216,7 @@ export default class Document extends React.Component {
                 {
                   left: annotationBeginningPosition.left,
                   top: annotationBeginningPosition.top,
-                  height: annotationEndingPosition.top - annotationBeginningPosition.top < 18 ? 18 : annotationEndingPosition.top - annotationBeginningPosition.top,
+                  height: (annotationEndingPosition.top - annotationBeginningPosition.top) + 18,
                 },
                 ...annotation,
               },
@@ -229,6 +228,7 @@ export default class Document extends React.Component {
                 {
                   left: annotationBeginningPosition.left,
                   top: annotationBeginningPosition.top,
+                  height: (annotationEndingPosition.top - annotationBeginningPosition.top) + 18,
                 },
                 ...annotation,
               },
