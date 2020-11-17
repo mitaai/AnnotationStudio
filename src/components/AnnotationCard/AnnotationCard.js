@@ -120,6 +120,8 @@ function AnnotationCard({
   const [updateFocusOfAnnotation, setUpdateFocusOfAnnotation] = useState(annotation.editing);
 
   function AddClassActive(id) {
+    // remove active from other annotations
+    $('.annotation-card-container').removeClass('active');
     // changing color of annotation
     $(`#${id}`).addClass('active');
     // changing color of highlighted text

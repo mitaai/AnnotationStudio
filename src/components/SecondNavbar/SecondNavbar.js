@@ -12,7 +12,6 @@ const SecondNavbar = ({
   type,
   title,
   docView,
-  annotations,
 }) => (
   <>
     <Navbar bg="light" variant="light" className="second-navbar">
@@ -62,7 +61,7 @@ const SecondNavbar = ({
       </Container>
       {type === 'document' && title && docView && (
       <div style={{ position: 'absolute', right: '16px', top: '7px' }}>
-        <FilterPopover session={session} annotations={annotations} />
+        <FilterPopover session={session} />
       </div>
       )}
     </Navbar>

@@ -94,7 +94,7 @@ const AnnotationChannel = ({
   const [channelAnnotations] = useContext(DocumentAnnotationsContext);
   const [documentFilters, setDocumentFilters] = useContext(DocumentFiltersContext);
   // first we filter annotations if there are any filters applied
-  let sortedAnnotations = channelAnnotations[side] !== null ? channelAnnotations[side].filter((anno) => (documentFilters.annotationIds[side] !== null ? documentFilters.annotationIds[side].includes(anno._id) : true)) : [];
+  let sortedAnnotations = channelAnnotations[side] !== null ? channelAnnotations[side].filter((anno) => (documentFilters.annotationIds[side] !== null ? documentFilters.annotationIds[side].includes(anno._id) || anno.new : true)) : [];
   // the first thing we need to is sort these anntotations by their position
   sortedAnnotations = sortedAnnotations.sort((a, b) => {
     if (a.position.top - b.position.top === 0) { // if the tops are the same then we have to distinguish which annotation comes first by who has the smaller left value

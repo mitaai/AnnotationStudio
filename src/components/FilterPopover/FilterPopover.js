@@ -28,6 +28,7 @@ import {
 
 import DocumentAnnotationsContext from '../../contexts/DocumentAnnotationsContext';
 import DocumentFiltersContext from '../../contexts/DocumentFiltersContext';
+import DocumentContext from '../../contexts/DocumentContext';
 
 // Import as a module in your JS
 import 'react-bootstrap-typeahead/css/Typeahead.css';
@@ -37,7 +38,7 @@ function ByPermissionsFilterMatch(user_email, email, permissions, cf) { // AND F
     return true;
   }
 
-  if (cf.permissions === 1 && !permissions.private) { // shared
+  if (cf.permissions === 1 && !permissions.private && !permissions.documentOwner) { // shared
     return true;
   }
 
@@ -175,6 +176,7 @@ const GenerateFilterOptions = (user_email, annotations, filters, filteredAnnotat
 
 
 function FilterPopover({ session }) {
+  const document = useContext(DocumentContext);
   const [channelAnnotations] = useContext(DocumentAnnotationsContext);
   const [documentFilters, setDocumentFilters] = useContext(DocumentFiltersContext);
   const [byTagsTypeheadMarginTop, setByTagsTypeheadMarginTop] = useState(0);
@@ -206,7 +208,6 @@ function FilterPopover({ session }) {
     }
   });
 
-  
   const updateFilters = (type, selected) => {
     documentFilters.filters[type] = selected;
 
@@ -270,12 +271,14 @@ function FilterPopover({ session }) {
                       >
                         Shared
                       </Button>
+                      {session.user.id === document.owner && (
                       <Button
                         variant={documentFilters.filters.permissions === 2 ? 'primary' : 'outline-primary'}
                         onClick={() => { updateFilters('permissions', 2); }}
                       >
                         Shared With Owner
                       </Button>
+                      )}
                     </ButtonGroup>
                   </Card.Subtitle>
                   <Row>
