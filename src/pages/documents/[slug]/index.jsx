@@ -331,7 +331,7 @@ const DocumentPage = (props) => {
             docView
           >
             <Row id="document-container">
-              <Col sm={3}>
+              <Col className="annotation-channel-container">
                 <AnnotationChannel
                   deleteAnnotationFromChannels={deleteAnnotationFromChannels}
                   setAnnotationChannelLoaded={setAnnotationChannel1Loaded}
@@ -343,7 +343,7 @@ const DocumentPage = (props) => {
                   user={session ? session.user : undefined}
                 />
               </Col>
-              <Col sm={6}>
+              <Col style={{ minWidth: 750, maxWidth: 750 }}>
                 <Card id="document-card-container">
                   <Card.Body>
                     <Document
@@ -369,7 +369,7 @@ const DocumentPage = (props) => {
                   </Card.Body>
                 </Card>
               </Col>
-              <Col sm={3}>
+              <Col className="annotation-channel-container">
                 <AnnotationChannel
                   deleteAnnotationFromChannels={deleteAnnotationFromChannels}
                   setAnnotationChannelLoaded={setAnnotationChannel2Loaded}
@@ -411,6 +411,10 @@ const DocumentPage = (props) => {
             height: calc(100vh - 230px);
             overflow-y: scroll;
             padding: 10px 0px;
+          }
+
+          #document-container .annotation-channel-container{
+            width: calc(50vw - 375px)
           }
           
           #document-container #annotation-well-card-container {
