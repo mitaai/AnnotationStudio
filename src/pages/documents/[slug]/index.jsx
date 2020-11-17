@@ -16,6 +16,7 @@ import {
   createTextQuoteSelector,
   highlightRange,
 } from 'apache-annotator/dom';
+import HeatMap from '../../../components/HeatMap';
 import Layout from '../../../components/Layout';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import AnnotationChannel from '../../../components/AnnotationChannel';
@@ -331,6 +332,7 @@ const DocumentPage = (props) => {
             docView
           >
             <Row id="document-container">
+              <HeatMap />
               <Col className="annotation-channel-container">
                 <AnnotationChannel
                   deleteAnnotationFromChannels={deleteAnnotationFromChannels}
