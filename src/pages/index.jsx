@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { parseCookies, destroyCookie } from 'nookies';
 import {
-  Button, Card, Col, Row,
+  Button, Card, CardColumns, Col, Row,
 } from 'react-bootstrap';
 import fetch from 'isomorphic-unfetch';
 import { useSession } from 'next-auth/client';
 import Layout from '../components/Layout';
 import { addUserToGroup } from '../utils/groupUtil';
 import LoadingSpinner from '../components/LoadingSpinner';
+import DashboardAnnotationList from '../components/Dashboard/DashboardAnnotationList';
 import DashboardDocumentList from '../components/Dashboard/DashboardDocumentList';
 import DashboardGroupList from '../components/Dashboard/DashboardGroupList';
 
@@ -37,15 +38,22 @@ export default function Home({
       {session && !loading && (
         <Row>
           <Col>
-            <DashboardDocumentList
+            <CardColumns style={{ columnCount: 1 }}>
+              <DashboardDocumentList
+                session={session}
+                alerts={alerts}
+                setAlerts={setAlerts}
+              />
+              <DashboardGroupList
+                session={session}
+              />
+            </CardColumns>
+          </Col>
+          <Col>
+            <DashboardAnnotationList
               session={session}
               alerts={alerts}
               setAlerts={setAlerts}
-            />
-          </Col>
-          <Col>
-            <DashboardGroupList
-              session={session}
             />
           </Col>
         </Row>
