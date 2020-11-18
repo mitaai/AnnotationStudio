@@ -2,7 +2,7 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-restricted-syntax */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/client';
 import $ from 'jquery';
 import {
@@ -79,8 +79,10 @@ function DeepCopyObj(obj) {
 
 const DocumentPage = (props) => {
   const {
-    document, annotations, initAlerts,
+    document, annotations, initAlerts, query,
   } = props;
+
+  console.log('query', query);
 
   const [alerts, setAlerts] = useState(initAlerts || []);
   const [documentHighlightedAndLoaded, setDocumentHighlightedAndLoaded] = useState(false);
@@ -312,6 +314,16 @@ const DocumentPage = (props) => {
     }
   };
 
+  useEffect(() => {
+    // when both annotation channels are loaded we are going to check the query data and if there is a key 'mine' and 'aid', and 'aid' value actually equals an annotation id that we have then we will trigger scroll to the annotation
+    if (annotationChannel1Loaded && annotationChannel2Loaded && query.mine !== undefined && query.aid !== undefined) {
+      const anno = $(`#${query.aid}.annotation-card-container`);
+      if (anno.length !== 0) {
+        console.log(anno.offset().top);
+      }
+    }
+  });
+
 
   return (
     <DocumentContext.Provider value={document}>
@@ -473,8 +485,9 @@ const DocumentPage = (props) => {
 };
 
 export async function getServerSideProps(context) {
+  console.log(context.req.query);
   const { slug } = context.params;
-  let props = {};
+  let props = { query: context.query };
   await prefetchDocumentBySlug(slug, context.req.headers.cookie).then((response) => {
     props.document = {
       slug,
