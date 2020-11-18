@@ -148,6 +148,7 @@ const EditProfile = ({ user }) => {
                           value={props.values.firstName}
                           isValid={props.touched.firstName && !props.errors.firstName}
                           isInvalid={!!props.errors.firstName}
+                          maxLength={255}
                         />
                         <Form.Control.Feedback type="invalid">
                           {props.errors.firstName}
@@ -169,6 +170,7 @@ const EditProfile = ({ user }) => {
                           value={props.values.lastName}
                           isValid={props.touched.lastName && !props.errors.lastName}
                           isInvalid={!!props.errors.lastName}
+                          maxLength={255}
                         />
                         <Form.Control.Feedback type="invalid">
                           {props.errors.lastName}
@@ -190,6 +192,7 @@ const EditProfile = ({ user }) => {
                           value={props.values.affiliation}
                           isValid={props.touched.affiliation && !props.errors.affiliation}
                           isInvalid={!!props.errors.affiliation}
+                          maxLength={255}
                         />
                       </Col>
                     </Form.Group>
