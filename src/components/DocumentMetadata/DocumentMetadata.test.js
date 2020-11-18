@@ -10,7 +10,7 @@ import DocumentMetadata from './DocumentMetadata';
 const values = {
   _id: 'documenttestid',
   title: 'test',
-  authors: [],
+  contributors: [],
   createdAt: '2881-10-05T14:48:00.000',
   state: 'draft',
   owner: 'testestestest',
@@ -36,7 +36,7 @@ describe('document metadata form', () => {
         )}
       </Formik>,
     );
-    const authorsFormGroup = await findByTestId('authors-fields');
+    const authorsFormGroup = await findByTestId('contributors-fields');
     expect(authorsFormGroup).toBeInTheDocument();
   });
 });
