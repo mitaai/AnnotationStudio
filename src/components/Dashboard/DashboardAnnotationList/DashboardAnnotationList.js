@@ -17,7 +17,7 @@ const DashboardAnnotationList = ({
   tab,
   mode,
 }) => {
-  const [groupState, setGroupState] = useState({});
+  const [annotationsGroupState, setAnnotationsGroupState] = useState({});
   const [key, setKey] = useState(tab || 'mine');
   const [listLoading, setListLoading] = useState(true);
   const [annotations, setAnnotations] = useState([]);
@@ -49,14 +49,18 @@ const DashboardAnnotationList = ({
     if (annotations) {
       const fetchGroupState = async () => {
         annotations.map((annotation) => annotation.permissions.groups.map(async (group) => {
-          if (!groupState[group]) {
-            setGroupState({ ...groupState, [group]: await getGroupNameById(group) });
+          if (!annotationsGroupState[group]) {
+            const name = await getGroupNameById(group);
+            setAnnotationsGroupState((prevState) => ({
+              ...prevState,
+              [group]: name,
+            }));
           }
         }));
       };
       fetchGroupState();
     }
-  }, [annotations, groupState]);
+  }, [annotations]);
 
   return (
     <Card>
@@ -109,15 +113,16 @@ const DashboardAnnotationList = ({
                       {annotation.target.document.title}
                       {' ('}
                       {FirstNameLastInitial(annotation.creator.name)}
-                      )
+                      {') '}
                       {annotation.permissions.groups
-                      && annotation.permissions.groups.length > 0 && (
+                      && annotation.permissions.groups.length > 0
+                      && annotation.permissions.private === false && (
                       <Badge
                         variant="info"
                         key={annotation.permissions.groups.sort()[0]}
-                        className="mr-2"
+                        className="mL-2"
                       >
-                        {groupState[annotation.permissions.groups.sort()[0]]}
+                        {annotationsGroupState[annotation.permissions.groups.sort()[0]]}
                       </Badge>
                       )}
                     </small>
