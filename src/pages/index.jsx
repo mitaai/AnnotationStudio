@@ -21,7 +21,7 @@ export default function Home({
   const [alerts, setAlerts] = useState(initAlerts || []);
 
   return (
-    <Layout alerts={alerts} type="dashboard" newReg={query.alert === 'completeRegistration'}>
+    <Layout alerts={alerts} type="dashboard" newReg={query && query.alert === 'completeRegistration'}>
       {loading && (
         <Card>
           <Card.Body>
