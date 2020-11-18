@@ -4,18 +4,7 @@
 
 import { render } from '@testing-library/react';
 import AdminPanel from './AdminPanel';
-
-const adminUserSession = {
-  user: {
-    name: 'Admin User',
-    email: 'admin@email.com',
-    groups: [{
-      id: 'abcd1234', name: 'Test Group', ownerName: 'Test User', memberCount: 2, role: 'owner',
-    }],
-    role: 'admin',
-  },
-  expires: '2881-10-05T14:48:00.000',
-};
+import { adminUserSession } from '../../../utils/testUtil';
 
 test('renders admin panel', async () => {
   const { getByTestId } = render(

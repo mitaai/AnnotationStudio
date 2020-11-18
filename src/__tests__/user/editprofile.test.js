@@ -4,6 +4,7 @@
 
 import { render, wait } from '@testing-library/react';
 import EditProfile from '../../pages/user/[slug]/editprofile';
+import { user } from '../../utils/testUtil';
 
 jest.mock('next/router', () => ({
   useRouter() {
@@ -16,14 +17,7 @@ jest.mock('next/router', () => ({
 }));
 
 test('renders edit profile card', async () => {
-  const { getAllByText } = render(<EditProfile user={{
-    name: 'Test User',
-    firstName: 'Test',
-    lastName: 'User',
-    email: 'test@email.com',
-    affiliation: 'Jest Tests',
-  }}
-  />);
+  const { getAllByText } = render(<EditProfile user={user} />);
   const textElements = getAllByText(/Edit Profile/);
   await wait(() => {
     expect(textElements[1]).toBeInTheDocument();
@@ -31,14 +25,7 @@ test('renders edit profile card', async () => {
 });
 
 test('renders edit profile form', async () => {
-  const { getAllByRole } = render(<EditProfile user={{
-    name: 'Test User',
-    firstName: 'Test',
-    lastName: 'User',
-    email: 'test@email.com',
-    affiliation: 'Jest Tests',
-  }}
-  />);
+  const { getAllByRole } = render(<EditProfile user={user} />);
   const textboxElements = getAllByRole('textbox');
   await wait(() => {
     expect(textboxElements).toHaveLength(4);
@@ -46,14 +33,7 @@ test('renders edit profile form', async () => {
 });
 
 test('renders submit button', async () => {
-  const { getByTestId } = render(<EditProfile user={{
-    name: 'Test User',
-    firstName: 'Test',
-    lastName: 'User',
-    email: 'test@email.com',
-    affiliation: 'Jest Tests',
-  }}
-  />);
+  const { getByTestId } = render(<EditProfile user={user} />);
   const submitButton = getByTestId('editprofile-submit-button');
   await wait(() => {
     expect(submitButton).toBeInTheDocument();

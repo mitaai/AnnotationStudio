@@ -4,6 +4,7 @@
 
 import { render, wait } from '@testing-library/react';
 import ViewGroup from '../../../pages/groups/[id]/index';
+import { group } from '../../../utils/testUtil';
 
 jest.mock('next/router', () => ({
   useRouter() {
@@ -16,17 +17,6 @@ jest.mock('next/router', () => ({
 }));
 
 describe('Group View Page', () => {
-  const group = {
-    id: 'abcd1234',
-    name: 'Test Group',
-    members: [{
-      id: '1',
-      email: 'test@email.com',
-      name: 'Test User',
-      role: 'owner',
-    }],
-  };
-
   it('renders group card', async () => {
     const { getByTestId } = render(<ViewGroup group={group} />);
     const cardBody = getByTestId('groupview-card-body');
