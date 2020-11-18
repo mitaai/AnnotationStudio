@@ -63,7 +63,7 @@ const DocumentList = ({
         <LoadingSpinner />
       )}
       {!loading && (
-        <Table striped bordered data-testid="documents-table">
+        <Table striped bordered data-testid="documents-table" responsive="lg">
           <thead>
             <tr>
               <th>
@@ -78,10 +78,10 @@ const DocumentList = ({
               <th>
                 Groups
               </th>
-              <th>
+              <th style={{ width: '11%' }}>
                 Status
               </th>
-              <th>
+              <th style={{ width: '18%' }}>
                 Actions
               </th>
             </tr>
@@ -122,17 +122,17 @@ const DocumentList = ({
                   <td>
                     {getStateIcon(document.state)}
                     {document.state && (
-                    <Badge>
+                    <Badge className="d-sm-none d-xl-inline">
                       {ucFirst(document.state)}
                     </Badge>
                     )}
                   </td>
-                  <td>
+                  <td className="text-center">
                     {document.owner === userId && (
                     <ButtonGroup>
                       <Button variant="outline-primary" href={`documents/${document.slug}/edit`}>
                         <PencilSquare className="align-text-bottom mr-1" />
-                        Edit
+                        <span className="d-sm-none d-xl-inline">Edit</span>
                       </Button>
                       <Button
                         variant="outline-danger"
@@ -143,7 +143,7 @@ const DocumentList = ({
                         data-key={document._id}
                       >
                         <TrashFill className="align-text-bottom mr-1" />
-                        Delete
+                        <span className="d-sm-none d-xl-inline">Delete</span>
                       </Button>
                       <ConfirmationDialog
                         name={document.title}

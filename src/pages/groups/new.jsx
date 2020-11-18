@@ -92,6 +92,7 @@ const NewGroup = () => {
                             value={props.values.name}
                             isValid={props.touched.name && !props.errors.name}
                             isInvalid={!!props.errors.name}
+                            maxLength={255}
                           />
                           <Form.Control.Feedback type="invalid">
                             {props.errors.name}
