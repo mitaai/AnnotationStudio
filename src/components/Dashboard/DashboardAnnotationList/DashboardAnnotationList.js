@@ -94,7 +94,7 @@ const DashboardAnnotationList = ({
               <ListGroup.Item key={annotation._id}>
                 <Row>
                   <Col className="ellipsis" xl={8}>
-                    <Link href={`/documents/${annotation.target.document.slug}?mine=${key === 'mine'}#${annotation._id}`}>
+                    <Link href={`/documents/${annotation.target.document.slug}?mine=${key === 'mine'}&aid=${annotation._id}`}>
                       {annotation.target.selector.exact}
                     </Link>
                   </Col>
