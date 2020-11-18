@@ -13,6 +13,7 @@ const AdminAnnotation = ({ annotation }) => (
       size="sm"
       variant="light"
       style={{ border: '1px solid gray', borderCollapse: 'separate' }}
+      data-testid="admin-annotation"
     >
       <tbody>
         <tr style={{ backgroundColor: 'white' }}>
