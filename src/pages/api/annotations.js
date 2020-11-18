@@ -45,7 +45,27 @@ const handler = async (req, res) => {
           }
         } else res.status(403).end('Unauthorized');
       } else if (groupIds) {
-        res.status(404).end('Not yet implemented');
+        const { db } = await connectToDatabase();
+        if (limit) {
+          const arr = await db
+            .collection('annotations')
+            .find({
+              'permissions.private': false,
+              'permissions.groups': { $in: groupIds },
+            })
+            .limit(parseInt(limit, 10))
+            .toArray();
+          res.status(200).json({ annotations: arr });
+        } else {
+          const arr = await db
+            .collection('annotations')
+            .find({
+              'permissions.private': false,
+              'permissions.groups': { $in: groupIds },
+            })
+            .toArray();
+          res.status(200).json({ annotations: arr });
+        }
       } else res.status(400).end('Bad request');
     } else res.status(403).end('Invalid or expired token');
   } else if (method === 'PATCH') {
