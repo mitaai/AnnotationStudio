@@ -53,7 +53,7 @@ const AdminDocumentTable = ({ document, alerts, setAlerts }) => {
         <thead>
           <tr>
             <td colSpan="2" className="text-center">View Document</td>
-            <td style={{ position: 'absolute', right: '2em', border: 'none' }} id="group-dropdown">
+            <td style={{ position: 'absolute', right: '2em', border: 'none' }} id="document-dropdown">
               <DropdownButton
                 size="sm"
                 variant="text"

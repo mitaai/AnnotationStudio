@@ -16,7 +16,7 @@ const document = {
   groups: [],
 };
 
-test('renders documents table (empty list)', async () => {
+test('renders admin doc view', async () => {
   const { getByTestId } = render(
     <AdminDocumentTable
       document={document}
@@ -24,6 +24,6 @@ test('renders documents table (empty list)', async () => {
       alerts={[]}
     />,
   );
-  const docsTable = getByTestId('admin-doc-view');
-  expect(docsTable).toBeInTheDocument();
+  const docView = getByTestId('admin-doc-view');
+  expect(docView).toBeInTheDocument();
 });

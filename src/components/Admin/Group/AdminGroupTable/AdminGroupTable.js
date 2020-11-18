@@ -33,22 +33,22 @@ const AdminGroupTable = ({ group, alerts, setAlerts }) => {
         size="sm"
         variant="light"
         style={{ borderCollapse: 'unset' }}
+        data-testid="admin-group-view"
       >
         <thead>
           <tr>
             <td colSpan="2" className="text-center">View Group</td>
-            <div style={{ position: 'absolute', right: '2em' }} id="group-dropdown">
+            <td style={{ position: 'absolute', right: '2em', border: 'none' }} id="group-dropdown">
               <DropdownButton
                 size="sm"
                 variant="text"
                 drop="down"
-                menuAlign="right"
                 title="Actions"
               >
                 <Dropdown.Item eventKey="1" href={`/groups/${group.id}/edit`}>Modify group</Dropdown.Item>
                 <Dropdown.Item eventKey="2" onClick={handleShowModal}>Delete group</Dropdown.Item>
               </DropdownButton>
-            </div>
+            </td>
           </tr>
         </thead>
         <tbody>
