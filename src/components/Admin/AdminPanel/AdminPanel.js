@@ -59,7 +59,7 @@ const AdminPanel = ({
   useEffect(() => { fetchData('sortState'); }, [sortState]);
 
   return (
-    <Card>
+    <Card data-testid="admin-panel">
       <AdminHeader activeKey={activeKey} setKey={setKey} />
       <Card.Body>
         {listLoading && activeKey !== 'dashboard' && (
