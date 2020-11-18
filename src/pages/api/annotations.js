@@ -12,7 +12,10 @@ const handler = async (req, res) => {
       const {
         slug, userId, limit,
       } = req.query;
-      const groupIds = req.query['groupIds[]'];
+      let groupIds = req.query['groupIds[]'];
+      if (groupIds && !Array.isArray(groupIds)) {
+        groupIds = [req.query['groupIds[]']];
+      }
       if (slug) {
         const { db } = await connectToDatabase();
         const arr = await db
