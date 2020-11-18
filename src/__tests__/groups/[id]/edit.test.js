@@ -5,6 +5,17 @@
 import { render, wait } from '@testing-library/react';
 import EditGroup from '../../../pages/groups/[id]/edit';
 
+
+jest.mock('next/router', () => ({
+  useRouter() {
+    return {
+      pathname: '/groups/abcd1234/edit',
+      query: '',
+      asPath: '',
+    };
+  },
+}));
+
 describe('Group Edit Page', () => {
   const group = {
     id: 'abcd1234',

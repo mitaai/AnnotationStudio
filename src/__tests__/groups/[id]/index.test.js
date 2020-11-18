@@ -5,6 +5,16 @@
 import { render, wait } from '@testing-library/react';
 import ViewGroup from '../../../pages/groups/[id]/index';
 
+jest.mock('next/router', () => ({
+  useRouter() {
+    return {
+      pathname: '/groups/abcd1234',
+      query: '',
+      asPath: '',
+    };
+  },
+}));
+
 describe('Group View Page', () => {
   const group = {
     id: 'abcd1234',

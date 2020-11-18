@@ -30,9 +30,6 @@ import DocumentAnnotationsContext from '../../contexts/DocumentAnnotationsContex
 import DocumentFiltersContext from '../../contexts/DocumentFiltersContext';
 import DocumentContext from '../../contexts/DocumentContext';
 
-// Import as a module in your JS
-import 'react-bootstrap-typeahead/css/Typeahead.css';
-
 function ByPermissionsFilterMatch(user_email, email, permissions, cf) { // AND FUNCTION
   if (cf.permissions === 0 && user_email === email) { // mine
     return true;

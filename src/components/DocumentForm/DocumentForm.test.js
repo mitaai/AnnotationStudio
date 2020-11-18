@@ -5,12 +5,6 @@
 import { render } from '@testing-library/react';
 import DocumentForm from './DocumentForm';
 
-// Mock quill as textarea
-jest.mock('../QuillNoSSRWrapper', () => ({
-  __esModule: true,
-  default: () => <textarea />,
-}));
-
 // Mock session
 const session = {
   user: {

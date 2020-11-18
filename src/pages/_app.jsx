@@ -5,6 +5,7 @@ import 'semantic-ui-css/components/dropdown.min.css';
 import 'semantic-ui-css/components/transition.min.css';
 import 'semantic-ui-css/components/label.min.css';
 import 'semantic-ui-css/components/icon.min.css';
+import 'react-bootstrap-typeahead/css/Typeahead.css';
 import '../style/custom.scss';
 
 export default function MyApp({ Component, pageProps }) {

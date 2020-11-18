@@ -5,6 +5,16 @@
 import { render, wait } from '@testing-library/react';
 import EditProfile from '../../pages/user/[slug]/editprofile';
 
+jest.mock('next/router', () => ({
+  useRouter() {
+    return {
+      pathname: '/user/editprofile',
+      query: '',
+      asPath: '',
+    };
+  },
+}));
+
 test('renders edit profile card', async () => {
   const { getAllByText } = render(<EditProfile user={{
     name: 'Test User',
