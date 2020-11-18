@@ -80,16 +80,10 @@ const AdminDocumentTable = ({ document, alerts, setAlerts }) => {
             <th>Title</th>
             <td>{document.title}</td>
           </tr>
-          {document.authors && (
+          {document.contributors && (
             <tr>
-              <th>Authors</th>
-              <td>{document.authors.join(', ')}</td>
-            </tr>
-          )}
-          {document.editors && (
-            <tr>
-              <th>Editors</th>
-              <td>{document.editors.join(', ')}</td>
+              <th>Contributors</th>
+              <td>{document.contributors.map((c) => c.name).join(', ')}</td>
             </tr>
           )}
           {document.publication && (

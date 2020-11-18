@@ -27,11 +27,15 @@ const DashboardAnnotationList = ({
     async function fetchData() {
       if (session && (session.user.groups || session.user.id)) {
         if (key === 'shared') {
-          setAnnotations(
-            await getSharedAnnotations(session.user.groups, limit)
-              .then(setListLoading(false))
-              .catch((err) => setAlerts([...alerts, { text: err.message, variant: 'danger' }])),
-          );
+          if (session.user.groups && session.user.groups.length > 0) {
+            setAnnotations(
+              await getSharedAnnotations(session.user.groups, limit)
+                .then(setListLoading(false))
+                .catch((err) => setAlerts([...alerts, { text: err.message, variant: 'danger' }])),
+            );
+          } else {
+            setAnnotations([]);
+          }
         } else if (key === 'mine') {
           setAnnotations(
             await getOwnAnnotations(session.user.id, limit)

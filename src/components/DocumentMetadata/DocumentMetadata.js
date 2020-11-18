@@ -23,30 +23,46 @@ const DocumentMetadata = ({
       default: return 'Publication title';
     }
   };
+
+  const contributorTypes = ['Author', 'Editor', 'Translator', 'Contributor'];
+
   const [notesOn, setNotesOn] = useState(false);
 
   return (
     <>
       <Row>
         <Col>
-          <Form.Group controlId="documentAuthors" data-testid="authors-fields">
-            <Form.Label>Author(s)</Form.Label>
+          <Form.Group controlId="documentContributors" data-testid="contributors-fields">
+            <Form.Label>Contributor(s)</Form.Label>
             <FieldArray
-              name="authors"
+              name="contributors"
               render={(arrayHelpers) => (
                 <>
-                  {values.authors && values.authors.length > 0 && (
-                    values.authors.map((author, index) => (
+                  {values.contributors && values.contributors.length > 0 && (
+                    values.contributors.map((contributor, index) => (
                       <Row key={index}>
                         <Col>
                           <InputGroup className="mb-2">
                             <Form.Control
-                              type="text"
-                              name={`authors.${index}`}
-                              placeholder="Author"
+                              as="select"
+                              name={`contributors.${index}.type`}
                               onChange={handleChange}
                               onBlur={handleBlur}
-                              value={author}
+                              value={contributor.type}
+                            >
+                              {contributorTypes.map(
+                                ((type) => (
+                                  <option key={type}>{type}</option>
+                                )),
+                              )}
+                            </Form.Control>
+                            <Form.Control
+                              type="text"
+                              name={`contributors.${index}.name`}
+                              placeholder="Name"
+                              onChange={handleChange}
+                              onBlur={handleBlur}
+                              value={contributor.name}
                             />
                             <InputGroup.Append>
                               <Button
@@ -70,67 +86,14 @@ const DocumentMetadata = ({
                       variant="link"
                       onClick={() => arrayHelpers.push('')}
                     >
-                      + Add an author
+                      + Add a contributor
                     </Button>
                   </>
                 </>
               )}
             />
             <Form.Control.Feedback type="invalid">
-              {errors.authors}
-            </Form.Control.Feedback>
-          </Form.Group>
-        </Col>
-        <Col>
-          <Form.Group controlId="documentEditors">
-            <Form.Label>Editor(s)</Form.Label>
-            <FieldArray
-              name="editors"
-              render={(arrayHelpers) => (
-                <>
-                  {values.editors && values.editors.length > 0 && (
-                    values.editors.map((editor, index) => (
-                      <Row key={index}>
-                        <Col>
-                          <InputGroup className="mb-2">
-                            <Form.Control
-                              type="text"
-                              name={`editors.${index}`}
-                              placeholder="Editor"
-                              onChange={handleChange}
-                              onBlur={handleBlur}
-                              value={editor}
-                            />
-                            <InputGroup.Append>
-                              <Button
-                                type="button"
-                                className="rounded-right"
-                                variant="outline-primary"
-                                onClick={() => arrayHelpers.remove(index)}
-                              >
-                                ✕
-                              </Button>
-                            </InputGroup.Append>
-                          </InputGroup>
-                        </Col>
-                      </Row>
-                    ))
-                  )}
-                  <>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="link"
-                      onClick={() => arrayHelpers.push('')}
-                    >
-                      + Add an editor
-                    </Button>
-                  </>
-                </>
-              )}
-            />
-            <Form.Control.Feedback type="invalid">
-              {errors.editors}
+              {errors.contributors}
             </Form.Control.Feedback>
           </Form.Group>
         </Col>

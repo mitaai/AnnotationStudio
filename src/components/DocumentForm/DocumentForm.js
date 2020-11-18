@@ -129,6 +129,7 @@ const DocumentForm = ({
       text: slateInitialValue,
       resourceType: 'Book',
       rightsStatus: 'Copyrighted',
+      contributors: [{ type: 'author', name: '' }],
       title: '',
       groups: [''],
       state: 'draft',
