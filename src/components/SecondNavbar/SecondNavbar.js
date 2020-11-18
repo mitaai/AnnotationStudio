@@ -46,6 +46,11 @@ const SecondNavbar = ({
                     Registration
                   </Breadcrumb.Item>
                 )}
+                {type === 'annotations' && (
+                  <Breadcrumb.Item active>
+                    Annotations
+                  </Breadcrumb.Item>
+                )}
                 {title && (
                   <Breadcrumb.Item active>{title}</Breadcrumb.Item>
                 )}

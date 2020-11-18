@@ -54,6 +54,7 @@ export default function Home({
               session={session}
               alerts={alerts}
               setAlerts={setAlerts}
+              mode="dashboard"
             />
           </Col>
         </Row>

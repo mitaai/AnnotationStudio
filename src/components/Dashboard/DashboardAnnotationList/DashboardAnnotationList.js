@@ -14,24 +14,27 @@ const DashboardAnnotationList = ({
   session,
   alerts,
   setAlerts,
+  tab,
+  mode,
 }) => {
   const [groupState, setGroupState] = useState({});
-  const [key, setKey] = useState('mine');
+  const [key, setKey] = useState(tab || 'mine');
   const [listLoading, setListLoading] = useState(true);
   const [annotations, setAnnotations] = useState([]);
+  const limit = mode === 'dashboard' ? 10 : undefined;
 
   useEffect(() => {
     async function fetchData() {
       if (session && (session.user.groups || session.user.id)) {
         if (key === 'shared') {
           setAnnotations(
-            await getSharedAnnotations(session.user.groups, 10)
+            await getSharedAnnotations(session.user.groups, limit)
               .then(setListLoading(false))
               .catch((err) => setAlerts([...alerts, { text: err.message, variant: 'danger' }])),
           );
         } else if (key === 'mine') {
           setAnnotations(
-            await getOwnAnnotations(session.user.id, 10)
+            await getOwnAnnotations(session.user.id, limit)
               .then(setListLoading(false))
               .catch((err) => setAlerts([...alerts, { text: err.message, variant: 'danger' }])),
           );
@@ -58,7 +61,14 @@ const DashboardAnnotationList = ({
   return (
     <Card>
       <Card.Header>
-        <Card.Title><Link href="/annotations">Annotations</Link></Card.Title>
+        <Card.Title>
+          {mode === 'dashboard' && (
+            <Link href="/annotations">Annotations</Link>
+          )}
+          {mode === 'list' && (
+            <>Annotations</>
+          )}
+        </Card.Title>
         <Tabs
           transition={false}
           style={{ justifyContent: 'flex-end', float: 'right', marginTop: '-2rem' }}
@@ -85,15 +95,6 @@ const DashboardAnnotationList = ({
                     </Link>
                   </Col>
                   <Col className="text-right" xl={4}>
-                    {annotation.permissions.groups && annotation.permissions.groups.length > 0 && (
-                    <Badge
-                      variant="info"
-                      key={annotation.permissions.groups.sort()[0]}
-                      className="mr-2"
-                    >
-                      {groupState[annotation.permissions.groups.sort()[0]]}
-                    </Badge>
-                    )}
                     <small style={{ whiteSpace: 'nowrap' }}>{format(new Date(annotation.created), 'Ppp')}</small>
                   </Col>
                 </Row>
@@ -109,6 +110,16 @@ const DashboardAnnotationList = ({
                       {' ('}
                       {FirstNameLastInitial(annotation.creator.name)}
                       )
+                      {annotation.permissions.groups
+                      && annotation.permissions.groups.length > 0 && (
+                      <Badge
+                        variant="info"
+                        key={annotation.permissions.groups.sort()[0]}
+                        className="mr-2"
+                      >
+                        {groupState[annotation.permissions.groups.sort()[0]]}
+                      </Badge>
+                      )}
                     </small>
                   </Col>
                 </Row>
@@ -116,11 +127,13 @@ const DashboardAnnotationList = ({
             ),
           )}
         </ListGroup>
+        {mode === 'dashboard' && (
         <Card.Footer style={{ fontWeight: 'bold', borderTop: 0 }} key="all-annotations">
           <Link href={`/annotations?tab=${key}`} disabled>
             {`See all ${key === 'shared' ? key : 'created'} annotations...`}
           </Link>
         </Card.Footer>
+        )}
       </>
       )}
       {!listLoading && (!annotations || annotations.length === 0) && (
