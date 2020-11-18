@@ -9,6 +9,16 @@ import Index from '../pages/index';
 
 jest.mock('unfetch');
 
+jest.mock('next/router', () => ({
+  useRouter() {
+    return {
+      pathname: '/',
+      query: '',
+      asPath: '',
+    };
+  },
+}));
+
 test('renders header', async () => {
   let navElement;
   fetch.mockReturnValueOnce([]);
