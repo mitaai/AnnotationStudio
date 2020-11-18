@@ -12,8 +12,8 @@ const DashboardGroupList = ({
   const [groups, setGroups] = useState([]);
 
   useEffect(() => {
-    if (session && !deepEqual(session.user.groups, groups)) {
-      setGroups(session.user.groups);
+    if (session && !deepEqual(session.user.groups.slice(0, 10), groups)) {
+      setGroups(session.user.groups.slice(0, 10));
     }
   }, [session]);
 

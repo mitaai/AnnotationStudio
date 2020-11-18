@@ -16,6 +16,7 @@ import {
   createTextQuoteSelector,
   highlightRange,
 } from 'apache-annotator/dom';
+import HeatMap from '../../../components/HeatMap';
 import Layout from '../../../components/Layout';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import AnnotationChannel from '../../../components/AnnotationChannel';
@@ -98,7 +99,6 @@ const DocumentPage = (props) => {
   const [session, loading] = useSession();
 
   const saveAnnotationChanges = (anno, side) => {
-    console.log('saveAnnotationChanges');
     const index = channelAnnotations[side].findIndex((a) => a._id === anno._id);
     channelAnnotations[side][index] = DeepCopyObj(anno);
     setChannelAnnotations(DeepCopyObj(channelAnnotations));
@@ -331,6 +331,7 @@ const DocumentPage = (props) => {
             docView
           >
             <Row id="document-container">
+              <HeatMap />
               <Col className="annotation-channel-container">
                 <AnnotationChannel
                   deleteAnnotationFromChannels={deleteAnnotationFromChannels}
