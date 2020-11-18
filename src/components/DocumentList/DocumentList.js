@@ -70,7 +70,7 @@ const DocumentList = ({
                 Title
               </th>
               <th>
-                Authors
+                Contributors
               </th>
               <th>
                 Created
@@ -98,7 +98,9 @@ const DocumentList = ({
                     </Link>
                   </td>
                   <td>
-                    {document.authors ? document.authors.join(', ') : (<Badge>[no author]</Badge>)}
+                    {document.contributors
+                      ? document.contributors.map((c) => c.name).join(', ')
+                      : (<Badge>[no contributors]</Badge>)}
                   </td>
                   <td>
                     {format(new Date(document.createdAt), 'MM/dd/yyyy')}

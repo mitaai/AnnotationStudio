@@ -29,7 +29,7 @@ const document = {
   _id: 'documenttestid',
   title: 'test',
   state: 'draft',
-  authors: [],
+  contributors: [],
   createdAt: '2881-10-05T14:48:00.000',
   owner: 'testestestest',
   groups: [],
