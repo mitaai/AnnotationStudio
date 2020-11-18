@@ -205,5 +205,20 @@ $theme-colors: (
   height: 100%;
 }
 
+.ellipsis {
+  text-overflow: ellipsis;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.paragraph-ellipsis {
+  line-clamp: 3;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;  
+  overflow: hidden;
+}
+
 /* import bootstrap */
 @import "~bootstrap/scss/bootstrap";

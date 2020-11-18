@@ -14,7 +14,7 @@ const DashboardDocumentList = ({
   alerts,
   setAlerts,
 }) => {
-  const [groupState, setGroupState] = useState({});
+  const [documentGroupState, setDocumentGroupState] = useState({});
   const [key, setKey] = useState('shared');
   const [listLoading, setListLoading] = useState(true);
   const [documents, setDocuments] = useState([]);
@@ -45,14 +45,18 @@ const DashboardDocumentList = ({
     if (documents) {
       const fetchGroupState = async () => {
         documents.map((document) => document.groups.map(async (group) => {
-          if (!groupState[group]) {
-            setGroupState({ ...groupState, [group]: await getGroupNameById(group) });
+          if (!documentGroupState[group]) {
+            const name = await getGroupNameById(group);
+            setDocumentGroupState((prevState) => ({
+              ...prevState,
+              [group]: name,
+            }));
           }
         }));
       };
       fetchGroupState();
     }
-  }, [documents, groupState]);
+  }, [documents, documentGroupState]);
 
   return (
     <Card>
@@ -87,7 +91,7 @@ const DashboardDocumentList = ({
                     key={document.groups.sort()[0]}
                     className="mr-2"
                   >
-                    {groupState[document.groups.sort()[0]]}
+                    {documentGroupState[document.groups.sort()[0]]}
                   </Badge>
                   )}
                   <>

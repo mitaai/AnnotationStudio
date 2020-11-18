@@ -154,9 +154,49 @@ const reassignAnnotationsToUser = async (sourceUser, destinationEmail) => {
   } return Promise.reject(Error(`Unable to find user with email ${destinationEmail}: error ${res.status} received from server`));
 };
 
+const getSharedAnnotations = async (groups, limit) => {
+  let url = `/api/annotations?limit=${limit}`;
+  groups.map((group) => {
+    url = `${url}&groupIds[]=${group.id}`;
+    return null;
+  });
+  const res = await unfetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (res.status === 200) {
+    const response = await res.json();
+    const { annotations } = response;
+    return Promise.resolve(annotations);
+  } if (res.status === 404) {
+    return Promise.resolve([]);
+  } return Promise.reject(Error(`Unable to retrieve annotations: error ${res.status} received from server`));
+};
+
+const getOwnAnnotations = async (userId, limit) => {
+  const url = `/api/annotations?userId=${userId}&limit=${limit}`;
+  const res = await unfetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (res.status === 200) {
+    const response = await res.json();
+    const { annotations } = response;
+    return Promise.resolve(annotations);
+  } if (res.status === 404) {
+    return Promise.resolve([]);
+  } return Promise.reject(Error(`Unable to retrieve annotations: error ${res.status} received from server`));
+};
+
 export {
   deleteAnnotationById,
   getAnnotationById,
+  getOwnAnnotations,
+  getSharedAnnotations,
   postAnnotation,
   prefetchSharedAnnotationsOnDocument,
   reassignAnnotationsToUser,

@@ -9,7 +9,10 @@ const handler = async (req, res) => {
   if (method === 'GET') {
     const token = await jwt.getToken({ req, secret });
     if (token && token.exp > 0) {
-      const { slug } = req.query;
+      const {
+        slug, userId, limit,
+      } = req.query;
+      const groupIds = req.query['groupIds[]'];
       if (slug) {
         const { db } = await connectToDatabase();
         const arr = await db
@@ -19,7 +22,51 @@ const handler = async (req, res) => {
           })
           .toArray();
         res.status(200).json({ annotations: arr });
-      } else res.status(400).end('Bad request: missing document slug');
+      } else if (userId) {
+        if (userId === token.id) {
+          const { db } = await connectToDatabase();
+          if (limit) {
+            const arr = await db
+              .collection('annotations')
+              .find({
+                'creator.id': userId,
+              })
+              .limit(parseInt(limit, 10))
+              .toArray();
+            res.status(200).json({ annotations: arr });
+          } else {
+            const arr = await db
+              .collection('annotations')
+              .find({
+                'creator.id': userId,
+              })
+              .toArray();
+            res.status(200).json({ annotations: arr });
+          }
+        } else res.status(403).end('Unauthorized');
+      } else if (groupIds) {
+        const { db } = await connectToDatabase();
+        if (limit) {
+          const arr = await db
+            .collection('annotations')
+            .find({
+              'permissions.private': false,
+              'permissions.groups': { $in: groupIds },
+            })
+            .limit(parseInt(limit, 10))
+            .toArray();
+          res.status(200).json({ annotations: arr });
+        } else {
+          const arr = await db
+            .collection('annotations')
+            .find({
+              'permissions.private': false,
+              'permissions.groups': { $in: groupIds },
+            })
+            .toArray();
+          res.status(200).json({ annotations: arr });
+        }
+      } else res.status(400).end('Bad request');
     } else res.status(403).end('Invalid or expired token');
   } else if (method === 'PATCH') {
     if (req.body.mode === 'documentMetadata' && req.body.documentToUpdate) {
@@ -39,6 +86,9 @@ const handler = async (req, res) => {
           findCondition = { 'target.document.slug': documentToUpdate.slug };
         }
         if (!documentToUpdate.format) documentToUpdate.format = 'text/html';
+        const { groups } = userObj;
+        const userGroups = groups.map((group) => group.id);
+        const groupIntersection = documentToUpdate.groups.filter((id) => userGroups.includes(id));
         const arr = await db
           .collection('annotations')
           .updateMany(
@@ -46,6 +96,7 @@ const handler = async (req, res) => {
             {
               $set: {
                 'target.document': documentToUpdate,
+                'permissions.groups': groupIntersection,
               },
               $currentDate: { modified: true },
             },

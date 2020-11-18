@@ -1,8 +1,8 @@
 import {
-  Nav, Row, Col, Navbar, Breadcrumb, Container, Button, OverlayTrigger, Popover, Form, Card, ButtonGroup,
+  Nav, Row, Col, Navbar, Breadcrumb, Container,
 } from 'react-bootstrap';
 import {
-  InfoSquare, Filter, ShieldFillCheck, ChatLeftQuoteFill, PeopleFill, BookmarkFill, CalendarEventFill,
+  InfoSquare,
 } from 'react-bootstrap-icons';
 
 import FilterPopover from '../FilterPopover';
@@ -20,10 +20,10 @@ const SecondNavbar = ({
           <Col sm={8}>
             <Nav>
               <Breadcrumb>
-                <Breadcrumb.Item active={type === 'dashboard'} href="/">Home</Breadcrumb.Item>
+                <Breadcrumb.Item active={type === 'dashboard'} href="/">Dashboard</Breadcrumb.Item>
                 {type === 'document' && (
                   <Breadcrumb.Item href="/documents" active={!title}>
-                    Library
+                    Documents
                   </Breadcrumb.Item>
                 )}
                 {type === 'group' && (
@@ -44,6 +44,11 @@ const SecondNavbar = ({
                 {type === 'newuser' && (
                   <Breadcrumb.Item active>
                     Registration
+                  </Breadcrumb.Item>
+                )}
+                {type === 'annotations' && (
+                  <Breadcrumb.Item active>
+                    Annotations
                   </Breadcrumb.Item>
                 )}
                 {title && (
