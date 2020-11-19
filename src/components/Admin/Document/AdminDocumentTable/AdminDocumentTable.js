@@ -48,23 +48,23 @@ const AdminDocumentTable = ({ document, alerts, setAlerts }) => {
         size="sm"
         variant="light"
         style={{ borderCollapse: 'unset' }}
+        data-testid="admin-doc-view"
       >
         <thead>
           <tr>
             <td colSpan="2" className="text-center">View Document</td>
-            <div style={{ position: 'absolute', right: '2em' }} id="group-dropdown">
+            <td style={{ position: 'absolute', right: '2em', border: 'none' }} id="document-dropdown">
               <DropdownButton
                 size="sm"
                 variant="text"
                 drop="down"
-                menuAlign="right"
                 title="Actions"
               >
                 <Dropdown.Item eventKey="1" href={`/documents/${document.slug}`}>View full document</Dropdown.Item>
                 <Dropdown.Item eventKey="2" href={`/documents/${document.slug}/edit`}>Modify document</Dropdown.Item>
                 <Dropdown.Item eventKey="3" onClick={handleShowModal}>Delete document</Dropdown.Item>
               </DropdownButton>
-            </div>
+            </td>
           </tr>
         </thead>
         <tbody>

@@ -6,7 +6,7 @@ import { render } from '@testing-library/react';
 import { ArrowUp } from 'react-bootstrap-icons';
 import AdminUserList from './AdminUserList';
 
-test('renders groups table (empty list)', async () => {
+test('renders users table (empty list)', async () => {
   const { getByTestId } = render(
     <AdminUserList
       users={[]}
