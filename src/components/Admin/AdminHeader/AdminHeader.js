@@ -9,6 +9,7 @@ const AdminHeader = ({ activeKey, setKey }) => (
       justify
       activeKey={activeKey}
       onSelect={(k) => setKey(k)}
+      data-testid="admin-tabs"
     >
       <Tab eventKey="dashboard" title="About" />
       <Tab eventKey="users" title="Users" />

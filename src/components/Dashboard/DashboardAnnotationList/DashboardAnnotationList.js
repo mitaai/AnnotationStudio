@@ -120,7 +120,9 @@ const DashboardAnnotationList = ({
                       {') '}
                       {annotation.permissions.groups
                       && annotation.permissions.groups.length > 0
-                      && annotation.permissions.private === false && (
+                      && annotation.permissions.private === false
+                      && annotation.permissions.documentOwner === false
+                      && (
                       <Badge
                         variant="info"
                         key={annotation.permissions.groups.sort()[0]}

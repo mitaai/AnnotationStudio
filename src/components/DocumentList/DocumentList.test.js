@@ -4,17 +4,7 @@
 
 import { render } from '@testing-library/react';
 import DocumentList from './DocumentList';
-
-// Mock document
-const document = {
-  _id: 'documenttestid',
-  title: 'test',
-  contributors: [],
-  createdAt: '2881-10-05T14:48:00.000',
-  state: 'draft',
-  owner: 'testestestest',
-  groups: [],
-};
+import { document } from '../../utils/testUtil';
 
 describe('document list', () => {
   test('renders with a mocked document', async () => {

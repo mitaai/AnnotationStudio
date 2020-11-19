@@ -4,36 +4,10 @@
 
 import { render } from '@testing-library/react';
 import DocumentForm from './DocumentForm';
-
-// Mock quill as textarea
-jest.mock('../QuillNoSSRWrapper', () => ({
-  __esModule: true,
-  default: () => <textarea />,
-}));
+import { document, userSession } from '../../utils/testUtil';
 
 // Mock session
-const session = {
-  user: {
-    id: 'testestestest',
-    name: 'Test User',
-    email: 'test@email.com',
-    groups: [{
-      id: 'abcd1234', name: 'Test Group', ownerName: 'Test User', memberCount: 2, role: 'owner',
-    }],
-  },
-  expires: '2881-10-05T14:48:00.000',
-};
-
-// Mock document
-const document = {
-  _id: 'documenttestid',
-  title: 'test',
-  state: 'draft',
-  contributors: [],
-  createdAt: '2881-10-05T14:48:00.000',
-  owner: 'testestestest',
-  groups: [],
-};
+const session = userSession;
 
 describe('document form', () => {
   test('renders with mode = new', async () => {

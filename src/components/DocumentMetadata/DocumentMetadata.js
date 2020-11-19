@@ -63,6 +63,7 @@ const DocumentMetadata = ({
                               onChange={handleChange}
                               onBlur={handleBlur}
                               value={contributor.name}
+                              maxLength={255}
                             />
                             <InputGroup.Append>
                               <Button
@@ -111,6 +112,7 @@ const DocumentMetadata = ({
               value={values.title}
               isValid={touched.title && !errors.title}
               isInvalid={!!errors.title}
+              maxLength={255}
             />
             <Form.Control.Feedback type="invalid">
               {errors.title}
@@ -134,6 +136,7 @@ const DocumentMetadata = ({
                 value={values.publication}
                 isValid={touched.publication && !errors.publication}
                 isInvalid={!!errors.publication}
+                maxLength={255}
               />
               <Form.Control.Feedback type="invalid">
                 {errors.publication}
@@ -156,6 +159,7 @@ const DocumentMetadata = ({
               isValid={touched.publicationDate
                 && !errors.publicationDate}
               isInvalid={!!errors.publicationDate}
+              maxLength={255}
             />
             <Form.Control.Feedback type="invalid">
               {errors.publicationDate}
@@ -174,6 +178,7 @@ const DocumentMetadata = ({
               value={values.publisher}
               isValid={touched.publisher && !errors.publisher}
               isInvalid={!!errors.publisher}
+              maxLength={255}
             />
             <Form.Control.Feedback type="invalid">
               {errors.publisher}
@@ -195,6 +200,7 @@ const DocumentMetadata = ({
                 value={values.location}
                 isValid={touched.location && !errors.location}
                 isInvalid={!!errors.location}
+                maxLength={255}
               />
               <Form.Control.Feedback type="invalid">
                 {errors.location}
@@ -236,6 +242,7 @@ const DocumentMetadata = ({
                 value={values.volume}
                 isValid={touched.volume && !errors.volume}
                 isInvalid={!!errors.volume}
+                maxLength={255}
               />
               <Form.Control.Feedback type="invalid">
                 {errors.volume}
@@ -255,6 +262,7 @@ const DocumentMetadata = ({
                   value={values.issue}
                   isValid={touched.issue && !errors.issue}
                   isInvalid={!!errors.issue}
+                  maxLength={255}
                 />
                 <Form.Control.Feedback type="invalid">
                   {errors.issue}
@@ -275,6 +283,7 @@ const DocumentMetadata = ({
                   value={values.edition}
                   isValid={touched.edition && !errors.edition}
                   isInvalid={!!errors.edition}
+                  maxLength={255}
                 />
                 <Form.Control.Feedback type="invalid">
                   {errors.edition}
@@ -298,6 +307,7 @@ const DocumentMetadata = ({
                 value={values.pageNumbers}
                 isValid={touched.pageNumbers && !errors.pageNumbers}
                 isInvalid={!!errors.pageNumbers}
+                maxLength={255}
               />
               <Form.Control.Feedback type="invalid">
                 {errors.pageNumbers}
@@ -320,6 +330,7 @@ const DocumentMetadata = ({
                 value={values.series}
                 isValid={touched.series && !errors.series}
                 isInvalid={!!errors.series}
+                maxLength={255}
               />
               <Form.Control.Feedback type="invalid">
                 {errors.series}
@@ -338,6 +349,7 @@ const DocumentMetadata = ({
                 value={values.seriesNumber}
                 isValid={touched.seriesNumber && !errors.seriesNumber}
                 isInvalid={!!errors.seriesNumber}
+                maxLength={255}
               />
               <Form.Control.Feedback type="invalid">
                 {errors.seriesNumber}
@@ -359,6 +371,7 @@ const DocumentMetadata = ({
               value={values.url}
               isValid={touched.url && !errors.url}
               isInvalid={!!errors.url}
+              maxLength={255}
             />
             <Form.Control.Feedback type="invalid">
               {errors.url}
@@ -377,6 +390,7 @@ const DocumentMetadata = ({
               value={values.accessed}
               isValid={touched.accessed && !errors.accessed}
               isInvalid={!!errors.accessed}
+              maxLength={255}
             />
             <Form.Control.Feedback type="invalid">
               {errors.accessed}

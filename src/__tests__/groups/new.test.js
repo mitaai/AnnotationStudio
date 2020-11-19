@@ -5,6 +5,16 @@
 import { render, wait } from '@testing-library/react';
 import NewGroup from '../../pages/groups/new';
 
+jest.mock('next/router', () => ({
+  useRouter() {
+    return {
+      pathname: '/groups/new',
+      query: '',
+      asPath: '',
+    };
+  },
+}));
+
 test('renders new group card', async () => {
   const { getByText } = render(<NewGroup />);
   const textElement = getByText(/Create a new group/);
