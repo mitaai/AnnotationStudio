@@ -98,6 +98,8 @@ const DocumentPage = (props) => {
   const [annotationChannel1Loaded, setAnnotationChannel1Loaded] = useState(false);
   const [annotationChannel2Loaded, setAnnotationChannel2Loaded] = useState(false);
 
+  const [scrolledToAnnotation, setScrolledToAnnotation] = useState();
+
   const [session, loading] = useSession();
 
   const saveAnnotationChanges = (anno, side) => {
@@ -316,10 +318,18 @@ const DocumentPage = (props) => {
 
   useEffect(() => {
     // when both annotation channels are loaded we are going to check the query data and if there is a key 'mine' and 'aid', and 'aid' value actually equals an annotation id that we have then we will trigger scroll to the annotation
-    if (annotationChannel1Loaded && annotationChannel2Loaded && query.mine !== undefined && query.aid !== undefined) {
-      const anno = $(`#${query.aid}.annotation-card-container`);
-      if (anno.length !== 0) {
-        console.log(anno.offset().top);
+    if (!scrolledToAnnotation) {
+      if (annotationChannel1Loaded && annotationChannel2Loaded && query.mine !== undefined && query.aid !== undefined) {
+        const anno = $(`#${query.aid}.annotation-card-container`);
+        const scrollTo = anno.offset().top - $('#document-container').offset().top - 40;
+        if (anno.length !== 0) {
+          $('#document-container').animate({
+            scrollTop: scrollTo < 0 ? 0 : scrollTo,
+          }, 500, () => {
+            anno.children('.annotation-header').trigger('click');
+            setScrolledToAnnotation(true);
+          });
+        }
       }
     }
   });
