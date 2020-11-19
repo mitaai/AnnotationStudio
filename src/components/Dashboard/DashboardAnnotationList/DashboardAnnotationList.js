@@ -67,7 +67,7 @@ const DashboardAnnotationList = ({
   }, [annotations]);
 
   return (
-    <Card>
+    <Card data-testid="dash-annotation-list">
       <Card.Header>
         <Card.Title>
           {mode === 'dashboard' && (

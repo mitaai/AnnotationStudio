@@ -76,16 +76,16 @@ const AdminUserTable = ({
         size="sm"
         variant="light"
         style={{ borderCollapse: 'unset' }}
+        data-testid="admin-user-view"
       >
         <thead>
           <tr>
             <td colSpan="2" className="text-center">View User</td>
-            <div style={{ position: 'absolute', right: '2em' }} id="user-dropdown">
+            <td style={{ position: 'absolute', right: '2em', border: 'none' }} id="user-dropdown">
               <DropdownButton
                 size="sm"
                 variant="text"
                 drop="down"
-                menuAlign="right"
                 title="Actions"
               >
                 <Dropdown.Item eventKey="1" href={`/user/${user.slug}/editprofile`}>Modify user</Dropdown.Item>
@@ -102,7 +102,7 @@ const AdminUserTable = ({
                   </>
                 )}
               </DropdownButton>
-            </div>
+            </td>
           </tr>
         </thead>
         <tbody>

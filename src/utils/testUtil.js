@@ -123,7 +123,6 @@ const userSession = {
   expires: '2881-10-05T14:48:00.000',
 };
 
-
 export {
   adminUserSession,
   annotation,

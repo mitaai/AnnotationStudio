@@ -59,7 +59,7 @@ const DashboardDocumentList = ({
   }, [documents, documentGroupState]);
 
   return (
-    <Card>
+    <Card data-testid="dash-document-list">
       <Card.Header>
         <Card.Title><Link href="/documents">Documents</Link></Card.Title>
         <Tabs

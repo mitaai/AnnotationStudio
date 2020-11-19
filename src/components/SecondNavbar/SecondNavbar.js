@@ -14,7 +14,7 @@ const SecondNavbar = ({
   docView,
 }) => (
   <>
-    <Navbar bg="light" variant="light" className="second-navbar">
+    <Navbar bg="light" variant="light" className="second-navbar" data-testid="second-navbar">
       <Container>
         <Row>
           <Col sm={8}>
