@@ -54,6 +54,7 @@ const handler = async (req, res) => {
             .collection('annotations')
             .find({
               'permissions.private': false,
+              'permissions.documentOwner': false,
               'permissions.groups': { $in: groupIds },
             })
             .limit(parseInt(limit, 10))
@@ -64,6 +65,7 @@ const handler = async (req, res) => {
             .collection('annotations')
             .find({
               'permissions.private': false,
+              'permissions.documentOwner': false,
               'permissions.groups': { $in: groupIds },
             })
             .toArray();

@@ -2,7 +2,7 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-restricted-syntax */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/client';
 import $ from 'jquery';
 import {
@@ -79,8 +79,17 @@ function DeepCopyObj(obj) {
 
 const DocumentPage = (props) => {
   const {
-    document, annotations, initAlerts,
+    document, annotations, initAlerts, query,
   } = props;
+
+  let validQuery = false;
+  let defaultPermissions = 0;
+  if ((query.mine === 'true' || query.mine === 'false') && query.aid !== undefined) {
+    if (annotations.find((anno) => anno._id === query.aid) !== undefined) {
+      validQuery = true;
+      defaultPermissions = query.mine === 'true' ? 0 : 1;
+    }
+  }
 
   const [alerts, setAlerts] = useState(initAlerts || []);
   const [documentHighlightedAndLoaded, setDocumentHighlightedAndLoaded] = useState(false);
@@ -90,11 +99,13 @@ const DocumentPage = (props) => {
     filters: {
       annotatedBy: [], // list of filter options that have been selected by user
       byTags: [], // list of filter options that have been selected by user},
-      permissions: 0,
+      permissions: defaultPermissions,
     },
   });
   const [annotationChannel1Loaded, setAnnotationChannel1Loaded] = useState(false);
   const [annotationChannel2Loaded, setAnnotationChannel2Loaded] = useState(false);
+
+  const [scrollToAnnotation, setScrollToAnnotation] = useState(validQuery);
 
   const [session, loading] = useSession();
 
@@ -312,6 +323,31 @@ const DocumentPage = (props) => {
     }
   };
 
+  useEffect(() => {
+    // when both annotation channels are loaded we are going to check the query data and if there is a key 'mine' and 'aid', and 'aid' value actually equals an annotation id that we have then we will trigger scroll to the annotation
+
+    if (scrollToAnnotation) {
+      if (annotationChannel1Loaded && annotationChannel2Loaded) {
+        if (!documentFilters.filterOnInit) {
+          const f = DeepCopyObj(documentFilters);
+          f.filterOnInit = true;
+          setDocumentFilters(f);
+        } else {
+          const anno = $(`#${query.aid}.annotation-card-container`);
+          if (anno.length !== 0) {
+            const scrollTo = anno.offset().top - $('#document-container').offset().top - 40;
+            setScrollToAnnotation(false);
+            $('#document-container').animate({
+              scrollTop: scrollTo < 0 ? 0 : scrollTo,
+            }, 500, () => {
+              anno.children('.annotation-header').trigger('click');
+            });
+          }
+        }
+      }
+    }
+  });
+
 
   return (
     <DocumentContext.Provider value={document}>
@@ -473,8 +509,9 @@ const DocumentPage = (props) => {
 };
 
 export async function getServerSideProps(context) {
+  console.log(context.req.query);
   const { slug } = context.params;
-  let props = {};
+  let props = { query: context.query };
   await prefetchDocumentBySlug(slug, context.req.headers.cookie).then((response) => {
     props.document = {
       slug,
