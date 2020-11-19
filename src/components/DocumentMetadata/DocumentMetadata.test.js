@@ -5,17 +5,7 @@
 import { render } from '@testing-library/react';
 import { Formik } from 'formik';
 import DocumentMetadata from './DocumentMetadata';
-
-// Mock document
-const values = {
-  _id: 'documenttestid',
-  title: 'test',
-  contributors: [],
-  createdAt: '2881-10-05T14:48:00.000',
-  state: 'draft',
-  owner: 'testestestest',
-  groups: [],
-};
+import { document } from '../../utils/testUtil';
 
 
 describe('document metadata form', () => {
@@ -26,11 +16,11 @@ describe('document metadata form', () => {
           <form onSubmit={props.handleSubmit}>
             <DocumentMetadata
               resourceType="Book"
-              values={values}
+              values={document}
               handleChange={props.handleChange}
               handleBlur={props.handleBlur}
               errors={[]}
-              touched={values}
+              touched={document}
             />
           </form>
         )}

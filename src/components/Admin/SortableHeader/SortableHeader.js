@@ -11,6 +11,7 @@ const SortableHeader = (props) => {
         });
       }}
       style={{ cursor: 'pointer' }}
+      data-testid="sortable-header"
     >
       {children}
       {' '}
