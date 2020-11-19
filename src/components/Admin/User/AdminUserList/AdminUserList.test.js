@@ -3,13 +3,16 @@
  */
 
 import { render } from '@testing-library/react';
+import { ArrowUp } from 'react-bootstrap-icons';
 import AdminUserList from './AdminUserList';
 
 test('renders groups table (empty list)', async () => {
   const { getByTestId } = render(
     <AdminUserList
       users={[]}
-      loading={false}
+      setSortState={jest.fn}
+      sortState={{ field: 'createdAt', direction: 'desc' }}
+      SortIcon={jest.fn().mockReturnValue(<ArrowUp />)}
     />,
   );
   const usersTable = getByTestId('admin-users-table');

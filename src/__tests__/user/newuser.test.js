@@ -5,6 +5,16 @@
 import { render, wait } from '@testing-library/react';
 import NewUser from '../../pages/user/newuser';
 
+jest.mock('next/router', () => ({
+  useRouter() {
+    return {
+      pathname: '/user/newuser',
+      query: '',
+      asPath: '',
+    };
+  },
+}));
+
 test('renders registration card', async () => {
   const { getByText } = render(<NewUser />);
   const textElement = getByText(/Please fill out the following form to complete your registration/);

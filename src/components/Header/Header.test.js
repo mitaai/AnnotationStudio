@@ -5,6 +5,16 @@
 import { render, wait } from '@testing-library/react';
 import Header from './Header';
 
+jest.mock('next/router', () => ({
+  useRouter() {
+    return {
+      pathname: '/',
+      query: '',
+      asPath: '',
+    };
+  },
+}));
+
 test('renders site name', async () => {
   const { getByText } = render(<Header />);
   const nameElement = getByText(/Annotation Studio/);

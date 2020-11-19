@@ -5,6 +5,16 @@
 import { render, wait } from '@testing-library/react';
 import GroupList from '../../pages/groups/index';
 
+jest.mock('next/router', () => ({
+  useRouter() {
+    return {
+      pathname: '/groups',
+      query: '',
+      asPath: '',
+    };
+  },
+}));
+
 test('renders group list card', async () => {
   const { getByTestId } = render(<GroupList query={{ deletedGroupId: '' }} />);
   const cardBody = getByTestId('grouplist-card-body');
