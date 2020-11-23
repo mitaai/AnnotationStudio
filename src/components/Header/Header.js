@@ -21,6 +21,7 @@ function Header({
   docView,
   annotations,
   newReg,
+  statefulSession,
 }) {
   const [session, loading] = useSession();
   const router = useRouter();
@@ -56,7 +57,16 @@ function Header({
                       <GearWideConnected className="align-text-bottom ml-1" />
                     </Nav.Link>
                   )}
-                  {session.user.firstName && (
+                  {statefulSession && (
+                    <NavDropdown title={statefulSession.user.name} id="basic-nav-dropdown" data-testid="nav-profile-dropdown">
+                      <NavDropdown.Item href={getEditProfileUrl(statefulSession.user.email)}>My Profile</NavDropdown.Item>
+                      <NavDropdown.Item href="/api/auth/signout" data-testid="nav-login-link">
+                        Log Out
+                        <BoxArrowRight className="align-text-bottom ml-1" />
+                      </NavDropdown.Item>
+                    </NavDropdown>
+                  )}
+                  {!statefulSession && session.user.firstName && (
                     <NavDropdown title={session.user.name} id="basic-nav-dropdown" data-testid="nav-profile-dropdown">
                       <NavDropdown.Item href={getEditProfileUrl(session.user.email)}>My Profile</NavDropdown.Item>
                       <NavDropdown.Item href="/api/auth/signout" data-testid="nav-login-link">
