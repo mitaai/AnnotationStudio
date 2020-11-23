@@ -8,11 +8,10 @@ import DocumentForm from '../../../components/DocumentForm';
 
 import { prefetchDocumentBySlug } from '../../../utils/docUtil';
 
-const EditDocument = (props) => {
-  const { document, alerts } = props;
+const EditDocument = ({ document, alerts, statefulSession }) => {
   const [session] = useSession();
   return (
-    <Layout alerts={alerts} type="document" title={document ? `Edit Document: ${document.title}` : 'error'}>
+    <Layout alerts={alerts} type="document" title={document ? `Edit Document: ${document.title}` : 'error'} statefulSession={statefulSession}>
       <Col lg="12" className="mx-auto">
         <Card>
           {!session && (

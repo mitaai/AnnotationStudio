@@ -11,7 +11,7 @@ import { addGroupToUser } from '../../utils/groupUtil';
 import Layout from '../../components/Layout';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
-const NewGroup = () => {
+const NewGroup = ({ statefulSession }) => {
   const [session] = useSession();
   const [alerts, setAlerts] = useState([]);
 
@@ -53,7 +53,7 @@ const NewGroup = () => {
   });
 
   return (
-    <Layout alerts={alerts} type="group" title="New Group">
+    <Layout alerts={alerts} type="group" title="New Group" statefulSession={statefulSession}>
       <Col lg="8" className="mx-auto">
         <Card>
           {!session && (

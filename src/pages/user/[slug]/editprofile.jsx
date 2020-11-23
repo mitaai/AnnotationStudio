@@ -11,7 +11,12 @@ import LoadingSpinner from '../../../components/LoadingSpinner';
 import { updateAllAnnotationsByUser } from '../../../utils/annotationUtil';
 
 const EditProfile = ({ user, updateSession, statefulSession }) => {
-  const [session, loading] = useSession();
+  // eslint-disable-next-line prefer-const
+  let [session, loading] = useSession();
+  if ((!session || !session.user || !session.user.firstName)
+    && statefulSession && statefulSession.user && statefulSession.user.firstName) {
+    session = statefulSession;
+  }
 
   const [alerts, setAlerts] = useState([]);
 

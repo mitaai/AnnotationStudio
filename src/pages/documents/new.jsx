@@ -6,10 +6,10 @@ import Layout from '../../components/Layout';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import DocumentForm from '../../components/DocumentForm';
 
-const NewDocument = () => {
+const NewDocument = ({ statefulSession }) => {
   const [session] = useSession();
   return (
-    <Layout type="document" title="New Document">
+    <Layout type="document" title="New Document" statefulSession={statefulSession}>
       <Col lg="12" className="mx-auto">
         <Card>
           {!session && (

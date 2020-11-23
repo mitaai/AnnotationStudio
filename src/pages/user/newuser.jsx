@@ -16,16 +16,19 @@ import Layout from '../../components/Layout';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { addUserToGroup } from '../../utils/groupUtil';
 
-const NewUser = ({ groupId }) => {
+const NewUser = ({ groupId, updateSession }) => {
   const [session] = useSession();
 
   const [alerts, setAlerts] = useState([]);
 
-  const pushToHome = () => {
+  const pushToHome = (statefulSession) => {
     Router.push({
       pathname: '/',
-      query: { alert: 'completeRegistration' },
-    }).then(() => {
+      query: {
+        alert: 'completeRegistration',
+        statefulSession,
+      },
+    }, '/').then(() => {
       destroyCookie(null, 'ans_grouptoken', {
         path: '/',
       });
@@ -33,14 +36,31 @@ const NewUser = ({ groupId }) => {
   };
 
   const submitHandler = async (values) => {
+    const newName = FullName(values.firstName, values.lastName);
     const body = {
       email: session.user.email,
       firstName: values.firstName,
       lastName: values.lastName,
-      name: FullName(values.firstName, values.lastName),
+      name: newName,
       affiliation: values.affiliation,
       slug: session.user.email.replace(/[*+~.()'"!:@]/g, '-'),
     };
+
+    const statefulSession = {
+      user: {
+        name: newName,
+        firstName: values.firstName,
+        email: session.user.email,
+        image: session.user.image,
+        id: session.user.id,
+        groups: session.user.groups,
+        role: session.user.role,
+      },
+      expires: session.expires,
+    };
+
+    updateSession(statefulSession);
+
     const res = await fetch('/api/users', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -55,11 +75,11 @@ const NewUser = ({ groupId }) => {
           path: '/',
         });
         addUserToGroup({ id: groupId }, session.user.email).then(() => {
-          pushToHome();
+          pushToHome(statefulSession);
         }).catch((err) => {
           setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
         });
-      } else pushToHome();
+      } else pushToHome(statefulSession);
     } else {
       setAlerts([...alerts, { text: res.text(), variant: 'danger' }]);
     }

@@ -57,7 +57,7 @@ function Header({
                       <GearWideConnected className="align-text-bottom ml-1" />
                     </Nav.Link>
                   )}
-                  {statefulSession && (
+                  {statefulSession && statefulSession.user && statefulSession.user.email && (
                     <NavDropdown title={statefulSession.user.name} id="basic-nav-dropdown" data-testid="nav-profile-dropdown">
                       <NavDropdown.Item href={getEditProfileUrl(statefulSession.user.email)}>My Profile</NavDropdown.Item>
                       <NavDropdown.Item href="/api/auth/signout" data-testid="nav-login-link">
@@ -75,12 +75,12 @@ function Header({
                       </NavDropdown.Item>
                     </NavDropdown>
                   )}
-                  {!newReg && !session.user.firstName && router.pathname !== '/user/newuser' && (
+                  {!newReg && !session.user.firstName && !(statefulSession && statefulSession.user && statefulSession.user.email) && router.pathname !== '/user/newuser' && (
                     <Nav.Link href="/user/newuser" className="text-danger">
                       Complete Registration
                     </Nav.Link>
                   )}
-                  {newReg && !session.user.firstName && (
+                  {newReg && !session.user.firstName && !statefulSession && (
                     <Nav.Link onClick={() => router.reload()} className="text-warning">Refresh this page</Nav.Link>
                   )}
                 </>

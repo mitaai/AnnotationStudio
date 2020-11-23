@@ -79,7 +79,7 @@ function DeepCopyObj(obj) {
 
 const DocumentPage = (props) => {
   const {
-    document, annotations, initAlerts, query,
+    document, annotations, initAlerts, query, statefulSession,
   } = props;
 
   let validQuery = false;
@@ -365,6 +365,7 @@ const DocumentPage = (props) => {
             title={document === undefined ? '' : document.title}
             alerts={alerts}
             docView
+            statefulSession={statefulSession}
           >
             <Row id="document-container">
               <HeatMap />

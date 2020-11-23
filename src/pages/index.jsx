@@ -5,6 +5,8 @@ import {
 } from 'react-bootstrap';
 import fetch from 'isomorphic-unfetch';
 import { useSession } from 'next-auth/client';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
 import Layout from '../components/Layout';
 import { addUserToGroup } from '../utils/groupUtil';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -16,12 +18,16 @@ export default function Home({
   query,
   initAlerts,
   groupId,
+  statefulSession,
 }) {
   const [session, loading] = useSession();
   const [alerts, setAlerts] = useState(initAlerts || []);
+  const router = useRouter();
+  const { alert } = query;
+  const newReg = alert && alert === 'completeRegistration';
 
   return (
-    <Layout alerts={alerts} type="dashboard" newReg={query && query.alert === 'completeRegistration'}>
+    <Layout alerts={alerts} type="dashboard" newReg={newReg} statefulSession={statefulSession}>
       {loading && (
         <Card>
           <Card.Body>
@@ -35,7 +41,33 @@ export default function Home({
         <Card.Body>Welcome to Annotation Studio. Please log in to use the application.</Card.Body>
       </Card>
       )}
-      {session && !loading && (
+      {session && !session.user.firstName && !statefulSession && (
+        <Card>
+          <Card.Header><Card.Title>Please complete registration</Card.Title></Card.Header>
+          <Card.Body>
+            <p>
+              Please complete your registration by
+              {' '}
+              <Link href="/user/newuser">clicking here</Link>
+              .
+            </p>
+            <p>
+              If you believe you already have compelted registration and this message is in
+              error, try
+              <Button
+                size="sm"
+                variant="link"
+                onClick={() => router.reload()}
+                style={{ padding: '0 0 0 3px', fontSize: '12pt', marginBottom: '4px' }}
+              >
+                refreshing the page
+              </Button>
+              .
+            </p>
+          </Card.Body>
+        </Card>
+      )}
+      {session && (session.user.firstName || statefulSession) && !loading && (
         <Row>
           <Col>
             <CardColumns style={{ columnCount: 1 }}>
@@ -90,6 +122,9 @@ export default function Home({
 Home.getInitialProps = async (context) => {
   const { query } = context;
   const cookies = parseCookies(context);
+  const {
+    statefulSession,
+  } = query;
   let groupId = '';
   let initAlerts = [];
   if (query.alert === 'completeRegistration') {
@@ -118,9 +153,11 @@ Home.getInitialProps = async (context) => {
       variant: 'success',
     }];
   }
-  return {
+  const returnObj = {
     query,
     groupId,
     initAlerts,
+    statefulSession,
   };
+  return returnObj;
 };

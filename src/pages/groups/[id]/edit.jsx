@@ -37,6 +37,7 @@ const EditGroup = ({
   group,
   initAlerts,
   baseUrl,
+  statefulSession,
 }) => {
   const [session, loading] = useSession();
   const [alerts, setAlerts] = useState(initAlerts || []);
@@ -77,7 +78,7 @@ const EditGroup = ({
   };
 
   return (
-    <Layout alerts={alerts} type="group" title={`Manage Group: ${group.name}`}>
+    <Layout alerts={alerts} type="group" title={`Manage Group: ${group.name}`} statefulSession={statefulSession}>
       <Card>
         {!session && loading && (
           <LoadingSpinner />

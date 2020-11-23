@@ -6,14 +6,14 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import DashboardAnnotationList from '../../components/Dashboard/DashboardAnnotationList';
 
 const AnnotationsListVIew = ({
-  props,
+  props, statefulSession,
 }) => {
   const { tab } = props;
   const [session, loading] = useSession();
   const [alerts, setAlerts] = useState([]);
 
   return (
-    <Layout alerts={alerts} type="annotations">
+    <Layout alerts={alerts} type="annotations" statefulSession={statefulSession}>
       {loading && (
         <Card>
           <Card.Body>
