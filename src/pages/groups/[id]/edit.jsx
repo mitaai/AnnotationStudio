@@ -276,7 +276,7 @@ const EditGroup = ({
                           onClick={(event) => {
                             event.target.setAttribute('disabled', 'true');
                             generateInviteToken(group).then((data) => {
-                              const inviteUrl = `${baseUrl}/auth/email-signin?callbackUrl=${baseUrl}&groupToken=${data.value.inviteToken}`;
+                              const inviteUrl = `${baseUrl}/auth/signin?callbackUrl=${baseUrl}&groupToken=${data.value.inviteToken}`;
                               setState({ ...state, inviteUrl });
                               setAlerts([...alerts, {
                                 text: 'Group invite token created successfully.',
@@ -521,7 +521,7 @@ export async function getServerSideProps(context) {
     };
     group.inviteToken = inviteToken || null;
     group.inviteUrl = inviteToken
-      ? `${process.env.SITE}/auth/email-signin?callbackUrl=${process.env.SITE}&groupToken=${inviteToken}`
+      ? `${process.env.SITE}/auth/signin?callbackUrl=${process.env.SITE}&groupToken=${inviteToken}`
       : '';
     return {
       props: {

@@ -10,9 +10,9 @@ import { addUserToGroup } from '../../utils/groupUtil';
 
 const SignIn = ({ props }) => {
   const [session, loading] = useSession();
-  const [alerts, setAlerts] = useState([]);
 
-  const { csrfToken, groupId } = props; // eslint-disable-line no-shadow
+  const { csrfToken, groupId, initAlerts } = props; // eslint-disable-line no-shadow
+  const [alerts, setAlerts] = useState(initAlerts);
   return (
     <Layout
       type="signin"
@@ -88,8 +88,9 @@ const SignIn = ({ props }) => {
 };
 
 SignIn.getInitialProps = async (context) => {
-  const { groupToken } = await context.query;
+  const { groupToken, error } = await context.query;
   let groupId = '';
+  let initAlerts = [];
   if (groupToken) {
     setCookie(context, 'ans_grouptoken', groupToken, {
       maxAge: 30 * 24 * 60 * 60,
@@ -107,10 +108,17 @@ SignIn.getInitialProps = async (context) => {
       groupId = result.group;
     }
   }
+  if (error && error === 'OAuthAccountNotLinked') {
+    initAlerts = [{
+      text: 'Error: This email address is already associated with another login method. Please use the login method you used previously.',
+      variant: 'danger',
+    }];
+  }
   return {
     props: {
       csrfToken: await csrfToken(context),
       groupId,
+      initAlerts,
     },
   };
 };

@@ -56,7 +56,7 @@ const options = {
 
   pages: {
     newUser: '/user/newuser',
-    signIn: '/auth/signin',
+    signIn: '/auth/signin?callbackUrl=http://localhost:3000',
   },
 
   callbacks: {
