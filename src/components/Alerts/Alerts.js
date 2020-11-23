@@ -10,7 +10,7 @@ function Alerts({ alerts }) {
         alertsToAdd[`alert[${i}]`] = true;
       }
     }
-    setShow({ ...show, ...alertsToAdd });
+    setShow((prevState) => ({ ...prevState, ...alertsToAdd }));
   }, [alerts]);
 
   return (

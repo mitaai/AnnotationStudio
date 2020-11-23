@@ -23,8 +23,14 @@ const AdminDocumentList = (props) => {
         documents.map(async (document) => {
           if (!namesState[document.owner]) {
             await getUserById(document.owner)
-              .then((result) => setNamesState({ ...namesState, [document.owner]: result.name }))
-              .catch(() => setNamesState({ ...namesState, [document.owner]: '[user not found]' }));
+              .then((result) => setNamesState((prevState) => ({
+                ...prevState,
+                [document.owner]: result.name,
+              })))
+              .catch(() => setNamesState((prevState) => ({
+                ...prevState,
+                [document.owner]: '[user not found]',
+              })));
           }
         });
       }
