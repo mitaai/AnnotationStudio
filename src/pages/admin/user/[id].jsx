@@ -11,11 +11,11 @@ import { prefetchUserById } from '../../../utils/userUtil';
 import AdminUserTable from '../../../components/Admin/User/AdminUserTable';
 
 const AdminManageUser = (props) => {
-  const { user, initAlert } = props;
+  const { user, initAlert, statefulSession } = props;
   const [session, loading] = useSession();
   const [alerts, setAlerts] = useState(initAlert || []);
   return (
-    <Layout type="admin" alerts={alerts}>
+    <Layout type="admin" alerts={alerts} statefulSession={statefulSession}>
       {loading && (
         <Card>
           <Card.Body>

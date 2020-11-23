@@ -15,7 +15,7 @@ import GroupRoleBadge from '../../../components/GroupRoleBadge';
 import { deleteGroup, removeUserFromGroup } from '../../../utils/groupUtil';
 import { getUserByEmail } from '../../../utils/userUtil';
 
-const ViewGroup = ({ group }) => {
+const ViewGroup = ({ group, statefulSession }) => {
   const [session, loading] = useSession();
 
   const [alerts, setAlerts] = useState([]);
@@ -26,7 +26,7 @@ const ViewGroup = ({ group }) => {
   const roleInGroup = (currentSession) => currentSession.user.groups.find((o) => Object.entries(o).some(([k, value]) => k === 'id' && value === group.id)).role;
 
   return (
-    <Layout alerts={alerts} type="group" title={group.name}>
+    <Layout alerts={alerts} type="group" title={group.name} statefulSession={statefulSession}>
       <Card>
         {!session && loading && (
           <LoadingSpinner />

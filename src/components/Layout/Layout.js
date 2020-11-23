@@ -5,7 +5,7 @@ import Footer from '../Footer';
 import Alerts from '../Alerts';
 
 function Layout({
-  children, type, title, alerts, docView, annotations, newReg,
+  children, type, title, alerts, docView, annotations, newReg, statefulSession,
 }) {
   return (
     <>
@@ -19,6 +19,7 @@ function Layout({
         docView={docView}
         annotations={annotations}
         newReg={newReg}
+        statefulSession={statefulSession}
       />
       <main role="main" className="flex-shrink-0 p-3">
         {!docView && (

@@ -10,8 +10,13 @@ import Layout from '../../../components/Layout';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import { updateAllAnnotationsByUser } from '../../../utils/annotationUtil';
 
-const EditProfile = ({ user }) => {
-  const [session, loading] = useSession();
+const EditProfile = ({ user, updateSession, statefulSession }) => {
+  // eslint-disable-next-line prefer-const
+  let [session, loading] = useSession();
+  if ((!session || !session.user || !session.user.firstName)
+    && statefulSession && statefulSession.user && statefulSession.user.firstName) {
+    session = statefulSession;
+  }
 
   const [alerts, setAlerts] = useState([]);
 
@@ -25,6 +30,20 @@ const EditProfile = ({ user }) => {
       affiliation: values.affiliation,
       slug: values.email.replace(/[*+~.()'"!:@]/g, '-'),
     };
+
+    updateSession({
+      user: {
+        name: newName,
+        firstName: values.firstName,
+        email: values.email,
+        image: session.user.image,
+        id: session.user.id,
+        groups: session.user.groups,
+        role: session.user.role,
+      },
+      expires: session.expires,
+    });
+
     // eslint-disable-next-line no-undef
     const res = await fetch('/api/users', {
       method: 'PATCH',
@@ -92,7 +111,7 @@ const EditProfile = ({ user }) => {
   });
 
   return (
-    <Layout alerts={alerts} type="profile">
+    <Layout alerts={alerts} type="profile" statefulSession={statefulSession}>
       <Col lg="8" className="mx-auto">
         <Card>
           {!session && loading && (

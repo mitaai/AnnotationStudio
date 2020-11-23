@@ -16,16 +16,21 @@ import Layout from '../../components/Layout';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { addUserToGroup } from '../../utils/groupUtil';
 
-const NewUser = ({ groupId }) => {
+const NewUser = ({ groupId, updateSession, statefulSession }) => {
   const [session] = useSession();
+  const [loading, setLoading] = useState(false);
 
   const [alerts, setAlerts] = useState([]);
 
-  const pushToHome = () => {
+  const pushToHome = (regSession) => {
     Router.push({
       pathname: '/',
-      query: { alert: 'completeRegistration' },
-    }).then(() => {
+      query: {
+        alert: 'completeRegistration',
+        statefulSession: regSession,
+      },
+    }, '/').then(() => {
+      setLoading(false);
       destroyCookie(null, 'ans_grouptoken', {
         path: '/',
       });
@@ -33,14 +38,32 @@ const NewUser = ({ groupId }) => {
   };
 
   const submitHandler = async (values) => {
+    setLoading(true);
+    const newName = FullName(values.firstName, values.lastName);
     const body = {
       email: session.user.email,
       firstName: values.firstName,
       lastName: values.lastName,
-      name: FullName(values.firstName, values.lastName),
+      name: newName,
       affiliation: values.affiliation,
       slug: session.user.email.replace(/[*+~.()'"!:@]/g, '-'),
     };
+
+    const regSession = {
+      user: {
+        name: newName,
+        firstName: values.firstName,
+        email: session.user.email,
+        image: session.user.image,
+        id: session.user.id,
+        groups: session.user.groups,
+        role: session.user.role,
+      },
+      expires: session.expires,
+    };
+
+    updateSession(regSession);
+
     const res = await fetch('/api/users', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -55,11 +78,11 @@ const NewUser = ({ groupId }) => {
           path: '/',
         });
         addUserToGroup({ id: groupId }, session.user.email).then(() => {
-          pushToHome();
+          pushToHome(regSession);
         }).catch((err) => {
           setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
         });
-      } else pushToHome();
+      } else pushToHome(regSession);
     } else {
       setAlerts([...alerts, { text: res.text(), variant: 'danger' }]);
     }
@@ -75,13 +98,28 @@ const NewUser = ({ groupId }) => {
   });
 
   return (
-    <Layout alerts={alerts} type="newuser">
+    <Layout alerts={alerts} type="newuser" statefulSession={statefulSession}>
       <Col lg="8" className="mx-auto">
         <Card>
-          {!session && (
+          {(loading || !session) && (
             <LoadingSpinner />
           )}
-          {session && (
+          {!loading && (statefulSession || (session && session.user.firstName)) && (
+            <Card.Body className="text-center">
+              <Card.Title>Welcome to Annotation Studio</Card.Title>
+              <Card.Text>
+                Your registration is complete.
+                <br />
+                <Button
+                  className="mt-3"
+                  href="/"
+                >
+                  Go to Dashboard
+                </Button>
+              </Card.Text>
+            </Card.Body>
+          )}
+          {!loading && session && !session.user.firstName && !statefulSession && (
             <Card.Body>
               <Card.Title>Welcome to Annotation Studio</Card.Title>
               <Card.Text>
