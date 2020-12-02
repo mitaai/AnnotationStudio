@@ -69,7 +69,7 @@ function HeatMap() {
         
         #heat-map {
           margin-top: -8px;
-          background: #007bff;
+          background: #c4c4c4;
           position: absolute;
           right: 3px;
           width: 8px;

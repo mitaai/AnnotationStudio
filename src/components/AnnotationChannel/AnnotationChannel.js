@@ -17,6 +17,7 @@ import DocumentFiltersContext from '../../contexts/DocumentFiltersContext';
 import AnnotationCard from '../AnnotationCard';
 
 function adjustLine(from, to, line) {
+  if (from === undefined || to === undefined || line === undefined) { return; }
   const fT = from.offsetTop + from.offsetHeight / 2;
   const tT = to.offsetTop 	 + to.offsetHeight / 2;
   const fL = from.offsetLeft + from.offsetWidth / 2;
@@ -26,16 +27,18 @@ function adjustLine(from, to, line) {
   const CO = Math.abs(tL - fL);
   const H = Math.sqrt(CA * CA + CO * CO);
   let ANG = 180 / Math.PI * Math.acos(CA / H);
+  let top;
+  let left;
 
   if (tT > fT) {
-    var top = (tT - fT) / 2 + fT;
+    top = (tT - fT) / 2 + fT;
   } else {
-    var top = (fT - tT) / 2 + tT;
+    top = (fT - tT) / 2 + tT;
   }
   if (tL > fL) {
-    var left = (tL - fL) / 2 + fL;
+    left = (tL - fL) / 2 + fL;
   } else {
-    var left = (fL - tL) / 2 + tL;
+    left = (fL - tL) / 2 + tL;
   }
 
   if ((fT < tT && fL < tL) || (tT < fT && tL < fL) || (fT > tT && fL > tL) || (tT > fT && tL > fL)) {

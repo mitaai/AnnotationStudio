@@ -29,6 +29,7 @@ import DocumentContext from '../../../contexts/DocumentContext';
 
 
 const adjustLine = (from, to, line) => {
+  if (from === undefined || to === undefined || line === undefined) { return; }
   const fT = from.offsetTop + from.offsetHeight / 2;
   const tT = to.offsetTop 	 + to.offsetHeight / 2;
   const fL = from.offsetLeft + from.offsetWidth / 2;
