@@ -315,7 +315,97 @@ function AnnotationCard({
 
         {expanded ? (
           <>
-            <Card.Header className="annotation-header">
+            {annotationData.editing
+              ? (
+                <>
+                  <Form>
+                    <Row>
+                      <Col lg={12}>
+                        <ButtonGroup size="sm" style={{ margin: '0.3rem 0.3rem 0px 0.3rem', width: 'calc(100% - 0.6rem)' }}>
+                          <Button
+                            onClick={() => { handleAnnotationPermissionsChange(0); }}
+                            // eslint-disable-next-line no-nested-ternary
+                            variant={newAnnotationPermissions !== null ? (newAnnotationPermissions === 0 ? 'primary' : 'outline-primary') : (annotationData.permissions.private ? 'primary' : 'outline-primary')}
+                            style={{ fontSize: '9px' }}
+                          >
+                            Private
+                          </Button>
+                          <Button
+                            onClick={() => { handleAnnotationPermissionsChange(1); }}
+                            // eslint-disable-next-line no-nested-ternary
+                            variant={newAnnotationPermissions !== null ? (newAnnotationPermissions === 1 ? 'primary' : 'outline-primary') : (!annotationData.permissions.documentOwner && !annotationData.permissions.private ? 'primary' : 'outline-primary')}
+                            style={{ fontSize: '9px' }}
+                          >
+                            Share With Groups
+                          </Button>
+                          <Button
+                            onClick={() => { handleAnnotationPermissionsChange(2); }}
+                            // eslint-disable-next-line no-nested-ternary
+                            variant={newAnnotationPermissions !== null ? (newAnnotationPermissions === 2 ? 'primary' : 'outline-primary') : (annotationData.permissions.documentOwner ? 'primary' : 'outline-primary')}
+                            style={{ fontSize: '9px' }}
+                          >
+                            Share with doc owner
+                          </Button>
+                        </ButtonGroup>
+                      </Col>
+                    </Row>
+                    <ListGroup variant="flush" style={{ borderTop: 'none' }}>
+                      <ListGroup.Item className="annotation-body">
+                        <Form.Group controlId="exampleForm.ControlTextarea1">
+                          <Form.Control
+                            style={{ fontSize: '12px' }}
+                            as="textarea"
+                            rows="3"
+                            placeholder="annotation"
+                            defaultValue={annotationData.body.value}
+                            onChange={handleAnnotationTextChange}
+                            readOnly={savingAnnotation}
+                          />
+                        </Form.Group>
+                      </ListGroup.Item>
+                      <ListGroup.Item className="annotation-tags">
+                        <Form.Group controlId="formGroupEmail">
+                          <Form.Control
+                            type="text"
+                            style={{ fontSize: '12px' }}
+                            placeholder="add some tags here..."
+                            defaultValue={annotationData.body.tags.join(' ')}
+                            onChange={handleTagChange}
+                            readOnly={savingAnnotation}
+                          />
+                        </Form.Group>
+                      </ListGroup.Item>
+                    </ListGroup>
+                  </Form>
+                </>
+              )
+              : (
+                <>
+                  <ListGroup variant="flush" style={{ borderTop: 'none' }}>
+                    <ListGroup.Item className="annotation-body">
+                      {annotationData.body.value}
+                      <span
+                        style={{ margin: '0px 0px 0px 5px', color: '#007bff' }}
+                        onClick={() => { setExpanded(false); setUpdateFocusOfAnnotation(true); }}
+                      >
+                        show less
+                      </span>
+                    </ListGroup.Item>
+                    {annotationData.body.tags.join('').length > 0 ? (
+                      <>
+                        <ListGroup.Item className="annotation-tags">
+                          {annotationData.body.tags.map((tag, index) => {
+                            if (tag === '') { return ''; }
+                            return <Badge key={index} variant="secondary">{tag}</Badge>;
+                          })}
+                        </ListGroup.Item>
+                      </>
+                    ) : <></>}
+
+                  </ListGroup>
+                </>
+              )}
+            <Card.Header className="annotation-header grey-background">
               <span className="float-left">{annotationData.creator.name}</span>
               {annotationData.editing ? (
                 <>
@@ -376,96 +466,6 @@ function AnnotationCard({
                 </>
               )}
             </Card.Header>
-            {annotationData.editing
-              ? (
-                <>
-                  <Form>
-                    <ListGroup variant="flush" style={{ borderTop: 'none' }}>
-                      <ListGroup.Item className="annotation-body">
-                        <Form.Group controlId="exampleForm.ControlTextarea1">
-                          <Form.Control
-                            style={{ fontSize: '12px' }}
-                            as="textarea"
-                            rows="3"
-                            placeholder="annotation"
-                            defaultValue={annotationData.body.value}
-                            onChange={handleAnnotationTextChange}
-                            readOnly={savingAnnotation}
-                          />
-                        </Form.Group>
-                      </ListGroup.Item>
-                      <ListGroup.Item className="annotation-tags">
-                        <Form.Group controlId="formGroupEmail">
-                          <Form.Control
-                            type="text"
-                            style={{ fontSize: '12px' }}
-                            placeholder="add some tags here..."
-                            defaultValue={annotationData.body.tags.join(' ')}
-                            onChange={handleTagChange}
-                            readOnly={savingAnnotation}
-                          />
-                        </Form.Group>
-                      </ListGroup.Item>
-                    </ListGroup>
-                    <Row>
-                      <Col lg={12}>
-                        <ButtonGroup size="sm" style={{ margin: '0px 0px 0.3rem 0.3rem' }}>
-                          <Button
-                            onClick={() => { handleAnnotationPermissionsChange(0); }}
-                            // eslint-disable-next-line no-nested-ternary
-                            variant={newAnnotationPermissions !== null ? (newAnnotationPermissions === 0 ? 'primary' : 'outline-primary') : (annotationData.permissions.private ? 'primary' : 'outline-primary')}
-                            style={{ fontSize: '10px' }}
-                          >
-                            Private
-                          </Button>
-                          <Button
-                            onClick={() => { handleAnnotationPermissionsChange(1); }}
-                            // eslint-disable-next-line no-nested-ternary
-                            variant={newAnnotationPermissions !== null ? (newAnnotationPermissions === 1 ? 'primary' : 'outline-primary') : (!annotationData.permissions.documentOwner && !annotationData.permissions.private ? 'primary' : 'outline-primary')}
-                            style={{ fontSize: '10px' }}
-                          >
-                            Share With Groups
-                          </Button>
-                          <Button
-                            onClick={() => { handleAnnotationPermissionsChange(2); }}
-                            // eslint-disable-next-line no-nested-ternary
-                            variant={newAnnotationPermissions !== null ? (newAnnotationPermissions === 2 ? 'primary' : 'outline-primary') : (annotationData.permissions.documentOwner ? 'primary' : 'outline-primary')}
-                            style={{ fontSize: '10px' }}
-                          >
-                            Share with doc owner
-                          </Button>
-                        </ButtonGroup>
-                      </Col>
-                    </Row>
-                  </Form>
-                </>
-              )
-              : (
-                <>
-                  <ListGroup variant="flush" style={{ borderTop: 'none' }}>
-                    <ListGroup.Item className="annotation-body">
-                      {annotationData.body.value}
-                      <span
-                        style={{ margin: '0px 0px 0px 5px', color: '#007bff' }}
-                        onClick={() => { setExpanded(false); setUpdateFocusOfAnnotation(true); }}
-                      >
-                        show less
-                      </span>
-                    </ListGroup.Item>
-                    {annotationData.body.tags.join('').length > 0 ? (
-                      <>
-                        <ListGroup.Item className="annotation-tags">
-                          {annotationData.body.tags.map((tag, index) => {
-                            if (tag === '') { return ''; }
-                            return <Badge key={index} variant="secondary">{tag}</Badge>;
-                          })}
-                        </ListGroup.Item>
-                      </>
-                    ) : <></>}
-
-                  </ListGroup>
-                </>
-              )}
           </>
         ) : (
           <>
@@ -663,18 +663,23 @@ function AnnotationCard({
       .annotation-header {
         padding: 0.30rem 0.60rem !important;
         font-size: 12px;
-        background-color: rgb(250,250,250);
+      }
+
+      .grey-background {
+        background-color: rgb(250,250,250)
       }
 
       .annotation-body {
         padding: 0.30rem 0.3rem !important;
         font-size: 12px;
+        border-bottom-width: 0px
       }
 
       .annotation-tags {
         padding: 0.30rem 0.30rem !important;
         font-size: 16px;
         font-weight: 500 !important;
+        border-bottom-width: 1px !important
       }
 
       .annotation-tags .badge {
