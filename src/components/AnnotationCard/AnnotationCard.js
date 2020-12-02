@@ -25,7 +25,6 @@ import DocumentAnnotationsContext from '../../contexts/DocumentAnnotationsContex
 import DocumentFiltersContext from '../../contexts/DocumentFiltersContext';
 
 function addHoverEventListenersToAllHighlightedText() {
-
   $('.annotation-highlighted-text').on('mouseover', (e) => {
     // highlighting all every piece of the annotation a different color by setting it to active
     $(`.annotation-highlighted-text[annotation-id='${$(e.target).attr('annotation-id')}']`).addClass('active');
@@ -107,7 +106,7 @@ function AnnotationCard({
   user,
   newAnnotation,
 }) {
-  const [channelAnnotations, setChannelAnnotations, saveAnnotationChanges] = useContext(DocumentAnnotationsContext);
+  const [, , saveAnnotationChanges] = useContext(DocumentAnnotationsContext);
   const [documentFilters, setDocumentFilters] = useContext(DocumentFiltersContext);
   const [annotationData, setAnnotationData] = useState({ ...annotation });
   const [newAnnotationTags, setNewAnnotationTags] = useState(null);
@@ -118,19 +117,16 @@ function AnnotationCard({
   const [deletingAnnotation, setDeletingAnnotation] = useState(false);
   const [expanded, setExpanded] = useState(annotation.editing);
   const [updateFocusOfAnnotation, setUpdateFocusOfAnnotation] = useState(annotation.editing);
+  const [hovered, setHovered] = useState();
 
   function AddClassActive(id) {
     // remove active from other annotations
     $('.annotation-card-container').removeClass('active');
-    // changing color of annotation
-    $(`#${id}`).addClass('active');
     // changing color of highlighted text
     $(`.annotation-highlighted-text[annotation-id='${id}']`).addClass('active');
   }
 
   function RemoveClassActive(id) {
-    // removing color of annotation
-    $(`#${id}`).removeClass('active');
     // setting color of highlighted text back to default
     $(`.annotation-highlighted-text[annotation-id='${id}']`).removeClass('active');
   }
@@ -296,9 +292,9 @@ function AnnotationCard({
       <Card
         id={annotationData._id}
         onClick={() => { setUpdateFocusOfAnnotation(true); }}
-        onMouseOver={() => { AddClassActive(annotationData._id); }}
-        onMouseOut={() => { RemoveClassActive(annotationData._id); }}
-        className={`annotation-card-container ${newAnnotation ? 'new-annotation' : ''}`}
+        onMouseOver={() => { AddClassActive(annotationData._id); setHovered(true); }}
+        onMouseOut={() => { RemoveClassActive(annotationData._id); setHovered(); }}
+        className={`annotation-card-container ${newAnnotation ? 'new-annotation' : ''} ${expanded ? 'expanded' : ''} ${hovered ? 'active' : ''}`}
         style={side === 'left' ? { left: '50px' } : { right: '50px' }}
       >
         <div className="line1" />
@@ -316,6 +312,7 @@ function AnnotationCard({
               <span className="annotation-pointer-right" />
             </>
           )}
+
         {expanded ? (
           <>
             <Card.Header className="annotation-header">
@@ -491,14 +488,26 @@ function AnnotationCard({
       </Card>
       <style jsx global>
         {`
-
         .truncated-annotation {
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
 
+        .annotation-pointer-background-left, .annotation-pointer-left, .annotation-pointer-background-right, .annotation-pointer-right {
+          visibility: hidden;
+        }
+
+        .active .annotation-pointer-background-left, .active .annotation-pointer-left, .active .annotation-pointer-background-right, .active .annotation-pointer-right {
+          visibility: visible;
+        }
+
+        .active .line1, .active .line2, .active .line1, .active .line2 {
+          visibility: visible;
+        }
+
         .line1, .line2 {
+            visibility: hidden;
             position:absolute;
             width:1px;
             margin-top:-1px;
@@ -566,8 +575,8 @@ function AnnotationCard({
         .btn-cancel-annotation-edits {
           font-size: 18px;
           border-radius: 50%;
-          line-height: 7px;
-          padding-left: 2.8px;
+          line-height: 6.5px;
+          padding-left: 2.5px;
           width: 18px;
           height: 18px;
           padding-top: 2.3px;
@@ -611,66 +620,66 @@ function AnnotationCard({
             display: none;
         } 
           
-          .annotation-pointer-background-left {
-              position: absolute;
-              right: -20px;
-              top: 3px;
-              width: 0px;
-              height: 0px;
-              border: 10px solid transparent;
-              border-left-color: rgb(220,220,220);
-              transition: border-left-color 0.5s;
-          }
-          .annotation-pointer-left {
-              position: absolute;
-              right: -19px;
-              top: 3px;
-              width: 0px;
-              height: 0px;
-              border: 10px solid transparent;
-              border-left-color: rgb(250,250,250);
-          }
-
-        .annotation-pointer-background-right {
+        .annotation-pointer-background-left {
             position: absolute;
-            left: -20px;
+            right: -20px;
             top: 3px;
             width: 0px;
             height: 0px;
             border: 10px solid transparent;
-            border-right-color: rgb(220,220,220);
-            transition: border-right-color 0.5s;
+            border-left-color: rgb(220,220,220);
+            transition: border-left-color 0.5s;
         }
-        .annotation-pointer-right {
+        .annotation-pointer-left {
             position: absolute;
-            left: -19px;
+            right: -19px;
             top: 3px;
             width: 0px;
             height: 0px;
             border: 10px solid transparent;
-            border-right-color: rgb(250,250,250);
+            border-left-color: rgb(250,250,250);
         }
 
-          .annotation-header {
-            padding: 0.30rem 0.60rem !important;
-            font-size: 12px;
-            background-color: rgb(250,250,250);
-          }
+      .annotation-pointer-background-right {
+          position: absolute;
+          left: -20px;
+          top: 3px;
+          width: 0px;
+          height: 0px;
+          border: 10px solid transparent;
+          border-right-color: rgb(220,220,220);
+          transition: border-right-color 0.5s;
+      }
+      .annotation-pointer-right {
+          position: absolute;
+          left: -19px;
+          top: 3px;
+          width: 0px;
+          height: 0px;
+          border: 10px solid transparent;
+          border-right-color: rgb(250,250,250);
+      }
 
-          .annotation-body {
-            padding: 0.30rem 0.3rem !important;
-            font-size: 12px;
-          }
+      .annotation-header {
+        padding: 0.30rem 0.60rem !important;
+        font-size: 12px;
+        background-color: rgb(250,250,250);
+      }
 
-          .annotation-tags {
-            padding: 0.30rem 0.30rem !important;
-            font-size: 16px;
-            font-weight: 500 !important;
-          }
+      .annotation-body {
+        padding: 0.30rem 0.3rem !important;
+        font-size: 12px;
+      }
 
-          .annotation-tags .badge {
-              margin-right: 3px;
-          }
+      .annotation-tags {
+        padding: 0.30rem 0.30rem !important;
+        font-size: 16px;
+        font-weight: 500 !important;
+      }
+
+      .annotation-tags .badge {
+          margin-right: 3px;
+      }
 
 
           `}

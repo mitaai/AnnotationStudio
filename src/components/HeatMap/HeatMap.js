@@ -26,7 +26,8 @@ import DocumentAnnotationsContext from '../../contexts/DocumentAnnotationsContex
 
 function HeatMap() {
   const lineHeight = 18;
-  const scaleFactor = $('#document-container').height() / $('#document-card-container').height();
+  let scaleFactor = $('#document-container').height() / $('#document-card-container').height();
+  scaleFactor = isNaN(scaleFactor) ? 1 : scaleFactor;
   const minStrokeHeight = 1;
   const offsetTop = $('#document-container').offset() === undefined ? 0 : $('#document-container').offset().top;
   const grandularity = lineHeight * scaleFactor >= minStrokeHeight ? lineHeight : Math.ceil(minStrokeHeight / scaleFactor);
@@ -68,7 +69,7 @@ function HeatMap() {
         
         #heat-map {
           margin-top: -8px;
-          background: #007bff;
+          background: #c4c4c4;
           position: absolute;
           right: 3px;
           width: 8px;
