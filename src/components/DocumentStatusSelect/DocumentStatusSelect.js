@@ -25,7 +25,7 @@ const DocumentStatusSelect = ({
   session,
   disableDraft,
 }) => (
-  <Row>
+  <Row className="mt-3">
     <Col>
       <Form.Group data-testid="status-select-form">
         <Form.Check
