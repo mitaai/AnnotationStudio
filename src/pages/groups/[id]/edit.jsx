@@ -488,10 +488,9 @@ const EditGroup = ({
 export async function getServerSideProps(context) {
   const { params, query } = context;
   const { id } = params;
-  const { alert } = query;
   let initAlerts = [];
 
-  if (alert === 'newGroup') {
+  if (query && query.alert === 'newGroup') {
     initAlerts = [{
       text: 'Group created successfully.',
       variant: 'success',

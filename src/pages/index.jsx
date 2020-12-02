@@ -23,8 +23,7 @@ export default function Home({
   const [session, loading] = useSession();
   const [alerts, setAlerts] = useState(initAlerts || []);
   const router = useRouter();
-  const { alert } = query;
-  const newReg = alert && alert === 'completeRegistration';
+  const newReg = query && query.alert && query.alert === 'completeRegistration';
 
   return (
     <Layout alerts={alerts} type="dashboard" newReg={newReg} statefulSession={statefulSession}>
