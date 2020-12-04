@@ -372,10 +372,10 @@ const DocumentPage = (props) => {
             docView
             statefulSession={statefulSession}
           >
+            <HeatMap />
             {document && (
               <>
                 <Row id="document-container">
-                  <HeatMap />
                   <Col className="annotation-channel-container">
                     <AnnotationChannel
                       deleteAnnotationFromChannels={deleteAnnotationFromChannels}
@@ -393,19 +393,19 @@ const DocumentPage = (props) => {
                       <Card.Body>
                         <Document
                           setChannelAnnotations={
-                      (annos) => {
-                        setChannelAnnotations(annos);
-                        setDocumentHighlightedAndLoaded(true);
-                      }
-                    }
+                            (annos) => {
+                              setChannelAnnotations(annos);
+                              setDocumentHighlightedAndLoaded(true);
+                            }
+                          }
                           annotations={annotations}
                           documentHighlightedAndLoaded={documentHighlightedAndLoaded}
                           addAnnotationToChannels={addAnnotationToChannels}
                           annotateDocument={
-                      (mySelector, annotationID) => {
-                        highlightTextToAnnotate(mySelector, annotationID);
-                      }
-                    }
+                            (mySelector, annotationID) => {
+                              highlightTextToAnnotate(mySelector, annotationID);
+                            }
+                          }
                           documentToAnnotate={document}
                           alerts={alerts}
                           setAlerts={setAlerts}
@@ -458,6 +458,18 @@ const DocumentPage = (props) => {
             height: calc(100vh - 230px);
             overflow-y: scroll;
             padding: 10px 0px;
+          }
+
+          #document-container::-webkit-scrollbar {
+            background: transparent;
+            width: 10px;
+            border-radius: 8px;
+          }
+
+          #document-container::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.1);
+            border: 1px solid rgba(0,0,0,0.6);
+            border-radius: 8px;
           }
 
           #document-container .annotation-channel-container{
