@@ -160,17 +160,22 @@ $theme-colors: (
 }
 
 .slate-code-block {
-  font-size: 14px;
   padding: 12px 16px;
   background-color: rgb(247, 246, 243);
   border-radius: 3px;
   white-space: pre-wrap;
+}
+
+.slate-code-block,
+.slate-code-block .slate-div {
+  font-size: 14px;
   font-family: SFMono-Regular, Consolas, Monaco, "Liberation Mono", Menlo, Courier, monospace;
   tab-size: 2;
   line-height: normal;
 }
 
-.slate-p {
+.slate-p,
+.slate-div {
   font-size: 1.15rem;
   font-family: "calluna", serif;
 }

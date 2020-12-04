@@ -1,5 +1,6 @@
+/* eslint-disable no-restricted-syntax */
 import {
-  Editor, Transforms,
+  Editor, Transforms, Element, Node,
 } from 'slate';
 import {
   useSlate,
@@ -180,6 +181,30 @@ const deserializeDiv = (options) => ({
   }),
 });
 
+const withDivs = () => (editor) => {
+  const { normalizeNode } = editor;
+
+  // eslint-disable-next-line no-param-reassign
+  editor.normalizeNode = (entry) => {
+    const [node, path] = entry;
+
+    // If the element is a div, ensure its children are valid.
+    if (Element.isElement(node) && node.type === 'div') {
+      for (const [child, childPath] of Node.children(editor, path)) {
+        if (Element.isElement(child) && !editor.isInline(child)) {
+          Transforms.liftNodes(editor, { at: childPath });
+          return;
+        }
+      }
+    }
+
+    // Fall back to the original `normalizeNode` to enforce other constraints.
+    normalizeNode(entry);
+  };
+
+  return editor;
+};
+
 const DivPlugin = (options) => ({
   renderElement: getRenderElement(options.div),
   deserialize: deserializeDiv(options),
@@ -192,13 +217,13 @@ const StyledDivElement = ({ children, className, as = 'div' }) => {
       {(children && children !== [])
         ? children
         : (
-          <p data-slate-node="element" className="slate-p">
+          <div data-slate-node="element" className="slate-div">
             <span data-slate-node="text">
               <span data-slate-leaf="true">
                 <span data-slate-zero-width="n" data-slate-length="0" />
               </span>
             </span>
-          </p>
+          </div>
         )}
     </Tag>
   );
@@ -292,7 +317,7 @@ const plugins = [
       component: StyledDivElement,
       type: 'div',
       rootProps: {
-        className: 'slate-p',
+        className: 'slate-div',
       },
     },
   }),
@@ -329,4 +354,5 @@ export {
   plugins,
   videoURLtoEmbedURL,
   insertVideoEmbed,
+  withDivs,
 };

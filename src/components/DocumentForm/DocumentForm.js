@@ -36,7 +36,7 @@ import DocumentStatusSelect from '../DocumentStatusSelect';
 import { deleteDocumentById } from '../../utils/docUtil';
 import ConfirmationDialog from '../ConfirmationDialog';
 import { updateAllAnnotationsOnDocument } from '../../utils/annotationUtil';
-import { plugins } from '../../utils/slateUtil';
+import { plugins, withDivs } from '../../utils/slateUtil';
 import SlateToolbar from '../SlateToolbar';
 
 const DocumentForm = ({
@@ -59,6 +59,7 @@ const DocumentForm = ({
     withMarks(),
     withTable(DEFAULTS_TABLE),
     withDeserializeHTML({ plugins }),
+    withDivs(),
   ];
   const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
