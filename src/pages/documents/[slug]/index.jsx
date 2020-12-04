@@ -85,7 +85,7 @@ const DocumentPage = (props) => {
 
   let validQuery = false;
   let defaultPermissions = 0;
-  if ((query.mine === 'true' || query.mine === 'false') && query.aid !== undefined) {
+  if ((query && (query.mine === 'true' || query.mine === 'false')) && query.aid !== undefined) {
     if (annotations.find((anno) => anno._id === query.aid) !== undefined) {
       validQuery = true;
       defaultPermissions = query.mine === 'true' ? 0 : 1;
@@ -206,7 +206,7 @@ const DocumentPage = (props) => {
       ? $('#document-card-container').offset().left + 25
       : -40;
     for (let i = focusIndex; i < annos.length; i += 1) {
-      if (documentFilters.annotationIds[side] !== null) { // this means that there are filters applied to the document
+      if (documentFilters.annotationIds[side] !== null) { // filters applied
         if (!documentFilters.annotationIds[side].includes(annos[i]._id)) { continue; }
       }
 
@@ -267,7 +267,7 @@ const DocumentPage = (props) => {
       + tempTopAdjustment
       - adjustmentTopNumber;
     for (let i = focusIndex - 1; i >= 0; i -= 1) {
-      if (documentFilters.annotationIds[side] !== null) { // this means that there are filters applied to the document
+      if (documentFilters.annotationIds[side] !== null) { // filters applied
         if (!documentFilters.annotationIds[side].includes(annos[i]._id)) { continue; }
       }
 
@@ -325,7 +325,9 @@ const DocumentPage = (props) => {
   };
 
   useEffect(() => {
-    // when both annotation channels are loaded we are going to check the query data and if there is a key 'mine' and 'aid', and 'aid' value actually equals an annotation id that we have then we will trigger scroll to the annotation
+    // when both annotation channels are loaded we are going to check the query data and
+    // if there is a key 'mine' and 'aid', and 'aid' value actually equals an annotation
+    // id that we have then we will trigger scroll to the annotation
 
     if (scrollToAnnotation) {
       if (annotationChannel1Loaded && annotationChannel2Loaded) {
@@ -352,7 +354,9 @@ const DocumentPage = (props) => {
 
   return (
     <DocumentContext.Provider value={document}>
-      <DocumentAnnotationsContext.Provider value={[channelAnnotations, setChannelAnnotations, saveAnnotationChanges]}>
+      <DocumentAnnotationsContext.Provider
+        value={[channelAnnotations, setChannelAnnotations, saveAnnotationChanges]}
+      >
         <DocumentFiltersContext.Provider value={[documentFilters, setDocumentFilters]}>
           {!session && loading && (
           <LoadingSpinner />
@@ -511,7 +515,6 @@ const DocumentPage = (props) => {
 };
 
 export async function getServerSideProps(context) {
-  console.log(context.req.query);
   const { slug } = context.params;
   let props = { query: context.query };
   await prefetchDocumentBySlug(slug, context.req.headers.cookie).then((response) => {
