@@ -372,74 +372,78 @@ const DocumentPage = (props) => {
             docView
             statefulSession={statefulSession}
           >
-            <Row id="document-container">
-              <HeatMap />
-              <Col className="annotation-channel-container">
-                <AnnotationChannel
-                  deleteAnnotationFromChannels={deleteAnnotationFromChannels}
-                  setAnnotationChannelLoaded={setAnnotationChannel1Loaded}
-                  focusOnAnnotation={moveAnnotationsToCorrectSpotBasedOnFocus}
-                  loaded={annotationChannel1Loaded}
-                  side="left"
-                  annotations={channelAnnotations.left}
-                  documentFilters={documentFilters}
-                  user={session ? session.user : undefined}
-                />
-              </Col>
-              <Col style={{ minWidth: 750, maxWidth: 750 }}>
-                <Card id="document-card-container">
-                  <Card.Body>
-                    <Document
-                      setChannelAnnotations={
-                    (annos) => {
-                      setChannelAnnotations(annos);
-                      setDocumentHighlightedAndLoaded(true);
-                    }
-                  }
-                      annotations={annotations}
-                      documentHighlightedAndLoaded={documentHighlightedAndLoaded}
-                      addAnnotationToChannels={addAnnotationToChannels}
-                      annotateDocument={
-                    (mySelector, annotationID) => {
-                      highlightTextToAnnotate(mySelector, annotationID);
-                    }
-                  }
-                      documentToAnnotate={document}
-                      alerts={alerts}
-                      setAlerts={setAlerts}
+            {document && (
+              <>
+                <Row id="document-container">
+                  <HeatMap />
+                  <Col className="annotation-channel-container">
+                    <AnnotationChannel
+                      deleteAnnotationFromChannels={deleteAnnotationFromChannels}
+                      setAnnotationChannelLoaded={setAnnotationChannel1Loaded}
+                      focusOnAnnotation={moveAnnotationsToCorrectSpotBasedOnFocus}
+                      loaded={annotationChannel1Loaded}
+                      side="left"
+                      annotations={channelAnnotations.left}
+                      documentFilters={documentFilters}
                       user={session ? session.user : undefined}
                     />
-                  </Card.Body>
-                </Card>
-              </Col>
-              <Col className="annotation-channel-container">
-                <AnnotationChannel
-                  deleteAnnotationFromChannels={deleteAnnotationFromChannels}
-                  setAnnotationChannelLoaded={setAnnotationChannel2Loaded}
-                  focusOnAnnotation={moveAnnotationsToCorrectSpotBasedOnFocus}
-                  loaded={annotationChannel2Loaded}
-                  side="right"
-                  annotations={channelAnnotations.right}
-                  documentFilters={documentFilters}
-                  user={session ? session.user : undefined}
-                />
-              </Col>
-            </Row>
-            <Modal
-              show={!(annotationChannel1Loaded && annotationChannel2Loaded)}
-              backdrop="static"
-              keyboard={false}
-              animation={false}
-            >
-              <Modal.Header>
-                <Modal.Title>
-                  Loading Annotations
-                </Modal.Title>
-              </Modal.Header>
-              <Modal.Body>
-                <ProgressBar animated now={100} />
-              </Modal.Body>
-            </Modal>
+                  </Col>
+                  <Col style={{ minWidth: 750, maxWidth: 750 }}>
+                    <Card id="document-card-container">
+                      <Card.Body>
+                        <Document
+                          setChannelAnnotations={
+                      (annos) => {
+                        setChannelAnnotations(annos);
+                        setDocumentHighlightedAndLoaded(true);
+                      }
+                    }
+                          annotations={annotations}
+                          documentHighlightedAndLoaded={documentHighlightedAndLoaded}
+                          addAnnotationToChannels={addAnnotationToChannels}
+                          annotateDocument={
+                      (mySelector, annotationID) => {
+                        highlightTextToAnnotate(mySelector, annotationID);
+                      }
+                    }
+                          documentToAnnotate={document}
+                          alerts={alerts}
+                          setAlerts={setAlerts}
+                          user={session ? session.user : undefined}
+                        />
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                  <Col className="annotation-channel-container">
+                    <AnnotationChannel
+                      deleteAnnotationFromChannels={deleteAnnotationFromChannels}
+                      setAnnotationChannelLoaded={setAnnotationChannel2Loaded}
+                      focusOnAnnotation={moveAnnotationsToCorrectSpotBasedOnFocus}
+                      loaded={annotationChannel2Loaded}
+                      side="right"
+                      annotations={channelAnnotations.right}
+                      documentFilters={documentFilters}
+                      user={session ? session.user : undefined}
+                    />
+                  </Col>
+                </Row>
+                <Modal
+                  show={!(annotationChannel1Loaded && annotationChannel2Loaded)}
+                  backdrop="static"
+                  keyboard={false}
+                  animation={false}
+                >
+                  <Modal.Header>
+                    <Modal.Title>
+                      Loading Annotations
+                    </Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>
+                    <ProgressBar animated now={100} />
+                  </Modal.Body>
+                </Modal>
+              </>
+            )}
           </Layout>
           )}
 
