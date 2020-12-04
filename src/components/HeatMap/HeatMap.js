@@ -1,24 +1,8 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable guard-for-in */
 /* eslint-disable no-restricted-syntax */
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useContext } from 'react';
 import $ from 'jquery';
-import {
-  Nav,
-  Row,
-  Col,
-  Navbar,
-  Breadcrumb,
-  Container,
-  Button,
-  OverlayTrigger,
-  Popover,
-  Form,
-  Card,
-  ButtonGroup,
-  Badge,
-  Spinner,
-} from 'react-bootstrap';
 
 import DocumentFiltersContext from '../../contexts/DocumentFiltersContext';
 import DocumentAnnotationsContext from '../../contexts/DocumentAnnotationsContext';
@@ -68,11 +52,13 @@ function HeatMap() {
         {`
         
         #heat-map {
-          margin-top: -8px;
           background: #c4c4c4;
           position: absolute;
           right: 3px;
           width: 8px;
+          border-radius: 8px;
+          z-index: -1;
+          right: 2px;
         }
 
         #heat-map .stroke {

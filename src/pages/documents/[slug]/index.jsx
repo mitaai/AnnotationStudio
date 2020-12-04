@@ -85,7 +85,7 @@ const DocumentPage = (props) => {
 
   let validQuery = false;
   let defaultPermissions = 0;
-  if ((query.mine === 'true' || query.mine === 'false') && query.aid !== undefined) {
+  if ((query && (query.mine === 'true' || query.mine === 'false')) && query.aid !== undefined) {
     if (annotations.find((anno) => anno._id === query.aid) !== undefined) {
       validQuery = true;
       defaultPermissions = query.mine === 'true' ? 0 : 1;
@@ -206,7 +206,7 @@ const DocumentPage = (props) => {
       ? $('#document-card-container').offset().left + 25
       : -40;
     for (let i = focusIndex; i < annos.length; i += 1) {
-      if (documentFilters.annotationIds[side] !== null) { // this means that there are filters applied to the document
+      if (documentFilters.annotationIds[side] !== null) { // filters applied
         if (!documentFilters.annotationIds[side].includes(annos[i]._id)) { continue; }
       }
 
@@ -267,7 +267,7 @@ const DocumentPage = (props) => {
       + tempTopAdjustment
       - adjustmentTopNumber;
     for (let i = focusIndex - 1; i >= 0; i -= 1) {
-      if (documentFilters.annotationIds[side] !== null) { // this means that there are filters applied to the document
+      if (documentFilters.annotationIds[side] !== null) { // filters applied
         if (!documentFilters.annotationIds[side].includes(annos[i]._id)) { continue; }
       }
 
@@ -325,7 +325,9 @@ const DocumentPage = (props) => {
   };
 
   useEffect(() => {
-    // when both annotation channels are loaded we are going to check the query data and if there is a key 'mine' and 'aid', and 'aid' value actually equals an annotation id that we have then we will trigger scroll to the annotation
+    // when both annotation channels are loaded we are going to check the query data and
+    // if there is a key 'mine' and 'aid', and 'aid' value actually equals an annotation
+    // id that we have then we will trigger scroll to the annotation
 
     if (scrollToAnnotation) {
       if (annotationChannel1Loaded && annotationChannel2Loaded) {
@@ -352,7 +354,9 @@ const DocumentPage = (props) => {
 
   return (
     <DocumentContext.Provider value={document}>
-      <DocumentAnnotationsContext.Provider value={[channelAnnotations, setChannelAnnotations, saveAnnotationChanges]}>
+      <DocumentAnnotationsContext.Provider
+        value={[channelAnnotations, setChannelAnnotations, saveAnnotationChanges]}
+      >
         <DocumentFiltersContext.Provider value={[documentFilters, setDocumentFilters]}>
           {!session && loading && (
           <LoadingSpinner />
@@ -368,74 +372,78 @@ const DocumentPage = (props) => {
             docView
             statefulSession={statefulSession}
           >
-            <Row id="document-container">
-              <HeatMap />
-              <Col className="annotation-channel-container">
-                <AnnotationChannel
-                  deleteAnnotationFromChannels={deleteAnnotationFromChannels}
-                  setAnnotationChannelLoaded={setAnnotationChannel1Loaded}
-                  focusOnAnnotation={moveAnnotationsToCorrectSpotBasedOnFocus}
-                  loaded={annotationChannel1Loaded}
-                  side="left"
-                  annotations={channelAnnotations.left}
-                  documentFilters={documentFilters}
-                  user={session ? session.user : undefined}
-                />
-              </Col>
-              <Col style={{ minWidth: 750, maxWidth: 750 }}>
-                <Card id="document-card-container">
-                  <Card.Body>
-                    <Document
-                      setChannelAnnotations={
-                    (annos) => {
-                      setChannelAnnotations(annos);
-                      setDocumentHighlightedAndLoaded(true);
-                    }
-                  }
-                      annotations={annotations}
-                      documentHighlightedAndLoaded={documentHighlightedAndLoaded}
-                      addAnnotationToChannels={addAnnotationToChannels}
-                      annotateDocument={
-                    (mySelector, annotationID) => {
-                      highlightTextToAnnotate(mySelector, annotationID);
-                    }
-                  }
-                      documentToAnnotate={document}
-                      alerts={alerts}
-                      setAlerts={setAlerts}
+            <HeatMap />
+            {document && (
+              <>
+                <Row id="document-container">
+                  <Col className="annotation-channel-container">
+                    <AnnotationChannel
+                      deleteAnnotationFromChannels={deleteAnnotationFromChannels}
+                      setAnnotationChannelLoaded={setAnnotationChannel1Loaded}
+                      focusOnAnnotation={moveAnnotationsToCorrectSpotBasedOnFocus}
+                      loaded={annotationChannel1Loaded}
+                      side="left"
+                      annotations={channelAnnotations.left}
+                      documentFilters={documentFilters}
                       user={session ? session.user : undefined}
                     />
-                  </Card.Body>
-                </Card>
-              </Col>
-              <Col className="annotation-channel-container">
-                <AnnotationChannel
-                  deleteAnnotationFromChannels={deleteAnnotationFromChannels}
-                  setAnnotationChannelLoaded={setAnnotationChannel2Loaded}
-                  focusOnAnnotation={moveAnnotationsToCorrectSpotBasedOnFocus}
-                  loaded={annotationChannel2Loaded}
-                  side="right"
-                  annotations={channelAnnotations.right}
-                  documentFilters={documentFilters}
-                  user={session ? session.user : undefined}
-                />
-              </Col>
-            </Row>
-            <Modal
-              show={!(annotationChannel1Loaded && annotationChannel2Loaded)}
-              backdrop="static"
-              keyboard={false}
-              animation={false}
-            >
-              <Modal.Header>
-                <Modal.Title>
-                  Loading Annotations
-                </Modal.Title>
-              </Modal.Header>
-              <Modal.Body>
-                <ProgressBar animated now={100} />
-              </Modal.Body>
-            </Modal>
+                  </Col>
+                  <Col style={{ minWidth: 750, maxWidth: 750 }}>
+                    <Card id="document-card-container">
+                      <Card.Body>
+                        <Document
+                          setChannelAnnotations={
+                            (annos) => {
+                              setChannelAnnotations(annos);
+                              setDocumentHighlightedAndLoaded(true);
+                            }
+                          }
+                          annotations={annotations}
+                          documentHighlightedAndLoaded={documentHighlightedAndLoaded}
+                          addAnnotationToChannels={addAnnotationToChannels}
+                          annotateDocument={
+                            (mySelector, annotationID) => {
+                              highlightTextToAnnotate(mySelector, annotationID);
+                            }
+                          }
+                          documentToAnnotate={document}
+                          alerts={alerts}
+                          setAlerts={setAlerts}
+                          user={session ? session.user : undefined}
+                        />
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                  <Col className="annotation-channel-container">
+                    <AnnotationChannel
+                      deleteAnnotationFromChannels={deleteAnnotationFromChannels}
+                      setAnnotationChannelLoaded={setAnnotationChannel2Loaded}
+                      focusOnAnnotation={moveAnnotationsToCorrectSpotBasedOnFocus}
+                      loaded={annotationChannel2Loaded}
+                      side="right"
+                      annotations={channelAnnotations.right}
+                      documentFilters={documentFilters}
+                      user={session ? session.user : undefined}
+                    />
+                  </Col>
+                </Row>
+                <Modal
+                  show={!(annotationChannel1Loaded && annotationChannel2Loaded)}
+                  backdrop="static"
+                  keyboard={false}
+                  animation={false}
+                >
+                  <Modal.Header>
+                    <Modal.Title>
+                      Loading Annotations
+                    </Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>
+                    <ProgressBar animated now={100} />
+                  </Modal.Body>
+                </Modal>
+              </>
+            )}
           </Layout>
           )}
 
@@ -450,6 +458,18 @@ const DocumentPage = (props) => {
             height: calc(100vh - 230px);
             overflow-y: scroll;
             padding: 10px 0px;
+          }
+
+          #document-container::-webkit-scrollbar {
+            background: transparent;
+            width: 10px;
+            border-radius: 8px;
+          }
+
+          #document-container::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.1);
+            border: 1px solid rgba(0,0,0,0.6);
+            border-radius: 8px;
           }
 
           #document-container .annotation-channel-container{
@@ -511,7 +531,6 @@ const DocumentPage = (props) => {
 };
 
 export async function getServerSideProps(context) {
-  console.log(context.req.query);
   const { slug } = context.params;
   let props = { query: context.query };
   await prefetchDocumentBySlug(slug, context.req.headers.cookie).then((response) => {
