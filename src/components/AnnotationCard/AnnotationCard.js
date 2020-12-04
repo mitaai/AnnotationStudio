@@ -30,25 +30,9 @@ function addHoverEventListenersToAllHighlightedText() {
     $(`.annotation-highlighted-text[annotation-id='${$(e.target).attr('annotation-id')}']`).addClass('active');
     // highligthing the correct annotation on the left or right channel that the user is hovering
     $(`#${$(e.target).attr('annotation-id')}`).addClass('active');
-
-    // we need to higlight any text that is highlighted text but a parent of this dom element. This is what happens if somone annotates a piece of text inside of another piece of annotated text
-    $(`.annotation-highlighted-text[annotation-id='${$(e.target).attr('annotation-id')}']`).parents('.annotation-highlighted-text').each((index, elmnt) => {
-      // highlighting ever piece of text that is highlighted and is the parent of the text that is currently being highlighted
-      $(`.annotation-highlighted-text[annotation-id='${$(elmnt).attr('annotation-id')}']`).addClass('active');
-      // highlighting the correct annotation that matches this specific highlighted text that is the parent of the text that is currently getting hovered
-      $(`#${$(elmnt).attr('annotation-id')}`).addClass('active');
-    });
   }).on('mouseout', (e) => {
     $(`.annotation-highlighted-text[annotation-id='${$(e.target).attr('annotation-id')}']`).removeClass('active');
     $(`#${$(e.target).attr('annotation-id')}`).removeClass('active');
-
-    // we need to higlight any text that is highlighted text but a parent of this dom element. This is what happens if somone annotates a piece of text inside of another piece of annotated text
-    $(`.annotation-highlighted-text[annotation-id='${$(e.target).attr('annotation-id')}']`).parents('.annotation-highlighted-text').each((index, elmnt) => {
-      // highlighting ever piece of text that is highlighted and is the parent of the text that is currently being highlighted
-      $(`.annotation-highlighted-text[annotation-id='${$(elmnt).attr('annotation-id')}']`).removeClass('active');
-      // highlighting the correct annotation that matches this specific highlighted text that is the parent of the text that is currently getting hovered
-      $(`#${$(elmnt).attr('annotation-id')}`).removeClass('active');
-    });
   });
 }
 
@@ -118,6 +102,11 @@ function AnnotationCard({
   const [expanded, setExpanded] = useState(annotation.editing);
   const [updateFocusOfAnnotation, setUpdateFocusOfAnnotation] = useState(annotation.editing);
   const [hovered, setHovered] = useState();
+
+  function createCitation() {
+    
+    return null;
+  }
 
   function AddClassActive(id) {
     // remove active from other annotations
@@ -284,6 +273,11 @@ function AnnotationCard({
     if (updateFocusOfAnnotation) {
       focusOnAnnotation();
       setUpdateFocusOfAnnotation(false);
+    }
+
+    // when the annotation is done rendering it should check if any of its corresponding text is active and if it is it should also add the class active to itself it doesn't already have it
+    if ($(`.annotation-highlighted-text[annotation-id='${annotationData._id}']`).hasClass('active') && !$(`#${annotationData._id}`).hasClass('active')) {
+      $(`#${annotationData._id}`).addClass('active');
     }
   });
 
@@ -479,7 +473,14 @@ function AnnotationCard({
       )}
             >
               <Card.Header className="annotation-header" onClick={() => { setExpanded(true); }}>
-                <div className="truncated-annotation">{annotationData.body.value.length === 0 ? <span>&nbsp;</span> : annotationData.body.value}</div>
+                <div className="truncated-annotation">
+                  {annotationData.body.value.length === 0 ? (
+                    <span>
+                      {createCitation()}
+                      &nbsp;
+                    </span>
+                  ) : annotationData.body.value}
+                </div>
               </Card.Header>
             </OverlayTrigger>
           </>

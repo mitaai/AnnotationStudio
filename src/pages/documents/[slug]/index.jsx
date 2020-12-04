@@ -374,10 +374,8 @@ const DocumentPage = (props) => {
                   deleteAnnotationFromChannels={deleteAnnotationFromChannels}
                   setAnnotationChannelLoaded={setAnnotationChannel1Loaded}
                   focusOnAnnotation={moveAnnotationsToCorrectSpotBasedOnFocus}
-                  loaded={annotationChannel1Loaded}
                   side="left"
                   annotations={channelAnnotations.left}
-                  documentFilters={documentFilters}
                   user={session ? session.user : undefined}
                 />
               </Col>
@@ -386,19 +384,19 @@ const DocumentPage = (props) => {
                   <Card.Body>
                     <Document
                       setChannelAnnotations={
-                    (annos) => {
-                      setChannelAnnotations(annos);
-                      setDocumentHighlightedAndLoaded(true);
-                    }
-                  }
+                        (annos) => {
+                          setChannelAnnotations(annos);
+                          setDocumentHighlightedAndLoaded(true);
+                        }
+                      }
                       annotations={annotations}
                       documentHighlightedAndLoaded={documentHighlightedAndLoaded}
                       addAnnotationToChannels={addAnnotationToChannels}
                       annotateDocument={
-                    (mySelector, annotationID) => {
-                      highlightTextToAnnotate(mySelector, annotationID);
-                    }
-                  }
+                        (mySelector, annotationID) => {
+                          highlightTextToAnnotate(mySelector, annotationID);
+                        }
+                      }
                       documentToAnnotate={document}
                       alerts={alerts}
                       setAlerts={setAlerts}
@@ -412,10 +410,8 @@ const DocumentPage = (props) => {
                   deleteAnnotationFromChannels={deleteAnnotationFromChannels}
                   setAnnotationChannelLoaded={setAnnotationChannel2Loaded}
                   focusOnAnnotation={moveAnnotationsToCorrectSpotBasedOnFocus}
-                  loaded={annotationChannel2Loaded}
                   side="right"
                   annotations={channelAnnotations.right}
-                  documentFilters={documentFilters}
                   user={session ? session.user : undefined}
                 />
               </Col>
