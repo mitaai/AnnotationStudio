@@ -1,10 +1,10 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useContext } from 'react';
 import { useRouter } from 'next/router';
 import fetch from 'unfetch';
 import { Formik, Field } from 'formik';
 import {
-  Button, Container, Card, Col, Form, Row,
+  Accordion, AccordionContext, Button, Container, Card, Col, Form, Row, useAccordionToggle,
 } from 'react-bootstrap';
 import * as yup from 'yup';
 import slugify from '@sindresorhus/slugify';
@@ -49,6 +49,27 @@ const DocumentForm = ({
   const [showModal, setShowModal] = useState(false);
   const handleCloseModal = () => setShowModal(false);
   const handleShowModal = () => setShowModal(true);
+
+  function ContextAwareToggle({ children, eventKey, callback }) {
+    const currentEventKey = useContext(AccordionContext);
+
+    const decoratedOnClick = useAccordionToggle(
+      eventKey,
+      () => callback && callback(eventKey),
+    );
+
+    const isCurrentEventKey = currentEventKey === eventKey;
+
+    return (
+      <Button
+        type="button"
+        variant={isCurrentEventKey ? 'text' : 'link'}
+        onClick={decoratedOnClick}
+      >
+        {children}
+      </Button>
+    );
+  }
 
   const withPlugins = [
     withReact,
@@ -184,36 +205,54 @@ const DocumentForm = ({
           {(props.values.state === 'draft' || (data && data.state === 'draft')) && (
             <Form.Row>
               <Col>
-                <Card className="mb-2">
-                  <Card.Header>
-                    <Card.Title>Paste or type directly into the form</Card.Title>
-                  </Card.Header>
-                  <Card.Body id="slate-container-card">
-                    <div id="slate-container">
-                      <Field name="text">
-                        {({ field }) => (
-                          <Slate
-                            editor={editor}
-                            value={slateValue}
-                            onChange={(value) => {
-                              setSlateValue(value);
-                              props.setFieldValue(field.name, value);
-                            }}
-                          >
-                            <SlateToolbar />
-                            <EditablePlugins
-                              plugins={plugins}
-                              placeholder="Paste or type here"
-                              id={field.name}
-                              className="slate-editor"
-                              style={{ minHeight: 300 }}
-                            />
-                          </Slate>
-                        )}
-                      </Field>
-                    </div>
-                  </Card.Body>
-                </Card>
+                <Accordion defaultActiveKey="1">
+                  <Card>
+                    <Card.Header>
+                      <ContextAwareToggle eventKey="0">
+                        Upload PDF/DOCX
+                      </ContextAwareToggle>
+                    </Card.Header>
+                    <Accordion.Collapse eventKey="0">
+                      <Card.Body id="document-upload-card">
+                        Upload form
+                      </Card.Body>
+                    </Accordion.Collapse>
+                  </Card>
+                  <Card className="mb-2">
+                    <Card.Header>
+                      <ContextAwareToggle eventKey="1">
+                        Paste or type directly into the form
+                      </ContextAwareToggle>
+                    </Card.Header>
+                    <Accordion.Collapse eventKey="1">
+                      <Card.Body id="slate-container-card">
+                        <div id="slate-container">
+                          <Field name="text">
+                            {({ field }) => (
+                              <Slate
+                                editor={editor}
+                                value={slateValue}
+                                onChange={(value) => {
+                                  setSlateValue(value);
+                                  props.setFieldValue(field.name, value);
+                                }}
+                              >
+                                <SlateToolbar />
+                                <EditablePlugins
+                                  plugins={plugins}
+                                  placeholder="Paste or type here"
+                                  id={field.name}
+                                  className="slate-editor"
+                                  style={{ minHeight: 300 }}
+                                />
+                              </Slate>
+                            )}
+                          </Field>
+                        </div>
+                      </Card.Body>
+                    </Accordion.Collapse>
+                  </Card>
+                </Accordion>
               </Col>
             </Form.Row>
           )}
