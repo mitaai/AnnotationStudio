@@ -30,6 +30,7 @@ import {
 } from '@udecode/slate-plugins';
 import { withHistory } from 'slate-history';
 import { Dropdown as SemanticUIDropdown } from 'semantic-ui-react';
+import ReactS3Uploader from 'react-s3-uploader';
 import SemanticField from '../SemanticField';
 import DocumentMetadata from '../DocumentMetadata';
 import DocumentStatusSelect from '../DocumentStatusSelect';
@@ -47,10 +48,11 @@ const DocumentForm = ({
   const [errors, setErrors] = useState([]);
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
+  const [progress, setProgress] = useState({});
   const handleCloseModal = () => setShowModal(false);
   const handleShowModal = () => setShowModal(true);
 
-  function ContextAwareToggle({ children, eventKey, callback }) {
+  const ContextAwareToggle = ({ children, eventKey, callback }) => {
     const currentEventKey = useContext(AccordionContext);
 
     const decoratedOnClick = useAccordionToggle(
@@ -69,7 +71,17 @@ const DocumentForm = ({
         {children}
       </Button>
     );
-  }
+  };
+  const ProgressIndicator = ({ percent }) => (
+    <div style={{
+      backgroundColor: 'green',
+      height: '10px',
+      marginRight: '1rem',
+      marginBottom: '0.25rem',
+      width: `${percent}%`,
+    }}
+    />
+  );
 
   const withPlugins = [
     withReact,
@@ -214,7 +226,43 @@ const DocumentForm = ({
                     </Card.Header>
                     <Accordion.Collapse eventKey="0">
                       <Card.Body id="document-upload-card">
-                        Upload form
+                        <Field name="text">
+                          {({ field }) => (
+                            <>
+                              <ReactS3Uploader
+                                signingUrl="https://d1hs2ubf3tsdwo.cloudfront.net/url"
+                                signingUrlMethod="GET"
+                                accept="application/pdf"
+                                s3path="files/"
+                                disabled={progress.started}
+                                onProgress={
+                                  (percent, status) => setProgress(
+                                    { started: true, percent, status },
+                                  )
+                                }
+                                onError={((status) => setErrors([status]))}
+                                onFinish={(signRes, file) => {
+                                  const fileUrl = signRes.signedUrl.substring(
+                                    0, signRes.signedUrl.indexOf(file.name),
+                                  );
+                                  const fileObj = {
+                                    name: file.name,
+                                    size: file.size,
+                                    contentType: file.type,
+                                    url: `${fileUrl}${file.name}`,
+                                  };
+                                  return props.setFieldValue(field.name, [fileObj]);
+                                }}
+                                uploadRequestHeaders={{ 'x-amz-acl': 'public-read' }}
+                                onChange={props.handleChange}
+                                onBlur={props.handleBlur}
+                              />
+                              {progress.started && (
+                              <ProgressIndicator percent={progress.percent} />
+                              )}
+                            </>
+                          )}
+                        </Field>
                       </Card.Body>
                     </Accordion.Collapse>
                   </Card>
