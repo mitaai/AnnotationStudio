@@ -12,10 +12,6 @@ import {
   highlightRange,
 } from 'apache-annotator/dom';
 
-import AnnotationCard from '../AnnotationCard';
-
-import { FilterContext, FilterThemes } from '../../contexts/FilterContext';
-
 const debounce = (func, wait, options) => {
   let timeout;
   return function executedFunction() {

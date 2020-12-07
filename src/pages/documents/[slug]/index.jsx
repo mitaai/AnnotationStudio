@@ -23,9 +23,7 @@ import AnnotationChannel from '../../../components/AnnotationChannel';
 import Document from '../../../components/Document';
 import { prefetchDocumentBySlug } from '../../../utils/docUtil';
 import { prefetchSharedAnnotationsOnDocument } from '../../../utils/annotationUtil';
-import DocumentAnnotationsContext from '../../../contexts/DocumentAnnotationsContext';
-import DocumentFiltersContext from '../../../contexts/DocumentFiltersContext';
-import DocumentContext from '../../../contexts/DocumentContext';
+import { DocumentAnnotationsContext, DocumentFiltersContext, DocumentContext } from '../../../contexts/DocumentContext';
 
 
 const adjustLine = (from, to, line) => {
@@ -109,6 +107,20 @@ const DocumentPage = (props) => {
   const [scrollToAnnotation, setScrollToAnnotation] = useState(validQuery);
 
   const [session, loading] = useSession();
+
+  function getAllTags() {
+    let tags = [];
+    const sides = ['left', 'right'];
+    for (let j = 0; j < sides.length; j += 1) {
+      const annos = channelAnnotations[sides[j]];
+      if (annos !== null) {
+        for (let i = 0; i < annos.length; i += 1) {
+          tags = tags.concat(annos[i].body.tags);
+        }
+      }
+    }
+    return tags.filter((value, index, self) => self.indexOf(value) === index).sort();
+  }
 
   const saveAnnotationChanges = (anno, side) => {
     const index = channelAnnotations[side].findIndex((a) => a._id === anno._id);
@@ -351,8 +363,9 @@ const DocumentPage = (props) => {
 
 
   return (
+
     <DocumentContext.Provider value={document}>
-      <DocumentAnnotationsContext.Provider value={[channelAnnotations, setChannelAnnotations, saveAnnotationChanges]}>
+      <DocumentAnnotationsContext.Provider value={[channelAnnotations, setChannelAnnotations, saveAnnotationChanges, getAllTags()]}>
         <DocumentFiltersContext.Provider value={[documentFilters, setDocumentFilters]}>
           {!session && loading && (
           <LoadingSpinner />
@@ -363,7 +376,7 @@ const DocumentPage = (props) => {
           {session && !loading && (
           <Layout
             type="document"
-            title={document === undefined ? '' : document.title}
+            document={document}
             alerts={alerts}
             docView
           >
@@ -509,7 +522,6 @@ const DocumentPage = (props) => {
         `}
           </style>
         </DocumentFiltersContext.Provider>
-
       </DocumentAnnotationsContext.Provider>
     </DocumentContext.Provider>
 

@@ -18,11 +18,15 @@ import {
   ButtonGroup,
 } from 'react-bootstrap';
 
-import { CheckCircleFill, TrashFill } from 'react-bootstrap-icons';
+import {
+  CheckCircleFill, TrashFill, ChatLeftQuote, ArrowUpShort, ChevronUp,
+} from 'react-bootstrap-icons';
+import {
+  Typeahead, Menu, MenuItem, Token,
+} from 'react-bootstrap-typeahead';
 import { postAnnotation, updateAnnotationById, deleteAnnotationById } from '../../utils/annotationUtil';
 
-import DocumentAnnotationsContext from '../../contexts/DocumentAnnotationsContext';
-import DocumentFiltersContext from '../../contexts/DocumentFiltersContext';
+import { DocumentAnnotationsContext, DocumentFiltersContext, DocumentTags } from '../../contexts/DocumentContext';
 
 function addHoverEventListenersToAllHighlightedText() {
   $('.annotation-highlighted-text').on('mouseover', (e) => {
@@ -90,7 +94,7 @@ function AnnotationCard({
   user,
   newAnnotation,
 }) {
-  const [, , saveAnnotationChanges] = useContext(DocumentAnnotationsContext);
+  const [channelAnnotations, , saveAnnotationChanges, allAnnotationTags] = useContext(DocumentAnnotationsContext);
   const [documentFilters, setDocumentFilters] = useContext(DocumentFiltersContext);
   const [annotationData, setAnnotationData] = useState({ ...annotation });
   const [newAnnotationTags, setNewAnnotationTags] = useState(null);
@@ -102,11 +106,6 @@ function AnnotationCard({
   const [expanded, setExpanded] = useState(annotation.editing);
   const [updateFocusOfAnnotation, setUpdateFocusOfAnnotation] = useState(annotation.editing);
   const [hovered, setHovered] = useState();
-
-  function createCitation() {
-    
-    return null;
-  }
 
   function AddClassActive(id) {
     // remove active from other annotations
@@ -133,7 +132,10 @@ function AnnotationCard({
     // we need to reassign values to the annotationData
     const newAnnotationData = JSON.parse(JSON.stringify(annotationData));
     if (newAnnotationTags !== null) {
-      newAnnotationData.body.tags = newAnnotationTags.split(' ');
+      newAnnotationData.body.tags = newAnnotationTags.map((t) => {
+        if (typeof (t) === 'object') { return t.tags; }
+        return t;
+      });
     }
     if (newAnnotationPermissions !== null) {
       if (newAnnotationPermissions === 0) {
@@ -257,9 +259,22 @@ function AnnotationCard({
     });
   }
 
-  function handleTagChange(event) {
-    setNewAnnotationTags(event.target.value);
-  }
+  const renderToken = (option, { onRemove }, index) => {
+    let tag = option;
+    if (typeof (option) === 'object') {
+      tag = option.tags;
+    }
+    return (
+      <Token
+        key={index}
+        onRemove={onRemove}
+        option={option}
+        className="annotation-tag-token"
+      >
+        <span>{tag}</span>
+      </Token>
+    );
+  };
 
   function handleAnnotationTextChange(event) {
     setNewAnnotationText(event.target.value);
@@ -358,16 +373,19 @@ function AnnotationCard({
                         </Form.Group>
                       </ListGroup.Item>
                       <ListGroup.Item className="annotation-tags">
-                        <Form.Group controlId="formGroupEmail">
-                          <Form.Control
-                            type="text"
-                            style={{ fontSize: '12px' }}
-                            placeholder="add some tags here..."
-                            defaultValue={annotationData.body.tags.join(' ')}
-                            onChange={handleTagChange}
-                            readOnly={savingAnnotation}
-                          />
-                        </Form.Group>
+                        <Typeahead
+                          id="typeahead-annotation-tags"
+                          labelKey="tags"
+                          placeholder="add some tags here..."
+                          multiple
+                          clearButton
+                          selected={newAnnotationTags === null ? annotationData.body.tags : newAnnotationTags}
+                          options={allAnnotationTags}
+                          renderToken={renderToken}
+                          allowNew
+                          newSelectionPrefix="new tag: "
+                          onChange={setNewAnnotationTags}
+                        />
                       </ListGroup.Item>
                     </ListGroup>
                   </Form>
@@ -376,14 +394,8 @@ function AnnotationCard({
               : (
                 <>
                   <ListGroup variant="flush" style={{ borderTop: 'none' }}>
-                    <ListGroup.Item className="annotation-body">
+                    <ListGroup.Item className="annotation-body" onClick={() => { setExpanded(false); setUpdateFocusOfAnnotation(true); }}>
                       {annotationData.body.value}
-                      <span
-                        style={{ margin: '0px 0px 0px 5px', color: '#007bff' }}
-                        onClick={() => { setExpanded(false); setUpdateFocusOfAnnotation(true); }}
-                      >
-                        show less
-                      </span>
                     </ListGroup.Item>
                     {annotationData.body.tags.join('').length > 0 ? (
                       <>
@@ -475,9 +487,13 @@ function AnnotationCard({
               <Card.Header className="annotation-header" onClick={() => { setExpanded(true); }}>
                 <div className="truncated-annotation">
                   {annotationData.body.value.length === 0 ? (
-                    <span>
-                      {createCitation()}
-                      &nbsp;
+                    <span className="text-quote">
+                      <img
+                        className="quote-svg"
+                        src="/quote-left-svg.svg"
+                        alt="quote left"
+                      />
+                      {annotationData.target.selector.exact}
                     </span>
                   ) : annotationData.body.value}
                 </div>
@@ -493,6 +509,22 @@ function AnnotationCard({
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+        }
+
+        .annotation-tag-token {
+          font-size: 14px;
+        }
+
+        .quote-svg {
+          opacity: 0.8;
+          width: 8px;
+          position: relative;
+          top: -3px;
+          margin-right: 3px;
+        }
+
+        .text-quote {
+          color: #616161;
         }
 
         .annotation-pointer-background-left, .annotation-pointer-left, .annotation-pointer-background-right, .annotation-pointer-right {

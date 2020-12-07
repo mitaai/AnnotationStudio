@@ -17,7 +17,7 @@ function getEditProfileUrl(email) {
 
 function Header({
   type,
-  title,
+  document,
   docView,
   annotations,
   newReg,
@@ -80,7 +80,7 @@ function Header({
         </Container>
       </Navbar>
       {session && !loading && (
-        <SecondNavbar session={session} type={type} title={title} docView={docView} annotations={annotations} />
+        <SecondNavbar session={session} type={type} document={document} docView={docView} annotations={annotations} />
       )}
     </header>
   );

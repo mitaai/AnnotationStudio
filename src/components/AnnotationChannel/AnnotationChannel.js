@@ -11,8 +11,7 @@ import {
   Button,
 } from 'react-bootstrap';
 
-import DocumentAnnotationsContext from '../../contexts/DocumentAnnotationsContext';
-import DocumentFiltersContext from '../../contexts/DocumentFiltersContext';
+import { DocumentAnnotationsContext, DocumentFiltersContext } from '../../contexts/DocumentContext';
 
 import AnnotationCard from '../AnnotationCard';
 

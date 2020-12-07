@@ -26,9 +26,7 @@ import {
   Typeahead, Menu, MenuItem, Token,
 } from 'react-bootstrap-typeahead';
 
-import DocumentAnnotationsContext from '../../contexts/DocumentAnnotationsContext';
-import DocumentFiltersContext from '../../contexts/DocumentFiltersContext';
-import DocumentContext from '../../contexts/DocumentContext';
+import { DocumentContext, DocumentFiltersContext, DocumentAnnotationsContext } from '../../contexts/DocumentContext';
 
 function ByPermissionsFilterMatch(user_email, email, permissions, cf) { // AND FUNCTION
   if (cf.permissions === 0 && user_email === email) { // mine
