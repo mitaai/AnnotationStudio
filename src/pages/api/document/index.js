@@ -32,7 +32,7 @@ const handler = async (req, res) => {
         pageNumbers,
         publication,
         series,
-        sesiesNumber,
+        seriesNumber,
         notes,
       } = req.body;
       const metadata = {
@@ -57,7 +57,7 @@ const handler = async (req, res) => {
         pageNumbers,
         publication,
         series,
-        sesiesNumber,
+        seriesNumber,
         notes,
       };
       Object.keys(metadata).forEach((key) => {

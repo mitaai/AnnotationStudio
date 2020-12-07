@@ -49,7 +49,7 @@ const handler = async (req, res) => {
           pageNumbers,
           publication,
           series,
-          sesiesNumber,
+          seriesNumber,
           notes,
         } = document;
         res.status(200).json({
@@ -77,7 +77,7 @@ const handler = async (req, res) => {
           pageNumbers,
           publication,
           series,
-          sesiesNumber,
+          seriesNumber,
           notes,
         });
       } else res.status(404).end('Not Found');
