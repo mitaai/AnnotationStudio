@@ -16,6 +16,7 @@ import {
   OverlayTrigger,
   Tooltip,
   ButtonGroup,
+  DropdownButton,
 } from 'react-bootstrap';
 
 import {
@@ -284,6 +285,28 @@ function AnnotationCard({
     setNewAnnotationPermissions(num);
   }
 
+  function showPermissionText() {
+    let txt = 'Share';
+    if (newAnnotationPermissions !== null) {
+      if (newAnnotationPermissions === 0) {
+        txt = 'Share';
+      } if (newAnnotationPermissions === 1) {
+        txt = 'Shared with group(s)';
+      } if (newAnnotationPermissions === 2) {
+        txt = 'Shared with user(s)';
+      }
+    } else if (annotationData.permissions.private) {
+      // private
+      txt = 'Share';
+    } else if (!annotationData.permissions.documentOwner && !annotationData.permissions.private) {
+      txt = 'Shared with group(s)';
+    } else if (annotationData.permissions.documentOwner) {
+      txt = 'Shared with user(s)';
+    }
+
+    return txt;
+  }
+
   useEffect(() => {
     if (updateFocusOfAnnotation) {
       focusOnAnnotation();
@@ -334,26 +357,21 @@ function AnnotationCard({
                           <Button
                             onClick={() => { handleAnnotationPermissionsChange(0); }}
                             // eslint-disable-next-line no-nested-ternary
-                            variant={newAnnotationPermissions !== null ? (newAnnotationPermissions === 0 ? 'primary' : 'outline-primary') : (annotationData.permissions.private ? 'primary' : 'outline-primary')}
+                            variant={showPermissionText() === 'Share' ? 'primary' : 'outline-primary'}
                             style={{ fontSize: '9px' }}
                           >
                             Private
                           </Button>
-                          <Button
-                            onClick={() => { handleAnnotationPermissionsChange(1); }}
-                            // eslint-disable-next-line no-nested-ternary
-                            variant={newAnnotationPermissions !== null ? (newAnnotationPermissions === 1 ? 'primary' : 'outline-primary') : (!annotationData.permissions.documentOwner && !annotationData.permissions.private ? 'primary' : 'outline-primary')}
-                            style={{ fontSize: '9px' }}
-                          >
-                            Share With Groups
-                          </Button>
-                          <Button
-                            onClick={() => { handleAnnotationPermissionsChange(2); }}
-                            // eslint-disable-next-line no-nested-ternary
-                            variant={newAnnotationPermissions !== null ? (newAnnotationPermissions === 2 ? 'primary' : 'outline-primary') : (annotationData.permissions.documentOwner ? 'primary' : 'outline-primary')}
-                            style={{ fontSize: '9px' }}
-                          >
-                            Share with doc owner
+                          <Button id="share-annotation-button" variant={showPermissionText() === 'Share' ? 'outline-primary' : 'primary'} style={{ padding: 0 }}>
+                            <Dropdown>
+                              <Dropdown.Toggle id="share-annotation-dropdown">
+                                {showPermissionText()}
+                              </Dropdown.Toggle>
+                              <Dropdown.Menu>
+                                <Dropdown.Item href="#/action-1" onClick={() => { handleAnnotationPermissionsChange(1); }}>With group(s)</Dropdown.Item>
+                                <Dropdown.Item href="#/action-2" onClick={() => { handleAnnotationPermissionsChange(2); }}>With user(s)</Dropdown.Item>
+                              </Dropdown.Menu>
+                            </Dropdown>
                           </Button>
                         </ButtonGroup>
                       </Col>
@@ -395,9 +413,18 @@ function AnnotationCard({
                 <>
                   <ListGroup variant="flush" style={{ borderTop: 'none' }}>
                     <ListGroup.Item className="annotation-body" onClick={() => { setExpanded(false); setUpdateFocusOfAnnotation(true); }}>
-                      {annotationData.body.value}
+                      {annotationData.body.value.length > 0 ? annotationData.body.value : (
+                        <span className="text-quote">
+                          <img
+                            className="quote-svg"
+                            src="/quote-left-svg.svg"
+                            alt="quote left"
+                          />
+                          {annotationData.target.selector.exact}
+                        </span>
+                      )}
                     </ListGroup.Item>
-                    {annotationData.body.tags.join('').length > 0 ? (
+                    {annotationData.body.tags.length > 0 ? (
                       <>
                         <ListGroup.Item className="annotation-tags">
                           {annotationData.body.tags.map((tag, index) => {
@@ -513,6 +540,36 @@ function AnnotationCard({
 
         .annotation-tag-token {
           font-size: 14px;
+        }
+
+        #share-annotation-button .dropdown-item {
+          font-size: 9px;
+        }
+
+        #share-annotation-button.btn-outline-primary #share-annotation-dropdown {
+          background: white !important;
+          color: #424242 !important;
+        }
+
+        #share-annotation-button.btn-primary #share-annotation-dropdown {
+          background: #007bff;
+          color: white;
+        }
+
+        #share-annotation-dropdown {
+          width: 100%;
+          font-size: 9px;
+          border: none;
+        }
+
+        #share-annotation-button.btn-outline-primary #share-annotation-dropdown:hover {
+          background: #007bff;
+          color: white;
+        }
+
+        #share-annotation-button.btn-primary #share-annotation-dropdown:hover {
+          background: #0269d9;
+          color: white;
         }
 
         .quote-svg {
