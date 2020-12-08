@@ -338,9 +338,21 @@ const prefetchGroupById = async (id, cookie) => {
   });
   if (res.status === 200) {
     return Promise.resolve(res.json());
-  } return Promise.reject(Error(`Unable to get : error ${res.status} received from server`));
+  } return Promise.reject(Error(`Unable to get group ${id}: error ${res.status} received from server`));
 };
 
+const getGroupById = async (id) => {
+  const url = `/api/group/${id}`;
+  const res = await unfetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (res.status === 200) {
+    return Promise.resolve(res.json());
+  } return Promise.reject(Error(`Unable to get group ${id}: error ${res.status} received from server`));
+};
 export {
   addGroupToUser,
   addUserToGroup,
@@ -349,6 +361,7 @@ export {
   deleteGroupById,
   deleteInviteToken,
   generateInviteToken,
+  getGroupById,
   getGroupNameById,
   prefetchGroupById,
   removeUserFromGroup,
