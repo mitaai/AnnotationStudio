@@ -17,10 +17,12 @@ import {
   Tooltip,
   ButtonGroup,
   DropdownButton,
+  Popover,
+  Modal,
 } from 'react-bootstrap';
 
 import {
-  CheckCircleFill, TrashFill, ChatLeftQuote, ArrowUpShort, ChevronUp,
+  CheckCircleFill, TrashFill, ChatLeftQuote, ArrowUpShort, ChevronUp, QuestionCircle,
 } from 'react-bootstrap-icons';
 import {
   Typeahead, Menu, MenuItem, Token,
@@ -94,8 +96,10 @@ function AnnotationCard({
   deleteAnnotationFromChannels,
   user,
   newAnnotation,
+  showMoreInfoShareModal,
+  setShowMoreInfoShareModal,
 }) {
-  const [channelAnnotations, , saveAnnotationChanges, allAnnotationTags] = useContext(DocumentAnnotationsContext);
+  const [, , saveAnnotationChanges, allAnnotationTags] = useContext(DocumentAnnotationsContext);
   const [documentFilters, setDocumentFilters] = useContext(DocumentFiltersContext);
   const [annotationData, setAnnotationData] = useState({ ...annotation });
   const [newAnnotationTags, setNewAnnotationTags] = useState(null);
@@ -107,6 +111,15 @@ function AnnotationCard({
   const [expanded, setExpanded] = useState(annotation.editing);
   const [updateFocusOfAnnotation, setUpdateFocusOfAnnotation] = useState(annotation.editing);
   const [hovered, setHovered] = useState();
+  const [selectedUsersToShare, setSelectedUsersToShare] = useState([]);
+  const users = [
+    { id: 0, name: 'J', email: 'j@gmail.com' },
+    { id: 1, name: 'K', email: 'k@gmail.com' },
+    { id: 2, name: 'L', email: 'l@gmail.com' },
+    { id: 3, name: 'M', email: 'm@gmail.com' },
+    { id: 4, name: 'N', email: 'n@gmail.com' },
+  ];
+  const permissionText = ['Share', 'Shared with group(s)', selectedUsersToShare.length === 1 ? 'Shared with 1 user' : `Shared with ${selectedUsersToShare.length} users`];
 
   function AddClassActive(id) {
     // remove active from other annotations
@@ -277,6 +290,30 @@ function AnnotationCard({
     );
   };
 
+  const renderUserShareToken = (option, { onRemove }, index) => (
+    <Token
+      key={index}
+      onRemove={onRemove}
+      option={option}
+      className="annotation-share-token"
+    >
+      <span className="user-share-name">{option.name}</span>
+    </Token>
+  );
+
+  const renderUserShareMenu = (results, menuProps) => (
+    <Menu
+      {...menuProps}
+    >
+      {results.map((result, index) => (
+        <MenuItem option={result} key={index} position={index}>
+          <span className="user-share-name">{result.name}</span>
+          <span className="user-share-email">{result.email}</span>
+        </MenuItem>
+      ))}
+    </Menu>
+  );
+
   function handleAnnotationTextChange(event) {
     setNewAnnotationText(event.target.value);
   }
@@ -285,26 +322,20 @@ function AnnotationCard({
     setNewAnnotationPermissions(num);
   }
 
-  function showPermissionText() {
-    let txt = 'Share';
+  function showPermissionNumber() {
+    let i = 0;
     if (newAnnotationPermissions !== null) {
-      if (newAnnotationPermissions === 0) {
-        txt = 'Share';
-      } if (newAnnotationPermissions === 1) {
-        txt = 'Shared with group(s)';
-      } if (newAnnotationPermissions === 2) {
-        txt = 'Shared with user(s)';
-      }
+      i = newAnnotationPermissions;
     } else if (annotationData.permissions.private) {
       // private
-      txt = 'Share';
+      i = 0;
     } else if (!annotationData.permissions.documentOwner && !annotationData.permissions.private) {
-      txt = 'Shared with group(s)';
+      i = 1;
     } else if (annotationData.permissions.documentOwner) {
-      txt = 'Shared with user(s)';
+      i = 2;
     }
 
-    return txt;
+    return i;
   }
 
   useEffect(() => {
@@ -357,22 +388,64 @@ function AnnotationCard({
                           <Button
                             onClick={() => { handleAnnotationPermissionsChange(0); }}
                             // eslint-disable-next-line no-nested-ternary
-                            variant={showPermissionText() === 'Share' ? 'primary' : 'outline-primary'}
-                            style={{ fontSize: '9px' }}
+                            variant={showPermissionNumber() === 0 ? 'primary' : 'outline-primary'}
+                            style={{ fontSize: 9, maxWidth: 100 }}
                           >
                             Private
                           </Button>
-                          <Button id="share-annotation-button" variant={showPermissionText() === 'Share' ? 'outline-primary' : 'primary'} style={{ padding: 0 }}>
-                            <Dropdown>
-                              <Dropdown.Toggle id="share-annotation-dropdown">
-                                {showPermissionText()}
-                              </Dropdown.Toggle>
-                              <Dropdown.Menu>
-                                <Dropdown.Item href="#/action-1" onClick={() => { handleAnnotationPermissionsChange(1); }}>With group(s)</Dropdown.Item>
-                                <Dropdown.Item href="#/action-2" onClick={() => { handleAnnotationPermissionsChange(2); }}>With user(s)</Dropdown.Item>
-                              </Dropdown.Menu>
-                            </Dropdown>
-                          </Button>
+                          <OverlayTrigger
+                            trigger="click"
+                            key="bottom"
+                            placement="bottom"
+                            overlay={(
+                              <Popover id="popover-share-annotation-options" className={showMoreInfoShareModal ? 'z-index-1' : ''}>
+                                <Popover.Title id="popover-share-annotation-header">
+                                  <span>Share Annotation</span>
+                                  <QuestionCircle
+                                    style={{
+                                      float: 'right', position: 'relative', top: 2, cursor: 'pointer',
+                                    }}
+                                    onClick={() => { setShowMoreInfoShareModal(true); }}
+                                  />
+                                </Popover.Title>
+                                <Popover.Content id="popover-share-annotation-body">
+                                  <Form>
+                                    <Form.Check
+                                      type="radio"
+                                      label="with group(s)"
+                                      id="radio-share-annotation-groups"
+                                      onClick={() => { handleAnnotationPermissionsChange(1); }}
+                                      checked={showPermissionNumber() === 1}
+                                    />
+                                    <Form.Check
+                                      type="radio"
+                                      label="with user(s)"
+                                      id="radio-share-annotation-users"
+                                      onClick={() => { handleAnnotationPermissionsChange(2); }}
+                                      checked={showPermissionNumber() === 2}
+                                    />
+                                    <div id="typeahead-share-annotation-users-container" className={showPermissionNumber() === 2 ? 'show' : ''}>
+                                      <Typeahead
+                                        id="typeahead-share-annotation-users"
+                                        labelKey="name"
+                                        placeholder="search by user name or email"
+                                        multiple
+                                        renderToken={renderUserShareToken}
+                                        selected={selectedUsersToShare}
+                                        options={users}
+                                        highlightOnlyResult
+                                        onChange={setSelectedUsersToShare}
+                                      />
+                                    </div>
+                                  </Form>
+                                </Popover.Content>
+                              </Popover>
+                            )}
+                          >
+                            <Button style={{ fontSize: 9 }} variant={showPermissionNumber() === 0 ? 'outline-primary' : 'primary'}>
+                              {permissionText[showPermissionNumber()]}
+                            </Button>
+                          </OverlayTrigger>
                         </ButtonGroup>
                       </Col>
                     </Row>
@@ -396,7 +469,6 @@ function AnnotationCard({
                           labelKey="tags"
                           placeholder="add some tags here..."
                           multiple
-                          clearButton
                           selected={newAnnotationTags === null ? annotationData.body.tags : newAnnotationTags}
                           options={allAnnotationTags}
                           renderToken={renderToken}
@@ -538,38 +610,43 @@ function AnnotationCard({
             white-space: nowrap;
         }
 
+        #popover-share-annotation-options.z-index-1 {
+          z-index: 1;
+        }
+
+        #typeahead-share-annotation-users {
+          width: 100%;
+        }
+
+        #typeahead-share-annotation-users-container {
+          margin-left: 20px;
+          width: calc(100% - 40px);
+          display: none;
+        }
+
+        #typeahead-share-annotation-users-container .rbt-input-main {
+          font-size: 15px;
+          line-height: 25px;
+        }
+
+        #typeahead-share-annotation-users-container.show {
+          display: block;
+        }
+
+        #typeahead-share-annotation-users-container .rbt-input {
+          padding: 3px 3px 2px 3px;
+        }
+
         .annotation-tag-token {
           font-size: 14px;
         }
 
-        #share-annotation-button .dropdown-item {
-          font-size: 9px;
+        #popover-share-annotation-header {
+          font-size: 14px;
         }
 
-        #share-annotation-button.btn-outline-primary #share-annotation-dropdown {
-          background: white !important;
-          color: #424242 !important;
-        }
-
-        #share-annotation-button.btn-primary #share-annotation-dropdown {
-          background: #007bff;
-          color: white;
-        }
-
-        #share-annotation-dropdown {
-          width: 100%;
-          font-size: 9px;
-          border: none;
-        }
-
-        #share-annotation-button.btn-outline-primary #share-annotation-dropdown:hover {
-          background: #007bff;
-          color: white;
-        }
-
-        #share-annotation-button.btn-primary #share-annotation-dropdown:hover {
-          background: #0269d9;
-          color: white;
+        #popover-share-annotation-body {
+          width: 300px;
         }
 
         .quote-svg {

@@ -106,6 +106,8 @@ const DocumentPage = (props) => {
 
   const [scrollToAnnotation, setScrollToAnnotation] = useState(validQuery);
 
+  const [showMoreInfoShareModal, setShowMoreInfoShareModal] = useState();
+
   const [session, loading] = useSession();
 
   function getAllTags() {
@@ -390,6 +392,8 @@ const DocumentPage = (props) => {
                   side="left"
                   annotations={channelAnnotations.left}
                   user={session ? session.user : undefined}
+                  showMoreInfoShareModal={showMoreInfoShareModal}
+                  setShowMoreInfoShareModal={setShowMoreInfoShareModal}
                 />
               </Col>
               <Col style={{ minWidth: 750, maxWidth: 750 }}>
@@ -426,6 +430,8 @@ const DocumentPage = (props) => {
                   side="right"
                   annotations={channelAnnotations.right}
                   user={session ? session.user : undefined}
+                  showMoreInfoShareModal={showMoreInfoShareModal}
+                  setShowMoreInfoShareModal={setShowMoreInfoShareModal}
                 />
               </Col>
             </Row>
@@ -442,6 +448,28 @@ const DocumentPage = (props) => {
               </Modal.Header>
               <Modal.Body>
                 <ProgressBar animated now={100} />
+              </Modal.Body>
+            </Modal>
+            <Modal
+              show={showMoreInfoShareModal}
+              onHide={() => { setShowMoreInfoShareModal(); }}
+              size="lg"
+              aria-labelledby="contained-modal-title-vcenter"
+            >
+              <Modal.Header closeButton>
+                <Modal.Title id="contained-modal-title-vcenter" style={{ fontWeight: 400 }}>
+                  Sharing Annotation Options
+                </Modal.Title>
+              </Modal.Header>
+              <Modal.Body>
+                <p style={{ fontWeight: 600, fontSize: 16, marginBottom: 5 }}>Share with group(s)</p>
+                <p style={{ fontSize: 14 }}>
+                  Share this annotation with all members of your group(s) who have access to this document.
+                </p>
+                <p style={{ fontWeight: 600, fontSize: 16, marginBottom: 5 }}>Share with user(s)</p>
+                <p style={{ fontSize: 14 }}>
+                  Share this annotation with a specific user or users only.
+                </p>
               </Modal.Body>
             </Modal>
           </Layout>
