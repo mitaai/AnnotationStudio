@@ -11,8 +11,7 @@ import {
   Button,
 } from 'react-bootstrap';
 
-import DocumentAnnotationsContext from '../../contexts/DocumentAnnotationsContext';
-import DocumentFiltersContext from '../../contexts/DocumentFiltersContext';
+import { DocumentAnnotationsContext, DocumentFiltersContext } from '../../contexts/DocumentContext';
 
 import AnnotationCard from '../AnnotationCard';
 
@@ -92,7 +91,7 @@ function PlaceAnnotationsInCorrectSpot(annotations, side) {
 }
 
 const AnnotationChannel = ({
-  side, setAnnotationChannelLoaded, user, deleteAnnotationFromChannels, focusOnAnnotation,
+  side, setAnnotationChannelLoaded, user, deleteAnnotationFromChannels, focusOnAnnotation, showMoreInfoShareModal, setShowMoreInfoShareModal,
 }) => {
   const [channelAnnotations] = useContext(DocumentAnnotationsContext);
   const [documentFilters, setDocumentFilters] = useContext(DocumentFiltersContext);
@@ -140,6 +139,8 @@ const AnnotationChannel = ({
             expanded={false}
             annotation={annotation}
             user={user}
+            showMoreInfoShareModal={showMoreInfoShareModal}
+            setShowMoreInfoShareModal={setShowMoreInfoShareModal}
           />
         ))}
       </div>

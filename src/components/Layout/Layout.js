@@ -5,7 +5,7 @@ import Footer from '../Footer';
 import Alerts from '../Alerts';
 
 function Layout({
-  children, type, title, alerts, docView, annotations, newReg, statefulSession,
+  children, type, document, alerts, docView, annotations, newReg, statefulSession,
 }) {
   return (
     <>
@@ -15,7 +15,7 @@ function Layout({
       </Head>
       <Header
         type={type}
-        title={title}
+        document={document}
         docView={docView}
         annotations={annotations}
         newReg={newReg}
