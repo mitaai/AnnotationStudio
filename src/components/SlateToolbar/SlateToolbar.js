@@ -47,6 +47,7 @@ const SlateToolbar = () => {
   return (
     <div
       className="slate-toolbar"
+      data-testid="slate-toolbar"
     >
       <Dropdown>
         <OverlayTrigger overlay={<Tooltip>Styles</Tooltip>}>

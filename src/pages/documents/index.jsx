@@ -10,6 +10,7 @@ import { getSharedDocumentsByGroup, getDocumentsByUser } from '../../utils/docUt
 
 const DocumentsIndex = ({
   props,
+  statefulSession,
 }) => {
   const { tab, initAlert } = props;
   const [session, loading] = useSession();
@@ -40,7 +41,7 @@ const DocumentsIndex = ({
   }, [session, key]);
 
   return (
-    <Layout alerts={alerts} type="document">
+    <Layout alerts={alerts} type="document" statefulSession={statefulSession}>
       {loading && !session && (
       <Card>
         <Card.Header>

@@ -122,7 +122,10 @@ const handler = async (req, res) => {
         if (role === 'admin') {
           const doc = await db
             .collection('users')
-            .findOneAndDelete({ _id: ObjectID(req.query.id) });
+            .findOneAndDelete({ _id: ObjectID(req.query.id) })
+            .then(() => db
+              .collection('accounts')
+              .findOneAndDelete({ userId: ObjectID(req.query.id) }));
           res.status(200).json(doc);
         } else res.status(403).end('Unauthorized');
       } else res.status(404).end('Not Found');

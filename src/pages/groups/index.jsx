@@ -18,7 +18,7 @@ import { deleteGroupById, removeUserFromGroup } from '../../utils/groupUtil';
 import { getUserByEmail } from '../../utils/userUtil';
 import { deepEqual } from '../../utils/objectUtil';
 
-const GroupList = ({ query, initAlerts }) => {
+const GroupList = ({ query, initAlerts, statefulSession }) => {
   const [session, loading] = useSession();
   const [alerts, setAlerts] = useState(initAlerts);
   const [groups, setGroups] = useState([]);
@@ -40,7 +40,7 @@ const GroupList = ({ query, initAlerts }) => {
   }, [session]);
 
   return (
-    <Layout alerts={alerts} type="group">
+    <Layout alerts={alerts} type="group" statefulSession={statefulSession}>
       <Card>
         {!session && loading && (
           <LoadingSpinner />

@@ -18,7 +18,7 @@ const DashboardGroupList = ({
   }, [session]);
 
   return (
-    <Card>
+    <Card data-testid="dash-group-list">
       <Card.Header>
         <Card.Title><Link href="/groups">Groups</Link></Card.Title>
       </Card.Header>

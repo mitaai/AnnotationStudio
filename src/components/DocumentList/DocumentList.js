@@ -49,7 +49,11 @@ const DocumentList = ({
       const fetchGroupState = async () => {
         documents.map((document) => document.groups.map(async (group) => {
           if (!groupState[group]) {
-            setGroupState({ ...groupState, [group]: await getGroupNameById(group) });
+            const name = await getGroupNameById(group);
+            setGroupState((prevState) => ({
+              ...prevState,
+              [group]: name,
+            }));
           }
         }));
       };

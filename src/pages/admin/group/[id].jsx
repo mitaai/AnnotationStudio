@@ -11,11 +11,11 @@ import { prefetchGroupById } from '../../../utils/groupUtil';
 import AdminGroupTable from '../../../components/Admin/Group/AdminGroupTable';
 
 const AdminManageGroup = (props) => {
-  const { group, initAlerts } = props;
+  const { group, initAlerts, statefulSession } = props;
   const [session, loading] = useSession();
   const [alerts, setAlerts] = useState(initAlerts || []);
   return (
-    <Layout type="admin" alerts={alerts}>
+    <Layout type="admin" alerts={alerts} statefulSession={statefulSession}>
       {loading && (
         <Card>
           <Card.Body>

@@ -22,16 +22,24 @@ const AdminDocumentTable = ({ document, alerts, setAlerts }) => {
     if (document) {
       const fetchGroupState = async () => {
         document.groups.map(async (group) => {
-          if (!groupState[group]) {
-            setGroupState({ ...groupState, [group]: await getGroupNameById(group) });
-          }
+          const name = await getGroupNameById(group);
+          setGroupState((prevState) => ({
+            ...prevState,
+            [group]: name,
+          }));
         });
       };
       fetchGroupState();
       const fetchOwnerName = async () => {
-        getUserById(document.owner)
-          .then((result) => setNamesState({ ...namesState, [document.owner]: result.name }))
-          .catch(() => setNamesState({ ...namesState, [document.owner]: '[user not found]' }));
+        await getUserById(document.owner)
+          .then((result) => setNamesState((prevState) => ({
+            ...prevState,
+            [document.owner]: result.name,
+          })))
+          .catch(() => setNamesState((prevState) => ({
+            ...prevState,
+            [document.owner]: '[user not found]',
+          })));
       };
       if (document.owner && !namesState[document.owner]) {
         fetchOwnerName();
