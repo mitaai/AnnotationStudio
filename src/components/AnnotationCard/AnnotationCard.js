@@ -19,6 +19,7 @@ import {
   DropdownButton,
   Popover,
   Modal,
+  Overlay,
 } from 'react-bootstrap';
 
 import {
@@ -98,6 +99,7 @@ function AnnotationCard({
   newAnnotation,
   showMoreInfoShareModal,
   setShowMoreInfoShareModal,
+  membersIntersection,
 }) {
   const [, , saveAnnotationChanges, allAnnotationTags] = useContext(DocumentAnnotationsContext);
   const [documentFilters, setDocumentFilters] = useContext(DocumentFiltersContext);
@@ -112,13 +114,8 @@ function AnnotationCard({
   const [updateFocusOfAnnotation, setUpdateFocusOfAnnotation] = useState(annotation.editing);
   const [hovered, setHovered] = useState();
   const [selectedUsersToShare, setSelectedUsersToShare] = useState([]);
-  const users = [
-    { id: 0, name: 'J', email: 'j@gmail.com' },
-    { id: 1, name: 'K', email: 'k@gmail.com' },
-    { id: 2, name: 'L', email: 'l@gmail.com' },
-    { id: 3, name: 'M', email: 'm@gmail.com' },
-    { id: 4, name: 'N', email: 'n@gmail.com' },
-  ];
+  const [showOverlay, setShowOverlay] = useState();
+  const [overlayTarget, setOverlayTarget] = useState(null);
   const permissionText = ['Share', 'Shared with group(s)', selectedUsersToShare.length === 1 ? 'Shared with 1 user' : `Shared with ${selectedUsersToShare.length} users`];
 
   function AddClassActive(id) {
@@ -338,6 +335,11 @@ function AnnotationCard({
     return i;
   }
 
+  const handleShareClick = (event) => {
+    setShowOverlay(!showOverlay);
+    setOverlayTarget(event.target);
+  };
+
   useEffect(() => {
     if (updateFocusOfAnnotation) {
       focusOnAnnotation();
@@ -352,6 +354,7 @@ function AnnotationCard({
 
   return (
     <>
+      {showOverlay && <div className="overlay-cover" onClick={()=>{setShowOverlay()}} />}
       <Card
         id={annotationData._id}
         onClick={() => { setUpdateFocusOfAnnotation(true); }}
@@ -393,59 +396,62 @@ function AnnotationCard({
                           >
                             Private
                           </Button>
-                          <OverlayTrigger
-                            trigger="click"
+                          <Button
+                            style={{ fontSize: 9 }}
+                            variant={showPermissionNumber() === 0 ? 'outline-primary' : 'primary'}
+                            onClick={handleShareClick}
+                          >
+                            {permissionText[showPermissionNumber()]}
+                          </Button>
+                          <Overlay
+                            show={showOverlay}
+                            target={overlayTarget}
                             key="bottom"
                             placement="bottom"
-                            overlay={(
-                              <Popover id="popover-share-annotation-options" className={showMoreInfoShareModal ? 'z-index-1' : ''}>
-                                <Popover.Title id="popover-share-annotation-header">
-                                  <span>Share Annotation</span>
-                                  <QuestionCircle
-                                    style={{
-                                      float: 'right', position: 'relative', top: 2, cursor: 'pointer',
-                                    }}
-                                    onClick={() => { setShowMoreInfoShareModal(true); }}
-                                  />
-                                </Popover.Title>
-                                <Popover.Content id="popover-share-annotation-body">
-                                  <Form>
-                                    <Form.Check
-                                      type="radio"
-                                      label="with group(s)"
-                                      id="radio-share-annotation-groups"
-                                      onClick={() => { handleAnnotationPermissionsChange(1); }}
-                                      checked={showPermissionNumber() === 1}
-                                    />
-                                    <Form.Check
-                                      type="radio"
-                                      label="with user(s)"
-                                      id="radio-share-annotation-users"
-                                      onClick={() => { handleAnnotationPermissionsChange(2); }}
-                                      checked={showPermissionNumber() === 2}
-                                    />
-                                    <div id="typeahead-share-annotation-users-container" className={showPermissionNumber() === 2 ? 'show' : ''}>
-                                      <Typeahead
-                                        id="typeahead-share-annotation-users"
-                                        labelKey="name"
-                                        placeholder="search by user name or email"
-                                        multiple
-                                        renderToken={renderUserShareToken}
-                                        selected={selectedUsersToShare}
-                                        options={users}
-                                        highlightOnlyResult
-                                        onChange={setSelectedUsersToShare}
-                                      />
-                                    </div>
-                                  </Form>
-                                </Popover.Content>
-                              </Popover>
-                            )}
                           >
-                            <Button style={{ fontSize: 9 }} variant={showPermissionNumber() === 0 ? 'outline-primary' : 'primary'}>
-                              {permissionText[showPermissionNumber()]}
-                            </Button>
-                          </OverlayTrigger>
+                            <Popover id="popover-share-annotation-options" className={showMoreInfoShareModal ? 'z-index-1' : ''}>
+                              <Popover.Title id="popover-share-annotation-header">
+                                <span>Share Annotation</span>
+                                <QuestionCircle
+                                  style={{
+                                    float: 'right', position: 'relative', top: 2, cursor: 'pointer',
+                                  }}
+                                  onClick={() => { setShowMoreInfoShareModal(true); }}
+                                />
+                              </Popover.Title>
+                              <Popover.Content id="popover-share-annotation-body">
+                                <Form>
+                                  <Form.Check
+                                    type="radio"
+                                    label="with group(s)"
+                                    id="radio-share-annotation-groups"
+                                    onClick={() => { handleAnnotationPermissionsChange(1); }}
+                                    checked={showPermissionNumber() === 1}
+                                  />
+                                  <Form.Check
+                                    type="radio"
+                                    label="with user(s)"
+                                    id="radio-share-annotation-users"
+                                    onClick={() => { handleAnnotationPermissionsChange(2); }}
+                                    checked={showPermissionNumber() === 2}
+                                  />
+                                  <div id="typeahead-share-annotation-users-container" className={showPermissionNumber() === 2 ? 'show' : ''}>
+                                    <Typeahead
+                                      id="typeahead-share-annotation-users"
+                                      labelKey="name"
+                                      placeholder="search by user name or email"
+                                      multiple
+                                      renderToken={renderUserShareToken}
+                                      selected={selectedUsersToShare}
+                                      options={membersIntersection}
+                                      highlightOnlyResult
+                                      onChange={setSelectedUsersToShare}
+                                    />
+                                  </div>
+                                </Form>
+                              </Popover.Content>
+                            </Popover>
+                          </Overlay>
                         </ButtonGroup>
                       </Col>
                     </Row>
@@ -608,6 +614,20 @@ function AnnotationCard({
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+        }
+
+        .overlay-cover {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100vh;
+          z-index: 4;
+          background: rgba(0,0,0,0.1);
+        }
+
+        #popover-share-annotation-options {
+          z-index: 5;
         }
 
         #popover-share-annotation-options.z-index-1 {

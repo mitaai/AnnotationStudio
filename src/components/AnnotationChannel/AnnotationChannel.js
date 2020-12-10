@@ -91,7 +91,7 @@ function PlaceAnnotationsInCorrectSpot(annotations, side) {
 }
 
 const AnnotationChannel = ({
-  side, setAnnotationChannelLoaded, user, deleteAnnotationFromChannels, focusOnAnnotation, showMoreInfoShareModal, setShowMoreInfoShareModal,
+  side, setAnnotationChannelLoaded, user, deleteAnnotationFromChannels, focusOnAnnotation, showMoreInfoShareModal, setShowMoreInfoShareModal, membersIntersection,
 }) => {
   const [channelAnnotations] = useContext(DocumentAnnotationsContext);
   const [documentFilters, setDocumentFilters] = useContext(DocumentFiltersContext);
@@ -141,6 +141,7 @@ const AnnotationChannel = ({
             user={user}
             showMoreInfoShareModal={showMoreInfoShareModal}
             setShowMoreInfoShareModal={setShowMoreInfoShareModal}
+            membersIntersection={membersIntersection}
           />
         ))}
       </div>
