@@ -25,6 +25,7 @@ import { prefetchDocumentBySlug } from '../../../utils/docUtil';
 import { prefetchSharedAnnotationsOnDocument } from '../../../utils/annotationUtil';
 import { DocumentAnnotationsContext, DocumentFiltersContext, DocumentContext } from '../../../contexts/DocumentContext';
 import { getGroupById } from '../../../utils/groupUtil';
+import { FirstNameLastInitial } from '../../../utils/nameUtil';
 
 
 const adjustLine = (from, to, line) => {
@@ -384,7 +385,7 @@ const DocumentPage = (props) => {
         intersectionMembers = intersectionMembers.concat(members);
       }
       // before we set the intersection of members we need to remove the id of the current user session
-      setMembersIntersection(intersectionMembers.filter((m) => m.id !== session.user.id));
+      setMembersIntersection(intersectionMembers.filter((m) => m.id !== session.user.id).map((m) => ({ ...m, name: FirstNameLastInitial(m.name) })));
       setGroupIntersection(intersectionGroups);
       console.log('intersectionMembers', intersectionMembers);
     }

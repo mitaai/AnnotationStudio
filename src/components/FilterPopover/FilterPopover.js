@@ -25,7 +25,7 @@ import { Filter } from 'react-bootstrap-icons';
 import {
   Typeahead, Menu, MenuItem, Token,
 } from 'react-bootstrap-typeahead';
-
+import { FirstNameLastInitial } from '../../utils/nameUtil';
 import { DocumentContext, DocumentFiltersContext, DocumentAnnotationsContext } from '../../contexts/DocumentContext';
 
 function ByPermissionsFilterMatch(user_email, email, permissions, cf) { // AND FUNCTION
@@ -144,7 +144,7 @@ const GenerateFilterOptions = (user_email, annotations, filters, filteredAnnotat
         if (index === -1) {
           filterOptions.annotatedBy.push({
             id: a.creator.email,
-            name: a.creator.name,
+            name: FirstNameLastInitial(a.creator.name),
             email: a.creator.email,
             matches: GetNumberOfMatchesForThisEmail(user_email, annotations, filters, a.creator.email),
           });

@@ -29,6 +29,7 @@ import {
   Typeahead, Menu, MenuItem, Token,
 } from 'react-bootstrap-typeahead';
 import { postAnnotation, updateAnnotationById, deleteAnnotationById } from '../../utils/annotationUtil';
+import { FirstNameLastInitial } from '../../utils/nameUtil';
 
 import { DocumentAnnotationsContext, DocumentFiltersContext, DocumentTags } from '../../contexts/DocumentContext';
 
@@ -517,7 +518,7 @@ function AnnotationCard({
                 </>
               )}
             <Card.Header className="annotation-header grey-background">
-              <span className="float-left">{annotationData.creator.name}</span>
+              <span className="float-left">{FirstNameLastInitial(annotationData.creator.name)}</span>
               {annotationData.editing ? (
                 <>
                   {newAnnotation ? (
@@ -585,7 +586,7 @@ function AnnotationCard({
               placement="top"
               overlay={(
                 <Tooltip id={`tooltip-${annotationData._id}`}>
-                  {annotationData.creator.name}
+                  {FirstNameLastInitial(annotationData.creator.name)}
                 </Tooltip>
       )}
             >
