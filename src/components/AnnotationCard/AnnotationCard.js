@@ -62,7 +62,7 @@ function DeepCopyObj(obj) {
   },
   "permissions": {
     "groups": Array<String> (valid ObjectID)> or undefined,
-    "documentOwner": <Boolean>,
+    sharedTo: Array<String>, (valid ObjectId of users)
   }
   "created": <Date>,
   "modified": <Date>,
@@ -153,18 +153,18 @@ function AnnotationCard({
         // user wants the annotation to be private
         newAnnotationData.permissions.groups = [];
         newAnnotationData.permissions.private = true;
-        newAnnotationData.permissions.documentOwner = false;
+        newAnnotationData.permissions.sharedTo = undefined;
       } else if (newAnnotationPermissions === 1) {
         // user wants the annotation to be shared with groups
         // getting the intersection between the groups that have access to this specific document and the groups that the user is in
         newAnnotationData.permissions.groups = newAnnotationData.target.document.groups.filter((id) => (user.groups.includes(id)));
-        newAnnotationData.permissions.documentOwner = false;
+        newAnnotationData.permissions.sharedTo = undefined;
         newAnnotationData.permissions.private = false;
       } else if (newAnnotationPermissions === 2) {
         // user wants annotation to be shared with document owner only
         newAnnotationData.permissions.groups = [];
         newAnnotationData.permissions.private = false;
-        newAnnotationData.permissions.documentOwner = true;
+        newAnnotationData.permissions.sharedTo = selectedUsersToShare.map((v) => v.id);
       }
     }
     if (newAnnotationText !== null) {
@@ -326,9 +326,9 @@ function AnnotationCard({
     } else if (annotationData.permissions.private) {
       // private
       i = 0;
-    } else if (!annotationData.permissions.documentOwner && !annotationData.permissions.private) {
+    } else if (!annotationData.permissions.sharedTo && !annotationData.permissions.private) {
       i = 1;
-    } else if (annotationData.permissions.documentOwner) {
+    } else if (annotationData.permissions.sharedTo) {
       i = 2;
     }
 

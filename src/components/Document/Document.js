@@ -295,7 +295,7 @@ export default class Document extends React.Component {
         },
         permissions: {
           groups: [],
-          documentOwner: false,
+          sharedTo: undefined,
           private: true,
         },
         created: undefined,
