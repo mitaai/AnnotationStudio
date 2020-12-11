@@ -12,10 +12,6 @@ import {
   highlightRange,
 } from 'apache-annotator/dom';
 
-import AnnotationCard from '../AnnotationCard';
-
-import { FilterContext, FilterThemes } from '../../contexts/FilterContext';
-
 const debounce = (func, wait, options) => {
   let timeout;
   return function executedFunction() {
@@ -31,47 +27,24 @@ const debounce = (func, wait, options) => {
 
 const addHoverEventListenersToAllHighlightedText = () => {
   $('.annotation-highlighted-text').on('mouseover', (e) => {
+    // first remove highlight from any previously highlighted text and annotation
+    $('.annotation-highlighted-text.active, .annotation-card-container.active').removeClass('active');
     // highlighting all every piece of the annotation a different color by setting it to active
     $(`.annotation-highlighted-text[annotation-id='${$(e.target).attr('annotation-id')}']`)
       .addClass('active');
     // highligthing the correct annotation on the left or right channel that the user is hovering
     $(`#${$(e.target).attr('annotation-id')}`)
       .addClass('active');
-
-    // we need to higlight any text that is highlighted text but a parent of this dom element.
-    // Handle annotating a piece of text inside another piece of annotated text
-    $(`.annotation-highlighted-text[annotation-id='${$(e.target).attr('annotation-id')}']`)
-      .parents('.annotation-highlighted-text')
-      .each((index, elmnt) => {
-        // highlighting every piece of text that is highlighted
-        // that is the parent of the text that is currently getting hovered
-        $(`.annotation-highlighted-text[annotation-id='${$(elmnt).attr('annotation-id')}']`)
-          .addClass('active');
-        // highlighting the correct annotation that matches this specific highlighted text
-        // that is the parent of the text that is currently getting hovered
-        $(`#${$(elmnt).attr('annotation-id')}`).addClass('active');
-      });
   }).on('mouseout', (e) => {
     $(`.annotation-highlighted-text[annotation-id='${$(e.target).attr('annotation-id')}']`)
       .removeClass('active');
     $(`#${$(e.target).attr('annotation-id')}`)
       .removeClass('active');
-
-    // we need to higlight any text that is highlighted text but a parent of this dom element.
-    // Handle annotating a piece of text inside of another piece of annotated text
-    $(`.annotation-highlighted-text[annotation-id='${$(e.target)
-      .attr('annotation-id')}']`)
-      .parents('.annotation-highlighted-text')
-      .each((index, elmnt) => {
-        // highlighting every piece of text that is highlighted
-        // and is the parent of the text that is currently being highlighted
-        $(`.annotation-highlighted-text[annotation-id='${$(elmnt).attr('annotation-id')}']`)
-          .removeClass('active');
-        // highlighting the correct annotation that matches this specific highlighted text
-        // that is the parent of the text that is currently getting hovered
-        $(`#${$(elmnt).attr('annotation-id')}`)
-          .removeClass('active');
-      });
+  }).on('click', (e) => {
+    if ($(e.target).hasClass('active')) {
+      const aid = $(e.target).attr('annotation-id');
+      $(`#${aid} .annotation-header`).trigger('click');
+    }
   });
 };
 
@@ -322,7 +295,7 @@ export default class Document extends React.Component {
         },
         permissions: {
           groups: [],
-          documentOwner: false,
+          sharedTo: undefined,
           private: true,
         },
         created: undefined,
@@ -507,7 +480,8 @@ export default class Document extends React.Component {
             }
 
             .annotation-highlighted-text.filtered.active, .annotation-highlighted-text.filtered.active * {
-              background-color: rgba(255, 194, 10, 0.5);
+              /*background-color: rgba(255, 194, 10, 0.5);*/
+              background: rgb(255, 228, 145);
             }
 
             #document-content-container.unselectable {

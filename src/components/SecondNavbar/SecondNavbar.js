@@ -1,5 +1,6 @@
+import React, { useState } from 'react';
 import {
-  Nav, Row, Col, Navbar, Breadcrumb, Container,
+  Nav, Row, Col, Navbar, Breadcrumb, Container, Modal,
 } from 'react-bootstrap';
 import {
   InfoSquare,
@@ -10,68 +11,85 @@ import FilterPopover from '../FilterPopover';
 const SecondNavbar = ({
   session,
   type,
-  title,
+  document,
   docView,
-}) => (
-  <>
-    <Navbar bg="light" variant="light" className="second-navbar" data-testid="second-navbar">
-      <Container>
-        <Row>
-          <Col sm={8}>
-            <Nav>
-              <Breadcrumb>
-                <Breadcrumb.Item active={type === 'dashboard'} href="/">Dashboard</Breadcrumb.Item>
-                {type === 'document' && (
-                  <Breadcrumb.Item href="/documents" active={!title}>
+}) => {
+  const [showMoreDocumentInfo, setShowMoreDocumentInfo] = useState();
+  return (
+    <>
+      <Navbar bg="light" variant="light" className="second-navbar" data-testid="second-navbar">
+        <Container>
+          <Row>
+            <Col sm={8}>
+              <Nav>
+                <Breadcrumb>
+                  <Breadcrumb.Item active={type === 'dashboard'} href="/">Dashboard</Breadcrumb.Item>
+                  {type === 'document' && (
+                  <Breadcrumb.Item href="/documents" active={!document}>
                     Documents
                   </Breadcrumb.Item>
-                )}
-                {type === 'group' && (
-                  <Breadcrumb.Item href="/groups" active={!title}>
+                  )}
+                  {type === 'group' && (
+                  <Breadcrumb.Item href="/groups" active={!document}>
                     Groups
                   </Breadcrumb.Item>
-                )}
-                {type === 'admin' && (
-                  <Breadcrumb.Item active={!title}>
+                  )}
+                  {type === 'admin' && (
+                  <Breadcrumb.Item active={!document}>
                     Administration
                   </Breadcrumb.Item>
-                )}
-                {type === 'profile' && (
+                  )}
+                  {type === 'profile' && (
                   <Breadcrumb.Item active>
                     Edit Profile
                   </Breadcrumb.Item>
-                )}
-                {type === 'newuser' && (
+                  )}
+                  {type === 'newuser' && (
                   <Breadcrumb.Item active>
                     Registration
                   </Breadcrumb.Item>
-                )}
-                {type === 'annotations' && (
+                  )}
+                  {type === 'annotations' && (
                   <Breadcrumb.Item active>
                     Annotations
                   </Breadcrumb.Item>
-                )}
-                {title && (
-                  <Breadcrumb.Item active>{title}</Breadcrumb.Item>
-                )}
-                {type === 'document' && title && docView && (
-                <span id="btn-document-more-info">
-                  <InfoSquare size="1.4em" />
-                </span>
-                )}
-              </Breadcrumb>
-            </Nav>
-          </Col>
-        </Row>
-      </Container>
-      {type === 'document' && title && docView && (
-      <div style={{ position: 'absolute', right: '16px', top: '7px' }}>
-        <FilterPopover session={session} />
-      </div>
-      )}
-    </Navbar>
-    <style jsx global>
-      {`
+                  )}
+                  {document && (
+                  <Breadcrumb.Item active>{document.title}</Breadcrumb.Item>
+                  )}
+                  {type === 'document' && document && docView && (
+                  <span id="btn-document-more-info">
+                    <InfoSquare size="1.4em" onClick={() => { setShowMoreDocumentInfo(true); }} />
+                  </span>
+                  )}
+                </Breadcrumb>
+              </Nav>
+            </Col>
+          </Row>
+        </Container>
+        {type === 'document' && document && docView && (
+        <>
+          <div style={{ position: 'absolute', right: '16px', top: '7px' }}>
+            <FilterPopover session={session} />
+          </div>
+          <Modal
+            size="lg"
+            show={showMoreDocumentInfo}
+            onHide={() => setShowMoreDocumentInfo(false)}
+            aria-labelledby="example-modal-sizes-title-sm"
+          >
+            <Modal.Header closeButton>
+              <Modal.Title id="example-modal-sizes-title-sm">
+                Document Info
+              </Modal.Title>
+            </Modal.Header>
+            <Modal.Body>...</Modal.Body>
+          </Modal>
+        </>
+        )}
+      </Navbar>
+      <style jsx global>
+        {`
         .second-navbar .breadcrumb {
           background-color: #f8f9fa !important;
           margin-bottom: 0px;
@@ -89,8 +107,10 @@ const SecondNavbar = ({
         }
 
       `}
-    </style>
-  </>
-);
+      </style>
+    </>
+  );
+};
+
 
 export default SecondNavbar;

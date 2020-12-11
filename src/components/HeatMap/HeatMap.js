@@ -4,8 +4,7 @@
 import React, { useContext } from 'react';
 import $ from 'jquery';
 
-import DocumentFiltersContext from '../../contexts/DocumentFiltersContext';
-import DocumentAnnotationsContext from '../../contexts/DocumentAnnotationsContext';
+import { DocumentFiltersContext, DocumentAnnotationsContext } from '../../contexts/DocumentContext';
 
 
 function HeatMap() {

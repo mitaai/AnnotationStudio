@@ -1,4 +1,8 @@
 import React from 'react';
 
+const DocumentAnnotationsContext = React.createContext();
 const DocumentContext = React.createContext();
-export default DocumentContext;
+const DocumentFiltersContext = React.createContext();
+export {
+  DocumentAnnotationsContext, DocumentContext, DocumentFiltersContext,
+};

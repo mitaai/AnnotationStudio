@@ -23,9 +23,8 @@ import AnnotationChannel from '../../../components/AnnotationChannel';
 import Document from '../../../components/Document';
 import { prefetchDocumentBySlug } from '../../../utils/docUtil';
 import { prefetchSharedAnnotationsOnDocument } from '../../../utils/annotationUtil';
-import DocumentAnnotationsContext from '../../../contexts/DocumentAnnotationsContext';
-import DocumentFiltersContext from '../../../contexts/DocumentFiltersContext';
-import DocumentContext from '../../../contexts/DocumentContext';
+import { DocumentAnnotationsContext, DocumentFiltersContext, DocumentContext } from '../../../contexts/DocumentContext';
+import { getGroupById } from '../../../utils/groupUtil';
 
 
 const adjustLine = (from, to, line) => {
@@ -108,7 +107,28 @@ const DocumentPage = (props) => {
 
   const [scrollToAnnotation, setScrollToAnnotation] = useState(validQuery);
 
+  const [showMoreInfoShareModal, setShowMoreInfoShareModal] = useState();
+
   const [session, loading] = useSession();
+  // the interesection between the groups that this user is in and the groups the document is shared too
+  const [groupIntersection, setGroupIntersection] = useState();
+  // the people the user can share their annotations with which is generated from the groupIntersection
+  const [membersIntersection, setMembersIntersection] = useState([]);
+
+
+  function getAllTags() {
+    let tags = [];
+    const sides = ['left', 'right'];
+    for (let j = 0; j < sides.length; j += 1) {
+      const annos = channelAnnotations[sides[j]];
+      if (annos !== null) {
+        for (let i = 0; i < annos.length; i += 1) {
+          tags = tags.concat(annos[i].body.tags);
+        }
+      }
+    }
+    return tags.filter((value, index, self) => self.indexOf(value) === index).sort();
+  }
 
   const saveAnnotationChanges = (anno, side) => {
     const index = channelAnnotations[side].findIndex((a) => a._id === anno._id);
@@ -351,12 +371,34 @@ const DocumentPage = (props) => {
     }
   });
 
+  async function getIntersectionOfGroupsAndUsers() {
+    // when the session gets loaded in we are going to get the intersection of groups and the users that applies to
+    if (session !== undefined && groupIntersection === undefined) { // this means we haven't set it yet
+      const userGroupIds = session.user.groups.map((g) => g.id);
+      const intersection = userGroupIds.filter((id) => document.groups.includes(id));
+      const intersectionGroups = await Promise.all(intersection.map((id) => getGroupById(id)));
+      let intersectionMembers = [];
+      for (let i = 0; i < intersectionGroups.length; i += 1) {
+        // filtering out members for this specific group that we have already included in the intersectionMembers array
+        const members = intersectionGroups[i].members.filter((m) => !intersectionMembers.some((im) => im.id === m.id));
+        intersectionMembers = intersectionMembers.concat(members);
+      }
+      // before we set the intersection of members we need to remove the id of the current user session
+      setMembersIntersection(intersectionMembers.filter((m) => m.id !== session.user.id));
+      setGroupIntersection(intersectionGroups);
+      console.log('intersectionMembers', intersectionMembers);
+    }
+  }
+
+  useEffect(() => {
+    getIntersectionOfGroupsAndUsers();
+  }, [session]);
+
 
   return (
+
     <DocumentContext.Provider value={document}>
-      <DocumentAnnotationsContext.Provider
-        value={[channelAnnotations, setChannelAnnotations, saveAnnotationChanges]}
-      >
+      <DocumentAnnotationsContext.Provider value={[channelAnnotations, setChannelAnnotations, saveAnnotationChanges, getAllTags()]}>
         <DocumentFiltersContext.Provider value={[documentFilters, setDocumentFilters]}>
           {!session && loading && (
           <LoadingSpinner />
@@ -367,82 +409,106 @@ const DocumentPage = (props) => {
           {session && !loading && (
           <Layout
             type="document"
-            title={document === undefined ? '' : document.title}
+            document={document}
             alerts={alerts}
             docView
             statefulSession={statefulSession}
           >
             <HeatMap />
             {document && (
-              <>
-                <Row id="document-container">
-                  <Col className="annotation-channel-container">
-                    <AnnotationChannel
-                      deleteAnnotationFromChannels={deleteAnnotationFromChannels}
-                      setAnnotationChannelLoaded={setAnnotationChannel1Loaded}
-                      focusOnAnnotation={moveAnnotationsToCorrectSpotBasedOnFocus}
-                      loaded={annotationChannel1Loaded}
-                      side="left"
-                      annotations={channelAnnotations.left}
-                      documentFilters={documentFilters}
-                      user={session ? session.user : undefined}
-                    />
-                  </Col>
-                  <Col style={{ minWidth: 750, maxWidth: 750 }}>
-                    <Card id="document-card-container">
-                      <Card.Body>
-                        <Document
-                          setChannelAnnotations={
-                            (annos) => {
-                              setChannelAnnotations(annos);
-                              setDocumentHighlightedAndLoaded(true);
-                            }
-                          }
-                          annotations={annotations}
-                          documentHighlightedAndLoaded={documentHighlightedAndLoaded}
-                          addAnnotationToChannels={addAnnotationToChannels}
-                          annotateDocument={
-                            (mySelector, annotationID) => {
-                              highlightTextToAnnotate(mySelector, annotationID);
-                            }
-                          }
-                          documentToAnnotate={document}
-                          alerts={alerts}
-                          setAlerts={setAlerts}
-                          user={session ? session.user : undefined}
-                        />
-                      </Card.Body>
-                    </Card>
-                  </Col>
-                  <Col className="annotation-channel-container">
-                    <AnnotationChannel
-                      deleteAnnotationFromChannels={deleteAnnotationFromChannels}
-                      setAnnotationChannelLoaded={setAnnotationChannel2Loaded}
-                      focusOnAnnotation={moveAnnotationsToCorrectSpotBasedOnFocus}
-                      loaded={annotationChannel2Loaded}
-                      side="right"
-                      annotations={channelAnnotations.right}
-                      documentFilters={documentFilters}
-                      user={session ? session.user : undefined}
-                    />
-                  </Col>
-                </Row>
-                <Modal
-                  show={!(annotationChannel1Loaded && annotationChannel2Loaded)}
-                  backdrop="static"
-                  keyboard={false}
-                  animation={false}
-                >
-                  <Modal.Header>
-                    <Modal.Title>
-                      Loading Annotations
-                    </Modal.Title>
-                  </Modal.Header>
-                  <Modal.Body>
-                    <ProgressBar animated now={100} />
-                  </Modal.Body>
-                </Modal>
-              </>
+            <>
+              <Row id="document-container">
+                <Col className="annotation-channel-container">
+                  <AnnotationChannel
+                    deleteAnnotationFromChannels={deleteAnnotationFromChannels}
+                    setAnnotationChannelLoaded={setAnnotationChannel1Loaded}
+                    focusOnAnnotation={moveAnnotationsToCorrectSpotBasedOnFocus}
+                    side="left"
+                    annotations={channelAnnotations.left}
+                    user={session ? session.user : undefined}
+                    showMoreInfoShareModal={showMoreInfoShareModal}
+                    setShowMoreInfoShareModal={setShowMoreInfoShareModal}
+                    membersIntersection={membersIntersection}
+                  />
+                </Col>
+                <Col style={{ minWidth: 750, maxWidth: 750 }}>
+                  <Card id="document-card-container">
+                    <Card.Body>
+                      <Document
+                        setChannelAnnotations={
+                        (annos) => {
+                          setChannelAnnotations(annos);
+                          setDocumentHighlightedAndLoaded(true);
+                        }
+                      }
+                        annotations={annotations}
+                        documentHighlightedAndLoaded={documentHighlightedAndLoaded}
+                        addAnnotationToChannels={addAnnotationToChannels}
+                        annotateDocument={
+                        (mySelector, annotationID) => {
+                          highlightTextToAnnotate(mySelector, annotationID);
+                        }
+                      }
+                        documentToAnnotate={document}
+                        alerts={alerts}
+                        setAlerts={setAlerts}
+                        user={session ? session.user : undefined}
+                      />
+                    </Card.Body>
+                  </Card>
+                </Col>
+                <Col className="annotation-channel-container">
+                  <AnnotationChannel
+                    deleteAnnotationFromChannels={deleteAnnotationFromChannels}
+                    setAnnotationChannelLoaded={setAnnotationChannel2Loaded}
+                    focusOnAnnotation={moveAnnotationsToCorrectSpotBasedOnFocus}
+                    side="right"
+                    annotations={channelAnnotations.right}
+                    user={session ? session.user : undefined}
+                    showMoreInfoShareModal={showMoreInfoShareModal}
+                    setShowMoreInfoShareModal={setShowMoreInfoShareModal}
+                    membersIntersection={membersIntersection}
+                  />
+                </Col>
+              </Row>
+              <Modal
+                show={!(annotationChannel1Loaded && annotationChannel2Loaded)}
+                backdrop="static"
+                keyboard={false}
+                animation={false}
+              >
+                <Modal.Header>
+                  <Modal.Title>
+                    Loading Annotations
+                  </Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                  <ProgressBar animated now={100} />
+                </Modal.Body>
+              </Modal>
+              <Modal
+                show={showMoreInfoShareModal}
+                onHide={() => { setShowMoreInfoShareModal(); }}
+                size="lg"
+                aria-labelledby="contained-modal-title-vcenter"
+              >
+                <Modal.Header closeButton>
+                  <Modal.Title id="contained-modal-title-vcenter" style={{ fontWeight: 400 }}>
+                    Sharing Annotation Options
+                  </Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                  <p style={{ fontWeight: 600, fontSize: 16, marginBottom: 5 }}>Share with group(s)</p>
+                  <p style={{ fontSize: 14 }}>
+                    Share this annotation with all members of your group(s) who have access to this document.
+                  </p>
+                  <p style={{ fontWeight: 600, fontSize: 16, marginBottom: 5 }}>Share with user(s)</p>
+                  <p style={{ fontSize: 14 }}>
+                    Share this annotation with a specific user or users only.
+                  </p>
+                </Modal.Body>
+              </Modal>
+            </>
             )}
           </Layout>
           )}
@@ -522,7 +588,6 @@ const DocumentPage = (props) => {
         `}
           </style>
         </DocumentFiltersContext.Provider>
-
       </DocumentAnnotationsContext.Provider>
     </DocumentContext.Provider>
 

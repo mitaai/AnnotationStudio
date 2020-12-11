@@ -49,7 +49,7 @@ const annotation = {
     groups: [
       '4321bcda',
     ],
-    documentOwner: false,
+    sharedTo: undefined,
     private: true,
   },
   created: '2020-11-17T23:08:10.332Z',
