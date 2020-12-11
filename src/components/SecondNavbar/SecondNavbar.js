@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  Nav, Row, Col, Navbar, Breadcrumb, Container, Modal,
+  Nav, Row, Col, Navbar, Breadcrumb, Container, Modal, Table,
 } from 'react-bootstrap';
 import {
   InfoSquare,
@@ -14,6 +14,27 @@ const SecondNavbar = ({
   document,
   docView,
 }) => {
+  const metaData = {
+    title: 'Title',
+    resourceType: 'Resource Type',
+    contributors: 'Contributors',
+    bookTitle: 'Book Title',
+    publication: 'Publication',
+    series: 'Series',
+    seriesNumber: 'Series Number',
+    volume: 'Volume',
+    issue: 'Issue',
+    pageNumbers: 'Page Numbers',
+    edition: 'Edition',
+    publisher: 'Publisher',
+    publicationDate: 'Publication Date',
+    location: 'Location',
+    rightsStatus: 'Rights Status',
+    url: 'URL',
+    accessed: 'Accessed',
+    notes: 'Notes',
+    state: 'State',
+  };
   const [showMoreDocumentInfo, setShowMoreDocumentInfo] = useState();
   return (
     <>
@@ -83,7 +104,24 @@ const SecondNavbar = ({
                 Document Info
               </Modal.Title>
             </Modal.Header>
-            <Modal.Body>...</Modal.Body>
+            <Modal.Body>
+              <Table striped bordered hover>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Data</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.keys(metaData).map((key) => (
+                    <tr>
+                      <td>{metaData[key]}</td>
+                      <td>{document[key] === undefined ? '' : document[key]}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </Modal.Body>
           </Modal>
         </>
         )}
