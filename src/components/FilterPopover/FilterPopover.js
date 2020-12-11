@@ -266,14 +266,12 @@ function FilterPopover({ session }) {
                       >
                         Shared
                       </Button>
-                      {session.user.id === document.owner && (
                       <Button
                         variant={documentFilters.filters.permissions === 2 ? 'primary' : 'outline-primary'}
                         onClick={() => { updateFilters('permissions', 2); }}
                       >
                         Shared with me only
                       </Button>
-                      )}
                     </ButtonGroup>
                   </Card.Subtitle>
                   <Row>

@@ -105,13 +105,7 @@ const SecondNavbar = ({
               </Modal.Title>
             </Modal.Header>
             <Modal.Body>
-              <Table striped bordered hover>
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Data</th>
-                  </tr>
-                </thead>
+              <Table bordered hover size="sm">
                 <tbody>
                   {Object.keys(metaData).map((key) => (
                     <tr>
