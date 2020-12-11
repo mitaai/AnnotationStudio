@@ -25,7 +25,7 @@ import { Filter } from 'react-bootstrap-icons';
 import {
   Typeahead, Menu, MenuItem, Token,
 } from 'react-bootstrap-typeahead';
-
+import { FirstNameLastInitial } from '../../utils/nameUtil';
 import { DocumentContext, DocumentFiltersContext, DocumentAnnotationsContext } from '../../contexts/DocumentContext';
 
 function ByPermissionsFilterMatch(user_email, email, permissions, cf) { // AND FUNCTION
@@ -144,7 +144,7 @@ const GenerateFilterOptions = (user_email, annotations, filters, filteredAnnotat
         if (index === -1) {
           filterOptions.annotatedBy.push({
             id: a.creator.email,
-            name: a.creator.name,
+            name: FirstNameLastInitial(a.creator.name),
             email: a.creator.email,
             matches: GetNumberOfMatchesForThisEmail(user_email, annotations, filters, a.creator.email),
           });
@@ -266,14 +266,12 @@ function FilterPopover({ session }) {
                       >
                         Shared
                       </Button>
-                      {session.user.id === document.owner && (
                       <Button
                         variant={documentFilters.filters.permissions === 2 ? 'primary' : 'outline-primary'}
                         onClick={() => { updateFilters('permissions', 2); }}
                       >
                         Shared with me only
                       </Button>
-                      )}
                     </ButtonGroup>
                   </Card.Subtitle>
                   <Row>

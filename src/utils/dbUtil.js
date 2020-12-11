@@ -42,7 +42,6 @@ export async function connectToDatabase() {
       })
       .then((db) => {
         db.collection('users').createIndex({ email: 1 }, { unique: true });
-        db.collection('users').createIndex({ slug: 1 }, { unique: true });
         db.collection('documents').createIndex({ groups: 1 });
         db.collection('documents').createIndex({ owner: 1 });
         conn.db = db;
