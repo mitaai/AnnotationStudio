@@ -27,8 +27,6 @@ const debounce = (func, wait, options) => {
 
 const addHoverEventListenersToAllHighlightedText = () => {
   $('.annotation-highlighted-text').on('mouseover', (e) => {
-    // first remove highlight from any previously highlighted text and annotation
-    $('.annotation-highlighted-text.active, .annotation-card-container.active').removeClass('active');
     // highlighting all every piece of the annotation a different color by setting it to active
     $(`.annotation-highlighted-text[annotation-id='${$(e.target).attr('annotation-id')}']`)
       .addClass('active');
@@ -36,10 +34,12 @@ const addHoverEventListenersToAllHighlightedText = () => {
     $(`#${$(e.target).attr('annotation-id')}`)
       .addClass('active');
   }).on('mouseout', (e) => {
-    $(`.annotation-highlighted-text[annotation-id='${$(e.target).attr('annotation-id')}']`)
-      .removeClass('active');
-    $(`#${$(e.target).attr('annotation-id')}`)
-      .removeClass('active');
+    if (!$(`#${$(e.target).attr('annotation-id')}`).hasClass('expanded')) {
+      $(`.annotation-highlighted-text[annotation-id='${$(e.target).attr('annotation-id')}']`)
+        .removeClass('active');
+      $(`#${$(e.target).attr('annotation-id')}`)
+        .removeClass('active');
+    }
   }).on('click', (e) => {
     if ($(e.target).hasClass('active')) {
       const aid = $(e.target).attr('annotation-id');

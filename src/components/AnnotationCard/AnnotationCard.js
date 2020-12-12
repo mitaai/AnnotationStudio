@@ -6,8 +6,6 @@ import {
   Col,
   Card,
   Form,
-  InputGroup,
-  FormControl,
   Button,
   Badge,
   Dropdown,
@@ -16,22 +14,19 @@ import {
   OverlayTrigger,
   Tooltip,
   ButtonGroup,
-  DropdownButton,
   Popover,
   Modal,
-  Overlay,
 } from 'react-bootstrap';
 
 import {
-  CheckCircleFill, TrashFill, ChatLeftQuote, ArrowUpShort, ChevronUp, QuestionCircle,
+  CheckCircleFill, TrashFill, QuestionCircle,
 } from 'react-bootstrap-icons';
 import {
   Typeahead, Menu, MenuItem, Token,
 } from 'react-bootstrap-typeahead';
 import { postAnnotation, updateAnnotationById, deleteAnnotationById } from '../../utils/annotationUtil';
-import { FirstNameLastInitial } from '../../utils/nameUtil';
 
-import { DocumentAnnotationsContext, DocumentFiltersContext, DocumentTags } from '../../contexts/DocumentContext';
+import { DocumentAnnotationsContext, DocumentFiltersContext } from '../../contexts/DocumentContext';
 
 function addHoverEventListenersToAllHighlightedText() {
   $('.annotation-highlighted-text').on('mouseover', (e) => {
@@ -40,8 +35,10 @@ function addHoverEventListenersToAllHighlightedText() {
     // highligthing the correct annotation on the left or right channel that the user is hovering
     $(`#${$(e.target).attr('annotation-id')}`).addClass('active');
   }).on('mouseout', (e) => {
-    $(`.annotation-highlighted-text[annotation-id='${$(e.target).attr('annotation-id')}']`).removeClass('active');
-    $(`#${$(e.target).attr('annotation-id')}`).removeClass('active');
+    if (!$(`#${$(e.target).attr('annotation-id')}`).hasClass('expanded')) {
+      $(`.annotation-highlighted-text[annotation-id='${$(e.target).attr('annotation-id')}']`).removeClass('active');
+      $(`#${$(e.target).attr('annotation-id')}`).removeClass('active');
+    }
   });
 }
 
@@ -63,7 +60,7 @@ function DeepCopyObj(obj) {
   },
   "permissions": {
     "groups": Array<String> (valid ObjectID)> or undefined,
-    sharedTo: Array<String>, (valid ObjectId of users)
+    "documentOwner": <Boolean>,
   }
   "created": <Date>,
   "modified": <Date>,
@@ -97,7 +94,6 @@ function AnnotationCard({
   focusOnAnnotation,
   deleteAnnotationFromChannels,
   user,
-  newAnnotation,
   showMoreInfoShareModal,
   setShowMoreInfoShareModal,
   membersIntersection,
@@ -115,18 +111,17 @@ function AnnotationCard({
   const [updateFocusOfAnnotation, setUpdateFocusOfAnnotation] = useState(annotation.editing);
   const [hovered, setHovered] = useState();
   const [selectedUsersToShare, setSelectedUsersToShare] = useState([]);
-  const [showOverlay, setShowOverlay] = useState();
-  const [overlayTarget, setOverlayTarget] = useState(null);
   const permissionText = ['Share', 'Shared with group(s)', selectedUsersToShare.length === 1 ? 'Shared with 1 user' : `Shared with ${selectedUsersToShare.length} users`];
 
   function AddClassActive(id) {
-    // remove active from other annotations
-    $('.annotation-card-container').removeClass('active');
     // changing color of highlighted text
     $(`.annotation-highlighted-text[annotation-id='${id}']`).addClass('active');
   }
 
   function RemoveClassActive(id) {
+    if (!expanded) {
+      $(`#${id}`).removeClass('active');
+    }
     // setting color of highlighted text back to default
     $(`.annotation-highlighted-text[annotation-id='${id}']`).removeClass('active');
   }
@@ -154,18 +149,18 @@ function AnnotationCard({
         // user wants the annotation to be private
         newAnnotationData.permissions.groups = [];
         newAnnotationData.permissions.private = true;
-        newAnnotationData.permissions.sharedTo = undefined;
+        newAnnotationData.permissions.documentOwner = false;
       } else if (newAnnotationPermissions === 1) {
         // user wants the annotation to be shared with groups
         // getting the intersection between the groups that have access to this specific document and the groups that the user is in
         newAnnotationData.permissions.groups = newAnnotationData.target.document.groups.filter((id) => (user.groups.includes(id)));
-        newAnnotationData.permissions.sharedTo = undefined;
+        newAnnotationData.permissions.documentOwner = false;
         newAnnotationData.permissions.private = false;
       } else if (newAnnotationPermissions === 2) {
         // user wants annotation to be shared with document owner only
         newAnnotationData.permissions.groups = [];
         newAnnotationData.permissions.private = false;
-        newAnnotationData.permissions.sharedTo = selectedUsersToShare.map((v) => v.id);
+        newAnnotationData.permissions.documentOwner = true;
       }
     }
     if (newAnnotationText !== null) {
@@ -327,19 +322,14 @@ function AnnotationCard({
     } else if (annotationData.permissions.private) {
       // private
       i = 0;
-    } else if (!annotationData.permissions.sharedTo && !annotationData.permissions.private) {
+    } else if (!annotationData.permissions.documentOwner && !annotationData.permissions.private) {
       i = 1;
-    } else if (annotationData.permissions.sharedTo) {
+    } else if (annotationData.permissions.documentOwner) {
       i = 2;
     }
 
     return i;
   }
-
-  const handleShareClick = (event) => {
-    setShowOverlay(!showOverlay);
-    setOverlayTarget(event.target);
-  };
 
   useEffect(() => {
     if (updateFocusOfAnnotation) {
@@ -353,15 +343,24 @@ function AnnotationCard({
     }
   });
 
+  useEffect(() => {
+    if (expanded || hovered) {
+      AddClassActive(annotationData._id);
+    } else {
+      RemoveClassActive(annotationData._id);
+    }
+  }, [expanded, hovered]);
+
+  console.log('expanded', expanded, 'hovered', hovered);
+
   return (
     <>
-      {showOverlay && <div className="overlay-cover" onClick={()=>{setShowOverlay()}} />}
       <Card
         id={annotationData._id}
         onClick={() => { setUpdateFocusOfAnnotation(true); }}
-        onMouseOver={() => { AddClassActive(annotationData._id); setHovered(true); }}
-        onMouseOut={() => { RemoveClassActive(annotationData._id); setHovered(); }}
-        className={`annotation-card-container ${newAnnotation ? 'new-annotation' : ''} ${expanded ? 'expanded' : ''} ${hovered ? 'active' : ''}`}
+        onMouseOver={() => { setHovered(true); }}
+        onMouseOut={() => { setHovered(); }}
+        className={`annotation-card-container ${annotationData.new ? 'new-annotation' : ''} ${expanded ? 'expanded' : ''} ${expanded || hovered ? 'active' : ''}`}
         style={side === 'left' ? { left: '50px' } : { right: '50px' }}
       >
         <div className="line1" />
@@ -397,62 +396,59 @@ function AnnotationCard({
                           >
                             Private
                           </Button>
-                          <Button
-                            style={{ fontSize: 9 }}
-                            variant={showPermissionNumber() === 0 ? 'outline-primary' : 'primary'}
-                            onClick={handleShareClick}
-                          >
-                            {permissionText[showPermissionNumber()]}
-                          </Button>
-                          <Overlay
-                            show={showOverlay}
-                            target={overlayTarget}
+                          <OverlayTrigger
+                            trigger="click"
                             key="bottom"
                             placement="bottom"
-                          >
-                            <Popover id="popover-share-annotation-options" className={showMoreInfoShareModal ? 'z-index-1' : ''}>
-                              <Popover.Title id="popover-share-annotation-header">
-                                <span>Share Annotation</span>
-                                <QuestionCircle
-                                  style={{
-                                    float: 'right', position: 'relative', top: 2, cursor: 'pointer',
-                                  }}
-                                  onClick={() => { setShowMoreInfoShareModal(true); }}
-                                />
-                              </Popover.Title>
-                              <Popover.Content id="popover-share-annotation-body">
-                                <Form>
-                                  <Form.Check
-                                    type="radio"
-                                    label="with group(s)"
-                                    id="radio-share-annotation-groups"
-                                    onClick={() => { handleAnnotationPermissionsChange(1); }}
-                                    checked={showPermissionNumber() === 1}
+                            overlay={(
+                              <Popover id="popover-share-annotation-options" className={showMoreInfoShareModal ? 'z-index-1' : ''}>
+                                <Popover.Title id="popover-share-annotation-header">
+                                  <span>Share Annotation</span>
+                                  <QuestionCircle
+                                    style={{
+                                      float: 'right', position: 'relative', top: 2, cursor: 'pointer',
+                                    }}
+                                    onClick={() => { setShowMoreInfoShareModal(true); }}
                                   />
-                                  <Form.Check
-                                    type="radio"
-                                    label="with user(s)"
-                                    id="radio-share-annotation-users"
-                                    onClick={() => { handleAnnotationPermissionsChange(2); }}
-                                    checked={showPermissionNumber() === 2}
-                                  />
-                                  <div id="typeahead-share-annotation-users-container" className={showPermissionNumber() === 2 ? 'show' : ''}>
-                                    <Typeahead
-                                      id="typeahead-share-annotation-users"
-                                      labelKey="name"
-                                      placeholder="search by user name or email"
-                                      multiple
-                                      renderToken={renderUserShareToken}
-                                      selected={selectedUsersToShare}
-                                      options={membersIntersection}
-                                      highlightOnlyResult
-                                      onChange={setSelectedUsersToShare}
+                                </Popover.Title>
+                                <Popover.Content id="popover-share-annotation-body">
+                                  <Form>
+                                    <Form.Check
+                                      type="radio"
+                                      label="with group(s)"
+                                      id="radio-share-annotation-groups"
+                                      onClick={() => { handleAnnotationPermissionsChange(1); }}
+                                      checked={showPermissionNumber() === 1}
                                     />
-                                  </div>
-                                </Form>
-                              </Popover.Content>
-                            </Popover>
-                          </Overlay>
+                                    <Form.Check
+                                      type="radio"
+                                      label="with user(s)"
+                                      id="radio-share-annotation-users"
+                                      onClick={() => { handleAnnotationPermissionsChange(2); }}
+                                      checked={showPermissionNumber() === 2}
+                                    />
+                                    <div id="typeahead-share-annotation-users-container" className={showPermissionNumber() === 2 ? 'show' : ''}>
+                                      <Typeahead
+                                        id="typeahead-share-annotation-users"
+                                        labelKey="name"
+                                        placeholder="search by user name or email"
+                                        multiple
+                                        renderToken={renderUserShareToken}
+                                        selected={selectedUsersToShare}
+                                        options={membersIntersection}
+                                        highlightOnlyResult
+                                        onChange={setSelectedUsersToShare}
+                                      />
+                                    </div>
+                                  </Form>
+                                </Popover.Content>
+                              </Popover>
+                            )}
+                          >
+                            <Button style={{ fontSize: 9 }} variant={showPermissionNumber() === 0 ? 'outline-primary' : 'primary'}>
+                              {permissionText[showPermissionNumber()]}
+                            </Button>
+                          </OverlayTrigger>
                         </ButtonGroup>
                       </Col>
                     </Row>
@@ -491,16 +487,18 @@ function AnnotationCard({
               : (
                 <>
                   <ListGroup variant="flush" style={{ borderTop: 'none' }}>
-                    <ListGroup.Item className="annotation-body" onClick={() => { setExpanded(false); setUpdateFocusOfAnnotation(true); }}>
+                    <ListGroup.Item className="annotation-body" onClick={() => { setExpanded(); setUpdateFocusOfAnnotation(true); }}>
                       {annotationData.body.value.length > 0 ? annotationData.body.value : (
-                        <span className="text-quote">
-                          <img
-                            className="quote-svg"
-                            src="/quote-left-svg.svg"
-                            alt="quote left"
-                          />
-                          {annotationData.target.selector.exact}
-                        </span>
+                        <>
+                          <span className="text-quote">
+                            <img
+                              className="quote-svg"
+                              src="/quote-left-svg.svg"
+                              alt="quote left"
+                            />
+                            {annotationData.target.selector.exact}
+                          </span>
+                        </>
                       )}
                     </ListGroup.Item>
                     {annotationData.body.tags.length > 0 ? (
@@ -518,10 +516,10 @@ function AnnotationCard({
                 </>
               )}
             <Card.Header className="annotation-header grey-background">
-              <span className="float-left">{FirstNameLastInitial(annotationData.creator.name)}</span>
+              <span className="float-left">{annotationData.creator.name}</span>
               {annotationData.editing ? (
                 <>
-                  {newAnnotation ? (
+                  {annotationData.new ? (
                     <TrashFill
                       className="btn-cancel-annotation-edits float-right"
                       size="1em"
@@ -530,26 +528,20 @@ function AnnotationCard({
                     />
                   ) : (
                     <Button
-                      className="btn-cancel-annotation-edits float-right"
+                      className="btn-cancel float-right"
                       variant="secondary"
                       size="sm"
                       onClick={CancelAnnotation}
                     >
-                      &times;
+                      Cancel
                     </Button>
                   )}
 
                   {newAnnotationTags === null && newAnnotationPermissions === null && newAnnotationText === null ? ''
                     : (
-                      <>
-                        <CheckCircleFill
-                          size="1em"
-                          className="btn-save-annotation-edits float-right"
-                          variant="primary"
-                          onClick={SaveAnnotation}
-                        />
-                      </>
-
+                      <Button size="sm" className="btn-save-annotation-edits float-right" variant="primary" onClick={SaveAnnotation}>
+                        Save
+                      </Button>
                     )}
                 </>
               ) : (
@@ -558,7 +550,7 @@ function AnnotationCard({
                   <span className="float-right">
 
                     <span>{annotationData.modified === undefined ? '' : moment(annotationData.modified.toString()).format('MM/DD/YYYY')}</span>
-                    {user.email === annotationData.creator.email && !newAnnotation ? (
+                    {user.email === annotationData.creator.email && !annotationData.new ? (
                       <Dropdown className="annotation-more-options-dropdown">
                         <Dropdown.Toggle variant="light" id="dropdown-basic">
                           <svg width="0.8em" height="0.8em" viewBox="0 0 16 16" className="bi bi-three-dots-vertical" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -586,7 +578,7 @@ function AnnotationCard({
               placement="top"
               overlay={(
                 <Tooltip id={`tooltip-${annotationData._id}`}>
-                  {FirstNameLastInitial(annotationData.creator.name)}
+                  {annotationData.creator.name}
                 </Tooltip>
       )}
             >
@@ -615,20 +607,6 @@ function AnnotationCard({
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-        }
-
-        .overlay-cover {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100vw;
-          height: 100vh;
-          z-index: 4;
-          background: rgba(0,0,0,0.1);
-        }
-
-        #popover-share-annotation-options {
-          z-index: 5;
         }
 
         #popover-share-annotation-options.z-index-1 {
@@ -680,6 +658,10 @@ function AnnotationCard({
 
         .text-quote {
           color: #616161;
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;  
+          overflow: hidden;
         }
 
         .annotation-pointer-background-left, .annotation-pointer-left, .annotation-pointer-background-right, .annotation-pointer-right {
@@ -754,9 +736,12 @@ function AnnotationCard({
         }
 
         .btn-save-annotation-edits {
-          color: #007bff;
           margin-right: 3px;
-          font-size: 18px;
+          font-size: 9px;
+        }
+
+        .btn-cancel {
+          font-size: 9px;
         }
 
 
