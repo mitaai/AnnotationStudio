@@ -35,6 +35,7 @@ const SecondNavbar = ({
     notes: 'Notes',
     state: 'State',
   };
+
   const [showMoreDocumentInfo, setShowMoreDocumentInfo] = useState();
   return (
     <>
@@ -107,12 +108,22 @@ const SecondNavbar = ({
             <Modal.Body>
               <Table bordered hover size="sm">
                 <tbody>
-                  {Object.keys(metaData).map((key) => (
-                    <tr>
-                      <td>{metaData[key]}</td>
-                      <td>{document[key] === undefined ? '' : document[key]}</td>
-                    </tr>
-                  ))}
+                  {Object.keys(metaData).map((key) => {
+                    let str = '';
+                    if (document[key] !== undefined) {
+                      if (Array.isArray(document[key])) {
+                        str = document[key].map((v, i) => `${i === 0 ? '' : ', '}${v.type}: ${v.name}`);
+                      } else {
+                        str = document[key];
+                      }
+                    }
+                    return (
+                      <tr>
+                        <td className="table-meta-data-name">{metaData[key]}</td>
+                        <td>{str}</td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </Table>
             </Modal.Body>
@@ -125,6 +136,10 @@ const SecondNavbar = ({
         .second-navbar .breadcrumb {
           background-color: #f8f9fa !important;
           margin-bottom: 0px;
+        }
+
+        .table-meta-data-name {
+          width: 150px;
         }
   
         .second-navbar .container .row {
