@@ -179,6 +179,7 @@ export default class Document extends React.Component {
           // this takes into account if the user was scrolling through the document
           // as the it was being populated with annotations
           annotationBeginningPosition.top += $('#document-container').scrollTop();
+          annotationEndingPosition.top += $('#document-container').scrollTop();
           // now that we have position data we will add the annotation
           // ither to the left or right channel
           // eslint-disable-next-line no-undef
@@ -270,6 +271,16 @@ export default class Document extends React.Component {
     };
 
     this.addNewAnnotationToDom = (rid) => {
+      $($(`#document-content-container span[annotation-id='${rid}']`).get(0))
+        .prepend("<span class='annotation-beginning-marker'></span>");
+      $($(`#document-content-container span[annotation-id='${rid}']`).get(-1))
+        .append("<span class='annotation-ending-marker'></span>");
+      const annotationBeginning = $(`#document-content-container span[annotation-id='${rid}'] .annotation-beginning-marker`);
+      const annotationEnding = $(`#document-content-container span[annotation-id='${rid}'] .annotation-ending-marker`);
+      const annotationBeginningPosition = annotationBeginning.offset();
+      const annotationEndingPosition = annotationEnding.offset();
+      annotationBeginningPosition.top += $('#document-container').scrollTop();
+      annotationEndingPosition.top += $('#document-container').scrollTop();
       const annotateStartPositionSpan = $('#annotate-start-position-span').offset();
       annotateStartPositionSpan.top += $('#document-container').scrollTop();
       // eslint-disable-next-line no-undef
@@ -320,7 +331,8 @@ export default class Document extends React.Component {
         },
         position: {
           left: annotateStartPositionSpan.left,
-          top: annotateStartPositionSpan.top,
+          top: annotationBeginningPosition.top,
+          height: (annotationEndingPosition.top - annotationBeginningPosition.top) + 18,
         },
       };
 
@@ -480,7 +492,6 @@ export default class Document extends React.Component {
             }
 
             .annotation-highlighted-text.filtered.active, .annotation-highlighted-text.filtered.active * {
-              /*background-color: rgba(255, 194, 10, 0.5);*/
               background: rgb(255, 228, 145);
             }
 

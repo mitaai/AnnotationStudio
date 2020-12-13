@@ -283,6 +283,38 @@ function AnnotationCard({
     );
   };
 
+  const renderMenu = (results, menuProps) => {
+    const res = results.map((r) => {
+      if (typeof (r) === 'object') {
+        return {
+          ...r,
+          alreadyExists: newAnnotationTags !== null && newAnnotationTags.some((t) => r.tags === (typeof t === 'object' ? t.tags : t)),
+        };
+      }
+      return r;
+    });
+
+    return (
+      <Menu
+        {...menuProps}
+      >
+        {res.map((result, index) => {
+          const tagDiv = typeof (result) === 'object' ? (
+            <>
+              <div className="tag-name">{result.tags}</div>
+              {result.alreadyExists && <div className="tag-already-exists">already used</div>}
+            </>
+          ) : <div className="tag-name">{result}</div>;
+          return (
+            <MenuItem option={result} key={index} position={index}>
+              {tagDiv}
+            </MenuItem>
+          );
+        })}
+      </Menu>
+    );
+  };
+
   const renderUserShareToken = (option, { onRemove }, index) => (
     <Token
       key={index}
@@ -300,8 +332,8 @@ function AnnotationCard({
     >
       {results.map((result, index) => (
         <MenuItem option={result} key={index} position={index}>
-          <span className="user-share-name">{result.name}</span>
-          <span className="user-share-email">{result.email}</span>
+          <div className="user-share-name">{result.name}</div>
+          <div className="user-share-email">{result.email}</div>
         </MenuItem>
       ))}
     </Menu>
@@ -350,8 +382,6 @@ function AnnotationCard({
       RemoveClassActive(annotationData._id);
     }
   }, [expanded, hovered]);
-
-  console.log('expanded', expanded, 'hovered', hovered);
 
   return (
     <>
@@ -434,9 +464,10 @@ function AnnotationCard({
                                         placeholder="search by user name or email"
                                         multiple
                                         renderToken={renderUserShareToken}
+                                        renderMenu={renderUserShareMenu}
                                         selected={selectedUsersToShare}
                                         options={membersIntersection}
-                                        highlightOnlyResult
+                                        allowNew
                                         onChange={setSelectedUsersToShare}
                                       />
                                     </div>
@@ -475,9 +506,11 @@ function AnnotationCard({
                           selected={newAnnotationTags === null ? annotationData.body.tags : newAnnotationTags}
                           options={allAnnotationTags}
                           renderToken={renderToken}
+                          renderMenu={renderMenu}
                           allowNew
-                          newSelectionPrefix="new tag: "
-                          onChange={setNewAnnotationTags}
+                          onChange={(selected) => {
+                            setNewAnnotationTags(selected.filter((s) => (typeof (s) !== 'object' || !s.alreadyExists)));
+                          }}
                         />
                       </ListGroup.Item>
                     </ListGroup>
@@ -607,6 +640,14 @@ function AnnotationCard({
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+        }
+
+        .tag-already-exists {
+          font-size: 9px;
+        }
+
+        .user-share-email {
+          font-size: 9px;
         }
 
         #popover-share-annotation-options.z-index-1 {

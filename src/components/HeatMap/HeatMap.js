@@ -24,10 +24,23 @@ function HeatMap() {
       for (const anno of channelAnnotations[side]) {
         if (documentFilters.annotationIds[side] === null || documentFilters.annotationIds[side].includes(anno._id)) {
           if (anno.position.height !== undefined) {
+            let h = anno.position.height;
+            // if for some reason the height of this annotation is a negative number we are going to recalculate the value in the loop
+            if (h < 0) {
+              const annotationBeginning = $(`#document-content-container span[annotation-id='${anno._id}'] .annotation-beginning-marker`);
+              const annotationEnding = $(`#document-content-container span[annotation-id='${anno._id}'] .annotation-ending-marker`);
+              if (annotationBeginning.get(0) !== undefined && annotationEnding.get(0) !== undefined) {
+                const annotationBeginningPosition = annotationBeginning.offset();
+                const annotationEndingPosition = annotationEnding.offset();
+                h = (annotationEndingPosition.top - annotationBeginningPosition.top) + lineHeight;
+              } else {
+                h = 0;
+              }
+            }
             // now we have to convert the annotations position and height into starting and ending indexs for the map
             let startIndex = Math.floor((anno.position.top - offsetTop) / grandularity);
             startIndex = startIndex < 0 ? 0 : startIndex;
-            const endIndex = Math.floor((anno.position.top + anno.position.height - offsetTop) / grandularity);
+            const endIndex = Math.floor((anno.position.top + h - offsetTop) / grandularity);
             for (let i = startIndex; i <= endIndex; i += 1) {
               if (map[i] === undefined) {
                 map[i] = 0;
@@ -44,7 +57,7 @@ function HeatMap() {
   return (
     <>
       <div id="heat-map" style={{ height: (map.length * lineHeight * scaleFactor) + 10 }}>
-        {map.map((v, i) => <div className="stroke" style={{ height: lineHeight * scaleFactor, top: i * lineHeight * scaleFactor, opacity: v * 0.2 }} />)}
+        {map.map((v, i) => <div className="stroke" style={{ height: lineHeight * scaleFactor, top: i * lineHeight * scaleFactor, opacity: v * 0.5 }} />)}
       </div>
 
       <style jsx global>

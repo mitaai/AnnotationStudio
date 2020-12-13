@@ -96,6 +96,8 @@ const DocumentPage = (props) => {
   const [documentHighlightedAndLoaded, setDocumentHighlightedAndLoaded] = useState(false);
   const [channelAnnotations, setChannelAnnotations] = useState({ left: null, right: null });
   const [documentFilters, setDocumentFilters] = useState({
+    filterOnInit: true,
+    annotationsLoaded: false,
     annotationIds: { left: null, right: null },
     filters: {
       annotatedBy: [], // list of filter options that have been selected by user
@@ -227,8 +229,9 @@ const DocumentPage = (props) => {
       ? $('#document-card-container').offset().left + 25
       : -40;
     for (let i = focusIndex; i < annos.length; i += 1) {
-      if (documentFilters.annotationIds[side] !== null) { // filters applied
-        if (!documentFilters.annotationIds[side].includes(annos[i]._id)) { continue; }
+      if (documentFilters.annotationIds[side] === null
+        || !documentFilters.annotationIds[side].includes(annos[i]._id)) {
+        continue;
       }
 
 
@@ -288,8 +291,9 @@ const DocumentPage = (props) => {
       + tempTopAdjustment
       - adjustmentTopNumber;
     for (let i = focusIndex - 1; i >= 0; i -= 1) {
-      if (documentFilters.annotationIds[side] !== null) { // filters applied
-        if (!documentFilters.annotationIds[side].includes(annos[i]._id)) { continue; }
+      if (documentFilters.annotationIds[side] === null
+        || !documentFilters.annotationIds[side].includes(annos[i]._id)) {
+        continue;
       }
 
       const offsetLeftForLine2 = side === 'left'
@@ -387,13 +391,18 @@ const DocumentPage = (props) => {
       // before we set the intersection of members we need to remove the id of the current user session
       setMembersIntersection(intersectionMembers.filter((m) => m.id !== session.user.id).map((m) => ({ ...m, name: FirstNameLastInitial(m.name) })));
       setGroupIntersection(intersectionGroups);
-      console.log('intersectionMembers', intersectionMembers);
     }
   }
 
   useEffect(() => {
     getIntersectionOfGroupsAndUsers();
   }, [session]);
+
+  useEffect(() => {
+    if (annotationChannel1Loaded && annotationChannel2Loaded) {
+      setDocumentFilters({ ...documentFilters, annotationsLoaded: true });
+    }
+  }, [annotationChannel1Loaded, annotationChannel2Loaded]);
 
 
   return (

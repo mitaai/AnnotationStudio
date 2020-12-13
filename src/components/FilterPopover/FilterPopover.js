@@ -198,7 +198,7 @@ function FilterPopover({ session }) {
   };
 
   useEffect(() => {
-    if (documentFilters.filterOnInit) {
+    if (documentFilters.filterOnInit && documentFilters.annotationsLoaded) {
       FilterOnInit();
     }
   });
