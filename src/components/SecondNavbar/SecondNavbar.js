@@ -112,7 +112,7 @@ const SecondNavbar = ({
                     let str = '';
                     if (document[key] !== undefined) {
                       if (Array.isArray(document[key])) {
-                        str = document[key].map((v, i) => `${i === 0 ? '' : ', '}${v.type}: ${v.name}`);
+                        str = document[key].map((v, i) => (typeof (v) === 'object' ? `${i === 0 ? '' : ', '}${v.type}: ${v.name}` : v));
                       } else {
                         str = document[key];
                       }
