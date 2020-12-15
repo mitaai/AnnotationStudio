@@ -508,6 +508,10 @@ const DocumentPage = (props) => {
                   </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
+                  <p style={{ fontWeight: 600, fontSize: 16, marginBottom: 5 }}>Private</p>
+                  <p style={{ fontSize: 14 }}>
+                    Only you can see the annotation
+                  </p>
                   <p style={{ fontWeight: 600, fontSize: 16, marginBottom: 5 }}>Share with group(s)</p>
                   <p style={{ fontSize: 14 }}>
                     Share this annotation with all members of your group(s) who have access to this document.

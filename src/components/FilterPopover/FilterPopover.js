@@ -194,7 +194,7 @@ function FilterPopover({ session }) {
       byTags: documentFilters.filters.byTags.map((opt) => opt.name),
       permissions: documentFilters.filters.permissions,
     }, session.user.id);
-    setDocumentFilters({ annotationIds, filters: documentFilters.filters });
+    setDocumentFilters({ annotationIds, filters: documentFilters.filters, annotationsLoaded: documentFilters.annotationsLoaded });
   };
 
   useEffect(() => {

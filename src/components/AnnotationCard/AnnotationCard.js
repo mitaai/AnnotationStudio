@@ -63,7 +63,7 @@ function DeepCopyObj(obj) {
   },
   "permissions": {
     "groups": Array<String> (valid ObjectID)> or undefined,
-    "documentOwner": <Boolean>,
+    "sharedTo": Array<String> (valid ObjectID)> or undefined,
   }
   "created": <Date>,
   "modified": <Date>,
@@ -113,7 +113,12 @@ function AnnotationCard({
   const [expanded, setExpanded] = useState(annotation.editing);
   const [updateFocusOfAnnotation, setUpdateFocusOfAnnotation] = useState(annotation.editing);
   const [hovered, setHovered] = useState();
-  const [selectedUsersToShare, setSelectedUsersToShare] = useState([]);
+  const [newSelectedUsersToShare, setNewSelectedUsersToShare] = useState(null);
+  let selectedUsersToShare = newSelectedUsersToShare;
+  if (selectedUsersToShare === null) {
+    selectedUsersToShare = annotationData.permissions.sharedTo === undefined ? [] : annotationData.permissions.sharedTo.map((id) => membersIntersection.find((m) => m.id === id)).filter((v) => v !== undefined);
+  }
+  console.log('selectedUsersToShare', selectedUsersToShare);
   const permissionText = ['Private', 'Shared with group(s)', selectedUsersToShare.length === 1 ? 'Shared with 1 user' : `Shared with ${selectedUsersToShare.length} users`];
 
   function AddClassActive(id) {
@@ -152,18 +157,18 @@ function AnnotationCard({
         // user wants the annotation to be private
         newAnnotationData.permissions.groups = [];
         newAnnotationData.permissions.private = true;
-        newAnnotationData.permissions.documentOwner = false;
+        newAnnotationData.permissions.sharedTo = undefined;
       } else if (newAnnotationPermissions === 1) {
         // user wants the annotation to be shared with groups
         // getting the intersection between the groups that have access to this specific document and the groups that the user is in
         newAnnotationData.permissions.groups = newAnnotationData.target.document.groups.filter((id) => (user.groups.includes(id)));
-        newAnnotationData.permissions.documentOwner = false;
+        newAnnotationData.permissions.sharedTo = undefined;
         newAnnotationData.permissions.private = false;
       } else if (newAnnotationPermissions === 2) {
         // user wants annotation to be shared with document owner only
         newAnnotationData.permissions.groups = [];
         newAnnotationData.permissions.private = false;
-        newAnnotationData.permissions.documentOwner = true;
+        newAnnotationData.permissions.sharedTo = selectedUsersToShare.map(({ id }) => id);
       }
     }
     if (newAnnotationText !== null) {
@@ -189,6 +194,7 @@ function AnnotationCard({
         setNewAnnotationTags(null);
         setNewAnnotationPermissions(null);
         setNewAnnotationText(null);
+        setNewSelectedUsersToShare(null);
         // after we have saved the annotation the highlighted text needs to change its class from  "text-currently-being-annotated active" to "annotation-highlighted-text"
         $('.text-currently-being-annotated.active').addClass('annotation-highlighted-text');
         $('.text-currently-being-annotated.active').removeClass('text-currently-being-annotated active');
@@ -220,6 +226,7 @@ function AnnotationCard({
         setNewAnnotationTags(null);
         setNewAnnotationPermissions(null);
         setNewAnnotationText(null);
+        setNewSelectedUsersToShare(null);
         // then after everything is done we will focus on the annotation so that things get shifted to their correct spots
         focusOnAnnotation();
       }).catch((err) => {
@@ -357,9 +364,9 @@ function AnnotationCard({
     } else if (annotationData.permissions.private) {
       // private
       i = 0;
-    } else if (!annotationData.permissions.documentOwner && !annotationData.permissions.private) {
+    } else if (!annotationData.permissions.sharedTo && !annotationData.permissions.private) {
       i = 1;
-    } else if (annotationData.permissions.documentOwner) {
+    } else if (annotationData.permissions.sharedTo !== undefined) {
       i = 2;
     }
 
@@ -435,6 +442,7 @@ function AnnotationCard({
                       <ListGroup.Item className="annotation-tags">
                         <Typeahead
                           id="typeahead-annotation-tags"
+                          disabled={savingAnnotation}
                           labelKey="tags"
                           placeholder="add some tags here..."
                           multiple
@@ -449,14 +457,18 @@ function AnnotationCard({
                         />
                       </ListGroup.Item>
                       <ListGroup.Item className="annotation-permissions">
-                        <DropdownButton drop="down" variant="outline-primary" id="dropdown-permission-options" title={permissionText[showPermissionNumber()]}>
-                          <Dropdown.Item onClick={() => { handleAnnotationPermissionsChange(0); }}>Private</Dropdown.Item>
-                          <Dropdown.Item onClick={() => { handleAnnotationPermissionsChange(1); }}>Share with group(s)</Dropdown.Item>
-                          <Dropdown.Item onClick={() => { handleAnnotationPermissionsChange(2); }}>Share with user(s)</Dropdown.Item>
-                        </DropdownButton>
+                        <div id="dropdown-permission-options-container">
+                          <DropdownButton drop="down" variant="outline-primary" id="dropdown-permission-options" title={permissionText[showPermissionNumber()]} disabled={savingAnnotation}>
+                            <Dropdown.Item onClick={() => { handleAnnotationPermissionsChange(0); }}>Private</Dropdown.Item>
+                            <Dropdown.Item onClick={() => { handleAnnotationPermissionsChange(1); }}>Share with group(s)</Dropdown.Item>
+                            <Dropdown.Item onClick={() => { handleAnnotationPermissionsChange(2); }}>Share with user(s)</Dropdown.Item>
+                          </DropdownButton>
+                        </div>
+                        <QuestionCircle style={{ fontSize: 14, color: '#007bff', marginLeft: 4 }} onClick={() => { setShowMoreInfoShareModal(true); }} />
                         <div id="typeahead-share-annotation-users-container" className={showPermissionNumber() === 2 ? 'show' : ''}>
                           <Typeahead
                             id="typeahead-share-annotation-users"
+                            disabled={savingAnnotation}
                             labelKey="name"
                             placeholder="search by user name or email"
                             multiple
@@ -464,8 +476,12 @@ function AnnotationCard({
                             renderMenu={renderUserShareMenu}
                             selected={selectedUsersToShare}
                             options={membersIntersection}
-                            allowNew
-                            onChange={setSelectedUsersToShare}
+                            onChange={(s) => {
+                              if (newAnnotationPermissions === null) {
+                                setNewAnnotationPermissions(showPermissionNumber);
+                              }
+                              setNewSelectedUsersToShare(s);
+                            }}
                           />
                         </div>
                       </ListGroup.Item>
@@ -526,12 +542,12 @@ function AnnotationCard({
                     </Button>
                   )}
 
-                  {newAnnotationTags === null && newAnnotationPermissions === null && newAnnotationText === null ? ''
-                    : (
+                  {newAnnotationTags !== null || newAnnotationPermissions !== null || newAnnotationText !== null
+                    ? (
                       <Button size="sm" className="btn-save-annotation-edits float-right" variant="primary" onClick={SaveAnnotation}>
                         Save
                       </Button>
-                    )}
+                    ) : null }
                 </>
               ) : (
                 <>
@@ -607,15 +623,36 @@ function AnnotationCard({
         }
 
         .annotation-permissions {
-          padding: 5px 5px;
+          padding: 2px 5px;
         }
 
         #dropdown-permission-options {
           font-size: 9px;
+          padding: 3px 6px;
+        }
+
+        #dropdown-permission-options-container {
+          display: inline-block;
         }
 
         #popover-share-annotation-options.z-index-1 {
           z-index: 1;
+        }
+
+        .annotation-tags .rbt-input-main{
+          font-size: 12px;
+          line-height: 20px;
+        }
+
+        .annotation-tags .rbt-input {
+          border-radius: 0px;
+          border: none;
+          padding-left: 5px;
+        }
+
+        .annotation-tags .rbt-input.focus {
+          border-bottom: 1px solid #007bff;
+          box-shadow: none;
         }
 
         #typeahead-share-annotation-users {
@@ -624,13 +661,12 @@ function AnnotationCard({
 
         #typeahead-share-annotation-users-container {
           margin-top: 2px;
-          width: calc(100% - 40px);
           display: none;
         }
 
         #typeahead-share-annotation-users-container .rbt-input-main {
-          font-size: 15px;
-          line-height: 25px;
+          font-size: 12px;
+          line-height: 20px;
         }
 
         #typeahead-share-annotation-users-container.show {
@@ -639,10 +675,18 @@ function AnnotationCard({
 
         #typeahead-share-annotation-users-container .rbt-input {
           padding: 3px 3px 2px 3px;
+          border: none;
+          border-bottom: 1px solid #eeeeee;
+          border-radius: 0px;
         }
 
-        .annotation-tag-token {
-          font-size: 14px;
+        #typeahead-share-annotation-users-container .rbt-input.focus {
+          box-shadow: none !important;
+          border-bottom: 1px solid #007bff;
+        }
+
+        .annotation-tag-token, .annotation-share-token {
+          font-size: 12px;
         }
 
         #popover-share-annotation-header {
@@ -815,7 +859,7 @@ function AnnotationCard({
             width: 0px;
             height: 0px;
             border: 10px solid transparent;
-            border-left-color: rgb(250,250,250);
+            border-left-color: white;
         }
 
       .annotation-pointer-background-right {
@@ -835,16 +879,17 @@ function AnnotationCard({
           width: 0px;
           height: 0px;
           border: 10px solid transparent;
-          border-right-color: rgb(250,250,250);
+          border-right-color: white;
       }
 
       .annotation-header {
         padding: 0.30rem 0.60rem !important;
         font-size: 12px;
+        background: white;
       }
 
       .grey-background {
-        background-color: rgb(250,250,250)
+        background-color: rgb(250,250,250) !important;
       }
 
       .editing .annotation-body {
@@ -862,6 +907,12 @@ function AnnotationCard({
 
       .annotation-body textarea {
         border: none;
+        border-radius: 0px;
+      }
+
+      .annotation-body textarea:focus {
+        box-shadow: none;
+        border-bottom: 1px solid #007bff;
       }
 
       .annotation-tags {

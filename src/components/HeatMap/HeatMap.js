@@ -22,7 +22,7 @@ function HeatMap() {
   for (const side in channelAnnotations) {
     if (channelAnnotations[side] !== null) {
       for (const anno of channelAnnotations[side]) {
-        if (documentFilters.annotationIds[side] === null || documentFilters.annotationIds[side].includes(anno._id)) {
+        if (documentFilters.annotationIds[side] !== null && documentFilters.annotationIds[side].includes(anno._id)) {
           if (anno.position.height !== undefined) {
             let h = anno.position.height;
             // if for some reason the height of this annotation is a negative number we are going to recalculate the value in the loop
