@@ -28,7 +28,7 @@ import {
 import { FirstNameLastInitial } from '../../utils/nameUtil';
 import { DocumentContext, DocumentFiltersContext, DocumentAnnotationsContext } from '../../contexts/DocumentContext';
 
-function ByPermissionsFilterMatch(user_email, email, permissions, cf) { // AND FUNCTION
+function ByPermissionsFilterMatch(user_email, email, permissions, cf, userId) { // AND FUNCTION
   if (cf.permissions === 0 && user_email === email) { // mine
     return true;
   }
@@ -194,11 +194,11 @@ function FilterPopover({ session }) {
       byTags: documentFilters.filters.byTags.map((opt) => opt.name),
       permissions: documentFilters.filters.permissions,
     }, session.user.id);
-    setDocumentFilters({ annotationIds, filters: documentFilters.filters });
+    setDocumentFilters({ annotationIds, filters: documentFilters.filters, annotationsLoaded: documentFilters.annotationsLoaded });
   };
 
   useEffect(() => {
-    if (documentFilters.filterOnInit) {
+    if (documentFilters.filterOnInit && documentFilters.annotationsLoaded) {
       FilterOnInit();
     }
   });
