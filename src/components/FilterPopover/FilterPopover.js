@@ -28,7 +28,7 @@ import {
 import { FirstNameLastInitial } from '../../utils/nameUtil';
 import { DocumentContext, DocumentFiltersContext, DocumentAnnotationsContext } from '../../contexts/DocumentContext';
 
-function ByPermissionsFilterMatch(user_email, email, permissions, cf) { // AND FUNCTION
+function ByPermissionsFilterMatch(user_email, email, permissions, cf, userId) { // AND FUNCTION
   if (cf.permissions === 0 && user_email === email) { // mine
     return true;
   }
