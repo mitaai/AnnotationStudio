@@ -30,6 +30,7 @@ import {
 import { postAnnotation, updateAnnotationById, deleteAnnotationById } from '../../utils/annotationUtil';
 
 import { DocumentAnnotationsContext, DocumentFiltersContext } from '../../contexts/DocumentContext';
+import { FirstNameLastInitial } from '../../utils/nameUtil';
 
 function addHoverEventListenersToAllHighlightedText() {
   $('.annotation-highlighted-text').on('mouseover', (e) => {
@@ -521,7 +522,7 @@ function AnnotationCard({
                 </>
               )}
             <Card.Header className="annotation-header grey-background">
-              <span className="float-left">{annotationData.creator.name}</span>
+              <span className="float-left">{FirstNameLastInitial(annotationData.creator.name)}</span>
               {annotationData.editing ? (
                 <>
                   {annotationData.new ? (
@@ -583,7 +584,7 @@ function AnnotationCard({
               placement="top"
               overlay={(
                 <Tooltip id={`tooltip-${annotationData._id}`}>
-                  {annotationData.creator.name}
+                  {FirstNameLastInitial(annotationData.creator.name)}
                 </Tooltip>
       )}
             >
