@@ -91,12 +91,12 @@ function PlaceAnnotationsInCorrectSpot(annotations, side) {
 }
 
 const AnnotationChannel = ({
-  side, setAnnotationChannelLoaded, user, deleteAnnotationFromChannels, focusOnAnnotation, showMoreInfoShareModal, setShowMoreInfoShareModal,
+  side, setAnnotationChannelLoaded, user, deleteAnnotationFromChannels, focusOnAnnotation, showMoreInfoShareModal, setShowMoreInfoShareModal, membersIntersection,
 }) => {
   const [channelAnnotations] = useContext(DocumentAnnotationsContext);
   const [documentFilters, setDocumentFilters] = useContext(DocumentFiltersContext);
   // first we filter annotations if there are any filters applied
-  let sortedAnnotations = channelAnnotations[side] !== null ? channelAnnotations[side].filter((anno) => (documentFilters.annotationIds[side] !== null ? documentFilters.annotationIds[side].includes(anno._id) || anno.new : true)) : [];
+  let sortedAnnotations = channelAnnotations[side] !== null ? channelAnnotations[side].filter((anno) => (documentFilters.annotationIds[side] !== null ? documentFilters.annotationIds[side].includes(anno._id) || anno.new : false)) : [];
   // the first thing we need to is sort these anntotations by their position
   sortedAnnotations = sortedAnnotations.sort((a, b) => {
     if (a.position.top - b.position.top === 0) { // if the tops are the same then we have to distinguish which annotation comes first by who has the smaller left value
@@ -115,7 +115,7 @@ const AnnotationChannel = ({
       let anno;
       for (let i = 0; i < channelAnnotations[side].length; i += 1) {
         anno = channelAnnotations[side][i];
-        displayTextHighlighted = documentFilters.annotationIds[side] !== null ? documentFilters.annotationIds[side].includes(anno._id) : true;
+        displayTextHighlighted = documentFilters.annotationIds[side] !== null ? documentFilters.annotationIds[side].includes(anno._id) : false;
         if (displayTextHighlighted) {
           $(`.annotation-highlighted-text[annotation-id='${anno._id}']`).addClass('filtered');
         } else {
@@ -141,6 +141,7 @@ const AnnotationChannel = ({
             user={user}
             showMoreInfoShareModal={showMoreInfoShareModal}
             setShowMoreInfoShareModal={setShowMoreInfoShareModal}
+            membersIntersection={membersIntersection}
           />
         ))}
       </div>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  Nav, Row, Col, Navbar, Breadcrumb, Container, Modal,
+  Nav, Row, Col, Navbar, Breadcrumb, Container, Modal, Table,
 } from 'react-bootstrap';
 import {
   InfoSquare,
@@ -14,6 +14,28 @@ const SecondNavbar = ({
   document,
   docView,
 }) => {
+  const metaData = {
+    title: 'Title',
+    resourceType: 'Resource Type',
+    contributors: 'Contributors',
+    bookTitle: 'Book Title',
+    publication: 'Publication',
+    series: 'Series',
+    seriesNumber: 'Series Number',
+    volume: 'Volume',
+    issue: 'Issue',
+    pageNumbers: 'Page Numbers',
+    edition: 'Edition',
+    publisher: 'Publisher',
+    publicationDate: 'Publication Date',
+    location: 'Location',
+    rightsStatus: 'Rights Status',
+    url: 'URL',
+    accessed: 'Accessed',
+    notes: 'Notes',
+    state: 'State',
+  };
+
   const [showMoreDocumentInfo, setShowMoreDocumentInfo] = useState();
   return (
     <>
@@ -83,7 +105,28 @@ const SecondNavbar = ({
                 Document Info
               </Modal.Title>
             </Modal.Header>
-            <Modal.Body>...</Modal.Body>
+            <Modal.Body>
+              <Table bordered hover size="sm">
+                <tbody>
+                  {Object.keys(metaData).map((key) => {
+                    let str = '';
+                    if (document[key] !== undefined) {
+                      if (Array.isArray(document[key])) {
+                        str = document[key].map((v, i) => (typeof (v) === 'object' ? `${i === 0 ? '' : ', '}${v.type}: ${v.name}` : v));
+                      } else {
+                        str = document[key];
+                      }
+                    }
+                    return (
+                      <tr>
+                        <td className="table-meta-data-name">{metaData[key]}</td>
+                        <td>{str}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </Table>
+            </Modal.Body>
           </Modal>
         </>
         )}
@@ -93,6 +136,10 @@ const SecondNavbar = ({
         .second-navbar .breadcrumb {
           background-color: #f8f9fa !important;
           margin-bottom: 0px;
+        }
+
+        .table-meta-data-name {
+          width: 150px;
         }
   
         .second-navbar .container .row {

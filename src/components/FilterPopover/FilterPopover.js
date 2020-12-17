@@ -25,20 +25,20 @@ import { Filter } from 'react-bootstrap-icons';
 import {
   Typeahead, Menu, MenuItem, Token,
 } from 'react-bootstrap-typeahead';
-
+import { FirstNameLastInitial } from '../../utils/nameUtil';
 import { DocumentContext, DocumentFiltersContext, DocumentAnnotationsContext } from '../../contexts/DocumentContext';
 
-function ByPermissionsFilterMatch(user_email, email, permissions, cf) { // AND FUNCTION
+function ByPermissionsFilterMatch(user_email, email, permissions, cf, userId) { // AND FUNCTION
   if (cf.permissions === 0 && user_email === email) { // mine
     return true;
   }
 
-  if (cf.permissions === 1 && !permissions.private && !permissions.documentOwner) { // shared
+  if (cf.permissions === 1 && !permissions.private && !permissions.sharedTo) { // shared
     return true;
   }
 
-  if (cf.permissions === 2 && permissions.documentOwner) { // shared with owner
-    return true;
+  if (cf.permissions === 2 && permissions.sharedTo !== undefined) { // shared with specific people
+    return permissions.sharedTo.includes(userId);
   }
 }
 
@@ -88,15 +88,15 @@ function onlyUnique(value, index, self) {
   return self.indexOf(value) === index;
 }
 
-const AnnotationMatchesFilters = (user_email, a, filters) => AnnotatedByFilterMatch(a.creator.email, filters) && ByTagFilterMatch(a.body.tags, filters) && ByPermissionsFilterMatch(user_email, a.creator.email, a.permissions, filters);
+const AnnotationMatchesFilters = (user_email, a, filters, userId) => AnnotatedByFilterMatch(a.creator.email, filters) && ByTagFilterMatch(a.body.tags, filters) && ByPermissionsFilterMatch(user_email, a.creator.email, a.permissions, filters, userId);
 
-const FilterAnnotations = (user_email, annotations, filters) => {
+const FilterAnnotations = (user_email, annotations, filters, userId) => {
   const annotationIds = { left: [], right: [] };
 
   for (const side in annotationIds) {
     if (Array.isArray(annotations[side])) {
       for (const a of annotations[side]) {
-        if (AnnotationMatchesFilters(user_email, a, filters)) {
+        if (AnnotationMatchesFilters(user_email, a, filters, userId)) {
           annotationIds[side].push(a._id);
         }
       }
@@ -107,23 +107,23 @@ const FilterAnnotations = (user_email, annotations, filters) => {
 };
 
 // OR filter
-const GetNumberOfMatchesForThisEmail = (user_email, annotations, currentFilters, filterEmail) => {
+const GetNumberOfMatchesForThisEmail = (user_email, annotations, currentFilters, filterEmail, userId) => {
   const f = Object.assign(DeepCopyObj(currentFilters), { annotatedBy: [filterEmail] });
-  const ids = FilterAnnotations(user_email, annotations, f);
+  const ids = FilterAnnotations(user_email, annotations, f, userId);
   return ids.left.length + ids.right.length;
 };
 
 // OR filter
-const GetNumberOfMatchesForThisTag = (user_email, annotations, currentFilters, filterTag) => {
+const GetNumberOfMatchesForThisTag = (user_email, annotations, currentFilters, filterTag, userId) => {
   const f = Object.assign(DeepCopyObj(currentFilters), { byTags: [filterTag] });
-  const ids = FilterAnnotations(user_email, annotations, f);
+  const ids = FilterAnnotations(user_email, annotations, f, userId);
   return ids.left.length + ids.right.length;
 };
 
-const GetNumberOfMatchesForThisTagAndOperator = (user_email, annotations, currentFilters, filterTag) => {
+const GetNumberOfMatchesForThisTagAndOperator = (user_email, annotations, currentFilters, filterTag, userId) => {
   const f = DeepCopyObj(currentFilters);
   f.byTags.push(filterTag);
-  const ids = FilterAnnotations(user_email, annotations, f);
+  const ids = FilterAnnotations(user_email, annotations, f, userId);
   return ids.left.length + ids.right.length;
 };
 
@@ -144,7 +144,7 @@ const GenerateFilterOptions = (user_email, annotations, filters, filteredAnnotat
         if (index === -1) {
           filterOptions.annotatedBy.push({
             id: a.creator.email,
-            name: a.creator.name,
+            name: FirstNameLastInitial(a.creator.name),
             email: a.creator.email,
             matches: GetNumberOfMatchesForThisEmail(user_email, annotations, filters, a.creator.email),
           });
@@ -193,12 +193,12 @@ function FilterPopover({ session }) {
       annotatedBy: documentFilters.filters.annotatedBy.map((opt) => opt.email),
       byTags: documentFilters.filters.byTags.map((opt) => opt.name),
       permissions: documentFilters.filters.permissions,
-    });
-    setDocumentFilters({ annotationIds, filters: documentFilters.filters });
+    }, session.user.id);
+    setDocumentFilters({ annotationIds, filters: documentFilters.filters, annotationsLoaded: documentFilters.annotationsLoaded });
   };
 
   useEffect(() => {
-    if (documentFilters.filterOnInit) {
+    if (documentFilters.filterOnInit && documentFilters.annotationsLoaded) {
       FilterOnInit();
     }
   });
@@ -210,7 +210,7 @@ function FilterPopover({ session }) {
       annotatedBy: documentFilters.filters.annotatedBy.map((opt) => opt.email),
       byTags: documentFilters.filters.byTags.map((opt) => opt.name),
       permissions: documentFilters.filters.permissions,
-    });
+    }, session.user.id);
 
     setDocumentFilters({ annotationIds, filters: documentFilters.filters });
   };
@@ -266,14 +266,12 @@ function FilterPopover({ session }) {
                       >
                         Shared
                       </Button>
-                      {session.user.id === document.owner && (
                       <Button
                         variant={documentFilters.filters.permissions === 2 ? 'primary' : 'outline-primary'}
                         onClick={() => { updateFilters('permissions', 2); }}
                       >
-                        Shared With Owner
+                        Shared with me only
                       </Button>
-                      )}
                     </ButtonGroup>
                   </Card.Subtitle>
                   <Row>
