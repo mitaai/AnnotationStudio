@@ -162,7 +162,7 @@ function AnnotationCard({
       } else if (newAnnotationPermissions === 1) {
         // user wants the annotation to be shared with groups
         // getting the intersection between the groups that have access to this specific document and the groups that the user is in
-        newAnnotationData.permissions.groups = newAnnotationData.target.document.groups.filter((id) => (user.groups.includes(id)));
+        newAnnotationData.permissions.groups = user.groups.filter(({ id }) => (newAnnotationData.target.document.groups.includes(id)));
         newAnnotationData.permissions.sharedTo = undefined;
         newAnnotationData.permissions.private = false;
       } else if (newAnnotationPermissions === 2) {
