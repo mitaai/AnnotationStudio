@@ -119,7 +119,7 @@ function AnnotationCard({
   if (selectedUsersToShare === null) {
     selectedUsersToShare = annotationData.permissions.sharedTo === undefined ? [] : annotationData.permissions.sharedTo.map((id) => membersIntersection.find((m) => m.id === id)).filter((v) => v !== undefined);
   }
-  console.log('selectedUsersToShare', selectedUsersToShare);
+
   const permissionText = ['Private', 'Shared with group(s)', selectedUsersToShare.length === 1 ? 'Shared with 1 user' : `Shared with ${selectedUsersToShare.length} users`];
 
   function AddClassActive(id) {
@@ -473,6 +473,7 @@ function AnnotationCard({
                             labelKey="name"
                             placeholder="search by user name or email"
                             multiple
+                            highlightOnlyResult
                             renderToken={renderUserShareToken}
                             renderMenu={renderUserShareMenu}
                             selected={selectedUsersToShare}
@@ -554,7 +555,6 @@ function AnnotationCard({
                 <>
 
                   <span className="float-right">
-
                     <span>{annotationData.modified === undefined ? '' : moment(annotationData.modified.toString()).format('MM/DD/YYYY')}</span>
                     {user.email === annotationData.creator.email && !annotationData.new ? (
                       <Dropdown className="annotation-more-options-dropdown">
@@ -582,6 +582,7 @@ function AnnotationCard({
             <OverlayTrigger
               key={annotationData._id}
               placement="top"
+              onExited={() => { setHovered(); }}
               overlay={(
                 <Tooltip id={`tooltip-${annotationData._id}`}>
                   {FirstNameLastInitial(annotationData.creator.name)}
@@ -675,7 +676,7 @@ function AnnotationCard({
         }
 
         #typeahead-share-annotation-users-container .rbt-input {
-          padding: 3px 3px 2px 3px;
+          padding: 3px 0px 2px 0px;
           border: none;
           border-bottom: 1px solid #eeeeee;
           border-radius: 0px;
