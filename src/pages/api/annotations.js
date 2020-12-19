@@ -54,8 +54,10 @@ const handler = async (req, res) => {
             .collection('annotations')
             .find({
               'permissions.private': false,
-              'permissions.sharedTo': undefined,
-              'permissions.groups': { $in: groupIds },
+              $or: [
+                { 'permissions.sharedTo': { $in: [token.id] } },
+                { 'permissions.groups': { $in: groupIds } },
+              ],
             })
             .limit(parseInt(limit, 10))
             .toArray();
@@ -65,8 +67,10 @@ const handler = async (req, res) => {
             .collection('annotations')
             .find({
               'permissions.private': false,
-              'permissions.sharedTo': undefined,
-              'permissions.groups': { $in: groupIds },
+              $or: [
+                { 'permissions.sharedTo': { $in: [token.id] } },
+                { 'permissions.groups': { $in: groupIds } },
+              ],
             })
             .toArray();
           res.status(200).json({ annotations: arr });

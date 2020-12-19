@@ -134,7 +134,7 @@ function FilterPopover({ session }) {
           index = filterOptions.annotatedBy.findIndex((opt) => opt.email === a.creator.email);
           if (index === -1) {
             // if the permissions is either shared or shared with only me your own name shouldn't show in the dropdown because you can't share an annotation with your self
-            if (filters.permissions === 0 || user_email !== a.creator.email) {
+            if (filters.permissions !== 2 || user_email !== a.creator.email) {
               filterOptions.annotatedBy.push({
                 id: a.creator.email,
                 name: FirstNameLastInitial(a.creator.name),
