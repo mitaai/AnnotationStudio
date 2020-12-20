@@ -20,7 +20,7 @@ import {
   Spinner,
 } from 'react-bootstrap';
 
-import { Filter } from 'react-bootstrap-icons';
+import { Filter, FileEarmarkLock2, FileEarmarkPerson, FileEarmarkFill } from 'react-bootstrap-icons';
 
 import {
   Typeahead, Menu, MenuItem, Token,
@@ -37,7 +37,7 @@ function FilterPopover({ session }) {
   const [byTagsTypeheadMarginBottom, setByTagsTypeheadMarginBottom] = useState(0);
 
 
-  function ByPermissionsFilterMatch(user_email, email, permissions, cf, userId, consoleThis) { // AND FUNCTION
+  function ByPermissionsFilterMatch(user_email, email, permissions, cf, userId) { // AND FUNCTION
     if (cf.permissions === 0 && user_email === email) { // mine
       return true;
     }
@@ -227,8 +227,34 @@ function FilterPopover({ session }) {
       <span className="token-badge">{option.matches}</span>
     </Token>
   );
+
+  console.log('documentFilters', documentFilters);
+
   return (
     <>
+      <ButtonGroup size="sm" aria-label="Permissions" className="permissions-buttons">
+        <Button
+          variant={documentFilters.filters.permissions === 0 ? 'primary' : 'outline-primary'}
+          onClick={() => { updateFilters('permissions', 0); }}
+        >
+          <FileEarmarkLock2 size="1.2em" />
+          <div className="mine">Mine</div>
+        </Button>
+        <Button
+          variant={documentFilters.filters.permissions === 1 ? 'primary' : 'outline-primary'}
+          onClick={() => { updateFilters('permissions', 1); }}
+        >
+          <FileEarmarkFill size="1.2em" />
+          <div className="shared-with-groups">Shared with group(s)</div>
+        </Button>
+        <Button
+          variant={documentFilters.filters.permissions === 2 ? 'primary' : 'outline-primary'}
+          onClick={() => { updateFilters('permissions', 2); }}
+        >
+          <FileEarmarkPerson size="1.2em" />
+          <div className="shared-with-me">Shared with me</div>
+        </Button>
+      </ButtonGroup>
       <OverlayTrigger
         trigger="click"
         key="filter-popover"
@@ -239,28 +265,6 @@ function FilterPopover({ session }) {
             <Popover.Content>
               <Card>
                 <Card.Body>
-                  <Card.Subtitle className="mb-2 text-muted">
-                    <ButtonGroup size="sm" aria-label="Basic example">
-                      <Button
-                        variant={documentFilters.filters.permissions === 0 ? 'primary' : 'outline-primary'}
-                        onClick={() => { updateFilters('permissions', 0); }}
-                      >
-                        Mine
-                      </Button>
-                      <Button
-                        variant={documentFilters.filters.permissions === 1 ? 'primary' : 'outline-primary'}
-                        onClick={() => { updateFilters('permissions', 1); }}
-                      >
-                        Shared
-                      </Button>
-                      <Button
-                        variant={documentFilters.filters.permissions === 2 ? 'primary' : 'outline-primary'}
-                        onClick={() => { updateFilters('permissions', 2); }}
-                      >
-                        Shared with me only
-                      </Button>
-                    </ButtonGroup>
-                  </Card.Subtitle>
                   <Row>
                     <Col>
                       <Form.Group style={{ marginTop: '0px' }}>
@@ -327,7 +331,7 @@ function FilterPopover({ session }) {
         <Button
           id="btn-filter-annotation-well"
           size="sm"
-          variant="outline-primary"
+          variant={documentFilters.filters.annotatedBy.length + documentFilters.filters.byTags.length > 0 ? 'primary' : 'outline-primary'}
 
         >
           <Filter size="1em" />
@@ -338,71 +342,113 @@ function FilterPopover({ session }) {
 
       <style jsx global>
         {`
+
+        .permissions-buttons {
+          margin-top: 7px;
+          margin-right: 7px;
+        }
+
+        .permissions-buttons .btn div {
+          transition: width 0.5s, opacity 1s;
+          overflow: hidden;
+          padding-left: 9px;
+          white-space: nowrap;
+          opacity: 0;
+        }
+
+        .permissions-buttons .btn svg {
+          position: absolute;
+          top: 6px;
+          left: 5px;
+        }
+
+        .permissions-buttons .btn {
+          height: 31px;
+        }
+
+        .permissions-buttons .btn.btn-outline-primary div {
+          width: 0px;
+        }
+
+        .permissions-buttons .btn.btn-primary div.mine {
+          width: 60px;
+          opacity: 1;
+        }
+
+        .permissions-buttons .btn.btn-primary div.shared-with-groups {
+          width: 160px;
+          opacity: 1;
+        }
+
+        .permissions-buttons .btn.btn-primary div.shared-with-me {
+          width: 130px;
+          opacity: 1;
+        }
         
         #btn-filter-annotation-well {
-            margin-top: 7px;
-            float: right;
-          }
-  
-          #btn-filter-annotation-well svg {
-            margin-right: 5px;
+          margin-top: 7px;
+          float: right;
+        }
+
+        #btn-filter-annotation-well svg {
+          margin-right: 5px;
+          position: relative;
+          top: -2px;
+        }
+
+        #filter-popover {
+          max-width: 30vw;
+          width: 30vw;
+        }
+
+        #filter-popover .card {
+          border: none;
+        }
+
+        #filter-popover .form-label {
+          font-weight: bold;
+        }
+
+        #filter-popover .popover-body {
+          padding: 0px;
+        }
+
+        #filter-popover .filter-option-checkbox {
+          margin-right: 4px;
+        }
+
+        #filter-popover .filter-option-name {
+          position: relative;
+          top: -2px;
+          font-size: 14px;
+        }
+
+        #filter-popover .rbt-input-multi.form-control.rbt-input {
+          padding: 6px;
+        }
+
+        .token-badge {
             position: relative;
-            top: -2px;
-          }
-  
-          #filter-popover {
-            max-width: 30vw;
-            width: 30vw;
-          }
-  
-          #filter-popover .card {
-            border: none;
-          }
-  
-          #filter-popover .form-label {
-            font-weight: bold;
-          }
-  
-          #filter-popover .popover-body {
-            padding: 0px;
-          }
-  
-          #filter-popover .filter-option-checkbox {
-            margin-right: 4px;
-          }
-  
-          #filter-popover .filter-option-name {
-            position: relative;
-            top: -2px;
-            font-size: 14px;
-          }
-  
-          #filter-popover .rbt-input-multi.form-control.rbt-input {
-            padding: 6px;
-          }
+            top: -1px;
+            margin-left: 4px;
+            font-size: 10px;
+            border-radius: 5px;
+            padding: 1px 2px;
+            border: 1px solid #007bff;
+        }
 
-          .token-badge {
-              position: relative;
-              top: -1px;
-              margin-left: 4px;
-              font-size: 10px;
-              border-radius: 5px;
-              padding: 1px 2px;
-              border: 1px solid #007bff;
-          }
+        .rbt-token-active .token-badge {
+            border-color: white;
+        }
 
-          .rbt-token-active .token-badge {
-              border-color: white;
-          }
+        .no-matches-token {
+            background-color: #eeeeee !important;
+            color: #616161 !important;
+        }
 
-          .no-matches-token {
-              background-color: #eeeeee !important;
-              color: #616161 !important;
-          }
-
-          .no-matches-token .token-badge {
-              border-color: #616161 !important; 
-          }
+        .no-matches-token .token-badge {
+            border-color: #616161 !important; 
+        }
         
         `}
       </style>
