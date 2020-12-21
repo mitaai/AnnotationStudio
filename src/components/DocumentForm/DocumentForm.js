@@ -213,6 +213,7 @@ const DocumentForm = ({
     const valuesWithSerializedText = htmlValue !== ''
       ? {
         ...values,
+        uploadContentType: 'text/pdf',
         text: htmlValue,
       }
       : {
@@ -237,12 +238,14 @@ const DocumentForm = ({
   };
 
   const editDocument = async (values) => {
-    const { id, slug } = data;
+    const { id, slug, uploadContentType } = data;
     const patchUrl = `/api/document/${id}`;
-    const valuesWithSerializedText = {
-      ...values,
-      text: serializeHTMLFromNodes({ plugins, nodes: values.textSlate }),
-    };
+    const valuesWithSerializedText = uploadContentType === 'text/pdf'
+      ? values
+      : {
+        ...values,
+        text: serializeHTMLFromNodes({ plugins, nodes: values.textSlate }),
+      };
     const res = await unfetch(patchUrl, {
       method: 'PATCH',
       body: JSON.stringify(valuesWithSerializedText),
@@ -266,11 +269,11 @@ const DocumentForm = ({
       type: DEFAULTS_PARAGRAPH.p.type,
     },
   ];
-  const [slateValue, setSlateValue] = (mode === 'edit' && data)
+  const [slateValue, setSlateValue] = (mode === 'edit' && data && data.uploadContentType !== 'text/pdf')
     ? useState(deserializeHTMLToDocument({ plugins, element: txtHtml.body }))
     : useState(slateInitialValue);
 
-  const getInitialValues = (mode === 'edit' && data)
+  const getInitialValues = (mode === 'edit' && data && data.uploadContentType !== 'text/pdf')
     ? {
       ...data,
       textSlate: deserializeHTMLToDocument({ plugins, element: txtHtml.body }),
@@ -281,7 +284,7 @@ const DocumentForm = ({
       rightsStatus: 'Copyrighted',
       contributors: [{ type: 'author', name: '' }],
       title: '',
-      groups: [''],
+      groups: [],
       state: 'draft',
     };
 
@@ -330,7 +333,9 @@ const DocumentForm = ({
     >
       {(props) => (
         <Form onSubmit={props.handleSubmit} noValidate className="pt-2">
-          {(props.values.state === 'draft' || (data && data.state === 'draft' && !data.processing)) && (
+          {(!data
+            || (data && data.state === 'draft' && data.uploadContentType !== 'text/pdf')
+          ) && (
             <Form.Row>
               <Col>
                 <Accordion defaultActiveKey="1">
@@ -343,7 +348,7 @@ const DocumentForm = ({
                     <Accordion.Collapse eventKey="0">
                       <Card.Body id="document-upload-card">
                         <Field name="textUpload">
-                          {({ field }) => (
+                          {() => (
                             <>
                               <ReactS3Uploader
                                 signingUrl={process.env.NEXT_PUBLIC_SIGNING_URL}
@@ -379,10 +384,6 @@ const DocumentForm = ({
                                   };
                                   const result = await getProcessedDocument(fileObj.processedUrl);
                                   setHtmlValue(result);
-                                  await props.setFieldValue(result, field.name)
-                                    .then(() => {
-                                      props.setFieldTouched(field.name, true);
-                                    });
                                 }}
                                 uploadRequestHeaders={{ 'x-amz-acl': 'public-read' }}
                                 onChange={props.handleChange}
