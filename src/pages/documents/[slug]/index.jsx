@@ -3,6 +3,7 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-restricted-syntax */
 import { useState, useEffect } from 'react';
+import { isMobile } from "react-device-detect"
 import { useSession } from 'next-auth/client';
 import $ from 'jquery';
 import {
@@ -107,6 +108,9 @@ const DocumentPage = (props) => {
   });
   const [annotationChannel1Loaded, setAnnotationChannel1Loaded] = useState(false);
   const [annotationChannel2Loaded, setAnnotationChannel2Loaded] = useState(false);
+  const minDisplayWidth = 1150;
+  // if true annotations will displayed in channels otherwise they will be displayed as popovers that show on hover or on click
+  const [displayAnnotationsInChannels, setDisplayAnnotationsInChannels] = useState(!isMobile);
 
   const [scrollToAnnotation, setScrollToAnnotation] = useState(validQuery);
 
@@ -376,6 +380,12 @@ const DocumentPage = (props) => {
     }
   });
 
+  useEffect(() => {
+    window.addEventListener('resize', () => {
+      setDisplayAnnotationsInChannels(window.innerWidth > minDisplayWidth && !isMobile);
+    });
+  });
+
   async function getIntersectionOfGroupsAndUsers() {
     // when the session gets loaded in we are going to get the intersection of groups and the users that applies to
     if (session !== undefined && groupIntersection === undefined) { // this means we haven't set it yet
@@ -428,6 +438,7 @@ const DocumentPage = (props) => {
             {document && (
             <>
               <Row id="document-container">
+
                 <Col className="annotation-channel-container">
                   <AnnotationChannel
                     deleteAnnotationFromChannels={deleteAnnotationFromChannels}
@@ -441,6 +452,7 @@ const DocumentPage = (props) => {
                     membersIntersection={membersIntersection}
                   />
                 </Col>
+
                 <Col style={{ minWidth: 750, maxWidth: 750 }}>
                   <Card id="document-card-container">
                     <Card.Body>
@@ -467,6 +479,7 @@ const DocumentPage = (props) => {
                     </Card.Body>
                   </Card>
                 </Col>
+
                 <Col className="annotation-channel-container">
                   <AnnotationChannel
                     deleteAnnotationFromChannels={deleteAnnotationFromChannels}

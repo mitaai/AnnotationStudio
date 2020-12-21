@@ -156,7 +156,6 @@ function AnnotationCard({
     if (newAnnotationPermissions !== null) {
       if (newAnnotationPermissions === 0) {
         // user wants the annotation to be private
-        newAnnotationData.permissions.groups = [];
         newAnnotationData.permissions.private = true;
         newAnnotationData.permissions.sharedTo = undefined;
       } else if (newAnnotationPermissions === 1) {
@@ -169,7 +168,6 @@ function AnnotationCard({
         newAnnotationData.permissions.private = false;
       } else if (newAnnotationPermissions === 2) {
         // user wants annotation to be shared with document owner only
-        newAnnotationData.permissions.groups = [];
         newAnnotationData.permissions.private = false;
         newAnnotationData.permissions.sharedTo = selectedUsersToShare.map(({ id }) => id);
       }
@@ -435,7 +433,7 @@ function AnnotationCard({
                             style={{ fontSize: '12px' }}
                             as="textarea"
                             rows="3"
-                            placeholder="annotation"
+                            placeholder="comments"
                             defaultValue={annotationData.body.value}
                             onChange={handleAnnotationTextChange}
                             readOnly={savingAnnotation}
@@ -447,7 +445,7 @@ function AnnotationCard({
                           id="typeahead-annotation-tags"
                           disabled={savingAnnotation}
                           labelKey="tags"
-                          placeholder="add some tags here..."
+                          placeholder="tags"
                           multiple
                           selected={newAnnotationTags === null ? annotationData.body.tags : newAnnotationTags}
                           options={allAnnotationTags}
@@ -887,7 +885,7 @@ function AnnotationCard({
       }
 
       .annotation-header {
-        padding: 0.30rem 0.60rem !important;
+        padding: 6px;
         font-size: 12px;
         background: white;
       }
@@ -912,6 +910,7 @@ function AnnotationCard({
       .annotation-body textarea {
         border: none;
         border-radius: 0px;
+        padding: 6px;
       }
 
       .annotation-body textarea:focus {
