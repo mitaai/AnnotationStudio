@@ -169,7 +169,7 @@ const DocumentPage = (props) => {
 
     $('#document-content-container').addClass('unselectable');
 
-    highlightText(obj, $('#document-content-container').get(0));
+    await highlightText(obj, $('#document-content-container').get(0));
   };
 
   const addAnnotationToChannels = (side, newAnnotation) => {
@@ -467,8 +467,8 @@ const DocumentPage = (props) => {
                         documentHighlightedAndLoaded={documentHighlightedAndLoaded}
                         addAnnotationToChannels={addAnnotationToChannels}
                         annotateDocument={
-                        (mySelector, annotationID) => {
-                          highlightTextToAnnotate(mySelector, annotationID);
+                        async (mySelector, annotationID) => {
+                          await highlightTextToAnnotate(mySelector, annotationID);
                         }
                       }
                         documentToAnnotate={document}

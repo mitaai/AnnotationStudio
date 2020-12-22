@@ -425,11 +425,11 @@ export default class Document extends React.Component {
           {(props) => (
             <Tooltip
               id="annotate-document-tooltip"
-              onClick={() => {
+              onClick={async () => {
                 const { annotateDocument } = this.props;
                 if (documentToAnnotate.state !== 'draft') {
                   const rid = RID();
-                  annotateDocument(this.state.selector, rid);
+                  await annotateDocument(this.state.selector, rid);
 
                   // when the user clicks to annotate the piece of text that is selected
                   // we need to grab information about all the annotations currently
@@ -444,9 +444,10 @@ export default class Document extends React.Component {
                   // element so we know where the annotation starts and which side to
                   // put the annotation on
                   const annotateStartPositionSpan = $('#annotate-start-position-span').offset();
-                  $('#document-container').animate({
+                  this.addNewAnnotationToDom(rid);
+                  /*$('#document-container').animate({
                     scrollTop: annotateStartPositionSpan.top,
-                  }, 500, () => { this.addNewAnnotationToDom(rid); });
+                  }, 500, () => { this.addNewAnnotationToDom(rid); });*/
                 } else {
                   this.setState({ showCannotAnnotateDocumentToast: true });
                 }
