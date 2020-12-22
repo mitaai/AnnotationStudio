@@ -1,10 +1,21 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React, { useState, useMemo } from 'react';
+import React, {
+  useState, useMemo, useContext,
+} from 'react';
 import { useRouter } from 'next/router';
-import fetch from 'unfetch';
+import unfetch from 'unfetch';
 import { Formik, Field } from 'formik';
 import {
-  Button, Container, Card, Col, Form, Row,
+  Accordion,
+  AccordionContext,
+  Button,
+  Container,
+  Card,
+  Col,
+  Form,
+  ProgressBar,
+  Row,
+  useAccordionToggle,
 } from 'react-bootstrap';
 import * as yup from 'yup';
 import slugify from '@sindresorhus/slugify';
@@ -30,6 +41,7 @@ import {
 } from '@udecode/slate-plugins';
 import { withHistory } from 'slate-history';
 import { Dropdown as SemanticUIDropdown } from 'semantic-ui-react';
+import ReactS3Uploader from 'react-s3-uploader';
 import SemanticField from '../SemanticField';
 import DocumentMetadata from '../DocumentMetadata';
 import DocumentStatusSelect from '../DocumentStatusSelect';
@@ -43,12 +55,94 @@ const DocumentForm = ({
   session,
   mode,
   data,
+  setErrors,
 }) => {
-  const [errors, setErrors] = useState([]);
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
+  const [progress, setProgress] = useState({});
+  const [htmlValue, setHtmlValue] = useState('');
   const handleCloseModal = () => setShowModal(false);
   const handleShowModal = () => setShowModal(true);
+
+  const ContextAwareToggle = ({
+    children, disabled, eventKey, callback,
+  }) => {
+    const currentEventKey = useContext(AccordionContext);
+
+    const decoratedOnClick = useAccordionToggle(
+      eventKey,
+      () => callback && callback(eventKey),
+    );
+
+    const isCurrentEventKey = currentEventKey === eventKey;
+
+    return (
+      <Button
+        type="button"
+        variant={isCurrentEventKey ? 'text' : 'link'}
+        onClick={decoratedOnClick}
+        disabled={disabled}
+      >
+        {children}
+      </Button>
+    );
+  };
+  const ProgressIndicator = ({ percent, status }) => {
+    let color;
+    let msg;
+    switch (status) {
+      case 'Complete': {
+        color = 'success';
+        msg = 'Complete';
+        break;
+      }
+      case 'Failed': {
+        color = 'danger';
+        msg = 'Failed';
+        break;
+      }
+      default: {
+        color = 'warning';
+        msg = 'Processing...';
+      }
+    }
+    if (percent === 0) msg = '';
+    return (
+      <>
+        <ProgressBar className="mt-3" animated={percent !== 100} now={100} variant={color} label={msg} />
+        {msg === 'Processing...' && (
+          <Container className="mt-3 text-muted">
+            <Row>
+              <Col>
+                Please wait, this process may take up to 2 minutes,
+                especially for longer or more complex documents.
+                Please do not navigate away from this page.
+              </Col>
+            </Row>
+          </Container>
+        )}
+        {status === 'Failed' && (
+          <Container className="mt-3 text-danger">
+            <Row>
+              <Col>
+                Wondering why your upload failed? Here are some possibilities:
+                <ul>
+                  <li>The file was too large.</li>
+                  <li>The file had too many pages.</li>
+                  <li>The file was too complex (many diagrams, drawings, images, or symbols).</li>
+                </ul>
+                If none of these seem accurate, please send an email to
+                {' '}
+                <a href="mailto:aai-support@mit.edu">aai-support@mit.edu</a>
+                {' '}
+                with a link to your original file.
+              </Col>
+            </Row>
+          </Container>
+        )}
+      </>
+    );
+  };
 
   const withPlugins = [
     withReact,
@@ -63,14 +157,70 @@ const DocumentForm = ({
   ];
   const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
+  const numRetries = 60;
+  const origPercent = 25;
+
+  const timeout = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  const fetchRetry = async (url, options = {}, retries = numRetries, backoff = 2400) => {
+    const retryCodes = [403, 408, 500, 502, 503, 504, 522, 524];
+    return unfetch(url, options)
+      .then(async (res) => {
+        if (res.ok) {
+          setProgress({
+            started: true,
+            percent: 100,
+            status: 'Complete',
+          });
+          const text = await res.text();
+          return text;
+        } if (retries > 0 && retryCodes.includes(res.status)) {
+          setProgress(
+            {
+              started: true,
+              percent: origPercent + (
+                ((numRetries - retries) / numRetries) * (100 - origPercent)
+              ),
+              status: 'Waiting',
+            },
+          );
+          await timeout(backoff);
+          return fetchRetry(url, options, retries - 1, backoff);
+        }
+        setProgress(
+          {
+            started: false,
+            percent: 100,
+            status: 'Failed',
+          },
+        );
+        throw new Error('Failed');
+      })
+      .then((text) => text)
+      .catch((err) => setErrors([JSON.stringify(err)]));
+  };
+
+  const getProcessedDocument = async (url) => fetchRetry(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'text/html',
+    },
+  });
+
   const createDocument = async (values) => {
     const slug = `${slugify(values.title)}-${cryptoRandomString({ length: 5, type: 'hex' })}`;
     const postUrl = '/api/document';
-    const valuesWithSerializedText = {
-      ...values,
-      text: serializeHTMLFromNodes({ plugins, nodes: values.text }),
-    };
-    const res = await fetch(postUrl, {
+    const valuesWithSerializedText = htmlValue !== ''
+      ? {
+        ...values,
+        uploadContentType: 'text/pdf',
+        text: htmlValue,
+      }
+      : {
+        ...values,
+        text: serializeHTMLFromNodes({ plugins, nodes: values.textSlate }),
+      };
+    const res = await unfetch(postUrl, {
       method: 'POST',
       body: JSON.stringify({
         ...valuesWithSerializedText,
@@ -83,18 +233,25 @@ const DocumentForm = ({
     if (res.status === 200) {
       const result = await res.json();
       return Promise.resolve(result);
+    } if (res.status === 413) {
+      return Promise.reject(Error(
+        'Sorry, this file is too large to use on Annotation Studio. '
+        + 'You may try breaking it up into smaller parts.',
+      ));
     }
     return Promise.reject(Error(`Unable to create document: error ${res.status} received from server`));
   };
 
   const editDocument = async (values) => {
-    const { id, slug } = data;
+    const { id, slug, uploadContentType } = data;
     const patchUrl = `/api/document/${id}`;
-    const valuesWithSerializedText = {
-      ...values,
-      text: serializeHTMLFromNodes({ plugins, nodes: values.text }),
-    };
-    const res = await fetch(patchUrl, {
+    const valuesWithSerializedText = uploadContentType === 'text/pdf'
+      ? values
+      : {
+        ...values,
+        text: serializeHTMLFromNodes({ plugins, nodes: values.textSlate }),
+      };
+    const res = await unfetch(patchUrl, {
       method: 'PATCH',
       body: JSON.stringify(valuesWithSerializedText),
       headers: {
@@ -117,22 +274,22 @@ const DocumentForm = ({
       type: DEFAULTS_PARAGRAPH.p.type,
     },
   ];
-  const [slateValue, setSlateValue] = (mode === 'edit' && data)
+  const [slateValue, setSlateValue] = (mode === 'edit' && data && data.uploadContentType !== 'text/pdf')
     ? useState(deserializeHTMLToDocument({ plugins, element: txtHtml.body }))
     : useState(slateInitialValue);
 
-  const getInitialValues = (mode === 'edit' && data)
+  const getInitialValues = (mode === 'edit' && data && data.uploadContentType !== 'text/pdf')
     ? {
       ...data,
-      text: deserializeHTMLToDocument({ plugins, element: txtHtml.body }),
+      textSlate: deserializeHTMLToDocument({ plugins, element: txtHtml.body }),
     }
     : {
-      text: slateInitialValue,
+      textSlate: slateInitialValue,
       resourceType: 'Book',
       rightsStatus: 'Copyrighted',
       contributors: [{ type: 'author', name: '' }],
       title: '',
-      groups: [''],
+      groups: [],
       state: 'draft',
     };
 
@@ -181,39 +338,120 @@ const DocumentForm = ({
     >
       {(props) => (
         <Form onSubmit={props.handleSubmit} noValidate className="pt-2">
-          {(props.values.state === 'draft' || (data && data.state === 'draft')) && (
+          {(!data
+            || (data && data.state === 'draft' && data.uploadContentType !== 'text/pdf')
+          ) && (
             <Form.Row>
               <Col>
-                <Card className="mb-2">
-                  <Card.Header>
-                    <Card.Title>Paste or type directly into the form</Card.Title>
-                  </Card.Header>
-                  <Card.Body id="slate-container-card">
-                    <div id="slate-container">
-                      <Field name="text">
-                        {({ field }) => (
-                          <Slate
-                            editor={editor}
-                            value={slateValue}
-                            onChange={(value) => {
-                              setSlateValue(value);
-                              props.setFieldValue(field.name, value);
-                            }}
-                          >
-                            <SlateToolbar />
-                            <EditablePlugins
-                              plugins={plugins}
-                              placeholder="Paste or type here"
-                              id={field.name}
-                              className="slate-editor"
-                              style={{ minHeight: 300 }}
-                            />
-                          </Slate>
-                        )}
-                      </Field>
-                    </div>
-                  </Card.Body>
-                </Card>
+                <Accordion defaultActiveKey="1">
+                  <Card>
+                    <Card.Header>
+                      <ContextAwareToggle eventKey="0" disabled={data && data.state === 'draft'}>
+                        Upload PDF
+                      </ContextAwareToggle>
+                    </Card.Header>
+                    <Accordion.Collapse eventKey="0">
+                      <Card.Body id="document-upload-card">
+                        <Field name="textUpload">
+                          {() => (
+                            <>
+                              <ReactS3Uploader
+                                signingUrl={process.env.NEXT_PUBLIC_SIGNING_URL}
+                                signingUrlMethod="GET"
+                                accept="application/pdf"
+                                s3path="files/"
+                                disabled={progress.started}
+                                onProgress={
+                                  (percent, status) => setProgress(
+                                    {
+                                      started: true,
+                                      percent: percent / (100 / origPercent),
+                                      status,
+                                    },
+                                  )
+                                }
+                                onError={((status) => setErrors([status]))}
+                                onFinish={async (signRes, file) => {
+                                  const fileUrl = signRes.signedUrl.substring(
+                                    0, signRes.signedUrl.indexOf('?'),
+                                  );
+                                  const processedUrl = `${fileUrl.substring(
+                                    0, fileUrl.indexOf('files'),
+                                  )}processed/${signRes.filename.substring(
+                                    0, signRes.filename.lastIndexOf('.'),
+                                  )}.html`;
+                                  const fileObj = {
+                                    name: signRes.filename,
+                                    size: file.size,
+                                    contentType: file.type,
+                                    url: fileUrl,
+                                    processedUrl,
+                                  };
+                                  const result = await getProcessedDocument(fileObj.processedUrl);
+                                  setHtmlValue(result);
+                                }}
+                                uploadRequestHeaders={{ 'x-amz-acl': 'public-read' }}
+                                onChange={props.handleChange}
+                                onBlur={props.handleBlur}
+                              />
+                              <Container>
+                                <Row>
+                                  <Col>
+                                    <small className="text-muted ml-n3">
+                                      Limit: 4 MB (file size may increase during processing)
+                                    </small>
+                                  </Col>
+                                </Row>
+                              </Container>
+                              {(progress.started || progress.status === 'Failed') && (
+                              <ProgressIndicator
+                                percent={progress.percent}
+                                status={progress.status}
+                              />
+                              )}
+                            </>
+                          )}
+                        </Field>
+                      </Card.Body>
+                    </Accordion.Collapse>
+                  </Card>
+                  <Card className="mb-2">
+                    <Card.Header>
+                      <ContextAwareToggle eventKey="1" disabled={progress.started || progress.status === 'Complete'}>
+                        Paste or type directly into the form
+                      </ContextAwareToggle>
+                    </Card.Header>
+                    <Accordion.Collapse eventKey="1">
+                      <Card.Body id="slate-container-card">
+                        <div id="slate-container">
+                          {!progress.started && progress.status !== 'Complete' && (
+                            <Field name="textSlate">
+                              {({ field }) => (
+                                <Slate
+                                  editor={editor}
+                                  value={slateValue}
+                                  onChange={(value) => {
+                                    setSlateValue(value);
+                                    props.setFieldValue(field.name, value);
+                                  }}
+                                >
+                                  <SlateToolbar />
+                                  <EditablePlugins
+                                    plugins={plugins}
+                                    placeholder="Paste or type here"
+                                    id={field.name}
+                                    className="slate-editor"
+                                    style={{ minHeight: 300 }}
+                                  />
+                                </Slate>
+                              )}
+                            </Field>
+                          )}
+                        </div>
+                      </Card.Body>
+                    </Accordion.Collapse>
+                  </Card>
+                </Accordion>
               </Col>
             </Form.Row>
           )}
@@ -297,15 +535,6 @@ const DocumentForm = ({
                     onBlur={props.handleBlur}
                     disableDraft={data && data.state !== 'draft'}
                   />
-                  {errors && errors.length > 0 && (
-                    <Row className="mt-3">
-                      <Col>
-                        <pre>
-                          {errors.map((error) => JSON.stringify(error))}
-                        </pre>
-                      </Col>
-                    </Row>
-                  )}
                 </Card.Body>
               </Card>
               <Row className="mt-3">
@@ -354,7 +583,7 @@ const DocumentForm = ({
                     <Button
                       variant={mode === 'edit' ? 'success' : 'primary'}
                       type="submit"
-                      disabled={props.isSubmitting}
+                      disabled={props.isSubmitting || (progress.started && progress.status !== 'Complete')}
                       data-testid="documentform-submit-button"
                     >
                       {mode === 'edit' ? (<>Save Changes</>) : (<>Create Document</>)}

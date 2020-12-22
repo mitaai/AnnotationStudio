@@ -550,8 +550,11 @@ const DocumentPage = (props) => {
           #document-container {
             height: calc(100vh - 230px);
             overflow-y: scroll;
-            padding: 10px 0px;
+            padding: 
+            ${document.uploadContentType === 'text/pdf' ? '0' : '10px 0px'};
           }
+
+          ${document.uploadContentType === 'text/pdf' ? 'img.bi { display: none; }' : ''}
 
           #document-container::-webkit-scrollbar {
             background: transparent;
@@ -580,7 +583,11 @@ const DocumentPage = (props) => {
             border-radius: 0px;
             min-height: 100%;
             border: none;
-            box-shadow: 3px 3px 9px 0px rgba(0,0,0,0.38);
+            box-shadow: ${document.uploadContentType === 'text/pdf'
+              ? 'none'
+              : '3px 3px 9px 0px rgba(0,0,0,0.38)'
+            };
+            ${document.uploadContentType === 'text/pdf' ? 'background: none;' : ''}
           }
 
           #document-container #annotation-well-card-container .card-body {
