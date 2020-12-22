@@ -346,7 +346,7 @@ const DocumentForm = ({
                 <Accordion defaultActiveKey="1">
                   <Card>
                     <Card.Header>
-                      <ContextAwareToggle eventKey="0">
+                      <ContextAwareToggle eventKey="0" disabled={data && data.state === 'draft'}>
                         Upload PDF
                       </ContextAwareToggle>
                     </Card.Header>
