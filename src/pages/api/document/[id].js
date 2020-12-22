@@ -194,4 +194,12 @@ const handler = async (req, res) => {
   } else res.status(405).end(`Method ${method} Not Allowed`);
 };
 
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '4mb',
+    },
+  },
+};
+
 export default handler;

@@ -1,4 +1,5 @@
 import { useSession } from 'next-auth/client';
+import React, { useState } from 'react';
 import {
   Card, Col,
 } from 'react-bootstrap';
@@ -8,8 +9,9 @@ import DocumentForm from '../../components/DocumentForm';
 
 const NewDocument = ({ statefulSession }) => {
   const [session] = useSession();
+  const [errors, setErrors] = useState([]);
   return (
-    <Layout type="document" title="New Document" statefulSession={statefulSession}>
+    <Layout alerts={errors} type="document" title="New Document" statefulSession={statefulSession}>
       <Col lg="12" className="mx-auto">
         <Card>
           {!session && (
@@ -19,7 +21,7 @@ const NewDocument = ({ statefulSession }) => {
             <>
               <Card.Header><Card.Title>Create a new document</Card.Title></Card.Header>
               <Card.Body>
-                <DocumentForm mode="new" session={session} />
+                <DocumentForm mode="new" session={session} setErrors={setErrors} />
               </Card.Body>
             </>
           )}

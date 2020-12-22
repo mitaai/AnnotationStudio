@@ -1,4 +1,5 @@
 import { useSession } from 'next-auth/client';
+import React, { useState } from 'react';
 import {
   Card, Col,
 } from 'react-bootstrap';
@@ -10,8 +11,9 @@ import { prefetchDocumentBySlug } from '../../../utils/docUtil';
 
 const EditDocument = ({ document, alerts, statefulSession }) => {
   const [session] = useSession();
+  const [errors, setErrors] = useState(alerts || []);
   return (
-    <Layout alerts={alerts} type="document" title={document ? `Edit Document: ${document.title}` : 'error'} statefulSession={statefulSession}>
+    <Layout alerts={errors} type="document" title={document ? `Edit Document: ${document.title}` : 'error'} statefulSession={statefulSession}>
       <Col lg="12" className="mx-auto">
         <Card>
           {!session && (
@@ -21,7 +23,7 @@ const EditDocument = ({ document, alerts, statefulSession }) => {
             <>
               <Card.Header><Card.Title>Edit document</Card.Title></Card.Header>
               <Card.Body>
-                <DocumentForm mode="edit" session={session} data={document} />
+                <DocumentForm mode="edit" session={session} data={document} setErrors={setErrors} />
               </Card.Body>
             </>
           )}

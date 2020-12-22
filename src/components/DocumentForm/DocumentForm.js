@@ -55,8 +55,8 @@ const DocumentForm = ({
   session,
   mode,
   data,
+  setErrors,
 }) => {
-  const [errors, setErrors] = useState([]);
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
   const [progress, setProgress] = useState({});
@@ -233,6 +233,11 @@ const DocumentForm = ({
     if (res.status === 200) {
       const result = await res.json();
       return Promise.resolve(result);
+    } if (res.status === 413) {
+      return Promise.reject(Error(
+        'Sorry, this file is too large to use on Annotation Studio. '
+        + 'You may try breaking it up into smaller parts.',
+      ));
     }
     return Promise.reject(Error(`Unable to create document: error ${res.status} received from server`));
   };
@@ -389,6 +394,15 @@ const DocumentForm = ({
                                 onChange={props.handleChange}
                                 onBlur={props.handleBlur}
                               />
+                              <Container>
+                                <Row>
+                                  <Col>
+                                    <small className="text-muted ml-n3">
+                                      Limit: 4 MB (file size may increase during processing)
+                                    </small>
+                                  </Col>
+                                </Row>
+                              </Container>
                               {(progress.started || progress.status === 'Failed') && (
                               <ProgressIndicator
                                 percent={progress.percent}
@@ -521,15 +535,6 @@ const DocumentForm = ({
                     onBlur={props.handleBlur}
                     disableDraft={data && data.state !== 'draft'}
                   />
-                  {errors && errors.length > 0 && (
-                    <Row className="mt-3">
-                      <Col>
-                        <pre>
-                          {errors.map((error) => JSON.stringify(error))}
-                        </pre>
-                      </Col>
-                    </Row>
-                  )}
                 </Card.Body>
               </Card>
               <Row className="mt-3">
