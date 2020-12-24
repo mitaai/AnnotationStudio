@@ -434,7 +434,7 @@ const DocumentPage = (props) => {
             docView
             statefulSession={statefulSession}
           >
-            <HeatMap />
+            <HeatMap pdf={document.uploadContentType === 'text/pdf'} />
             {document && (
             <>
               <Row id="document-container">

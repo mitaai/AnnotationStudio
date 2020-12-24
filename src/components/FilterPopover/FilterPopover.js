@@ -228,8 +228,6 @@ function FilterPopover({ session }) {
     </Token>
   );
 
-  console.log('documentFilters', documentFilters);
-
   return (
     <>
       <ButtonGroup size="sm" aria-label="Permissions" className="permissions-buttons">

@@ -7,7 +7,7 @@ import $ from 'jquery';
 import { DocumentFiltersContext, DocumentAnnotationsContext } from '../../contexts/DocumentContext';
 
 
-function HeatMap() {
+function HeatMap({ pdf }) {
   const lineHeight = 18;
   let scaleFactor = $('#document-container').height() / $('#document-card-container').height();
   scaleFactor = isNaN(scaleFactor) ? 1 : scaleFactor;
@@ -42,10 +42,12 @@ function HeatMap() {
             startIndex = startIndex < 0 ? 0 : startIndex;
             const endIndex = Math.floor((anno.position.top + h - offsetTop) / grandularity);
             for (let i = startIndex; i <= endIndex; i += 1) {
-              if (map[i] === undefined) {
-                map[i] = 0;
+              if (i < n) {
+                if (map[i] === undefined) {
+                  map[i] = 0;
+                }
+                map[i] += 1;
               }
-              map[i] += 1;
             }
           }
         }
@@ -53,10 +55,9 @@ function HeatMap() {
     }
   }
 
-
   return (
     <>
-      <div id="heat-map" style={{ height: (map.length * lineHeight * scaleFactor) + 10 }}>
+      <div id="heat-map" style={{ height: (map.length * lineHeight * scaleFactor) + (pdf ? -15 : 14) }}>
         {map.map((v, i) => <div className="stroke" style={{ height: lineHeight * scaleFactor, top: i * lineHeight * scaleFactor, opacity: v * 0.5 }} />)}
       </div>
 
