@@ -9,8 +9,8 @@ import { DocumentFiltersContext, DocumentAnnotationsContext } from '../../contex
 
 function HeatMap({ pdf }) {
   const lineHeight = 18;
-  let scaleFactor = $('#document-container').height() / $('#document-card-container').height();
-  scaleFactor = isNaN(scaleFactor) ? 1 : scaleFactor;
+  const documentHeight = $('#document-container').height() || 0;
+  let scaleFactor = $('#document-container').get(0) === undefined ? 1 : $('#document-container').height() / $('#document-container').get(0).scrollHeight;
   const minStrokeHeight = 1;
   const offsetTop = $('#document-container').offset() === undefined ? 0 : $('#document-container').offset().top;
   const grandularity = lineHeight * scaleFactor >= minStrokeHeight ? lineHeight : Math.ceil(minStrokeHeight / scaleFactor);
@@ -57,7 +57,7 @@ function HeatMap({ pdf }) {
 
   return (
     <>
-      <div id="heat-map" style={{ height: (map.length * lineHeight * scaleFactor) + (pdf ? -15 : 14) }}>
+      <div id="heat-map" style={{ height: documentHeight + (pdf ? 0 : 18) }}>
         {map.map((v, i) => <div className="stroke" style={{ height: lineHeight * scaleFactor, top: i * lineHeight * scaleFactor, opacity: v * 0.5 }} />)}
       </div>
 
