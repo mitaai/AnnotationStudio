@@ -60,6 +60,7 @@ const DocumentForm = ({
 }) => {
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
+  const [contentType, setContentType] = useState('');
   const [progress, setProgress] = useState({});
   const [htmlValue, setHtmlValue] = useState('');
   const handleCloseModal = () => setShowModal(false);
@@ -214,7 +215,7 @@ const DocumentForm = ({
     const valuesWithSerializedText = htmlValue !== ''
       ? {
         ...values,
-        uploadContentType: 'text/pdf',
+        uploadContentType: contentType,
         text: htmlValue,
       }
       : {
@@ -246,7 +247,7 @@ const DocumentForm = ({
   const editDocument = async (values) => {
     const { id, slug, uploadContentType } = data;
     const patchUrl = `/api/document/${id}`;
-    const valuesWithSerializedText = uploadContentType === 'text/pdf'
+    const valuesWithSerializedText = (!uploadContentType || uploadContentType === '')
       ? values
       : {
         ...values,
@@ -275,11 +276,11 @@ const DocumentForm = ({
       type: DEFAULTS_PARAGRAPH.p.type,
     },
   ];
-  const [slateValue, setSlateValue] = (mode === 'edit' && data && data.uploadContentType !== 'text/pdf')
+  const [slateValue, setSlateValue] = (mode === 'edit' && data && (!data.uploadContentType || data.uploadContentType === ''))
     ? useState(deserializeHTMLToDocument({ plugins, element: txtHtml.body }))
     : useState(slateInitialValue);
 
-  const getInitialValues = (mode === 'edit' && data && data.uploadContentType !== 'text/pdf')
+  const getInitialValues = (mode === 'edit' && data && (!data.uploadContentType || data.uploadContentType === ''))
     ? {
       ...data,
       textSlate: deserializeHTMLToDocument({ plugins, element: txtHtml.body }),
@@ -342,7 +343,7 @@ const DocumentForm = ({
       {(props) => (
         <Form onSubmit={props.handleSubmit} noValidate className="pt-2">
           {(!data
-            || (data && data.state === 'draft' && data.uploadContentType !== 'text/pdf')
+            || (data && data.state === 'draft' && (!data.uploadContentType || data.uploadContentType === ''))
           ) && (
             <Form.Row>
               <Col>
@@ -350,7 +351,7 @@ const DocumentForm = ({
                   <Card>
                     <Card.Header>
                       <ContextAwareToggle eventKey="0" disabled={data && data.state === 'draft'}>
-                        Upload PDF
+                        Upload PDF, DOCX, ODT, or EPUB
                       </ContextAwareToggle>
                     </Card.Header>
                     <Accordion.Collapse eventKey="0">
@@ -361,7 +362,7 @@ const DocumentForm = ({
                               <ReactS3Uploader
                                 signingUrl={process.env.NEXT_PUBLIC_SIGNING_URL}
                                 signingUrlMethod="GET"
-                                accept="application/pdf"
+                                accept=".docx,.pdf,.odt,.epub"
                                 s3path="files/"
                                 disabled={progress.started}
                                 onProgress={
@@ -390,8 +391,14 @@ const DocumentForm = ({
                                     url: fileUrl,
                                     processedUrl,
                                   };
-                                  const result = await getProcessedDocument(fileObj.processedUrl);
-                                  setHtmlValue(result);
+                                  await getProcessedDocument(fileObj.processedUrl)
+                                    .then((result) => {
+                                      setHtmlValue(result);
+                                      setContentType(fileObj.contentType);
+                                    })
+                                    .catch((err) => {
+                                      setErrors([{ text: err.message, variant: 'danger' }]);
+                                    });
                                 }}
                                 uploadRequestHeaders={{ 'x-amz-acl': 'public-read' }}
                                 onChange={props.handleChange}

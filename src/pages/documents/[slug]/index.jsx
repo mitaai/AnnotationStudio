@@ -434,7 +434,7 @@ const DocumentPage = (props) => {
             docView
             statefulSession={statefulSession}
           >
-            <HeatMap pdf={document.uploadContentType === 'text/pdf'} />
+            <HeatMap pdf={document.uploadContentType && document.uploadContentType.includes('pdf')} />
             {document && (
             <>
               <Row id="document-container">
@@ -551,10 +551,10 @@ const DocumentPage = (props) => {
             height: calc(100vh - 230px);
             overflow-y: scroll;
             padding: 
-            ${document.uploadContentType === 'text/pdf' ? '0' : '10px 0px'};
+            ${(document.uploadContentType && document.uploadContentType.includes('pdf')) ? '0' : '10px 0px'};
           }
 
-          ${document.uploadContentType === 'text/pdf' ? 'img.bi { display: none; }' : ''}
+          ${(document.uploadContentType && document.uploadContentType.includes('pdf')) ? 'img.bi { display: none; }' : ''}
 
           #document-container::-webkit-scrollbar {
             background: transparent;
@@ -583,11 +583,11 @@ const DocumentPage = (props) => {
             border-radius: 0px;
             min-height: 100%;
             border: none;
-            box-shadow: ${document.uploadContentType === 'text/pdf'
+            box-shadow: ${(document.uploadContentType && document.uploadContentType.includes('pdf'))
               ? 'none'
               : '3px 3px 9px 0px rgba(0,0,0,0.38)'
             };
-            ${document.uploadContentType === 'text/pdf' ? 'background: none;' : ''}
+            ${(document.uploadContentType && document.uploadContentType.includes('pdf')) ? 'background: none;' : ''}
           }
 
           #document-container #annotation-well-card-container .card-body {
