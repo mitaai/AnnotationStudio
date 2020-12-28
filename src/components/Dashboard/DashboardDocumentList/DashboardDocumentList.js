@@ -23,21 +23,20 @@ const DashboardDocumentList = ({
     async function fetchData() {
       if (session && (session.user.groups || session.user.id)) {
         if (key === 'shared') {
-          setDocuments(
-            await getSharedDocumentsByGroup(session.user.groups, 10)
-              .then(setListLoading(false))
-              .catch((err) => setAlerts([...alerts, { text: err.message, variant: 'danger' }])),
-          );
+          const docs = await getSharedDocumentsByGroup(session.user.groups, 10);
+          setDocuments(docs);
         } else if (key === 'mine') {
-          setDocuments(
-            await getDocumentsByUser(session.user.id, 10)
-              .then(setListLoading(false))
-              .catch((err) => setAlerts([...alerts, { text: err.message, variant: 'danger' }])),
-          );
+          const docs = await getDocumentsByUser(session.user.id, 10);
+          setDocuments(docs);
         }
       }
     }
-    fetchData();
+    fetchData()
+      .then(setListLoading(false))
+      .catch((err) => {
+        setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+        setListLoading(false);
+      });
   }, [key]);
 
 
@@ -66,7 +65,12 @@ const DashboardDocumentList = ({
           transition={false}
           style={{ justifyContent: 'flex-end', float: 'right', marginTop: '-2rem' }}
           activeKey={key}
-          onSelect={(k) => setKey(k)}
+          onSelect={(k) => {
+            if (k !== key) {
+              setListLoading(true);
+            }
+            setKey(k);
+          }}
         >
           <Tab eventKey="shared" title="Shared" />
           <Tab eventKey="mine" title="Mine" />

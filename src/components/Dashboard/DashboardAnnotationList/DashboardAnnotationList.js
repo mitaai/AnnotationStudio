@@ -28,24 +28,23 @@ const DashboardAnnotationList = ({
       if (session && (session.user.groups || session.user.id)) {
         if (key === 'shared') {
           if (session.user.groups && session.user.groups.length > 0) {
-            setAnnotations(
-              await getSharedAnnotations(session.user.groups, limit)
-                .then(setListLoading(false))
-                .catch((err) => setAlerts([...alerts, { text: err.message, variant: 'danger' }])),
-            );
+            const annos = await getSharedAnnotations(session.user.groups, limit);
+            setAnnotations(annos);
           } else {
             setAnnotations([]);
           }
         } else if (key === 'mine') {
-          setAnnotations(
-            await getOwnAnnotations(session.user.id, limit)
-              .then(setListLoading(false))
-              .catch((err) => setAlerts([...alerts, { text: err.message, variant: 'danger' }])),
-          );
+          const annos = await getOwnAnnotations(session.user.id, limit);
+          setAnnotations(annos);
         }
       }
     }
-    fetchData();
+    fetchData()
+      .then(setListLoading(false))
+      .catch((err) => {
+        setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+        setListLoading(false);
+      });
   }, [key]);
 
 
@@ -81,7 +80,12 @@ const DashboardAnnotationList = ({
           transition={false}
           style={{ justifyContent: 'flex-end', float: 'right', marginTop: '-2rem' }}
           activeKey={key}
-          onSelect={(k) => setKey(k)}
+          onSelect={(k) => {
+            if (k !== key) {
+              setListLoading(true);
+            }
+            setKey(k);
+          }}
         >
           <Tab eventKey="shared" title="Shared" />
           <Tab eventKey="mine" title="Mine" />

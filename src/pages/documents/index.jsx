@@ -23,26 +23,25 @@ const DocumentsIndex = ({
     async function fetchData() {
       if (session && (session.user.groups || session.user.id)) {
         if (key === 'shared') {
-          setDocuments(
-            await getSharedDocumentsByGroup(session.user.groups)
-              .then(setListLoading(false))
-              .catch((err) => setAlerts([{ text: err.message, variant: 'danger' }])),
-          );
+          const docs = await getSharedDocumentsByGroup(session.user.groups);
+          setDocuments(docs);
         } else if (key === 'mine') {
-          setDocuments(
-            await getDocumentsByUser(session.user.id)
-              .then(setListLoading(false))
-              .catch((err) => setAlerts([{ text: err.message, variant: 'danger' }])),
-          );
+          const docs = await getDocumentsByUser(session.user.id);
+          setDocuments(docs);
         }
       }
     }
-    fetchData();
+    fetchData()
+      .then(setListLoading(false))
+      .catch((err) => {
+        setAlerts([{ text: err.message, variant: 'danger' }]);
+        setListLoading(false);
+      });
   }, [session, key]);
 
   return (
     <Layout alerts={alerts} type="document" statefulSession={statefulSession}>
-      {loading && !session && (
+      {((loading && !session) || listLoading) && (
       <Card>
         <Card.Header>
           <Card.Title>
@@ -54,7 +53,7 @@ const DocumentsIndex = ({
         </Card.Body>
       </Card>
       )}
-      {!loading && session && (
+      {!loading && session && !listLoading && (
       <Card>
         <Card.Header>
           <Card.Title>
@@ -67,7 +66,12 @@ const DocumentsIndex = ({
             id="document-list-tabs"
             style={{ justifyContent: 'flex-end', marginBottom: '0', marginRight: '0' }}
             activeKey={key}
-            onSelect={(k) => setKey(k)}
+            onSelect={(k) => {
+              if (k !== key) {
+                setListLoading(true);
+              }
+              setKey(k);
+            }}
           >
             <Tab eventKey="shared" title="Shared" />
             <Tab eventKey="mine" title="Mine" />
@@ -79,6 +83,7 @@ const DocumentsIndex = ({
               alerts={alerts}
               setAlerts={setAlerts}
               loading={listLoading}
+              setLoading={setListLoading}
               userId={session.user.id}
             />
           )}

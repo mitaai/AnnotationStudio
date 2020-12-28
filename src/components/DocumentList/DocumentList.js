@@ -23,6 +23,7 @@ const DocumentList = ({
   documents,
   setDocuments,
   loading,
+  setLoading,
   userId,
   alerts,
   setAlerts,
@@ -163,6 +164,7 @@ const DocumentList = ({
                         handleCloseModal={handleCloseModal}
                         show={showModal === document._id}
                         onClick={(event) => {
+                          setLoading(true);
                           event.target.setAttribute('disabled', 'true');
                           deleteDocumentById(document._id).then(() => {
                             setDocuments(documents.filter((d) => d._id !== document._id));
@@ -172,6 +174,7 @@ const DocumentList = ({
                             }]);
                           }).catch((err) => {
                             setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+                            setLoading(false);
                           });
                           handleCloseModal();
                         }}
