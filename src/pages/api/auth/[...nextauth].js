@@ -20,13 +20,7 @@ const options = {
       },
       from: process.env.EMAIL_FROM,
 
-      sendVerificationRequest: ({
-        identifier: email, url, token, site, provider,
-      }) => {
-        sendVerificationRequestOverride({
-          identifier: email, url, token, site, provider,
-        });
-      },
+      sendVerificationRequest: sendVerificationRequestOverride,
     }),
     Providers.Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
