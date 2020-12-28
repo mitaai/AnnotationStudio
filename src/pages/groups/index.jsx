@@ -113,7 +113,10 @@ const GroupList = ({ query, initAlerts, statefulSession }) => {
                               onClick={handleShowModal}
                               data-key={group.id}
                             >
-                              <TrashFill className="align-text-bottom mr-1" />
+                              <TrashFill 
+                                data-key={group.id}
+                                className="align-text-bottom mr-1"
+                              />
                               Delete
                             </Button>
                             <ConfirmationDialog

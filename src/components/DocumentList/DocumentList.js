@@ -146,8 +146,16 @@ const DocumentList = ({
                         }}
                         data-key={document._id}
                       >
-                        <TrashFill className="align-text-bottom mr-1" />
-                        <span className="d-sm-none d-xl-inline">Delete</span>
+                        <TrashFill
+                          className="align-text-bottom mr-1"
+                          data-key={document._id}
+                        />
+                        <span
+                          data-key={document._id}
+                          className="d-sm-none d-xl-inline"
+                        >
+                          Delete
+                        </span>
                       </Button>
                       <ConfirmationDialog
                         name={document.title}
