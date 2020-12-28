@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer';
+import sgMail from '@sendgrid/mail';
 
 // Email HTML body
 const html = ({ url, email }) => {
@@ -57,29 +57,21 @@ const text = ({ url }) => `Sign in to ${process.env.SITE_NAME}\n${url}\n\n`;
 
 
 const sendVerificationRequestOverride = ({
-  // eslint-disable-next-line no-unused-vars
-  identifier: email, url, token, site, provider,
+  identifier: email, url, provider,
 }) => new Promise((resolve, reject) => {
   const { server, from } = provider;
 
-  nodemailer
-    .createTransport(server)
-    .sendMail({
+  sgMail.setApiKey(server.auth.pass);
+  sgMail
+    .send({
       to: email,
       from,
       subject: `Sign in to ${process.env.SITE_NAME}`,
       text: text({ url, email }),
       html: html({ url, email }),
-    }, (error) => {
-      if (error) {
-        return reject(new Error('SEND_VERIFICATION_EMAIL_ERROR', error));
-      }
-      return resolve();
-    });
+    })
+    .then(() => resolve())
+    .catch((error) => reject(new Error('SEND_VERIFICATION_EMAIL_ERROR', error)));
 });
 
-export default ({
-  identifier: email, url, token, site, provider,
-}) => sendVerificationRequestOverride({
-  identifier: email, url, token, site, provider,
-});
+export default sendVerificationRequestOverride;
