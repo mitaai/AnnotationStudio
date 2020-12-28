@@ -1,7 +1,7 @@
 import fetch from 'unfetch';
 import { Formik } from 'formik';
 import { useSession } from 'next-auth/client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Button, Card, Col, Form, Row,
 } from 'react-bootstrap';
@@ -12,8 +12,15 @@ import Layout from '../../components/Layout';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
 const NewGroup = ({ statefulSession }) => {
-  const [session] = useSession();
+  const [session, loading] = useSession();
+  const [pageLoading, setPageLoading] = useState(true);
   const [alerts, setAlerts] = useState([]);
+
+  useEffect(() => {
+    if (loading === false) {
+      setPageLoading(false);
+    }
+  }, [loading]);
 
   const createGroup = async (values) => {
     const url = '/api/group';
@@ -56,19 +63,22 @@ const NewGroup = ({ statefulSession }) => {
     <Layout alerts={alerts} type="group" title="New Group" statefulSession={statefulSession}>
       <Col lg="8" className="mx-auto">
         <Card>
-          {!session && (
+          {((!session && loading) || pageLoading) && (
             <LoadingSpinner />
           )}
-          {session && (
+          {session && !loading && !pageLoading && (
             <Card.Body className="text-center">
               <Card.Title>Create a new group</Card.Title>
 
               <Formik
                 onSubmit={(values, actions) => {
+                  setPageLoading(true);
                   setTimeout(() => {
-                    createGroup(values).catch((err) => {
-                      setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
-                    });
+                    createGroup(values)
+                      .catch((err) => {
+                        setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+                        setPageLoading(false);
+                      });
                     actions.setSubmitting(false);
                   }, 1000);
                 }}

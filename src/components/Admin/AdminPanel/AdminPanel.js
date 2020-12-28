@@ -49,7 +49,10 @@ const AdminPanel = ({
             setData(results);
             setListLoading(false);
           })
-          .catch((err) => setAlerts([...alerts, { text: err.message, variant: 'danger' }]));
+          .catch((err) => {
+            setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+            setListLoading(false);
+          });
       }
     }
   };

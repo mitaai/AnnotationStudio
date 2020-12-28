@@ -1,6 +1,6 @@
 import { useSession } from 'next-auth/client';
 import { Pencil, TrashFill } from 'react-bootstrap-icons';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   Button,
   Card,
@@ -40,6 +40,15 @@ const EditGroup = ({
   statefulSession,
 }) => {
   const [session, loading] = useSession();
+  const [pageLoading, setPageLoading] = useState(true);
+
+  useEffect(() => {
+    if (loading === false) {
+      setPageLoading(false);
+    }
+  }, [loading]);
+
+
   const [alerts, setAlerts] = useState(initAlerts || []);
 
   const router = useRouter();
@@ -80,10 +89,10 @@ const EditGroup = ({
   return (
     <Layout alerts={alerts} type="group" title={`Manage Group: ${group.name}`} statefulSession={statefulSession}>
       <Card>
-        {!session && loading && (
+        {((!session && loading) || pageLoading) && (
           <LoadingSpinner />
         )}
-        {session && !loading
+        {session && !loading && !pageLoading
           && (session.user.role === 'admin'
             || roleInGroup(session) === 'owner'
             || roleInGroup(session) === 'manager')
@@ -115,6 +124,7 @@ const EditGroup = ({
                   })}
                   onSubmit={(values, actions) => {
                     setTimeout(() => {
+                      setPageLoading(true);
                       renameGroup(group, values.groupName).then(() => {
                         setAlerts([...alerts, {
                           text: 'Group successfully renamed.',
@@ -123,8 +133,10 @@ const EditGroup = ({
                         setState({
                           ...state, editingGroupName: false, groupName: values.groupName,
                         });
+                        setPageLoading(false);
                       }).catch((err) => {
                         setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+                        setPageLoading(false);
                       });
                       actions.setSubmitting(false);
                     }, 1000);
@@ -200,6 +212,7 @@ const EditGroup = ({
                                 <Dropdown.Item
                                   disabled={member.role === 'member'}
                                   onClick={() => {
+                                    setPageLoading(true);
                                     changeUserRole(group, member, 'member').then(() => {
                                       const newArray = [...state.members];
                                       const newMember = { ...member, role: 'member' };
@@ -209,8 +222,10 @@ const EditGroup = ({
                                         text: 'User\'s role changed successfully.',
                                         variant: 'success',
                                       }]);
+                                      setPageLoading(false);
                                     }).catch((err) => {
                                       setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+                                      setPageLoading(false);
                                     });
                                   }}
                                 >
@@ -219,6 +234,7 @@ const EditGroup = ({
                                 <Dropdown.Item
                                   disabled={member.role === 'manager'}
                                   onClick={() => {
+                                    setPageLoading(true);
                                     changeUserRole(group, member, 'manager').then(() => {
                                       const newArray = [...state.members];
                                       const newMember = { ...member, role: 'manager' };
@@ -228,8 +244,10 @@ const EditGroup = ({
                                         text: 'User\'s role changed successfully.',
                                         variant: 'success',
                                       }]);
+                                      setPageLoading(false);
                                     }).catch((err) => {
                                       setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+                                      setPageLoading(false);
                                     });
                                   }}
                                 >
@@ -245,16 +263,21 @@ const EditGroup = ({
                                 variant="outline-danger"
                                 className="btn-sm"
                                 type="button"
-                                onClick={() => removeUserFromGroup(group, member).then(() => {
-                                  const members = state.members.filter((val, i) => i !== idx);
-                                  setState({ ...state, members });
-                                  setAlerts([...alerts, {
-                                    text: 'User successfully removed from group.',
-                                    variant: 'warning',
-                                  }]);
-                                }).catch((err) => {
-                                  setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
-                                })}
+                                onClick={() => {
+                                  setPageLoading(true);
+                                  removeUserFromGroup(group, member).then(() => {
+                                    const members = state.members.filter((val, i) => i !== idx);
+                                    setState({ ...state, members });
+                                    setAlerts([...alerts, {
+                                      text: 'User successfully removed from group.',
+                                      variant: 'warning',
+                                    }]);
+                                    setPageLoading(false);
+                                  }).catch((err) => {
+                                    setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+                                    setPageLoading(false);
+                                  });
+                                }}
                               >
                                 Remove
                               </Button>
@@ -274,6 +297,7 @@ const EditGroup = ({
                         <Button
                           variant="outline-secondary"
                           onClick={(event) => {
+                            setPageLoading(true);
                             event.target.setAttribute('disabled', 'true');
                             generateInviteToken(group).then((data) => {
                               const inviteUrl = `${baseUrl}/auth/signin?callbackUrl=${baseUrl}&groupToken=${data.value.inviteToken}`;
@@ -282,8 +306,10 @@ const EditGroup = ({
                                 text: 'Group invite token created successfully.',
                                 variant: 'success',
                               }]);
+                              setPageLoading(false);
                             }).catch((err) => {
                               setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+                              setPageLoading(false);
                             });
                           }}
                         >
@@ -304,14 +330,17 @@ const EditGroup = ({
                             size="sm"
                             style={{ padding: 0 }}
                             onClick={() => {
+                              setPageLoading(true);
                               deleteInviteToken(group).then(() => {
                                 setState({ ...state, inviteUrl: '' });
                                 setAlerts([...alerts, {
                                   text: 'Group invite token deleted successfully.',
                                   variant: 'warning',
                                 }]);
+                                setPageLoading(false);
                               }).catch((err) => {
                                 setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+                                setPageLoading(false);
                               });
                             }}
                           >
@@ -373,6 +402,7 @@ const EditGroup = ({
                       })}
                       onSubmit={(values, actions) => {
                         setTimeout(async () => {
+                          setPageLoading(true);
                           await addUserToGroup(group, values.email).then((data) => {
                             const { _id, name } = data[state.members.length].value;
                             const { email } = values;
@@ -385,8 +415,10 @@ const EditGroup = ({
                               variant: 'success',
                             }]);
                             actions.resetForm();
+                            setPageLoading(false);
                           }).catch((err) => {
                             setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+                            setPageLoading(false);
                           });
                           actions.setSubmitting(false);
                         }, 1000);
@@ -457,6 +489,7 @@ const EditGroup = ({
                         handleCloseModal={handleCloseModal}
                         show={state.showModal}
                         onClick={(event) => {
+                          setPageLoading(true);
                           event.target.setAttribute('disabled', 'true');
                           deleteGroup(group).then(() => {
                             router.push({
@@ -468,6 +501,7 @@ const EditGroup = ({
                             }, '/groups');
                           }).catch((err) => {
                             setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+                            setPageLoading(false);
                           });
                           handleCloseModal();
                         }}

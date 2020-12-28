@@ -21,6 +21,7 @@ import { deepEqual } from '../../utils/objectUtil';
 const GroupList = ({ query, initAlerts, statefulSession }) => {
   const [session, loading] = useSession();
   const [alerts, setAlerts] = useState(initAlerts);
+  const [pageLoading, setPageLoading] = useState(true);
   const [groups, setGroups] = useState([]);
 
   const [showModal, setShowModal] = useState('');
@@ -31,21 +32,23 @@ const GroupList = ({ query, initAlerts, statefulSession }) => {
 
   if (query.deletedGroupId && groups.some((g) => g.id === query.deletedGroupId)) {
     setGroups(groups.filter((g) => g.id !== query.deletedGroupId));
+    setPageLoading(false);
   }
 
   React.useEffect(() => {
     if (session && !deepEqual(session.user.groups, groups)) {
       setGroups(session.user.groups);
+      setPageLoading(false);
     }
   }, [session]);
 
   return (
     <Layout alerts={alerts} type="group" statefulSession={statefulSession}>
       <Card>
-        {!session && loading && (
+        {((!session && loading) || pageLoading) && (
           <LoadingSpinner />
         )}
-        {session && (
+        {session && !loading && !pageLoading && (
           <>
             <Card.Header>
               Groups
@@ -88,6 +91,7 @@ const GroupList = ({ query, initAlerts, statefulSession }) => {
                           <Button
                             variant="outline-danger"
                             onClick={async () => {
+                              setPageLoading(true);
                               await getUserByEmail(session.user.email).then((user) => {
                                 removeUserFromGroup(group, user).then(() => {
                                   setGroups(groups.filter((g) => g.id !== group.id));
@@ -95,9 +99,11 @@ const GroupList = ({ query, initAlerts, statefulSession }) => {
                                     text: 'You have successfully left the group.',
                                     variant: 'warning',
                                   }]);
+                                  setPageLoading(false);
                                 });
                               }).catch((err) => {
                                 setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+                                setPageLoading(false);
                               });
                             }}
                           >
@@ -113,7 +119,7 @@ const GroupList = ({ query, initAlerts, statefulSession }) => {
                               onClick={handleShowModal}
                               data-key={group.id}
                             >
-                              <TrashFill 
+                              <TrashFill
                                 data-key={group.id}
                                 className="align-text-bottom mr-1"
                               />
@@ -125,6 +131,7 @@ const GroupList = ({ query, initAlerts, statefulSession }) => {
                               handleCloseModal={handleCloseModal}
                               show={showModal === group.id}
                               onClick={(event) => {
+                                setPageLoading(true);
                                 event.target.setAttribute('disabled', 'true');
                                 deleteGroupById(group.id).then(() => {
                                   setGroups(groups.filter((g) => g.id !== group.id));
@@ -132,8 +139,10 @@ const GroupList = ({ query, initAlerts, statefulSession }) => {
                                     text: 'You have successfully deleted the group.',
                                     variant: 'warning',
                                   }]);
+                                  setPageLoading(false);
                                 }).catch((err) => {
                                   setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+                                  setPageLoading(false);
                                 });
                                 handleCloseModal();
                               }}

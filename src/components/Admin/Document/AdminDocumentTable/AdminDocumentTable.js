@@ -22,7 +22,10 @@ const AdminDocumentTable = ({ document, alerts, setAlerts }) => {
     if (document) {
       const fetchGroupState = async () => {
         document.groups.map(async (group) => {
-          const name = await getGroupNameById(group);
+          const name = await getGroupNameById(group)
+            .catch((err) => {
+              setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+            });
           setGroupState((prevState) => ({
             ...prevState,
             [group]: name,

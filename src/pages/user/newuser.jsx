@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import { parseCookies, destroyCookie } from 'nookies';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession, getSession } from 'next-auth/client';
 import fetch from 'isomorphic-unfetch';
 import { Formik } from 'formik';
@@ -17,8 +17,14 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import { addUserToGroup } from '../../utils/groupUtil';
 
 const NewUser = ({ groupId, updateSession, statefulSession }) => {
-  const [session] = useSession();
-  const [loading, setLoading] = useState(false);
+  const [session, loading] = useSession();
+  const [pageLoading, setPageLoading] = useState(true);
+
+  useEffect(() => {
+    if (loading === false) {
+      setPageLoading(false);
+    }
+  }, [loading]);
 
   const [alerts, setAlerts] = useState([]);
 
@@ -30,7 +36,6 @@ const NewUser = ({ groupId, updateSession, statefulSession }) => {
         statefulSession: regSession,
       },
     }, '/').then(() => {
-      setLoading(false);
       destroyCookie(null, 'ans_grouptoken', {
         path: '/',
       });
@@ -38,7 +43,7 @@ const NewUser = ({ groupId, updateSession, statefulSession }) => {
   };
 
   const submitHandler = async (values) => {
-    setLoading(true);
+    setPageLoading(true);
     const newName = FullName(values.firstName, values.lastName);
     const body = {
       email: session.user.email,
@@ -81,10 +86,12 @@ const NewUser = ({ groupId, updateSession, statefulSession }) => {
           pushToHome(regSession);
         }).catch((err) => {
           setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+          setPageLoading(false);
         });
       } else pushToHome(regSession);
     } else {
       setAlerts([...alerts, { text: res.text(), variant: 'danger' }]);
+      setPageLoading(false);
     }
   };
 
@@ -101,10 +108,10 @@ const NewUser = ({ groupId, updateSession, statefulSession }) => {
     <Layout alerts={alerts} type="newuser" statefulSession={statefulSession}>
       <Col lg="8" className="mx-auto">
         <Card>
-          {(loading || !session) && (
+          {(pageLoading || !session) && (
             <LoadingSpinner />
           )}
-          {!loading && (statefulSession || (session && session.user.firstName)) && (
+          {!pageLoading && (statefulSession || (session && session.user.firstName)) && (
             <Card.Body className="text-center">
               <Card.Title>Welcome to Annotation Studio</Card.Title>
               <Card.Text>
@@ -119,7 +126,7 @@ const NewUser = ({ groupId, updateSession, statefulSession }) => {
               </Card.Text>
             </Card.Body>
           )}
-          {!loading && session && !session.user.firstName && !statefulSession && (
+          {!pageLoading && session && !session.user.firstName && !statefulSession && (
             <Card.Body>
               <Card.Title>Welcome to Annotation Studio</Card.Title>
               <Card.Text>

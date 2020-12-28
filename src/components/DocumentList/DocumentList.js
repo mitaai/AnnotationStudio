@@ -23,6 +23,7 @@ const DocumentList = ({
   documents,
   setDocuments,
   loading,
+  setLoading,
   userId,
   alerts,
   setAlerts,
@@ -49,7 +50,10 @@ const DocumentList = ({
       const fetchGroupState = async () => {
         documents.map((document) => document.groups.map(async (group) => {
           if (!groupState[group]) {
-            const name = await getGroupNameById(group);
+            const name = await getGroupNameById(group)
+              .catch((err) => {
+                setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+              });
             setGroupState((prevState) => ({
               ...prevState,
               [group]: name,
@@ -163,6 +167,7 @@ const DocumentList = ({
                         handleCloseModal={handleCloseModal}
                         show={showModal === document._id}
                         onClick={(event) => {
+                          setLoading(true);
                           event.target.setAttribute('disabled', 'true');
                           deleteDocumentById(document._id).then(() => {
                             setDocuments(documents.filter((d) => d._id !== document._id));
@@ -170,8 +175,10 @@ const DocumentList = ({
                               text: 'You have successfully deleted the document.',
                               variant: 'warning',
                             }]);
+                            setLoading(false);
                           }).catch((err) => {
                             setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+                            setLoading(false);
                           });
                           handleCloseModal();
                         }}
