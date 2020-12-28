@@ -23,10 +23,10 @@ const DashboardDocumentList = ({
     async function fetchData() {
       if (session && (session.user.groups || session.user.id)) {
         if (key === 'shared') {
-          const docs = await getSharedDocumentsByGroup(session.user.groups, 10);
+          const docs = await getSharedDocumentsByGroup(session.user.groups, 7);
           setDocuments(docs);
         } else if (key === 'mine') {
-          const docs = await getDocumentsByUser(session.user.id, 10);
+          const docs = await getDocumentsByUser(session.user.id, 7);
           setDocuments(docs);
         }
       }
