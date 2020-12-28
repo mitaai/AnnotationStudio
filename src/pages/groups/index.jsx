@@ -31,9 +31,8 @@ const GroupList = ({ query, initAlerts, statefulSession }) => {
   };
 
   if (query.deletedGroupId && groups.some((g) => g.id === query.deletedGroupId)) {
-    setGroups(groups.filter((g) => g.id !== query.deletedGroupId))
-      .then(setPageLoading(false))
-      .catch((err) => setAlerts([...alerts, { text: err.message, variant: 'danger' }]));
+    setGroups(groups.filter((g) => g.id !== query.deletedGroupId));
+    setPageLoading(false);
   }
 
   React.useEffect(() => {
