@@ -323,6 +323,8 @@ const getGroupNameById = async (id) => {
     const response = await res.json();
     const { name } = response;
     return Promise.resolve(name);
+  } if (res.status === 404) {
+    return Promise.resolve('[group not found]');
   } return Promise.reject(Error(`Unable to find group with id ${id}: error ${res.status} received from server`));
 };
 

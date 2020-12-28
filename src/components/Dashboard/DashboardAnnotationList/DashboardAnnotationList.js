@@ -53,7 +53,10 @@ const DashboardAnnotationList = ({
       const fetchGroupState = async () => {
         annotations.map((annotation) => annotation.permissions.groups.map(async (group) => {
           if (!annotationsGroupState[group]) {
-            const name = await getGroupNameById(group);
+            const name = await getGroupNameById(group)
+              .catch((err) => {
+                setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+              });
             setAnnotationsGroupState((prevState) => ({
               ...prevState,
               [group]: name,
