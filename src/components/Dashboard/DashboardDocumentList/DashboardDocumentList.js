@@ -45,7 +45,10 @@ const DashboardDocumentList = ({
       const fetchGroupState = async () => {
         documents.map((document) => document.groups.map(async (group) => {
           if (!documentGroupState[group]) {
-            const name = await getGroupNameById(group);
+            const name = await getGroupNameById(group)
+              .catch((err) => {
+                setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+              });
             setDocumentGroupState((prevState) => ({
               ...prevState,
               [group]: name,
