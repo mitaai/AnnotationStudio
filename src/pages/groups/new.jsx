@@ -74,10 +74,11 @@ const NewGroup = ({ statefulSession }) => {
                 onSubmit={(values, actions) => {
                   setPageLoading(true);
                   setTimeout(() => {
-                    createGroup(values).catch((err) => {
-                      setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
-                      setPageLoading(false);
-                    });
+                    createGroup(values)
+                      .catch((err) => {
+                        setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+                        setPageLoading(false);
+                      });
                     actions.setSubmitting(false);
                   }, 1000);
                 }}

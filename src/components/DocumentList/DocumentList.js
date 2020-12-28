@@ -175,6 +175,7 @@ const DocumentList = ({
                               text: 'You have successfully deleted the document.',
                               variant: 'warning',
                             }]);
+                            setLoading(false);
                           }).catch((err) => {
                             setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
                             setLoading(false);
