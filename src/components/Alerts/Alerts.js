@@ -8,9 +8,17 @@ function Alerts({ alerts }) {
     for (let i = 0; i < alerts.length; i += 1) {
       if (!Object.keys(show).includes(`alert[${i}]`)) {
         alertsToAdd[`alert[${i}]`] = true;
+        setTimeout(() => {
+          alertsToAdd[`alert[${i}]`] = false;
+          setShow(
+            (prevState) => ({ ...prevState, ...alertsToAdd }),
+          );
+        }, 2000);
       }
     }
-    setShow((prevState) => ({ ...prevState, ...alertsToAdd }));
+    setShow(
+      (prevState) => ({ ...prevState, ...alertsToAdd }),
+    );
   }, [alerts]);
 
   return (
