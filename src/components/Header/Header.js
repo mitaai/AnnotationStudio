@@ -27,8 +27,8 @@ function Header({
   const router = useRouter();
   return (
     <header sticky="top">
-      <Navbar bg="dark" variant="dark">
-        <Container>
+      <Navbar bg="dark" variant="dark" className="px-0">
+        <Container fluid className="px-5">
           <Navbar.Brand href="/">Annotation Studio</Navbar.Brand>
           <Navbar.Toggle aria-controls="responsive-navbar-nav" />
           <Navbar.Collapse className="justify-content-end">

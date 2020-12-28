@@ -8,7 +8,7 @@ import moment from 'moment';
 function Footer() {
   return (
     <footer className="footer mt-auto py-3">
-      <Container className="px-0">
+      <Container fluid className="px-5">
         <Row>
           <Col>
             <Image src="/logo_mit.png" alt="MIT logo" className="logo mr-3 mt-2" />
