@@ -56,6 +56,7 @@ const DocumentForm = ({
   mode,
   data,
   setErrors,
+  setPageLoading,
 }) => {
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
@@ -314,6 +315,7 @@ const DocumentForm = ({
     <Formik
       onSubmit={(values, actions) => {
         const submitFunction = mode === 'edit' ? editDocument : createDocument;
+        setPageLoading(true);
         setTimeout(() => {
           submitFunction(values)
             .then(() => {
@@ -328,6 +330,7 @@ const DocumentForm = ({
             })
             .catch((err) => {
               setErrors([err.message]);
+              setPageLoading(false);
             });
           actions.setSubmitting(false);
         }, 1000);
@@ -563,6 +566,7 @@ const DocumentForm = ({
                           handleCloseModal={handleCloseModal}
                           show={showModal}
                           onClick={(event) => {
+                            setPageLoading(true);
                             event.target.setAttribute('disabled', 'true');
                             deleteDocumentById(data.id).then(() => {
                               router.push({
@@ -574,6 +578,7 @@ const DocumentForm = ({
                               });
                             }).catch((err) => {
                               setErrors([err.message]);
+                              setPageLoading(false);
                             });
                             handleCloseModal();
                           }}

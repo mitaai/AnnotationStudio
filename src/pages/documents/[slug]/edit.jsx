@@ -1,5 +1,5 @@
 import { useSession } from 'next-auth/client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Card, Col,
 } from 'react-bootstrap';
@@ -10,24 +10,37 @@ import DocumentForm from '../../../components/DocumentForm';
 import { prefetchDocumentBySlug } from '../../../utils/docUtil';
 
 const EditDocument = ({ document, alerts, statefulSession }) => {
-  const [session] = useSession();
+  const [session, loading] = useSession();
+  const [pageLoading, setPageLoading] = useState(true);
+
+  useEffect(() => {
+    if (loading === false) {
+      setPageLoading(false);
+    }
+  }, [loading]);
   const [errors, setErrors] = useState(alerts || []);
   return (
     <Layout alerts={errors} type="document" title={document ? `Edit Document: ${document.title}` : 'error'} statefulSession={statefulSession}>
       <Col lg="12" className="mx-auto">
         <Card>
-          {!session && (
+          {((!session && loading) || pageLoading) && (
             <LoadingSpinner />
           )}
-          {session && document && (
+          {session && document && !loading && !pageLoading && (
             <>
               <Card.Header><Card.Title>Edit document</Card.Title></Card.Header>
               <Card.Body>
-                <DocumentForm mode="edit" session={session} data={document} setErrors={setErrors} />
+                <DocumentForm
+                  mode="edit"
+                  session={session}
+                  data={document}
+                  setErrors={setErrors}
+                  setPageLoading={setPageLoading}
+                />
               </Card.Body>
             </>
           )}
-          {session && !document && (
+          {session && !document && !loading && !pageLoading && (
             <>
               <Card.Header><Card.Title>Document not found</Card.Title></Card.Header>
               <Card.Body>Sorry, this document could not be found.</Card.Body>
