@@ -28,23 +28,32 @@ const DashboardAnnotationList = ({
       if (session && (session.user.groups || session.user.id)) {
         if (key === 'shared') {
           if (session.user.groups && session.user.groups.length > 0) {
-            const annos = await getSharedAnnotations(session.user.groups, limit);
-            setAnnotations(annos);
+            await getSharedAnnotations(session.user.groups, limit)
+              .then((annos) => {
+                setAnnotations(annos);
+                setListLoading(false);
+              })
+              .catch((err) => {
+                setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+                setListLoading(false);
+              });
           } else {
             setAnnotations([]);
           }
         } else if (key === 'mine') {
-          const annos = await getOwnAnnotations(session.user.id, limit);
-          setAnnotations(annos);
+          await getOwnAnnotations(session.user.id, limit)
+            .then((annos) => {
+              setAnnotations(annos);
+              setListLoading(false);
+            })
+            .catch((err) => {
+              setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+              setListLoading(false);
+            });
         }
       }
     }
-    fetchData()
-      .then(setListLoading(false))
-      .catch((err) => {
-        setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
-        setListLoading(false);
-      });
+    fetchData();
   }, [key]);
 
 

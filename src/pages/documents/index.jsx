@@ -23,20 +23,29 @@ const DocumentsIndex = ({
     async function fetchData() {
       if (session && (session.user.groups || session.user.id)) {
         if (key === 'shared') {
-          const docs = await getSharedDocumentsByGroup(session.user.groups);
-          setDocuments(docs);
+          await getSharedDocumentsByGroup(session.user.groups)
+            .then((docs) => {
+              setDocuments(docs);
+              setListLoading(false);
+            })
+            .catch((err) => {
+              setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+              setListLoading(false);
+            });
         } else if (key === 'mine') {
-          const docs = await getDocumentsByUser(session.user.id);
-          setDocuments(docs);
+          await getDocumentsByUser(session.user.id)
+            .then((docs) => {
+              setDocuments(docs);
+              setListLoading(false);
+            })
+            .catch((err) => {
+              setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+              setListLoading(false);
+            });
         }
       }
     }
-    fetchData()
-      .then(setListLoading(false))
-      .catch((err) => {
-        setAlerts([{ text: err.message, variant: 'danger' }]);
-        setListLoading(false);
-      });
+    fetchData();
   }, [session, key]);
 
   return (

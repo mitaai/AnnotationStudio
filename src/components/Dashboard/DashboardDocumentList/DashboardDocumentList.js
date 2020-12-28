@@ -22,21 +22,29 @@ const DashboardDocumentList = ({
   useEffect(() => {
     async function fetchData() {
       if (session && (session.user.groups || session.user.id)) {
+        setListLoading(true);
         if (key === 'shared') {
-          const docs = await getSharedDocumentsByGroup(session.user.groups, 7);
-          setDocuments(docs);
+          await getSharedDocumentsByGroup(session.user.groups, 7)
+            .then((docs) => {
+              setDocuments(docs);
+              setListLoading(false);
+            }).catch((err) => {
+              setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+              setListLoading(false);
+            });
         } else if (key === 'mine') {
-          const docs = await getDocumentsByUser(session.user.id, 7);
-          setDocuments(docs);
+          await getDocumentsByUser(session.user.id, 7)
+            .then((docs) => {
+              setDocuments(docs);
+              setListLoading(false);
+            }).catch((err) => {
+              setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+              setListLoading(false);
+            });
         }
       }
     }
-    fetchData()
-      .then(setListLoading(false))
-      .catch((err) => {
-        setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
-        setListLoading(false);
-      });
+    fetchData();
   }, [key]);
 
 
@@ -69,9 +77,6 @@ const DashboardDocumentList = ({
           style={{ justifyContent: 'flex-end', float: 'right', marginTop: '-2rem' }}
           activeKey={key}
           onSelect={(k) => {
-            if (k !== key) {
-              setListLoading(true);
-            }
             setKey(k);
           }}
         >
@@ -116,7 +121,7 @@ const DashboardDocumentList = ({
         </ListGroup.Item>
       </ListGroup>
       )}
-      {!listLoading && (!documents || documents.length === 0) && (
+      {!listLoading && documents && documents.length === 0 && (
         <Card.Body>
           {`You have no ${key === 'shared' ? key : 'created'} documents.`}
         </Card.Body>
