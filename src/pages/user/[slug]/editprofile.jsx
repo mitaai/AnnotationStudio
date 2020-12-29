@@ -31,18 +31,20 @@ const EditProfile = ({ user, updateSession, statefulSession }) => {
       slug: values.email.replace(/[*+~.()'"!:@]/g, '-'),
     };
 
-    updateSession({
-      user: {
-        name: newName,
-        firstName: values.firstName,
-        email: values.email,
-        image: session.user.image,
-        id: session.user.id,
-        groups: session.user.groups,
-        role: session.user.role,
-      },
-      expires: session.expires,
-    });
+    if (values.email === session.user.email) {
+      updateSession({
+        user: {
+          name: newName,
+          firstName: values.firstName,
+          email: values.email,
+          image: session.user.image,
+          id: session.user.id,
+          groups: session.user.groups,
+          role: session.user.role,
+        },
+        expires: session.expires,
+      });
+    }
 
     // eslint-disable-next-line no-undef
     const res = await fetch('/api/users', {
