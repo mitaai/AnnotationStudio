@@ -15,6 +15,7 @@ const SlateMediaEmbedElement = ({
             title="embed"
             src={`${url}`}
             frameBorder="0"
+            data-testid="slate-iframe"
           />
         </div>
       </div>
