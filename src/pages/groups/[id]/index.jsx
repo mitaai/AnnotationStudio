@@ -33,15 +33,15 @@ const ViewGroup = ({ group, statefulSession }) => {
   };
 
   return (
-    <Layout alerts={alerts} type="group" title={group.name} statefulSession={statefulSession}>
+    <Layout alerts={alerts} type="group" title={group ? group.name : ''} statefulSession={statefulSession}>
       <Card>
         {!session && loading && (
           <LoadingSpinner />
         )}
-        {((!session && !loading) || (session && roleInGroup(session) === 'unauthorized')) && (
+        {((!session && !loading) || (session && group && roleInGroup(session) === 'unauthorized')) && (
           <UnauthorizedCard />
         )}
-        {session && !loading && (
+        {session && !loading && group && (
           <>
             <Card.Header>
               {group.name}
