@@ -3,7 +3,7 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-restricted-syntax */
 import { useState, useEffect } from 'react';
-import { isMobile } from "react-device-detect"
+import { isMobile } from 'react-device-detect';
 import { useSession } from 'next-auth/client';
 import $ from 'jquery';
 import {
@@ -109,7 +109,8 @@ const DocumentPage = (props) => {
   const [annotationChannel1Loaded, setAnnotationChannel1Loaded] = useState(false);
   const [annotationChannel2Loaded, setAnnotationChannel2Loaded] = useState(false);
   const minDisplayWidth = 1150;
-  // if true annotations will displayed in channels otherwise they will be displayed as popovers that show on hover or on click
+  // popovers for mobile
+  // eslint-disable-next-line no-unused-vars
   const [displayAnnotationsInChannels, setDisplayAnnotationsInChannels] = useState(!isMobile);
 
   const [scrollToAnnotation, setScrollToAnnotation] = useState(validQuery);
@@ -117,9 +118,9 @@ const DocumentPage = (props) => {
   const [showMoreInfoShareModal, setShowMoreInfoShareModal] = useState();
 
   const [session, loading] = useSession();
-  // the interesection between the groups that this user is in and the groups the document is shared too
+  // interesection between user's groups and groups the document is shared to
   const [groupIntersection, setGroupIntersection] = useState();
-  // the people the user can share their annotations with which is generated from the groupIntersection
+  // other users this user can share annotations with, generated from groupIntersection
   const [membersIntersection, setMembersIntersection] = useState([]);
 
 
@@ -381,25 +382,32 @@ const DocumentPage = (props) => {
   });
 
   useEffect(() => {
+    // eslint-disable-next-line no-undef
     window.addEventListener('resize', () => {
+      // eslint-disable-next-line no-undef
       setDisplayAnnotationsInChannels(window.innerWidth > minDisplayWidth && !isMobile);
     });
   });
 
   async function getIntersectionOfGroupsAndUsers() {
-    // when the session gets loaded in we are going to get the intersection of groups and the users that applies to
-    if (session !== undefined && groupIntersection === undefined) { // this means we haven't set it yet
+    // when session loaded, get intersection of groups and the users that applies to
+    if (session && !groupIntersection) {
       const userGroupIds = session.user.groups.map((g) => g.id);
       const intersection = userGroupIds.filter((id) => document.groups.includes(id));
       const intersectionGroups = await Promise.all(intersection.map((id) => getGroupById(id)));
       let intersectionMembers = [];
       for (let i = 0; i < intersectionGroups.length; i += 1) {
-        // filtering out members for this specific group that we have already included in the intersectionMembers array
-        const members = intersectionGroups[i].members.filter((m) => !intersectionMembers.some((im) => im.id === m.id));
+        // filtering out members for this specific group
+        // that we have already included in the intersectionMembers array
+        const members = intersectionGroups[i].members
+          // eslint-disable-next-line no-loop-func
+          .filter((m) => !intersectionMembers.some((im) => im.id === m.id));
         intersectionMembers = intersectionMembers.concat(members);
       }
-      // before we set the intersection of members we need to remove the id of the current user session
-      setMembersIntersection(intersectionMembers.filter((m) => m.id !== session.user.id).map((m) => ({ ...m, name: FirstNameLastInitial(m.name) })));
+      // remove id of current user session before setting intersection of members
+      setMembersIntersection(intersectionMembers
+        .filter((m) => m.id !== session.user.id)
+        .map((m) => ({ ...m, name: FirstNameLastInitial(m.name) })));
       setGroupIntersection(intersectionGroups);
     }
   }
@@ -418,7 +426,9 @@ const DocumentPage = (props) => {
   return (
 
     <DocumentContext.Provider value={document}>
-      <DocumentAnnotationsContext.Provider value={[channelAnnotations, setChannelAnnotations, saveAnnotationChanges, getAllTags()]}>
+      <DocumentAnnotationsContext.Provider
+        value={[channelAnnotations, setChannelAnnotations, saveAnnotationChanges, getAllTags()]}
+      >
         <DocumentFiltersContext.Provider value={[documentFilters, setDocumentFilters]}>
           {!session && loading && (
           <LoadingSpinner />
@@ -525,11 +535,16 @@ const DocumentPage = (props) => {
                   <p style={{ fontSize: 14 }}>
                     Only you can see the annotation
                   </p>
-                  <p style={{ fontWeight: 600, fontSize: 16, marginBottom: 5 }}>Share with group(s)</p>
-                  <p style={{ fontSize: 14 }}>
-                    Share this annotation with all members of your group(s) who have access to this document.
+                  <p style={{ fontWeight: 600, fontSize: 16, marginBottom: 5 }}>
+                    Share with group(s)
                   </p>
-                  <p style={{ fontWeight: 600, fontSize: 16, marginBottom: 5 }}>Share with user(s)</p>
+                  <p style={{ fontSize: 14 }}>
+                    Share this annotation with all members of
+                    your group(s) who have access to this document.
+                  </p>
+                  <p style={{ fontWeight: 600, fontSize: 16, marginBottom: 5 }}>
+                    Share with user(s)
+                  </p>
                   <p style={{ fontSize: 14 }}>
                     Share this annotation with a specific user or users only.
                   </p>
