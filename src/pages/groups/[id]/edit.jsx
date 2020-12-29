@@ -90,7 +90,7 @@ const EditGroup = ({
   return (
     <Layout alerts={alerts} type="group" title={`Manage Group: ${group.name}`} statefulSession={statefulSession}>
       <Card>
-        {((!session && loading) || pageLoading) && (
+        {((!session && loading) || (session && pageLoading)) && (
           <LoadingSpinner />
         )}
         {((!session && !loading) || (session && roleInGroup(session) === 'unauthorized')) && (

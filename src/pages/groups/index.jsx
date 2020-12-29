@@ -46,7 +46,7 @@ const GroupList = ({ query, initAlerts, statefulSession }) => {
   return (
     <Layout alerts={alerts} type="group" statefulSession={statefulSession}>
       <Card>
-        {((!session && loading) || pageLoading) && (
+        {((!session && loading) || (session && pageLoading)) && (
           <LoadingSpinner />
         )}
         {!session && !loading && (

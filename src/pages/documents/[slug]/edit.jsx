@@ -24,10 +24,10 @@ const EditDocument = ({ document, alerts, statefulSession }) => {
     <Layout alerts={errors} type="document" title={document ? `Edit Document: ${document.title}` : 'error'} statefulSession={statefulSession}>
       <Col lg="12" className="mx-auto">
         <Card>
-          {((!session && loading) || pageLoading) && (
+          {((!session && loading) || (session && pageLoading)) && (
             <LoadingSpinner />
           )}
-          {!session && !loading && !pageLoading && (
+          {!session && !loading && (
             <UnauthorizedCard />
           )}
           {session && document && !loading && !pageLoading && (

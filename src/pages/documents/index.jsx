@@ -51,7 +51,7 @@ const DocumentsIndex = ({
 
   return (
     <Layout alerts={alerts} type="document" statefulSession={statefulSession}>
-      {((loading && !session) || listLoading) && (
+      {((loading && !session) || (session && listLoading)) && (
       <Card>
         <Card.Header>
           <Card.Title>

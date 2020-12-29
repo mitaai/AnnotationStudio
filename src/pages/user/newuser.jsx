@@ -109,10 +109,10 @@ const NewUser = ({ groupId, updateSession, statefulSession }) => {
     <Layout alerts={alerts} type="newuser" statefulSession={statefulSession}>
       <Col lg="8" className="mx-auto">
         <Card>
-          {(loading || pageLoading) && (
+          {((loading && !session) || (pageLoading && session)) && (
             <LoadingSpinner />
           )}
-          {!loading && !pageLoading && !session && (
+          {!loading && !session && (
             <UnauthorizedCard />
           )}
           {!pageLoading && (statefulSession || (session && session.user.firstName)) && (

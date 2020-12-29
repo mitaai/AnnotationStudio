@@ -23,7 +23,7 @@ const NewDocument = ({ statefulSession }) => {
     <Layout alerts={errors} type="document" title="New Document" statefulSession={statefulSession}>
       <Col lg="12" className="mx-auto">
         <Card>
-          {((!session && loading) || pageLoading) && (
+          {((!session && loading) || (session && pageLoading)) && (
             <LoadingSpinner />
           )}
           {!session && !loading && (
