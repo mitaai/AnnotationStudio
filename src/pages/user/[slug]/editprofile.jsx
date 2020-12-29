@@ -8,6 +8,7 @@ import {
 import { FullName } from '../../../utils/nameUtil';
 import Layout from '../../../components/Layout';
 import LoadingSpinner from '../../../components/LoadingSpinner';
+import UnauthorizedCard from '../../../components/UnauthorizedCard';
 import { updateAllAnnotationsByUser } from '../../../utils/annotationUtil';
 
 const EditProfile = ({ user, updateSession, statefulSession }) => {
@@ -118,6 +119,9 @@ const EditProfile = ({ user, updateSession, statefulSession }) => {
         <Card>
           {!session && loading && (
             <LoadingSpinner />
+          )}
+          {((!session && !loading) || (session && !user)) && (
+            <UnauthorizedCard />
           )}
           {session && user && (
             <Card.Body>

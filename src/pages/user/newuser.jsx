@@ -13,6 +13,7 @@ import Link from 'next/link';
 import Router from 'next/router';
 import { FullName } from '../../utils/nameUtil';
 import Layout from '../../components/Layout';
+import UnauthorizedCard from '../../components/UnauthorizedCard';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { addUserToGroup } from '../../utils/groupUtil';
 
@@ -108,8 +109,11 @@ const NewUser = ({ groupId, updateSession, statefulSession }) => {
     <Layout alerts={alerts} type="newuser" statefulSession={statefulSession}>
       <Col lg="8" className="mx-auto">
         <Card>
-          {(pageLoading || !session) && (
+          {(loading || pageLoading) && (
             <LoadingSpinner />
+          )}
+          {!loading && !pageLoading && !session && (
+            <UnauthorizedCard />
           )}
           {!pageLoading && (statefulSession || (session && session.user.firstName)) && (
             <Card.Body className="text-center">

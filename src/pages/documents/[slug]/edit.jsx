@@ -5,6 +5,7 @@ import {
 } from 'react-bootstrap';
 import Layout from '../../../components/Layout';
 import LoadingSpinner from '../../../components/LoadingSpinner';
+import UnauthorizedCard from '../../../components/UnauthorizedCard';
 import DocumentForm from '../../../components/DocumentForm';
 
 import { prefetchDocumentBySlug } from '../../../utils/docUtil';
@@ -25,6 +26,9 @@ const EditDocument = ({ document, alerts, statefulSession }) => {
         <Card>
           {((!session && loading) || pageLoading) && (
             <LoadingSpinner />
+          )}
+          {!session && !loading && !pageLoading && (
+            <UnauthorizedCard />
           )}
           {session && document && !loading && !pageLoading && (
             <>

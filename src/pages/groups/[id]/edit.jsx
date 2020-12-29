@@ -19,6 +19,7 @@ import { useRouter } from 'next/router';
 import { Formik } from 'formik';
 import Layout from '../../../components/Layout';
 import LoadingSpinner from '../../../components/LoadingSpinner';
+import UnauthorizedCard from '../../../components/UnauthorizedCard';
 import ConfirmationDialog from '../../../components/ConfirmationDialog';
 import GroupRoleSummaries from '../../../components/GroupRoleSummaries';
 import GroupRoleBadge from '../../../components/GroupRoleBadge';
@@ -91,6 +92,9 @@ const EditGroup = ({
       <Card>
         {((!session && loading) || pageLoading) && (
           <LoadingSpinner />
+        )}
+        {((!session && !loading) || (session && roleInGroup(session) === 'unauthorized')) && (
+          <UnauthorizedCard />
         )}
         {session && !loading && !pageLoading
           && (session.user.role === 'admin'
