@@ -95,7 +95,18 @@ const handler = async (req, res) => {
         .collection('users')
         .findOne({ _id: ObjectID(token.id) });
       const findCondition = { _id: ObjectID(req.query.id) };
-      if (userObj.role !== 'admin') findCondition['members.id'] = token.id;
+      if (userObj.role !== 'admin') {
+        if (req.body.inviteToken) {
+          const tokenObj = await db
+            .collection('inviteTokens')
+            .findOne({ token: req.body.inviteToken });
+          if (tokenObj.group !== req.query.id) {
+            findCondition['members.id'] = token.id;
+          }
+        } else {
+          findCondition['members.id'] = token.id;
+        }
+      }
       const doc = await db
         .collection('groups')
         .findOneAndUpdate(
