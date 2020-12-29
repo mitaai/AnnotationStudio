@@ -34,9 +34,11 @@ function Header({
           <Navbar.Collapse className="justify-content-end">
             <Nav>
               <NavDropdown title="About" id="basic-nav-dropdown" data-testid="nav-about-dropdown">
-                <NavDropdown.Item href="#action/3.1">Action</NavDropdown.Item>
+                <NavDropdown.Item href="https://www.annotationstudio.org/project/">Project</NavDropdown.Item>
+                <NavDropdown.Item href="https://www.annotationstudio.org/pedagogy/">Pedagogy</NavDropdown.Item>
+                <NavDropdown.Item href="https://www.annotationstudio.org/community/">Community</NavDropdown.Item>
               </NavDropdown>
-              <Nav.Link href="#help" data-testid="nav-help-link">
+              <Nav.Link href="https://support.annotationstudio.org" data-testid="nav-help-link">
                 Help
                 <BoxArrowUpRight className="align-text-bottom ml-1" />
               </Nav.Link>
