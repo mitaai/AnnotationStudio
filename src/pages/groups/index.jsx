@@ -10,6 +10,7 @@ import {
 } from 'react-bootstrap-icons';
 import Layout from '../../components/Layout';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import UnauthorizedCard from '../../components/UnauthorizedCard';
 import ConfirmationDialog from '../../components/ConfirmationDialog';
 import GroupRoleSummaries from '../../components/GroupRoleSummaries';
 import GroupRoleBadge from '../../components/GroupRoleBadge';
@@ -45,8 +46,11 @@ const GroupList = ({ query, initAlerts, statefulSession }) => {
   return (
     <Layout alerts={alerts} type="group" statefulSession={statefulSession}>
       <Card>
-        {((!session && loading) || pageLoading) && (
+        {((!session && loading) || (session && pageLoading)) && (
           <LoadingSpinner />
+        )}
+        {!session && !loading && (
+          <UnauthorizedCard />
         )}
         {session && !loading && !pageLoading && (
           <>

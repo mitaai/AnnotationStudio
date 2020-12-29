@@ -4,6 +4,10 @@ $theme-colors: (
   "dark": #000000,
 );
 
+ol.breadcrumb {
+  padding-left: 0px !important;
+}
+
 .footer .logo {
   height: 30px;
   max-height: 30px;

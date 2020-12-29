@@ -3,6 +3,7 @@ import { useSession } from 'next-auth/client';
 import { Card } from 'react-bootstrap';
 import Layout from '../../components/Layout';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import UnauthorizedCard from '../../components/UnauthorizedCard';
 import DashboardAnnotationList from '../../components/Dashboard/DashboardAnnotationList';
 
 const AnnotationsListVIew = ({
@@ -22,10 +23,7 @@ const AnnotationsListVIew = ({
         </Card>
       )}
       {!session && !loading && (
-      <Card>
-        <Card.Header><Card.Title>Not authorized</Card.Title></Card.Header>
-        <Card.Body>Please log in to use the application.</Card.Body>
-      </Card>
+        <UnauthorizedCard />
       )}
       {session && !loading && (
         <DashboardAnnotationList

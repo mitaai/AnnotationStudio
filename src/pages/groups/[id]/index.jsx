@@ -9,6 +9,7 @@ import {
 } from 'react-bootstrap-icons';
 import Layout from '../../../components/Layout';
 import LoadingSpinner from '../../../components/LoadingSpinner';
+import UnauthorizedCard from '../../../components/UnauthorizedCard';
 import ConfirmationDialog from '../../../components/ConfirmationDialog';
 import GroupRoleSummaries from '../../../components/GroupRoleSummaries';
 import GroupRoleBadge from '../../../components/GroupRoleBadge';
@@ -23,15 +24,24 @@ const ViewGroup = ({ group, statefulSession }) => {
   const handleCloseModal = () => setShowModal(false);
   const handleShowModal = () => setShowModal(true);
 
-  const roleInGroup = (currentSession) => currentSession.user.groups.find((o) => Object.entries(o).some(([k, value]) => k === 'id' && value === group.id)).role;
+  const roleInGroup = (currentSession) => {
+    const groupInSession = currentSession.user.groups.find((o) => Object.entries(o).some(([k, value]) => k === 'id' && value === group.id));
+    const memberInGroup = group.members.find((o) => Object.entries(o).some(([k, value]) => k === 'id' && value === currentSession.user.id));
+    if (groupInSession || memberInGroup) {
+      return groupInSession ? groupInSession.role : memberInGroup.role;
+    } return 'unauthorized';
+  };
 
   return (
-    <Layout alerts={alerts} type="group" title={group.name} statefulSession={statefulSession}>
+    <Layout alerts={alerts} type="group" title={group ? group.name : ''} statefulSession={statefulSession}>
       <Card>
         {!session && loading && (
           <LoadingSpinner />
         )}
-        {session && !loading && (
+        {((!session && !loading) || (session && group && roleInGroup(session) === 'unauthorized')) && (
+          <UnauthorizedCard />
+        )}
+        {session && !loading && group && (
           <>
             <Card.Header>
               {group.name}

@@ -6,6 +6,7 @@ import {
 import Layout from '../../components/Layout';
 import DocumentList from '../../components/DocumentList';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import UnauthorizedCard from '../../components/UnauthorizedCard';
 import { getSharedDocumentsByGroup, getDocumentsByUser } from '../../utils/docUtil';
 
 const DocumentsIndex = ({
@@ -50,7 +51,7 @@ const DocumentsIndex = ({
 
   return (
     <Layout alerts={alerts} type="document" statefulSession={statefulSession}>
-      {((loading && !session) || listLoading) && (
+      {((loading && !session) || (session && listLoading)) && (
       <Card>
         <Card.Header>
           <Card.Title>
@@ -61,6 +62,9 @@ const DocumentsIndex = ({
           <LoadingSpinner />
         </Card.Body>
       </Card>
+      )}
+      {!loading && !session && (
+        <UnauthorizedCard />
       )}
       {!loading && session && !listLoading && (
       <Card>

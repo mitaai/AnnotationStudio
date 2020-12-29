@@ -8,6 +8,7 @@ import {
 import { FullName } from '../../../utils/nameUtil';
 import Layout from '../../../components/Layout';
 import LoadingSpinner from '../../../components/LoadingSpinner';
+import UnauthorizedCard from '../../../components/UnauthorizedCard';
 import { updateAllAnnotationsByUser } from '../../../utils/annotationUtil';
 
 const EditProfile = ({ user, updateSession, statefulSession }) => {
@@ -31,18 +32,20 @@ const EditProfile = ({ user, updateSession, statefulSession }) => {
       slug: values.email.replace(/[*+~.()'"!:@]/g, '-'),
     };
 
-    updateSession({
-      user: {
-        name: newName,
-        firstName: values.firstName,
-        email: values.email,
-        image: session.user.image,
-        id: session.user.id,
-        groups: session.user.groups,
-        role: session.user.role,
-      },
-      expires: session.expires,
-    });
+    if (values.email === session.user.email) {
+      updateSession({
+        user: {
+          name: newName,
+          firstName: values.firstName,
+          email: values.email,
+          image: session.user.image,
+          id: session.user.id,
+          groups: session.user.groups,
+          role: session.user.role,
+        },
+        expires: session.expires,
+      });
+    }
 
     // eslint-disable-next-line no-undef
     const res = await fetch('/api/users', {
@@ -116,6 +119,9 @@ const EditProfile = ({ user, updateSession, statefulSession }) => {
         <Card>
           {!session && loading && (
             <LoadingSpinner />
+          )}
+          {((!session && !loading) || (session && !user)) && (
+            <UnauthorizedCard />
           )}
           {session && user && (
             <Card.Body>

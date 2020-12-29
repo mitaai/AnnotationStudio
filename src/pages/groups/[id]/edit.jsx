@@ -19,6 +19,7 @@ import { useRouter } from 'next/router';
 import { Formik } from 'formik';
 import Layout from '../../../components/Layout';
 import LoadingSpinner from '../../../components/LoadingSpinner';
+import UnauthorizedCard from '../../../components/UnauthorizedCard';
 import ConfirmationDialog from '../../../components/ConfirmationDialog';
 import GroupRoleSummaries from '../../../components/GroupRoleSummaries';
 import GroupRoleBadge from '../../../components/GroupRoleBadge';
@@ -58,9 +59,9 @@ const EditGroup = ({
     showModal: false,
     editingGroupName: false,
     showTooltip: false,
-    groupName: group.name,
-    inviteUrl: group.inviteUrl,
-    members: group.members,
+    groupName: group ? group.name : '',
+    inviteUrl: group ? group.inviteUrl : '',
+    members: group ? group.members : '',
   });
   const handleCloseModal = () => setState({ ...state, showModal: false });
   const handleShowModal = () => setState({ ...state, showModal: true });
@@ -87,12 +88,15 @@ const EditGroup = ({
   };
 
   return (
-    <Layout alerts={alerts} type="group" title={`Manage Group: ${group.name}`} statefulSession={statefulSession}>
+    <Layout alerts={alerts} type="group" title={`Manage Group: ${group ? group.name : ''}`} statefulSession={statefulSession}>
       <Card>
-        {((!session && loading) || pageLoading) && (
+        {((!session && loading) || (session && pageLoading)) && (
           <LoadingSpinner />
         )}
-        {session && !loading && !pageLoading
+        {((!session && !loading) || (session && group && roleInGroup(session) === 'unauthorized')) && (
+          <UnauthorizedCard />
+        )}
+        {session && !loading && !pageLoading && group
           && (session.user.role === 'admin'
             || roleInGroup(session) === 'owner'
             || roleInGroup(session) === 'manager')

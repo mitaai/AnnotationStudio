@@ -4,6 +4,7 @@ import {
   Card, Col,
 } from 'react-bootstrap';
 import Layout from '../../components/Layout';
+import UnauthorizedCard from '../../components/UnauthorizedCard';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import DocumentForm from '../../components/DocumentForm';
 
@@ -22,8 +23,11 @@ const NewDocument = ({ statefulSession }) => {
     <Layout alerts={errors} type="document" title="New Document" statefulSession={statefulSession}>
       <Col lg="12" className="mx-auto">
         <Card>
-          {((!session && loading) || pageLoading) && (
+          {((!session && loading) || (session && pageLoading)) && (
             <LoadingSpinner />
+          )}
+          {!session && !loading && (
+            <UnauthorizedCard />
           )}
           {session && !loading && !pageLoading && (
             <>

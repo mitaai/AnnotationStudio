@@ -39,10 +39,10 @@ const SecondNavbar = ({
   const [showMoreDocumentInfo, setShowMoreDocumentInfo] = useState();
   return (
     <>
-      <Navbar bg="light" variant="light" className="second-navbar" data-testid="second-navbar">
-        <Container>
+      <Navbar bg="light" variant="light" className="second-navbar px-0" data-testid="second-navbar">
+        <Container fluid className="px-5">
           <Row>
-            <Col sm={8}>
+            <Col>
               <Nav>
                 <Breadcrumb>
                   <Breadcrumb.Item active={type === 'dashboard'} href="/">Dashboard</Breadcrumb.Item>
@@ -91,7 +91,7 @@ const SecondNavbar = ({
         </Container>
         {type === 'document' && document && docView && (
         <>
-          <div style={{ position: 'absolute', right: '16px', top: '7px' }}>
+          <div style={{ position: 'absolute', right: '9px', top: '7px' }} className="pr-5">
             <FilterPopover session={session} />
           </div>
           <Modal
@@ -106,7 +106,7 @@ const SecondNavbar = ({
               </Modal.Title>
             </Modal.Header>
             <Modal.Body>
-              <Table bordered hover size="sm">
+              <Table bordered size="sm">
                 <tbody>
                   {Object.keys(metaData).map((key) => {
                     let str = '';
@@ -119,7 +119,7 @@ const SecondNavbar = ({
                     }
                     return (
                       <tr>
-                        <td className="table-meta-data-name">{metaData[key]}</td>
+                        <td className="table-meta-data-name"><strong>{metaData[key]}</strong></td>
                         <td>{str}</td>
                       </tr>
                     );

@@ -10,6 +10,7 @@ import Router from 'next/router';
 import { addGroupToUser } from '../../utils/groupUtil';
 import Layout from '../../components/Layout';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import UnauthorizedCard from '../../components/UnauthorizedCard';
 
 const NewGroup = ({ statefulSession }) => {
   const [session, loading] = useSession();
@@ -63,8 +64,11 @@ const NewGroup = ({ statefulSession }) => {
     <Layout alerts={alerts} type="group" title="New Group" statefulSession={statefulSession}>
       <Col lg="8" className="mx-auto">
         <Card>
-          {((!session && loading) || pageLoading) && (
+          {((!session && loading) || (session && pageLoading)) && (
             <LoadingSpinner />
+          )}
+          {!session && !loading && (
+            <UnauthorizedCard />
           )}
           {session && !loading && !pageLoading && (
             <Card.Body className="text-center">
