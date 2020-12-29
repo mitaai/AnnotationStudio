@@ -3,15 +3,16 @@ import React, { useState } from 'react';
 import fetch from 'isomorphic-unfetch';
 import { csrfToken, useSession, signIn } from 'next-auth/client';
 import { Button, Card, Form } from 'react-bootstrap';
-import Router from 'next/router';
 import Layout from '../../components/Layout';
 import LoadingSpinner from '../../components/LoadingSpinner';
-import { addUserToGroup } from '../../utils/groupUtil';
+import GroupJoinCard from '../../components/GroupJoinCard';
 
 const SignIn = ({ props }) => {
   const [session, loading] = useSession();
 
-  const { csrfToken, groupId, initAlerts } = props; // eslint-disable-line no-shadow
+  const {
+    cToken, groupId, initAlerts, groupToken,
+  } = props; // eslint-disable-line no-shadow
   const [alerts, setAlerts] = useState(initAlerts);
   return (
     <Layout
@@ -26,7 +27,7 @@ const SignIn = ({ props }) => {
           <Card.Header>Log In / Sign Up</Card.Header>
           <Card.Body>
             <Form method="post" action="/api/auth/signin/email">
-              <input name="csrfToken" type="hidden" defaultValue={csrfToken} />
+              <input name="csrfToken" type="hidden" defaultValue={cToken} />
               <Form.Label>With email address</Form.Label>
               <Form.Control name="email" type="email" placeholder="Email address" />
               <Button variant="outline-secondary" type="submit" className="mt-3">
@@ -44,29 +45,15 @@ const SignIn = ({ props }) => {
           </Card.Body>
         </Card>
       )}
-      {session && groupId !== '' && (
-        <Card style={{ width: '33%', marginLeft: '33%' }} className="text-center">
-          <Card.Header>Join Group</Card.Header>
-          <Card.Body>
-            Click below to join the group:
-            <br />
-            <Button
-              className="mt-3"
-              onClick={() => {
-                addUserToGroup({ id: groupId }, session.user.email).then(() => {
-                  Router.push({
-                    pathname: '/',
-                    query: { alert: 'joinedGroup' },
-                  });
-                }).catch((err) => {
-                  setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
-                });
-              }}
-            >
-              Join Group
-            </Button>
-          </Card.Body>
-        </Card>
+      {session && groupId && groupId !== '' && (
+        <GroupJoinCard
+          alerts={alerts}
+          setAlerts={setAlerts}
+          pageFrom="signin"
+          groupId={groupId}
+          token={groupToken}
+          session={session}
+        />
       )}
       {session && groupId === '' && (
         <Card style={{ width: '33%', marginLeft: '33%' }} className="text-center">
@@ -116,7 +103,8 @@ SignIn.getInitialProps = async (context) => {
   }
   return {
     props: {
-      csrfToken: await csrfToken(context),
+      cToken: await csrfToken(context),
+      groupToken,
       groupId,
       initAlerts,
     },

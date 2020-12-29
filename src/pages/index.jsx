@@ -8,8 +8,8 @@ import { useSession } from 'next-auth/client';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import Layout from '../components/Layout';
-import { addUserToGroup } from '../utils/groupUtil';
 import LoadingSpinner from '../components/LoadingSpinner';
+import GroupJoinCard from '../components/GroupJoinCard';
 import DashboardAnnotationList from '../components/Dashboard/DashboardAnnotationList';
 import DashboardDocumentList from '../components/Dashboard/DashboardDocumentList';
 import DashboardGroupList from '../components/Dashboard/DashboardGroupList';
@@ -19,6 +19,7 @@ export default function Home({
   initAlerts,
   groupId,
   statefulSession,
+  groupToken,
 }) {
   const [session, loading] = useSession();
   const [alerts, setAlerts] = useState(initAlerts || []);
@@ -66,6 +67,16 @@ export default function Home({
           </Card.Body>
         </Card>
       )}
+      {session && (session.user.firstName || statefulSession) && !loading && groupId && groupId !== '' && (
+        <GroupJoinCard
+          alerts={alerts}
+          setAlerts={setAlerts}
+          pageFrom="dashboard"
+          groupId={groupId}
+          session={session}
+          token={groupToken}
+        />
+      )}
       {session && (session.user.firstName || statefulSession) && !loading && (
         <Row>
           <Col>
@@ -89,30 +100,6 @@ export default function Home({
             />
           </Col>
         </Row>
-      )}
-      {session && !loading && groupId && groupId !== '' && (
-        <Card style={{ width: '33%', marginLeft: '33%' }} className="text-center">
-          <Card.Header>Join Group</Card.Header>
-          <Card.Body>
-            You have been invited to join a group.
-            <br />
-            <Button
-              className="mt-3"
-              onClick={() => {
-                destroyCookie(null, 'ans_grouptoken', {
-                  path: '/',
-                });
-                addUserToGroup({ id: groupId }, session.user.email).then(() => {
-                  setAlerts([...alerts, { text: 'Group successfully joined', variant: 'success' }]);
-                }).catch((err) => {
-                  setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
-                });
-              }}
-            >
-              Join Group
-            </Button>
-          </Card.Body>
-        </Card>
       )}
     </Layout>
   );
@@ -146,17 +133,22 @@ Home.getInitialProps = async (context) => {
       const result = await res.json();
       groupId = result.group;
     }
-  } else if (query.alert === 'joinedGroup') {
+  }
+  if (query.alert === 'joinedGroup') {
     initAlerts = [{
       text: 'Group successfully joined.',
       variant: 'success',
     }];
+    destroyCookie(context, 'ans_grouptoken', {
+      path: '/',
+    });
   }
   const returnObj = {
     query,
     groupId,
     initAlerts,
     statefulSession,
+    groupToken: cookies.ans_grouptoken,
   };
   return returnObj;
 };
