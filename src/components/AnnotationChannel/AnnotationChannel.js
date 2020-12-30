@@ -4,11 +4,7 @@ import { useEffect, useContext } from 'react';
 import $ from 'jquery';
 
 import {
-  Row,
   Col,
-  Card,
-  ButtonGroup,
-  Button,
 } from 'react-bootstrap';
 
 import { DocumentAnnotationsContext, DocumentFiltersContext } from '../../contexts/DocumentContext';
@@ -91,7 +87,7 @@ function PlaceAnnotationsInCorrectSpot(annotations, side) {
 }
 
 const AnnotationChannel = ({
-  side, setAnnotationChannelLoaded, user, deleteAnnotationFromChannels, focusOnAnnotation, showMoreInfoShareModal, setShowMoreInfoShareModal, membersIntersection,
+  side, setAnnotationChannelLoaded, user, deleteAnnotationFromChannels, focusOnAnnotation, showMoreInfoShareModal, setShowMoreInfoShareModal, membersIntersection, show,
 }) => {
   const [channelAnnotations] = useContext(DocumentAnnotationsContext);
   const [documentFilters, setDocumentFilters] = useContext(DocumentFiltersContext);
@@ -108,7 +104,10 @@ const AnnotationChannel = ({
   useEffect(() => {
     if (channelAnnotations[side] !== null) {
       // after the channel renders we need to take these annotations and place them in their correct spot
-      PlaceAnnotationsInCorrectSpot(sortedAnnotations, side);
+      if(show){
+        PlaceAnnotationsInCorrectSpot(sortedAnnotations, side);
+      }
+      
       // once everything is placed in the correct spot we need to make sure the correct text has the
       // highlights it needs and remove highlights from text that doesn't need it
       let displayTextHighlighted;
@@ -127,7 +126,8 @@ const AnnotationChannel = ({
     }
   });
 
-  return (
+  return show && (
+  <Col className="annotation-channel-container">
     <div id={`annotation-channel-${side}`}>
       <div>
         {sortedAnnotations.map((annotation) => (
@@ -151,14 +151,8 @@ const AnnotationChannel = ({
         `}
       </style>
     </div>
+  </Col>
   );
 };
-
-function shouldNotRender(prevProps, nextProps) {
-  return false;
-  return nextProps.loaded; // if the channel has already loaded then it shouldn't rerender
-}
-
-// const MemoAnnotationChannel = React.memo(AnnotationChannel, shouldNotRender);
 
 export default AnnotationChannel;

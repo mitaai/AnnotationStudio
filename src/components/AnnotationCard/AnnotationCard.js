@@ -397,7 +397,7 @@ function AnnotationCard({
         onClick={() => { setUpdateFocusOfAnnotation(true); }}
         onMouseOver={() => { setHovered(true); }}
         onMouseOut={() => { setHovered(); }}
-        className={`annotation-card-container ${annotationData.new ? 'new-annotation' : ''} ${expanded ? 'expanded' : ''} ${expanded || hovered || activeAnnotations.includes(annotationData._id) ? 'active' : ''} ${annotationData.editing ? 'editing' : ''}`}
+        className={`annotation-card-container ${annotationData.new ? 'new-annotation' : ''} ${expanded ? 'expanded' : ''} ${expanded || hovered || activeAnnotations.annotations.includes(annotationData._id) ? 'active' : ''} ${annotationData.editing ? 'editing' : ''}`}
         style={side === 'left' ? { left: '50px' } : { right: '50px' }}
       >
         <div className="line1" />

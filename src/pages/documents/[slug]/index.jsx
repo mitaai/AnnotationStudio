@@ -29,6 +29,7 @@ import {
 } from '../../../contexts/DocumentContext';
 import { getGroupById } from '../../../utils/groupUtil';
 import { FirstNameLastInitial } from '../../../utils/nameUtil';
+import AnnotationsOverlay from '../../../components/AnnotationsOverlay';
 
 
 const adjustLine = (from, to, line) => {
@@ -97,7 +98,7 @@ const DocumentPage = (props) => {
 
   const [alerts, setAlerts] = useState(initAlerts || []);
   const [documentHighlightedAndLoaded, setDocumentHighlightedAndLoaded] = useState(false);
-  const [activeAnnotations, setActiveAnnotations] = useState([]);
+  const [activeAnnotations, setActiveAnnotations] = useState({ annotations: [], target: null });
   const [channelAnnotations, setChannelAnnotations] = useState({ left: null, right: null });
   const [documentFilters, setDocumentFilters] = useState({
     filterOnInit: true,
@@ -126,18 +127,18 @@ const DocumentPage = (props) => {
   // other users this user can share annotations with, generated from groupIntersection
   const [membersIntersection, setMembersIntersection] = useState([]);
 
-  function addActiveAnnotation(annoId) {
-    if (!activeAnnotations.includes(annoId)) {
-      const newActiveAnnotations = activeAnnotations.slice();
+  function addActiveAnnotation(annoId, target) {
+    if (!activeAnnotations.annotations.includes(annoId)) {
+      const newActiveAnnotations = activeAnnotations.annotations.slice();
       newActiveAnnotations.push(annoId);
-      setActiveAnnotations(newActiveAnnotations);
+      setActiveAnnotations({ target, annotations: newActiveAnnotations });
     }
   }
 
   function removeActiveAnnotation(annoId) {
-    if (activeAnnotations.includes(annoId)) {
-      const newActiveAnnotations = activeAnnotations.slice();
-      setActiveAnnotations(newActiveAnnotations.filter((aid) => aid !== annoId));
+    if (activeAnnotations.annotations.includes(annoId)) {
+      const newActiveAnnotations = activeAnnotations.annotations.slice();
+      setActiveAnnotations({ target: null, annotations: newActiveAnnotations.filter((aid) => aid !== annoId) });
     }
   }
 
@@ -465,28 +466,27 @@ const DocumentPage = (props) => {
               <HeatMap pdf={document.uploadContentType && document.uploadContentType.includes('pdf')} />
               {document && (
               <>
+                {!displayAnnotationsInChannels && <AnnotationsOverlay />}
                 <Row id="document-container">
-
-                  <Col className="annotation-channel-container">
-                    <AnnotationChannel
-                      deleteAnnotationFromChannels={deleteAnnotationFromChannels}
-                      setAnnotationChannelLoaded={setAnnotationChannel1Loaded}
-                      focusOnAnnotation={moveAnnotationsToCorrectSpotBasedOnFocus}
-                      side="left"
-                      annotations={channelAnnotations.left}
-                      user={session ? session.user : undefined}
-                      showMoreInfoShareModal={showMoreInfoShareModal}
-                      setShowMoreInfoShareModal={setShowMoreInfoShareModal}
-                      membersIntersection={membersIntersection}
-                    />
-                  </Col>
-
+                  <AnnotationChannel
+                    show={displayAnnotationsInChannels}
+                    deleteAnnotationFromChannels={deleteAnnotationFromChannels}
+                    setAnnotationChannelLoaded={setAnnotationChannel1Loaded}
+                    focusOnAnnotation={moveAnnotationsToCorrectSpotBasedOnFocus}
+                    side="left"
+                    annotations={channelAnnotations.left}
+                    user={session ? session.user : undefined}
+                    showMoreInfoShareModal={showMoreInfoShareModal}
+                    setShowMoreInfoShareModal={setShowMoreInfoShareModal}
+                    membersIntersection={membersIntersection}
+                  />
                   <Col style={{ minWidth: 750, maxWidth: 750 }}>
                     <Card id="document-card-container">
                       <Card.Body>
                         <Document
                           addActiveAnnotation={addActiveAnnotation}
                           removeActiveAnnotation={removeActiveAnnotation}
+                          displayAnnotationsInChannels={displayAnnotationsInChannels}
                           setChannelAnnotations={
                             (annos) => {
                               setChannelAnnotations(annos);
@@ -509,20 +509,18 @@ const DocumentPage = (props) => {
                       </Card.Body>
                     </Card>
                   </Col>
-
-                  <Col className="annotation-channel-container">
-                    <AnnotationChannel
-                      deleteAnnotationFromChannels={deleteAnnotationFromChannels}
-                      setAnnotationChannelLoaded={setAnnotationChannel2Loaded}
-                      focusOnAnnotation={moveAnnotationsToCorrectSpotBasedOnFocus}
-                      side="right"
-                      annotations={channelAnnotations.right}
-                      user={session ? session.user : undefined}
-                      showMoreInfoShareModal={showMoreInfoShareModal}
-                      setShowMoreInfoShareModal={setShowMoreInfoShareModal}
-                      membersIntersection={membersIntersection}
-                    />
-                  </Col>
+                  <AnnotationChannel
+                    show={displayAnnotationsInChannels}
+                    deleteAnnotationFromChannels={deleteAnnotationFromChannels}
+                    setAnnotationChannelLoaded={setAnnotationChannel2Loaded}
+                    focusOnAnnotation={moveAnnotationsToCorrectSpotBasedOnFocus}
+                    side="right"
+                    annotations={channelAnnotations.right}
+                    user={session ? session.user : undefined}
+                    showMoreInfoShareModal={showMoreInfoShareModal}
+                    setShowMoreInfoShareModal={setShowMoreInfoShareModal}
+                    membersIntersection={membersIntersection}
+                  />
                 </Row>
                 <Modal
                   show={!(annotationChannel1Loaded && annotationChannel2Loaded)}

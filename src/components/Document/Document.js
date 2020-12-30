@@ -106,7 +106,7 @@ const RID = () => {
 
 
 export default function Document({
-  alerts, setAlerts, annotations, setChannelAnnotations, addActiveAnnotation, removeActiveAnnotation, user, addAnnotationToChannels, documentToAnnotate, annotateDocument,
+  alerts, setAlerts, annotations, setChannelAnnotations, addActiveAnnotation, removeActiveAnnotation, user, addAnnotationToChannels, documentToAnnotate, annotateDocument, displayAnnotationsInChannels,
 }) {
   const myRef = useRef();
   const [target, setTarget] = useState(null);
@@ -119,7 +119,7 @@ export default function Document({
   const addHoverEventListenersToAllHighlightedText = () => {
     $('.annotation-highlighted-text').on('mouseover', (e) => {
       const annoId = $(e.target).attr('annotation-id');
-      addActiveAnnotation(annoId);
+      addActiveAnnotation(annoId, $(e.target).get(0));
       // highlighting all every piece of the annotation a different color by setting it to active
       $(`.annotation-highlighted-text[annotation-id='${annoId}']`).addClass('active');
     }).on('mouseout', (e) => {
@@ -129,9 +129,13 @@ export default function Document({
         removeActiveAnnotation(annoId);
       }
     }).on('click', (e) => {
+      const aid = $(e.target).attr('annotation-id');
       if ($(e.target).hasClass('active')) {
-        const aid = $(e.target).attr('annotation-id');
         $(`#${aid} .annotation-header`).trigger('click');
+      }
+      // if the display mode is for mobile then when the user clicks on an annotation it should add the annotation to the activeAnnotations state
+      if (!displayAnnotationsInChannels) {
+        addActiveAnnotation(aid, $(e.target).get(0));
       }
     });
   };
