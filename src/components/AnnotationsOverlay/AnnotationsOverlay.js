@@ -1,5 +1,4 @@
 import { useContext, useEffect } from 'react';
-import $ from 'jquery';
 import {
   Popover,
   Overlay,
@@ -15,8 +14,12 @@ export default function AnnotationsOverlay() {
         setActiveAnnotations({ annotations: [], target: null });
       }
     };
-    // adding a click event listener to document so if the document is clicked we can check if where it was click there is an annotation and if not then we hide the Overlay
+    // adding a click event listener to document so if
+    // the document is clicked we can check if where it
+    // was click there is an annotation and if not then we hide the Overlay
+    // eslint-disable-next-line no-undef
     document.addEventListener('click', handleDocumentClick);
+    // eslint-disable-next-line no-undef
     return () => document.removeEventListener('click', handleDocumentClick);
   });
   return (
