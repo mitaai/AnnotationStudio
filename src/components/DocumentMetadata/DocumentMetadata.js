@@ -86,7 +86,7 @@ const DocumentMetadata = ({
                       type="button"
                       size="sm"
                       variant="link"
-                      onClick={() => arrayHelpers.push('')}
+                      onClick={() => arrayHelpers.push({ type: 'Author', name: '' })}
                     >
                       + Add a contributor
                     </Button>
