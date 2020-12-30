@@ -4,23 +4,22 @@
 import React, { useState, useContext, useEffect } from 'react';
 import $ from 'jquery';
 import {
-  Nav,
   Row,
   Col,
-  Navbar,
-  Breadcrumb,
-  Container,
   Button,
   OverlayTrigger,
   Popover,
   Form,
   Card,
   ButtonGroup,
-  Badge,
-  Spinner,
 } from 'react-bootstrap';
 
-import { Filter, FileEarmarkLock2, FileEarmarkPerson, FileEarmarkFill } from 'react-bootstrap-icons';
+import {
+  Filter,
+  PeopleFill,
+  PersonFill,
+  PersonPlusFill,
+} from 'react-bootstrap-icons';
 
 import {
   Typeahead, Menu, MenuItem, Token,
@@ -235,21 +234,21 @@ function FilterPopover({ session }) {
           variant={documentFilters.filters.permissions === 0 ? 'primary' : 'outline-primary'}
           onClick={() => { updateFilters('permissions', 0); }}
         >
-          <FileEarmarkLock2 size="1.2em" />
+          <PersonFill size="1.2em" />
           <div className="mine">Mine</div>
         </Button>
         <Button
           variant={documentFilters.filters.permissions === 1 ? 'primary' : 'outline-primary'}
           onClick={() => { updateFilters('permissions', 1); }}
         >
-          <FileEarmarkFill size="1.2em" />
+          <PeopleFill size="1.2em" />
           <div className="shared-with-groups">Shared with group(s)</div>
         </Button>
         <Button
           variant={documentFilters.filters.permissions === 2 ? 'primary' : 'outline-primary'}
           onClick={() => { updateFilters('permissions', 2); }}
         >
-          <FileEarmarkPerson size="1.2em" />
+          <PersonPlusFill size="1.2em" />
           <div className="shared-with-me">Shared with me</div>
         </Button>
       </ButtonGroup>
@@ -315,7 +314,7 @@ function FilterPopover({ session }) {
                           }}
                           onInputChange={() => { setByTagsTypeheadMarginBottom($('#typehead-by-tags').height() + 20); }}
                           options={filterOptions.byTags}
-                          placeholder="Select on or more tag(s)"
+                          placeholder="Select one or more tag(s)"
                         />
                       </Form.Group>
                     </Col>
@@ -369,17 +368,20 @@ function FilterPopover({ session }) {
         }
 
         .permissions-buttons .btn.btn-primary div.mine {
-          width: 60px;
+          margin-left: 10px;
+          width: 40px;
           opacity: 1;
         }
 
         .permissions-buttons .btn.btn-primary div.shared-with-groups {
-          width: 160px;
+          width: 145px;
+          margin-left:10px;
           opacity: 1;
         }
 
         .permissions-buttons .btn.btn-primary div.shared-with-me {
-          width: 130px;
+          width: 115px;
+          margin-left: 10px;
           opacity: 1;
         }
         

@@ -1,34 +1,29 @@
+/* eslint-disable no-underscore-dangle */
 import { useEffect, useState, useContext } from 'react';
 import $ from 'jquery';
 import moment from 'moment';
 import {
-  Row,
-  Col,
   Card,
   Form,
   Button,
   Badge,
   Dropdown,
   ListGroup,
-  Spinner,
   OverlayTrigger,
   Tooltip,
-  ButtonGroup,
-  Popover,
-  Modal,
-  InputGroup,
   DropdownButton,
-  FormControl,
 } from 'react-bootstrap';
-
 import {
-  CheckCircleFill, TrashFill, QuestionCircle,
+  TrashFill,
+  QuestionCircle,
+  PeopleFill,
+  PersonFill,
+  PersonPlusFill,
 } from 'react-bootstrap-icons';
 import {
   Typeahead, Menu, MenuItem, Token,
 } from 'react-bootstrap-typeahead';
 import { postAnnotation, updateAnnotationById, deleteAnnotationById } from '../../utils/annotationUtil';
-
 import { DocumentAnnotationsContext, DocumentFiltersContext, DocumentActiveAnnotationsContext } from '../../contexts/DocumentContext';
 import { FirstNameLastInitial } from '../../utils/nameUtil';
 
@@ -49,48 +44,6 @@ function addHoverEventListenersToAllHighlightedText() {
 function DeepCopyObj(obj) {
   return JSON.parse(JSON.stringify(obj));
 }
-
-
-/*
-
-"annotation data structure"
-
-{
-  "id": <String> (valid ObjectID),
-  "type": "Annotation",
-  "creator": {
-    "name": <String>,
-    "email": <String> (valid email)
-  },
-  "permissions": {
-    "groups": Array<String> (valid ObjectID)> or undefined,
-    "sharedTo": Array<String> (valid ObjectID)> or undefined,
-  }
-  "created": <Date>,
-  "modified": <Date>,
-  "body": {
-    "type": "TextualBody",
-    "value": <String> (valid HTML),
-    "tags": Array<String>,
-    "format": "text/html",
-    "language": <String> (valid W3C language tag)
-  },
-  "target": {
-    "document": {
-      "slug": <String> (valid slug),
-      "format": "text/html",
-      ...metadata
-    },
-    "selector": {
-      "type": "TextQuoteSelector",
-      "exact": <String>,
-      "prefix": <String>,
-      "suffix": <String>,
-    }
-  }
-}
-*/
-
 
 function AnnotationCard({
   side,
@@ -121,7 +74,31 @@ function AnnotationCard({
     selectedUsersToShare = annotationData.permissions.sharedTo === undefined ? [] : annotationData.permissions.sharedTo.map((id) => membersIntersection.find((m) => m.id === id)).filter((v) => v !== undefined);
   }
 
-  const permissionText = ['Private', 'Shared with group(s)', selectedUsersToShare.length === 1 ? 'Shared with 1 user' : `Shared with ${selectedUsersToShare.length} users`];
+  const permissionText = [
+    (
+      <>
+        <PersonFill />
+        {' '}
+        Private
+      </>
+    ),
+    (
+      <>
+        <PeopleFill />
+        {' '}
+        Shared with group(s)
+      </>
+    ),
+    (
+      <>
+        <PersonPlusFill />
+        {' '}
+        {selectedUsersToShare.length === 1
+          ? 'Shared with 1 user'
+          : `Shared with ${selectedUsersToShare.length} users`}
+      </>
+    ),
+  ];
 
   function AddClassActive(id) {
     // changing color of highlighted text
@@ -456,9 +433,27 @@ function AnnotationCard({
                       <ListGroup.Item className="annotation-permissions">
                         <div id="dropdown-permission-options-container">
                           <DropdownButton drop="down" variant="outline-primary" id="dropdown-permission-options" title={permissionText[showPermissionNumber()]} disabled={savingAnnotation}>
-                            <Dropdown.Item onClick={() => { handleAnnotationPermissionsChange(0); }}>Private</Dropdown.Item>
-                            <Dropdown.Item onClick={() => { handleAnnotationPermissionsChange(1); }}>Share with group(s)</Dropdown.Item>
-                            <Dropdown.Item onClick={() => { handleAnnotationPermissionsChange(2); }}>Share with user(s)</Dropdown.Item>
+                            <Dropdown.Item
+                              onClick={() => { handleAnnotationPermissionsChange(0); }}
+                            >
+                              <PersonFill />
+                              {' '}
+                              Private
+                            </Dropdown.Item>
+                            <Dropdown.Item
+                              onClick={() => { handleAnnotationPermissionsChange(1); }}
+                            >
+                              <PeopleFill />
+                              {' '}
+                              Share with group(s)
+                            </Dropdown.Item>
+                            <Dropdown.Item
+                              onClick={() => { handleAnnotationPermissionsChange(2); }}
+                            >
+                              <PersonPlusFill />
+                              {' '}
+                              Share with user(s)
+                            </Dropdown.Item>
                           </DropdownButton>
                         </div>
                         <QuestionCircle style={{ fontSize: 14, color: '#007bff', marginLeft: 4 }} onClick={() => { setShowMoreInfoShareModal(true); }} />
