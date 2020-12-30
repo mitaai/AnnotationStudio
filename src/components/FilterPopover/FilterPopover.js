@@ -280,11 +280,14 @@ function FilterPopover({ session }) {
           <Popover id="filter-popover">
             <Popover.Content>
               <Card>
+                <Card.Header>
+                  <Card.Title>Filter Annotations</Card.Title>
+                </Card.Header>
                 <Card.Body>
                   <Row>
                     <Col>
                       <Form.Group style={{ marginTop: '0px' }}>
-                        <Form.Label>Annotated By</Form.Label>
+                        <Form.Label>By User</Form.Label>
                         <Typeahead
                           id="typehead-annotated-by"
                           labelKey="name"
@@ -294,7 +297,12 @@ function FilterPopover({ session }) {
                           clearButton
                           highlightOnlyResult
                           disabled={documentFilters.filters.permissions === 0}
-                          selected={UpdateSelectedTokensMatchesValue('annotatedBy', DeepCopyObj(documentFilters.filters.annotatedBy))}
+                          selected={
+                            UpdateSelectedTokensMatchesValue(
+                              'annotatedBy',
+                              DeepCopyObj(documentFilters.filters.annotatedBy),
+                            )
+                          }
                           onChange={(selected) => { updateFilters('annotatedBy', selected); }}
                           onMenuToggle={(isOpen) => {
                             if (isOpen) {
