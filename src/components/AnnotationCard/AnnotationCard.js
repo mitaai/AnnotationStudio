@@ -23,8 +23,16 @@ import {
 import {
   Typeahead, Menu, MenuItem, Token,
 } from 'react-bootstrap-typeahead';
-import { postAnnotation, updateAnnotationById, deleteAnnotationById } from '../../utils/annotationUtil';
-import { DocumentAnnotationsContext, DocumentFiltersContext, DocumentActiveAnnotationsContext } from '../../contexts/DocumentContext';
+import {
+  postAnnotation,
+  updateAnnotationById,
+  deleteAnnotationById,
+} from '../../utils/annotationUtil';
+import {
+  DocumentAnnotationsContext,
+  DocumentFiltersContext,
+  DocumentActiveAnnotationsContext,
+} from '../../contexts/DocumentContext';
 import { FirstNameLastInitial } from '../../utils/nameUtil';
 
 function addHoverEventListenersToAllHighlightedText() {
@@ -51,9 +59,10 @@ function AnnotationCard({
   focusOnAnnotation,
   deleteAnnotationFromChannels,
   user,
-  showMoreInfoShareModal,
   setShowMoreInfoShareModal,
   membersIntersection,
+  alerts,
+  setAlerts,
 }) {
   const [activeAnnotations] = useContext(DocumentActiveAnnotationsContext);
   const [, , saveAnnotationChanges, allAnnotationTags] = useContext(DocumentAnnotationsContext);
@@ -71,7 +80,11 @@ function AnnotationCard({
   const [newSelectedUsersToShare, setNewSelectedUsersToShare] = useState(null);
   let selectedUsersToShare = newSelectedUsersToShare;
   if (selectedUsersToShare === null) {
-    selectedUsersToShare = annotationData.permissions.sharedTo === undefined ? [] : annotationData.permissions.sharedTo.map((id) => membersIntersection.find((m) => m.id === id)).filter((v) => v !== undefined);
+    selectedUsersToShare = annotationData.permissions.sharedTo === undefined
+      ? []
+      : annotationData.permissions.sharedTo
+        .map((id) => membersIntersection.find((m) => m.id === id))
+        .filter((v) => v !== undefined);
   }
 
   const permissionText = [
@@ -120,10 +133,12 @@ function AnnotationCard({
   }
 
   function SaveAnnotation() {
-    if (savingAnnotation || cancelingAnnotation) { return; }// if we are already saving the annotation then don't try to run the function again
+    if (savingAnnotation || cancelingAnnotation) {
+      return;
+    }
     setSavingAnnotation(true);
 
-    // we need to reassign values to the annotationData
+    // reassign values to the annotationData
     const newAnnotationData = JSON.parse(JSON.stringify(annotationData));
     if (newAnnotationTags !== null) {
       newAnnotationData.body.tags = newAnnotationTags.map((t) => {
@@ -138,7 +153,7 @@ function AnnotationCard({
         newAnnotationData.permissions.sharedTo = undefined;
       } else if (newAnnotationPermissions === 1) {
         // user wants the annotation to be shared with groups
-        // getting the intersection between the groups that have access to this specific document and the groups that the user is in
+        // groups intersection
         newAnnotationData.permissions.groups = user.groups
           .filter(({ id }) => (newAnnotationData.target.document.groups.includes(id)))
           .map(({ id }) => id);
@@ -161,69 +176,80 @@ function AnnotationCard({
         body: newAnnotationData.body,
         target: newAnnotationData.target,
       }).then((response) => {
-        newAnnotationData.db_id = response.insertedId;// the new annotation already has an id but this id relates to the
+        newAnnotationData.db_id = response.insertedId;
         newAnnotationData.modified = new Date();
         newAnnotationData.new = false;
         newAnnotationData.editing = false;
-        $($(`#document-content-container span[annotation-id='${newAnnotationData._id}']`).get(-1)).prepend("<span class='annotation-ending-marker'></span>");
+        $($(`#document-content-container span[annotation-id='${newAnnotationData._id}']`).get(-1))
+          .prepend("<span class='annotation-ending-marker'></span>");
         const annotationEnding = $(`#document-content-container span[annotation-id='${annotation._id}'] .annotation-ending-marker`);
-        newAnnotationData.position.height = (annotationEnding.offset().top - newAnnotationData.position.top) + 18;
+        newAnnotationData.position.height = (
+          annotationEnding.offset().top - newAnnotationData.position.top
+        ) + 18;
         setSavingAnnotation(false);
         // after setting the annotation data we need to reset the "new" data back to null
         setNewAnnotationTags(null);
         setNewAnnotationPermissions(null);
         setNewAnnotationText(null);
         setNewSelectedUsersToShare(null);
-        // after we have saved the annotation the highlighted text needs to change its class from  "text-currently-being-annotated active" to "annotation-highlighted-text"
+        // after saved annotation, highlighted text needs to change its class
         $('.text-currently-being-annotated.active').addClass('annotation-highlighted-text');
         $('.text-currently-being-annotated.active').removeClass('text-currently-being-annotated active');
         addHoverEventListenersToAllHighlightedText();
-        // we need to save this new data to the "#document-container" dom element attribute 'annotations'
-        // we also need to make the document selectable again
+        // save this new data to the "#document-container" dom element attribute 'annotations'
+        // and make the document selectable again
         $('#document-content-container').removeClass('unselectable');
-        // once the new annotation data saves properly on the database then we can update the annotation data
+        // once the new annotation data saves properly on the database,
+        // update the annotation data
         SetAndSaveAnnotationData(newAnnotationData);
-        // then after everything is done we will focus on the annotation so that things get shifted to their correct spots
+        // focus annotation so that things get shifted to their correct spots
         focusOnAnnotation();
       }).catch((err) => {
-        console.log(err);
+        setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
         setSavingAnnotation(false);
       });
     } else {
       updateAnnotationById(
         newAnnotationData.db_id === undefined ? newAnnotationData._id : newAnnotationData.db_id,
         newAnnotationData,
-      ).then((response) => {
+      ).then(() => {
         newAnnotationData.modified = new Date();
         newAnnotationData.editing = false;
         newAnnotationData.new = false;
         setSavingAnnotation(false);
-        // once the new annotation data saves properly on the database then we can update the annotation data
+        // once the new annotation data saves properly
+        // on the database then we can update the annotation data
         SetAndSaveAnnotationData(newAnnotationData);
 
-        // after setting the annotation data we need to reset the "new" data back to null
+        // after setting the annotation data we need
+        // to reset the "new" data back to null
         setNewAnnotationTags(null);
         setNewAnnotationPermissions(null);
         setNewAnnotationText(null);
         setNewSelectedUsersToShare(null);
-        // then after everything is done we will focus on the annotation so that things get shifted to their correct spots
+        // then after everything is done we will focus
+        // on the annotation so that things get shifted to their correct spots
         focusOnAnnotation();
       }).catch((err) => {
-        console.log(err);
+        setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
         setSavingAnnotation(false);
       });
     }
   }
 
   function CancelAnnotation() {
-    if (cancelingAnnotation || savingAnnotation) { return; }// if we are already canceling the annotation then don't try to run the function again
+    if (cancelingAnnotation || savingAnnotation) {
+      return;
+    }
 
     if (annotationData.new) {
       setCancelingAnnotation(true);
-      // simulating the time it takes to delete the annotation from the database and make sure the connection is secure and worked properly
+      // simulating the time it takes to delete the annotation
+      // from the database and make sure the connection is secure and worked properly
       setTimeout(() => {
         // if it is a new annotation then cancel should delete the annotation
-        // after we remove the annotation we need to remove the classes from the text that was highlighted and then make the document selectable again
+        // after we remove the annotation we need to remove the classes from
+        // the text that was highlighted and then make the document selectable again
         $('.text-currently-being-annotated.active').removeClass('text-currently-being-annotated active');
         // we also need to make the document selectable again
         $('#document-content-container').removeClass('unselectable');
@@ -234,7 +260,8 @@ function AnnotationCard({
       setNewAnnotationTags(null);
       setNewAnnotationPermissions(null);
       setNewAnnotationText(null);
-      // if the annotation is not new then canceling should just return it to its previous state
+      // if the annotation is not new then canceling
+      // should just return it to its previous state
       annotationData.editing = false;
       SetAndSaveAnnotationData(annotationData);
       setUpdateFocusOfAnnotation(true);
@@ -242,17 +269,20 @@ function AnnotationCard({
   }
 
   function DeleteAnnotation() {
-    if (deletingAnnotation || savingAnnotation) { return; }// if we are already canceling the annotation then don't try to run the function again
+    if (deletingAnnotation || savingAnnotation) { return; }
     setDeletingAnnotation(true);
-    deleteAnnotationById(annotationData.db_id === undefined ? annotationData._id : annotationData.db_id).then((response) => {
-      // now that it is removed from the data base we will first remove any highlighted text related to the annotation remove it from the object that is keeping track of all the annotations
-      $(`[annotation-id='${annotationData._id}']`).removeClass('annotation-highlighted-text');
-      // we need to delete this annotation from the channel it is in
-      deleteAnnotationFromChannels(side, annotationData._id);
-    }).catch((err) => {
-      console.log(err);
-      setDeletingAnnotation(false);
-    });
+    deleteAnnotationById(annotationData.db_id === undefined
+      ? annotationData._id : annotationData.db_id)
+      .then(() => {
+        // now that it is removed from db, remove any highlighted text related to the annotation
+        // to remove it from the object that is keeping track of all the annotations
+        $(`[annotation-id='${annotationData._id}']`).removeClass('annotation-highlighted-text');
+        // we need to delete this annotation from the channel it is in
+        deleteAnnotationFromChannels(side, annotationData._id);
+      }).catch((err) => {
+        setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+        setDeletingAnnotation(false);
+      });
   }
 
   const renderToken = (option, { onRemove }, index) => {
@@ -277,7 +307,8 @@ function AnnotationCard({
       if (typeof (r) === 'object') {
         return {
           ...r,
-          alreadyExists: newAnnotationTags !== null && newAnnotationTags.some((t) => r.tags === (typeof t === 'object' ? t.tags : t)),
+          alreadyExists: newAnnotationTags !== null
+            && newAnnotationTags.some((t) => r.tags === (typeof t === 'object' ? t.tags : t)),
         };
       }
       return r;
@@ -285,6 +316,7 @@ function AnnotationCard({
 
     return (
       <Menu
+        // eslint-disable-next-line react/jsx-props-no-spreading
         {...menuProps}
       >
         {res.map((result, index) => {
@@ -295,7 +327,11 @@ function AnnotationCard({
             </>
           ) : <div className="tag-name">{result}</div>;
           return (
-            <MenuItem option={result} key={index} position={index}>
+            <MenuItem
+              option={result}
+              key={typeof (result) === 'object' ? result.tags : result}
+              position={index}
+            >
               {tagDiv}
             </MenuItem>
           );
@@ -317,10 +353,11 @@ function AnnotationCard({
 
   const renderUserShareMenu = (results, menuProps) => (
     <Menu
+      // eslint-disable-next-line react/jsx-props-no-spreading
       {...menuProps}
     >
       {results.map((result, index) => (
-        <MenuItem option={result} key={index} position={index}>
+        <MenuItem option={result} key={result.email} position={index}>
           <div className="user-share-name">{result.name}</div>
           <div className="user-share-email">{result.email}</div>
         </MenuItem>
@@ -420,13 +457,19 @@ function AnnotationCard({
                           labelKey="tags"
                           placeholder="tags"
                           multiple
-                          selected={newAnnotationTags === null ? annotationData.body.tags : newAnnotationTags}
+                          selected={
+                            newAnnotationTags === null
+                              ? annotationData.body.tags
+                              : newAnnotationTags
+                          }
                           options={allAnnotationTags}
                           renderToken={renderToken}
                           renderMenu={renderMenu}
                           allowNew
                           onChange={(selected) => {
-                            setNewAnnotationTags(selected.filter((s) => (typeof (s) !== 'object' || !s.alreadyExists)));
+                            setNewAnnotationTags(
+                              selected.filter((s) => (typeof (s) !== 'object' || !s.alreadyExists)),
+                            );
                           }}
                         />
                       </ListGroup.Item>
@@ -502,9 +545,9 @@ function AnnotationCard({
                     {annotationData.body.tags.length > 0 ? (
                       <>
                         <ListGroup.Item className="annotation-tags">
-                          {annotationData.body.tags.map((tag, index) => {
+                          {annotationData.body.tags.map((tag) => {
                             if (tag === '') { return ''; }
-                            return <Badge key={index} variant="secondary">{tag}</Badge>;
+                            return <Badge key={tag} variant="secondary">{tag}</Badge>;
                           })}
                         </ListGroup.Item>
                       </>
@@ -535,7 +578,9 @@ function AnnotationCard({
                     </Button>
                   )}
 
-                  {newAnnotationTags !== null || newAnnotationPermissions !== null || newAnnotationText !== null
+                  {newAnnotationTags !== null
+                  || newAnnotationPermissions !== null
+                  || newAnnotationText !== null
                     ? (
                       <Button size="sm" className="btn-save-annotation-edits float-right" variant="primary" onClick={SaveAnnotation}>
                         Save

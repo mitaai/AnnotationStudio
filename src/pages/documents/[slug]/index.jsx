@@ -479,6 +479,8 @@ const DocumentPage = (props) => {
                     showMoreInfoShareModal={showMoreInfoShareModal}
                     setShowMoreInfoShareModal={setShowMoreInfoShareModal}
                     membersIntersection={membersIntersection}
+                    alerts={alerts}
+                    setAlerts={setAlerts}
                   />
                   <Col style={{ minWidth: 750, maxWidth: 750 }}>
                     <Card id="document-card-container">
@@ -520,6 +522,8 @@ const DocumentPage = (props) => {
                     showMoreInfoShareModal={showMoreInfoShareModal}
                     setShowMoreInfoShareModal={setShowMoreInfoShareModal}
                     membersIntersection={membersIntersection}
+                    alerts={alerts}
+                    setAlerts={setAlerts}
                   />
                 </Row>
                 <Modal
