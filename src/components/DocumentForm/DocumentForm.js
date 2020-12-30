@@ -545,6 +545,11 @@ const DocumentForm = ({
                     onBlur={props.handleBlur}
                     disableDraft={data && data.state !== 'draft'}
                   />
+                  <small className="text-muted">
+                    * Only documents created using &ldquo;Paste or
+                    type directly into the form&rdquo;
+                    can be edited, even in Draft mode.
+                  </small>
                 </Card.Body>
               </Card>
               <Row className="mt-3">
