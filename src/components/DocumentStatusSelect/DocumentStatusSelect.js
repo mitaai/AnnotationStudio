@@ -143,7 +143,14 @@ const DocumentStatusSelect = ({
               Me
             </td>
             <td><GreenCheck /></td>
-            <td>{(values.state === 'draft') ? (<GreenCheck />) : (<RedX />)}</td>
+            <td>
+              {(values.state === 'draft') ? (
+                <>
+                  <GreenCheck />
+                  *
+                </>
+              ) : (<RedX />)}
+            </td>
             <td>{(values.state === 'published') ? (<GreenCheck />) : (<RedX />)}</td>
           </tr>
           {!(values.groups.length === 1 && values.groups[0] === '') && (

@@ -280,12 +280,19 @@ const DocumentForm = ({
     ? useState(deserializeHTMLToDocument({ plugins, element: txtHtml.body }))
     : useState(slateInitialValue);
 
-  const getInitialValues = (mode === 'edit' && data && (!data.uploadContentType || data.uploadContentType === ''))
-    ? {
-      ...data,
-      textSlate: deserializeHTMLToDocument({ plugins, element: txtHtml.body }),
+  let initialValues = {};
+
+  if (mode === 'edit' && data) {
+    if (!data.uploadContentType || data.uploadContentType === '') {
+      initialValues = {
+        ...data,
+        textSlate: deserializeHTMLToDocument({ plugins, element: txtHtml.body }),
+      };
+    } else {
+      initialValues = data;
     }
-    : {
+  } else {
+    initialValues = {
       textSlate: slateInitialValue,
       resourceType: 'Book',
       rightsStatus: 'Copyrighted',
@@ -294,6 +301,7 @@ const DocumentForm = ({
       groups: [],
       state: 'draft',
     };
+  }
 
   const schema = yup.object({
     title: yup.string().required('Required'),
@@ -337,7 +345,7 @@ const DocumentForm = ({
         }, 1000);
       }}
       validationSchema={schema}
-      initialValues={getInitialValues}
+      initialValues={initialValues}
       enableReinitialize
     >
       {(props) => (
@@ -545,6 +553,11 @@ const DocumentForm = ({
                     onBlur={props.handleBlur}
                     disableDraft={data && data.state !== 'draft'}
                   />
+                  <small className="text-muted">
+                    * Only documents created using &ldquo;Paste or
+                    type directly into the form&rdquo;
+                    can be edited, even in Draft mode.
+                  </small>
                 </Card.Body>
               </Card>
               <Row className="mt-3">

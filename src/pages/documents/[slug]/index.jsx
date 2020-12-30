@@ -25,7 +25,10 @@ import Document from '../../../components/Document';
 import { prefetchDocumentBySlug } from '../../../utils/docUtil';
 import { prefetchSharedAnnotationsOnDocument } from '../../../utils/annotationUtil';
 import {
-  DocumentAnnotationsContext, DocumentFiltersContext, DocumentContext, DocumentActiveAnnotationsContext,
+  DocumentAnnotationsContext,
+  DocumentFiltersContext,
+  DocumentContext,
+  DocumentActiveAnnotationsContext,
 } from '../../../contexts/DocumentContext';
 import { getGroupById } from '../../../utils/groupUtil';
 import { FirstNameLastInitial } from '../../../utils/nameUtil';
@@ -138,7 +141,10 @@ const DocumentPage = (props) => {
   function removeActiveAnnotation(annoId) {
     if (activeAnnotations.annotations.includes(annoId)) {
       const newActiveAnnotations = activeAnnotations.annotations.slice();
-      setActiveAnnotations({ target: null, annotations: newActiveAnnotations.filter((aid) => aid !== annoId) });
+      setActiveAnnotations({
+        target: null,
+        annotations: newActiveAnnotations.filter((aid) => aid !== annoId),
+      });
     }
   }
 
@@ -479,6 +485,8 @@ const DocumentPage = (props) => {
                     showMoreInfoShareModal={showMoreInfoShareModal}
                     setShowMoreInfoShareModal={setShowMoreInfoShareModal}
                     membersIntersection={membersIntersection}
+                    alerts={alerts}
+                    setAlerts={setAlerts}
                   />
                   <Col style={{ minWidth: 750, maxWidth: 750 }}>
                     <Card id="document-card-container">
@@ -520,6 +528,8 @@ const DocumentPage = (props) => {
                     showMoreInfoShareModal={showMoreInfoShareModal}
                     setShowMoreInfoShareModal={setShowMoreInfoShareModal}
                     membersIntersection={membersIntersection}
+                    alerts={alerts}
+                    setAlerts={setAlerts}
                   />
                 </Row>
                 <Modal
