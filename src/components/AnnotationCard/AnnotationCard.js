@@ -29,7 +29,7 @@ import {
 } from 'react-bootstrap-typeahead';
 import { postAnnotation, updateAnnotationById, deleteAnnotationById } from '../../utils/annotationUtil';
 
-import { DocumentAnnotationsContext, DocumentFiltersContext } from '../../contexts/DocumentContext';
+import { DocumentAnnotationsContext, DocumentFiltersContext, DocumentActiveAnnotationsContext } from '../../contexts/DocumentContext';
 import { FirstNameLastInitial } from '../../utils/nameUtil';
 
 function addHoverEventListenersToAllHighlightedText() {
@@ -102,6 +102,7 @@ function AnnotationCard({
   setShowMoreInfoShareModal,
   membersIntersection,
 }) {
+  const [activeAnnotations] = useContext(DocumentActiveAnnotationsContext);
   const [, , saveAnnotationChanges, allAnnotationTags] = useContext(DocumentAnnotationsContext);
   const [documentFilters, setDocumentFilters] = useContext(DocumentFiltersContext);
   const [annotationData, setAnnotationData] = useState({ ...annotation });
@@ -379,11 +380,6 @@ function AnnotationCard({
       focusOnAnnotation();
       setUpdateFocusOfAnnotation(false);
     }
-
-    // when the annotation is done rendering it should check if any of its corresponding text is active and if it is it should also add the class active to itself it doesn't already have it
-    if ($(`.annotation-highlighted-text[annotation-id='${annotationData._id}']`).hasClass('active') && !$(`#${annotationData._id}`).hasClass('active')) {
-      $(`#${annotationData._id}`).addClass('active');
-    }
   });
 
   useEffect(() => {
@@ -401,7 +397,7 @@ function AnnotationCard({
         onClick={() => { setUpdateFocusOfAnnotation(true); }}
         onMouseOver={() => { setHovered(true); }}
         onMouseOut={() => { setHovered(); }}
-        className={`annotation-card-container ${annotationData.new ? 'new-annotation' : ''} ${expanded ? 'expanded' : ''} ${expanded || hovered ? 'active' : ''} ${annotationData.editing ? 'editing' : ''}`}
+        className={`annotation-card-container ${annotationData.new ? 'new-annotation' : ''} ${expanded ? 'expanded' : ''} ${expanded || hovered || activeAnnotations.includes(annotationData._id) ? 'active' : ''} ${annotationData.editing ? 'editing' : ''}`}
         style={side === 'left' ? { left: '50px' } : { right: '50px' }}
       >
         <div className="line1" />

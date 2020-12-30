@@ -24,7 +24,9 @@ import AnnotationChannel from '../../../components/AnnotationChannel';
 import Document from '../../../components/Document';
 import { prefetchDocumentBySlug } from '../../../utils/docUtil';
 import { prefetchSharedAnnotationsOnDocument } from '../../../utils/annotationUtil';
-import { DocumentAnnotationsContext, DocumentFiltersContext, DocumentContext } from '../../../contexts/DocumentContext';
+import {
+  DocumentAnnotationsContext, DocumentFiltersContext, DocumentContext, DocumentActiveAnnotationsContext,
+} from '../../../contexts/DocumentContext';
 import { getGroupById } from '../../../utils/groupUtil';
 import { FirstNameLastInitial } from '../../../utils/nameUtil';
 
@@ -95,6 +97,7 @@ const DocumentPage = (props) => {
 
   const [alerts, setAlerts] = useState(initAlerts || []);
   const [documentHighlightedAndLoaded, setDocumentHighlightedAndLoaded] = useState(false);
+  const [activeAnnotations, setActiveAnnotations] = useState([]);
   const [channelAnnotations, setChannelAnnotations] = useState({ left: null, right: null });
   const [documentFilters, setDocumentFilters] = useState({
     filterOnInit: true,
@@ -122,6 +125,21 @@ const DocumentPage = (props) => {
   const [groupIntersection, setGroupIntersection] = useState();
   // other users this user can share annotations with, generated from groupIntersection
   const [membersIntersection, setMembersIntersection] = useState([]);
+
+  function addActiveAnnotation(annoId) {
+    if (!activeAnnotations.includes(annoId)) {
+      const newActiveAnnotations = activeAnnotations.slice();
+      newActiveAnnotations.push(annoId);
+      setActiveAnnotations(newActiveAnnotations);
+    }
+  }
+
+  function removeActiveAnnotation(annoId) {
+    if (activeAnnotations.includes(annoId)) {
+      const newActiveAnnotations = activeAnnotations.slice();
+      setActiveAnnotations(newActiveAnnotations.filter((aid) => aid !== annoId));
+    }
+  }
 
 
   function getAllTags() {
@@ -424,140 +442,142 @@ const DocumentPage = (props) => {
 
 
   return (
-
-    <DocumentContext.Provider value={document}>
-      <DocumentAnnotationsContext.Provider
-        value={[channelAnnotations, setChannelAnnotations, saveAnnotationChanges, getAllTags()]}
-      >
-        <DocumentFiltersContext.Provider value={[documentFilters, setDocumentFilters]}>
-          {!session && loading && (
-          <LoadingSpinner />
-          )}
-          {!session && !loading && (
-          <>You must be logged in to view this page.</>
-          )}
-          {session && !loading && (
-          <Layout
-            type="document"
-            document={document}
-            alerts={alerts}
-            docView
-            statefulSession={statefulSession}
-          >
-            <HeatMap pdf={document.uploadContentType && document.uploadContentType.includes('pdf')} />
-            {document && (
-            <>
-              <Row id="document-container">
-
-                <Col className="annotation-channel-container">
-                  <AnnotationChannel
-                    deleteAnnotationFromChannels={deleteAnnotationFromChannels}
-                    setAnnotationChannelLoaded={setAnnotationChannel1Loaded}
-                    focusOnAnnotation={moveAnnotationsToCorrectSpotBasedOnFocus}
-                    side="left"
-                    annotations={channelAnnotations.left}
-                    user={session ? session.user : undefined}
-                    showMoreInfoShareModal={showMoreInfoShareModal}
-                    setShowMoreInfoShareModal={setShowMoreInfoShareModal}
-                    membersIntersection={membersIntersection}
-                  />
-                </Col>
-
-                <Col style={{ minWidth: 750, maxWidth: 750 }}>
-                  <Card id="document-card-container">
-                    <Card.Body>
-                      <Document
-                        setChannelAnnotations={
-                        (annos) => {
-                          setChannelAnnotations(annos);
-                          setDocumentHighlightedAndLoaded(true);
-                        }
-                      }
-                        annotations={annotations}
-                        documentHighlightedAndLoaded={documentHighlightedAndLoaded}
-                        addAnnotationToChannels={addAnnotationToChannels}
-                        annotateDocument={
-                        async (mySelector, annotationID) => {
-                          await highlightTextToAnnotate(mySelector, annotationID);
-                        }
-                      }
-                        documentToAnnotate={document}
-                        alerts={alerts}
-                        setAlerts={setAlerts}
-                        user={session ? session.user : undefined}
-                      />
-                    </Card.Body>
-                  </Card>
-                </Col>
-
-                <Col className="annotation-channel-container">
-                  <AnnotationChannel
-                    deleteAnnotationFromChannels={deleteAnnotationFromChannels}
-                    setAnnotationChannelLoaded={setAnnotationChannel2Loaded}
-                    focusOnAnnotation={moveAnnotationsToCorrectSpotBasedOnFocus}
-                    side="right"
-                    annotations={channelAnnotations.right}
-                    user={session ? session.user : undefined}
-                    showMoreInfoShareModal={showMoreInfoShareModal}
-                    setShowMoreInfoShareModal={setShowMoreInfoShareModal}
-                    membersIntersection={membersIntersection}
-                  />
-                </Col>
-              </Row>
-              <Modal
-                show={!(annotationChannel1Loaded && annotationChannel2Loaded)}
-                backdrop="static"
-                keyboard={false}
-                animation={false}
-              >
-                <Modal.Header>
-                  <Modal.Title>
-                    Loading Annotations
-                  </Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                  <ProgressBar animated now={100} />
-                </Modal.Body>
-              </Modal>
-              <Modal
-                show={showMoreInfoShareModal}
-                onHide={() => { setShowMoreInfoShareModal(); }}
-                size="lg"
-                aria-labelledby="contained-modal-title-vcenter"
-              >
-                <Modal.Header closeButton>
-                  <Modal.Title id="contained-modal-title-vcenter" style={{ fontWeight: 400 }}>
-                    Sharing Annotation Options
-                  </Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                  <p style={{ fontWeight: 600, fontSize: 16, marginBottom: 5 }}>Private</p>
-                  <p style={{ fontSize: 14 }}>
-                    Only you can see the annotation
-                  </p>
-                  <p style={{ fontWeight: 600, fontSize: 16, marginBottom: 5 }}>
-                    Share with group(s)
-                  </p>
-                  <p style={{ fontSize: 14 }}>
-                    Share this annotation with all members of
-                    your group(s) who have access to this document.
-                  </p>
-                  <p style={{ fontWeight: 600, fontSize: 16, marginBottom: 5 }}>
-                    Share with user(s)
-                  </p>
-                  <p style={{ fontSize: 14 }}>
-                    Share this annotation with a specific user or users only.
-                  </p>
-                </Modal.Body>
-              </Modal>
-            </>
+    <DocumentActiveAnnotationsContext.Provider value={[activeAnnotations, setActiveAnnotations]}>
+      <DocumentContext.Provider value={document}>
+        <DocumentAnnotationsContext.Provider
+          value={[channelAnnotations, setChannelAnnotations, saveAnnotationChanges, getAllTags()]}
+        >
+          <DocumentFiltersContext.Provider value={[documentFilters, setDocumentFilters]}>
+            {!session && loading && (
+            <LoadingSpinner />
             )}
-          </Layout>
-          )}
+            {!session && !loading && (
+            <>You must be logged in to view this page.</>
+            )}
+            {session && !loading && (
+            <Layout
+              type="document"
+              document={document}
+              alerts={alerts}
+              docView
+              statefulSession={statefulSession}
+            >
+              <HeatMap pdf={document.uploadContentType && document.uploadContentType.includes('pdf')} />
+              {document && (
+              <>
+                <Row id="document-container">
+
+                  <Col className="annotation-channel-container">
+                    <AnnotationChannel
+                      deleteAnnotationFromChannels={deleteAnnotationFromChannels}
+                      setAnnotationChannelLoaded={setAnnotationChannel1Loaded}
+                      focusOnAnnotation={moveAnnotationsToCorrectSpotBasedOnFocus}
+                      side="left"
+                      annotations={channelAnnotations.left}
+                      user={session ? session.user : undefined}
+                      showMoreInfoShareModal={showMoreInfoShareModal}
+                      setShowMoreInfoShareModal={setShowMoreInfoShareModal}
+                      membersIntersection={membersIntersection}
+                    />
+                  </Col>
+
+                  <Col style={{ minWidth: 750, maxWidth: 750 }}>
+                    <Card id="document-card-container">
+                      <Card.Body>
+                        <Document
+                          addActiveAnnotation={addActiveAnnotation}
+                          removeActiveAnnotation={removeActiveAnnotation}
+                          setChannelAnnotations={
+                            (annos) => {
+                              setChannelAnnotations(annos);
+                              setDocumentHighlightedAndLoaded(true);
+                            }
+                          }
+                          annotations={annotations}
+                          documentHighlightedAndLoaded={documentHighlightedAndLoaded}
+                          addAnnotationToChannels={addAnnotationToChannels}
+                          annotateDocument={
+                            async (mySelector, annotationID) => {
+                              await highlightTextToAnnotate(mySelector, annotationID);
+                            }
+                          }
+                          documentToAnnotate={document}
+                          alerts={alerts}
+                          setAlerts={setAlerts}
+                          user={session ? session.user : undefined}
+                        />
+                      </Card.Body>
+                    </Card>
+                  </Col>
+
+                  <Col className="annotation-channel-container">
+                    <AnnotationChannel
+                      deleteAnnotationFromChannels={deleteAnnotationFromChannels}
+                      setAnnotationChannelLoaded={setAnnotationChannel2Loaded}
+                      focusOnAnnotation={moveAnnotationsToCorrectSpotBasedOnFocus}
+                      side="right"
+                      annotations={channelAnnotations.right}
+                      user={session ? session.user : undefined}
+                      showMoreInfoShareModal={showMoreInfoShareModal}
+                      setShowMoreInfoShareModal={setShowMoreInfoShareModal}
+                      membersIntersection={membersIntersection}
+                    />
+                  </Col>
+                </Row>
+                <Modal
+                  show={!(annotationChannel1Loaded && annotationChannel2Loaded)}
+                  backdrop="static"
+                  keyboard={false}
+                  animation={false}
+                >
+                  <Modal.Header>
+                    <Modal.Title>
+                      Loading Annotations
+                    </Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>
+                    <ProgressBar animated now={100} />
+                  </Modal.Body>
+                </Modal>
+                <Modal
+                  show={showMoreInfoShareModal}
+                  onHide={() => { setShowMoreInfoShareModal(); }}
+                  size="lg"
+                  aria-labelledby="contained-modal-title-vcenter"
+                >
+                  <Modal.Header closeButton>
+                    <Modal.Title id="contained-modal-title-vcenter" style={{ fontWeight: 400 }}>
+                      Sharing Annotation Options
+                    </Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>
+                    <p style={{ fontWeight: 600, fontSize: 16, marginBottom: 5 }}>Private</p>
+                    <p style={{ fontSize: 14 }}>
+                      Only you can see the annotation
+                    </p>
+                    <p style={{ fontWeight: 600, fontSize: 16, marginBottom: 5 }}>
+                      Share with group(s)
+                    </p>
+                    <p style={{ fontSize: 14 }}>
+                      Share this annotation with all members of
+                      your group(s) who have access to this document.
+                    </p>
+                    <p style={{ fontWeight: 600, fontSize: 16, marginBottom: 5 }}>
+                      Share with user(s)
+                    </p>
+                    <p style={{ fontSize: 14 }}>
+                      Share this annotation with a specific user or users only.
+                    </p>
+                  </Modal.Body>
+                </Modal>
+              </>
+              )}
+            </Layout>
+            )}
 
 
-          <style jsx global>
-            {`
+            <style jsx global>
+              {`
           #annotations-header-label {
             padding: 12px 0px 0px 20px;
           }
@@ -599,8 +619,8 @@ const DocumentPage = (props) => {
             min-height: 100%;
             border: none;
             box-shadow: ${(document.uploadContentType && document.uploadContentType.includes('pdf'))
-              ? 'none'
-              : '3px 3px 9px 0px rgba(0,0,0,0.38)'
+                ? 'none'
+                : '3px 3px 9px 0px rgba(0,0,0,0.38)'
             };
             ${(document.uploadContentType && document.uploadContentType.includes('pdf')) ? 'background: none;' : ''}
           }
@@ -635,10 +655,11 @@ const DocumentPage = (props) => {
           }
           
         `}
-          </style>
-        </DocumentFiltersContext.Provider>
-      </DocumentAnnotationsContext.Provider>
-    </DocumentContext.Provider>
+            </style>
+          </DocumentFiltersContext.Provider>
+        </DocumentAnnotationsContext.Provider>
+      </DocumentContext.Provider>
+    </DocumentActiveAnnotationsContext.Provider>
 
 
   );
