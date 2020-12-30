@@ -39,6 +39,7 @@ const DashboardAnnotationList = ({
               });
           } else {
             setAnnotations([]);
+            setListLoading(false);
           }
         } else if (key === 'mine') {
           await getOwnAnnotations(session.user.id, limit)

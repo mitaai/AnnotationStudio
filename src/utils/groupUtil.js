@@ -63,7 +63,9 @@ const addGroupToUser = async (group, user) => {
   return Promise.reject(Error(`Unable to add group to user: error ${res.status} received from server`));
 };
 
-const addUserToGroup = async (group, email) => getUserByEmail(email).then(async (user) => {
+const addUserToGroup = async (
+  group, email, inviteToken,
+) => getUserByEmail(email).then(async (user) => {
   let alreadyInGroup = false;
   alreadyInGroup = user.groups && user.groups.some((userGroup) => (userGroup.id === group.id));
   const error = (alreadyInGroup === true) ? 'User is already in group' : undefined;
@@ -77,6 +79,7 @@ const addUserToGroup = async (group, email) => getUserByEmail(email).then(async 
       addedUser: {
         id, name, email, role,
       },
+      inviteToken,
     };
     const res = await unfetch(url, {
       method: 'PATCH',
