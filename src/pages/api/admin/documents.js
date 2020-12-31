@@ -6,7 +6,7 @@ const secret = process.env.AUTH_SECRET;
 
 const handler = async (req, res) => {
   const { method } = req;
-  const fields = {
+  const projection = {
     text: 0,
   };
   if (method === 'GET') {
@@ -30,7 +30,7 @@ const handler = async (req, res) => {
         const sortBy = sort ? { [sort]: direction } : { _id: direction };
         const doc = await db
           .collection('documents')
-          .find({}, fields)
+          .find({}, { projection })
           .sort(sortBy)
           .skip(page > 0 ? ((page - 1) * perPage) : 0)
           .limit(parseInt(perPage, 10))

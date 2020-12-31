@@ -5,7 +5,7 @@ const secret = process.env.AUTH_SECRET;
 
 const handler = async (req, res) => {
   const { method } = req;
-  const fields = {
+  const projection = {
     text: 0,
   };
   if (method === 'POST') {
@@ -20,13 +20,13 @@ const handler = async (req, res) => {
         if (req.body.limit) {
           arr = await db
             .collection('documents')
-            .find(condition, fields)
+            .find(condition, { projection })
             .limit(req.body.limit)
             .toArray();
         } else {
           arr = await db
             .collection('documents')
-            .find(condition, fields)
+            .find(condition, { projection })
             .toArray();
         }
         res.status(200).json({ documents: arr });
