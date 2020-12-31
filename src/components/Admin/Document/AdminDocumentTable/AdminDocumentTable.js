@@ -103,12 +103,6 @@ const AdminDocumentTable = ({ document, alerts, setAlerts }) => {
               <td>{document.publication}</td>
             </tr>
           )}
-          {document.bookTitle && (
-            <tr>
-              <th>Book Title</th>
-              <td>{document.bookTitle}</td>
-            </tr>
-          )}
           {document.edition && (
             <tr>
               <th>Edition</th>
