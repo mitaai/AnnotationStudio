@@ -247,8 +247,9 @@ const DocumentForm = ({
   const editDocument = async (values) => {
     const { id, slug, uploadContentType } = data;
     const patchUrl = `/api/document/${id}`;
-    const valuesWithSerializedText = (!uploadContentType || uploadContentType === '')
-      ? values
+    const { text, ...rest } = values;
+    const valuesWithSerializedText = (uploadContentType && uploadContentType !== '')
+      ? rest
       : {
         ...values,
         text: serializeHTMLFromNodes({ plugins, nodes: values.textSlate }),
