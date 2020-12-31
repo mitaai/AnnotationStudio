@@ -5,6 +5,9 @@ const secret = process.env.AUTH_SECRET;
 
 const handler = async (req, res) => {
   const { method } = req;
+  const fields = {
+    text: 0,
+  };
   if (method === 'POST') {
     const token = await jwt.getToken({ req, secret });
     if (token && token.exp > 0) {
@@ -17,13 +20,13 @@ const handler = async (req, res) => {
         if (req.body.limit) {
           arr = await db
             .collection('documents')
-            .find(condition)
+            .find(condition, fields)
             .limit(req.body.limit)
             .toArray();
         } else {
           arr = await db
             .collection('documents')
-            .find(condition)
+            .find(condition, fields)
             .toArray();
         }
         res.status(200).json({ documents: arr });

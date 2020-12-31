@@ -6,6 +6,9 @@ const secret = process.env.AUTH_SECRET;
 
 const handler = async (req, res) => {
   const { method } = req;
+  const fields = {
+    text: 0,
+  };
   if (method === 'GET') {
     const token = await jwt.getToken({ req, secret });
     if (token && token.exp > 0) {
@@ -27,7 +30,7 @@ const handler = async (req, res) => {
         const sortBy = sort ? { [sort]: direction } : { _id: direction };
         const doc = await db
           .collection('documents')
-          .find()
+          .find({}, fields)
           .sort(sortBy)
           .skip(page > 0 ? ((page - 1) * perPage) : 0)
           .limit(parseInt(perPage, 10))
