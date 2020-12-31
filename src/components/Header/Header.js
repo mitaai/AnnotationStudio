@@ -46,7 +46,7 @@ function Header({
                 <Nav.Link disabled>Loading...</Nav.Link>
               )}
               {!session && !loading && (
-                <Nav.Link href="/api/auth/signin" data-testid="nav-login-link" disabled={type === 'signin'}>
+                <Nav.Link href={`/api/auth/signin?callbackUrl=${process.env.SITE}`} data-testid="nav-login-link" disabled={type === 'signin'}>
                   Log In
                   <BoxArrowInRight className="align-text-bottom ml-1" />
                 </Nav.Link>
