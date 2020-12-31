@@ -4,6 +4,7 @@ import { FieldArray } from 'formik';
 import {
   Button, Col, Form, InputGroup, Row,
 } from 'react-bootstrap';
+import { publicationFieldName } from '../../utils/metadataUtil';
 
 const DocumentMetadata = ({
   resourceType,
@@ -13,17 +14,6 @@ const DocumentMetadata = ({
   errors,
   touched,
 }) => {
-  const publicationFieldName = (type) => {
-    switch (type) {
-      case 'Book Section': return 'Book title';
-      case 'Journal Article': return 'Journal title';
-      case 'Newspaper Article': return 'Newspaper title';
-      case 'Magazine Article': return 'Magazine title';
-      case 'Web Page': return 'Website title';
-      default: return 'Publication title';
-    }
-  };
-
   const contributorTypes = ['Author', 'Editor', 'Translator', 'Contributor'];
 
   const [expandMeta, setExpandMeta] = useState(false);
