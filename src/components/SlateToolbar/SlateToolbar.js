@@ -64,8 +64,9 @@ const SlateToolbar = () => {
             active={
               isNodeTypeIn(editor, DEFAULTS_BLOCKQUOTE.blockquote.type)
             }
-            onMouseDown={
-              (e) => {
+            eventKey="blockquote"
+            onSelect={
+              (eventKey, e) => {
                 e.preventDefault();
                 toggleNodeType(editor, {
                   activeType: DEFAULTS_BLOCKQUOTE.blockquote.type,
@@ -79,8 +80,9 @@ const SlateToolbar = () => {
             active={
               isNodeTypeIn(editor, DEFAULTS_CODE_BLOCK.code_block.type)
             }
-            onMouseDown={
-              (e) => {
+            eventKey="codeBlock"
+            onSelect={
+              (eventKey, e) => {
                 e.preventDefault();
                 toggleNodeType(editor, {
                   activeType: DEFAULTS_CODE_BLOCK.code_block.type,
@@ -94,8 +96,9 @@ const SlateToolbar = () => {
             active={
               isNodeTypeIn(editor, DEFAULTS_HEADING.h1.type)
             }
-            onMouseDown={
-              (e) => {
+            eventKey="h1"
+            onSelect={
+              (eventKey, e) => {
                 e.preventDefault();
                 toggleNodeType(editor, {
                   activeType: DEFAULTS_HEADING.h1.type,
@@ -107,8 +110,9 @@ const SlateToolbar = () => {
           </Dropdown.Item>
           <Dropdown.Item
             active={isNodeTypeIn(editor, DEFAULTS_HEADING.h2.type)}
-            onMouseDown={
-              (e) => {
+            eventKey="h2"
+            onSelect={
+              (eventKey, e) => {
                 e.preventDefault();
                 toggleNodeType(editor, {
                   activeType: DEFAULTS_HEADING.h2.type,
@@ -120,8 +124,9 @@ const SlateToolbar = () => {
           </Dropdown.Item>
           <Dropdown.Item
             active={isNodeTypeIn(editor, DEFAULTS_HEADING.h3.type)}
-            onMouseDown={
-              (e) => {
+            eventKey="h3"
+            onSelect={
+              (eventKey, e) => {
                 e.preventDefault();
                 toggleNodeType(editor, {
                   activeType: DEFAULTS_HEADING.h3.type,
@@ -133,8 +138,9 @@ const SlateToolbar = () => {
           </Dropdown.Item>
           <Dropdown.Item
             active={isNodeTypeIn(editor, DEFAULTS_HEADING.h4.type)}
-            onMouseDown={
-              (e) => {
+            eventKey="h4"
+            onSelect={
+              (eventKey, e) => {
                 e.preventDefault();
                 toggleNodeType(editor, {
                   activeType: DEFAULTS_HEADING.h4.type,
@@ -146,8 +152,9 @@ const SlateToolbar = () => {
           </Dropdown.Item>
           <Dropdown.Item
             active={isNodeTypeIn(editor, DEFAULTS_HEADING.h5.type)}
-            onMouseDown={
-              (e) => {
+            eventKey="h5"
+            onSelect={
+              (eventKey, e) => {
                 e.preventDefault();
                 toggleNodeType(editor, {
                   activeType: DEFAULTS_HEADING.h5.type,
@@ -159,8 +166,9 @@ const SlateToolbar = () => {
           </Dropdown.Item>
           <Dropdown.Item
             active={isNodeTypeIn(editor, DEFAULTS_HEADING.h6.type)}
-            onMouseDown={
-              (e) => {
+            eventKey="h6"
+            onSelect={
+              (eventKey, e) => {
                 e.preventDefault();
                 toggleNodeType(editor, {
                   activeType: DEFAULTS_HEADING.h6.type,

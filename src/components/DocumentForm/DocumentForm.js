@@ -355,14 +355,14 @@ const DocumentForm = ({
           ) && (
             <Form.Row>
               <Col>
-                <Accordion defaultActiveKey="1">
+                <Accordion defaultActiveKey="paste">
                   <Card>
                     <Card.Header>
-                      <ContextAwareToggle eventKey="0" disabled={data && data.state === 'draft'}>
+                      <ContextAwareToggle eventKey="upload" disabled={data && data.state === 'draft'}>
                         Upload PDF, DOCX, ODT, or EPUB
                       </ContextAwareToggle>
                     </Card.Header>
-                    <Accordion.Collapse eventKey="0">
+                    <Accordion.Collapse eventKey="upload">
                       <Card.Body id="document-upload-card">
                         <Field name="textUpload">
                           {() => (
@@ -435,11 +435,11 @@ const DocumentForm = ({
                   </Card>
                   <Card className="mb-2">
                     <Card.Header>
-                      <ContextAwareToggle eventKey="1" disabled={progress.started || progress.status === 'Complete'}>
+                      <ContextAwareToggle eventKey="paste" disabled={progress.started || progress.status === 'Complete'}>
                         Paste or type directly into the form
                       </ContextAwareToggle>
                     </Card.Header>
-                    <Accordion.Collapse eventKey="1">
+                    <Accordion.Collapse eventKey="paste">
                       <Card.Body id="slate-container-card">
                         <div id="slate-container">
                           {!progress.started && progress.status !== 'Complete' && (
