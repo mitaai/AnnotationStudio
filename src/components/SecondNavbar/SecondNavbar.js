@@ -2,11 +2,9 @@ import React, { useState } from 'react';
 import {
   Nav, Navbar, Breadcrumb, Container, Modal, Table,
 } from 'react-bootstrap';
-import {
-  InfoSquare,
-} from 'react-bootstrap-icons';
-
+import { InfoSquare } from 'react-bootstrap-icons';
 import FilterPopover from '../FilterPopover';
+import { publicationFieldName } from '../../utils/metadataUtil';
 
 const SecondNavbar = ({
   session,
@@ -14,22 +12,21 @@ const SecondNavbar = ({
   document,
   docView,
 }) => {
-  const metaData = {
+  const metadataFields = {
     title: 'Title',
-    resourceType: 'Resource Type',
+    resourceType: 'Type',
     contributors: 'Contributors',
-    bookTitle: 'Book Title',
-    publication: 'Publication',
+    publication: document ? publicationFieldName(document.resourceType) : 'Publication',
     series: 'Series',
-    seriesNumber: 'Series Number',
+    seriesNumber: 'Series number',
     volume: 'Volume',
     issue: 'Issue',
-    pageNumbers: 'Page Numbers',
+    pageNumbers: 'Page numbers',
     edition: 'Edition',
     publisher: 'Publisher',
-    publicationDate: 'Publication Date',
+    publicationDate: 'Publication date',
     location: 'Location',
-    rightsStatus: 'Rights Status',
+    rightsStatus: 'Rights status',
     url: 'URL',
     accessed: 'Accessed',
     notes: 'Notes',
@@ -106,7 +103,7 @@ const SecondNavbar = ({
           <Modal.Body>
             <Table bordered size="sm">
               <tbody>
-                {Object.keys(metaData).map((key) => {
+                {Object.keys(metadataFields).map((key) => {
                   let str = '';
                   if (document[key] !== undefined) {
                     if (Array.isArray(document[key])) {
@@ -120,15 +117,15 @@ const SecondNavbar = ({
                     } else {
                       str = document[key];
                     }
-                  }
-                  return (
-                    <tr>
-                      <td className="table-meta-data-name">
-                        <strong>{metaData[key]}</strong>
-                      </td>
-                      <td>{str}</td>
-                    </tr>
-                  );
+                    return (
+                      <tr>
+                        <td className="table-meta-data-name">
+                          <strong>{metadataFields[key]}</strong>
+                        </td>
+                        <td>{str}</td>
+                      </tr>
+                    );
+                  } return '';
                 })}
               </tbody>
             </Table>
