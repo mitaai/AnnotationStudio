@@ -1,4 +1,5 @@
 import { setCookie } from 'nookies';
+import Router from 'next/router';
 import React, { useState } from 'react';
 import fetch from 'isomorphic-unfetch';
 import { csrfToken, useSession, signIn } from 'next-auth/client';
@@ -28,6 +29,7 @@ const SignIn = ({ props }) => {
           <Card.Body>
             <Form method="post" action="/api/auth/signin/email">
               <input name="csrfToken" type="hidden" defaultValue={cToken} />
+              <input name="callbackUrl" type="hidden" defaultValue={Router.query.callbackUrl} />
               <Form.Label>With email address</Form.Label>
               <Form.Control name="email" type="email" placeholder="Email address" />
               <Button variant="outline-secondary" type="submit" className="mt-3">

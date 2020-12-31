@@ -50,7 +50,7 @@ const options = {
 
   pages: {
     newUser: '/user/newuser',
-    signIn: '/auth/signin?callbackUrl=http://localhost:3000',
+    signIn: '/auth/signin',
     verifyRequest: '/auth/verify-request',
   },
 
