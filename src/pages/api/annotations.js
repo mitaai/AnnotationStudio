@@ -33,6 +33,8 @@ const handler = async (req, res) => {
               .collection('annotations')
               .find({
                 'creator.id': userId,
+              }, {
+                sort: [['_id', -1]],
               })
               .limit(parseInt(limit, 10))
               .toArray();
@@ -58,6 +60,8 @@ const handler = async (req, res) => {
                 { 'permissions.sharedTo': { $in: [token.id] } },
                 { 'permissions.groups': { $in: groupIds } },
               ],
+            }, {
+              sort: [['_id', -1]],
             })
             .limit(parseInt(limit, 10))
             .toArray();

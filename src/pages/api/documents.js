@@ -20,7 +20,7 @@ const handler = async (req, res) => {
         if (req.body.limit) {
           arr = await db
             .collection('documents')
-            .find(condition, { projection })
+            .find(condition, { projection, sort: [['_id', -1]] })
             .limit(req.body.limit)
             .toArray();
         } else {
