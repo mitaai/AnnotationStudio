@@ -2,7 +2,7 @@ import { setCookie } from 'nookies';
 import Router from 'next/router';
 import React, { useState } from 'react';
 import fetch from 'isomorphic-unfetch';
-import { csrfToken, useSession, signIn } from 'next-auth/client';
+import { csrfToken, useSession } from 'next-auth/client';
 import { Button, Card, Form } from 'react-bootstrap';
 import Layout from '../../components/Layout';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -42,14 +42,6 @@ const SignIn = ({
                 Submit
               </Button>
             </Form>
-            <hr />
-            <div key="Google">
-              With Google account
-              <br />
-              <Button onClick={() => signIn('google')} variant="outline-secondary" className="mt-2">
-                Sign in with Google
-              </Button>
-            </div>
           </Card.Body>
         </Card>
       )}

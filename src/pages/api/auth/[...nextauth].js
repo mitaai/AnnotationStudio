@@ -22,10 +22,6 @@ const options = {
 
       sendVerificationRequest: sendVerificationRequestOverride,
     }),
-    Providers.Google({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    }),
   ],
 
   adapter: Adapters.TypeORM.Adapter(process.env.MONGODB_URI,
