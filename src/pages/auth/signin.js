@@ -8,11 +8,17 @@ import Layout from '../../components/Layout';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import GroupJoinCard from '../../components/GroupJoinCard';
 
-const SignIn = ({ props }) => {
+const SignIn = ({
+  props,
+  updateSession,
+}) => {
   const [session, loading] = useSession();
 
   const {
-    cToken, groupId, initAlerts, groupToken,
+    cToken,
+    groupId,
+    initAlerts,
+    groupToken,
   } = props; // eslint-disable-line no-shadow
   const [alerts, setAlerts] = useState(initAlerts);
   return (
@@ -55,6 +61,7 @@ const SignIn = ({ props }) => {
           groupId={groupId}
           token={groupToken}
           session={session}
+          updateSession={updateSession}
         />
       )}
       {session && groupId === '' && (

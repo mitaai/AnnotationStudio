@@ -7,6 +7,7 @@ import { addUserToGroup } from '../../utils/groupUtil';
 const GroupJoinCard = ({
   groupId,
   session,
+  updateSession,
   alerts,
   setAlerts,
   pageFrom,
@@ -38,7 +39,29 @@ const GroupJoinCard = ({
                 className="mt-3"
                 variant="outline-primary"
                 onClick={() => {
-                  addUserToGroup({ id: groupId }, session.user.email, token).then(() => {
+                  addUserToGroup({ id: groupId }, session.user.email, token).then((members) => {
+                    const g = members[0].value.groups.find((group) => group.id === groupId);
+                    const newGroupSession = {
+                      user: {
+                        name: session.user.name,
+                        firstName: session.user.firstName,
+                        email: session.user.email,
+                        image: session.user.image,
+                        id: session.user.id,
+                        groups: [...session.user.groups, {
+                          id: groupId,
+                          memberCount: g.memberCount + 1,
+                          name: g.name,
+                          ownerName: g.ownerName,
+                          role: 'member',
+                        }],
+                        role: session.user.role,
+                      },
+                      expires: session.expires,
+                    };
+
+                    updateSession(newGroupSession);
+
                     if (pageFrom === 'dashboard') {
                       destroyCookie(null, 'ans_grouptoken', {
                         path: '/',
@@ -48,7 +71,10 @@ const GroupJoinCard = ({
                     } else {
                       Router.push({
                         pathname: '/',
-                        query: { alert: 'joinedGroup' },
+                        query: {
+                          alert: 'joinedGroup',
+                          statefulSession: newGroupSession,
+                        },
                       });
                     }
                   }).catch((err) => {
