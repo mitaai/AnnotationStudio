@@ -19,6 +19,7 @@ export default function Home({
   initAlerts,
   groupId,
   statefulSession,
+  updateSession,
   groupToken,
 }) {
   const [session, loading] = useSession();
@@ -74,6 +75,7 @@ export default function Home({
           pageFrom="dashboard"
           groupId={groupId}
           session={session}
+          updateSession={updateSession}
           token={groupToken}
         />
       )}
@@ -82,18 +84,19 @@ export default function Home({
           <Col>
             <CardColumns style={{ columnCount: 1 }}>
               <DashboardDocumentList
-                session={session}
+                session={statefulSession || session}
+                forceUpdate={!!statefulSession}
                 alerts={alerts}
                 setAlerts={setAlerts}
               />
               <DashboardGroupList
-                session={session}
+                session={statefulSession || session}
               />
             </CardColumns>
           </Col>
           <Col>
             <DashboardAnnotationList
-              session={session}
+              session={statefulSession || session}
               alerts={alerts}
               setAlerts={setAlerts}
               mode="dashboard"

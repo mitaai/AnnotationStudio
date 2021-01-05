@@ -13,6 +13,7 @@ const DashboardDocumentList = ({
   session,
   alerts,
   setAlerts,
+  forceUpdate,
 }) => {
   const [documentGroupState, setDocumentGroupState] = useState({});
   const [key, setKey] = useState('shared');
@@ -45,7 +46,7 @@ const DashboardDocumentList = ({
       }
     }
     fetchData();
-  }, [key]);
+  }, [key, forceUpdate]);
 
 
   useEffect(() => {
