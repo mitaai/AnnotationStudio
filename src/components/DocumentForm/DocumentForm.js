@@ -127,7 +127,9 @@ const DocumentForm = ({
           <Container className="mt-3 text-danger">
             <Row>
               <Col>
-                Wondering why your upload failed? Here are some possibilities:
+                There was an error with your upload, please retry.
+                <br />
+                Still not working? Here are some possible reasons why your upload failed:
                 <ul>
                   <li>The file was too large.</li>
                   <li>The file had too many pages.</li>
