@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, {
-  useState, useMemo, useContext,
+  useState, useMemo, useContext, useEffect,
 } from 'react';
 import { useRouter } from 'next/router';
 import unfetch from 'unfetch';
@@ -15,6 +15,7 @@ import {
   Form,
   ProgressBar,
   Row,
+  Spinner,
   useAccordionToggle,
 } from 'react-bootstrap';
 import * as yup from 'yup';
@@ -63,8 +64,10 @@ const DocumentForm = ({
   const [contentType, setContentType] = useState('');
   const [progress, setProgress] = useState({});
   const [htmlValue, setHtmlValue] = useState('');
+  const [slateLoading, setSlateLoading] = useState(false);
   const handleCloseModal = () => setShowModal(false);
   const handleShowModal = () => setShowModal(true);
+
 
   const ContextAwareToggle = ({
     children, disabled, eventKey, callback,
@@ -323,6 +326,11 @@ const DocumentForm = ({
     'Other',
   ];
 
+  useEffect(() => {
+    setSlateLoading(false);
+  }, [slateValue]);
+
+
   return (
     <Formik
       onSubmit={(values, actions) => {
@@ -452,13 +460,37 @@ const DocumentForm = ({
                                   editor={editor}
                                   value={slateValue}
                                   onChange={(value) => {
+                                    setSlateLoading(false);
                                     setSlateValue(value);
                                     props.setFieldValue(field.name, value);
                                   }}
                                 >
                                   <SlateToolbar />
+                                  {slateLoading && (
+                                    <div id="slate-loader">
+                                      <Spinner animation="border" role="status">
+                                        <span className="sr-only">Loading...</span>
+                                      </Spinner>
+                                      <div className="text-center">
+                                        <h4 className="text-muted">
+                                          <em>Please wait, processing pasted content.</em>
+                                        </h4>
+                                        <small className="text-muted">
+                                          The page may become unresponsive. Please do not
+                                          close or navigate away from the page.
+                                        </small>
+                                      </div>
+                                    </div>
+                                  )}
                                   <EditablePlugins
                                     plugins={plugins}
+                                    onKeyDown={[(e) => {
+                                      const isPasteCapture = (e.ctrlKey || e.metaKey)
+                                        && e.keyCode === 86;
+                                      if (isPasteCapture) {
+                                        setSlateLoading(true);
+                                      }
+                                    }]}
                                     placeholder="Paste or type here"
                                     id={field.name}
                                     className="slate-editor"

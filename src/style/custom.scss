@@ -83,6 +83,16 @@ ol.breadcrumb {
   }
 }
 
+#slate-loader {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: center;
+  position: absolute;
+  width: 750px;
+  height: 350px;
+}
+
 .slate-ToolbarButton {
   width: 2.3rem;
   margin-right: 0.25rem;
