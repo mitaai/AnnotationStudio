@@ -307,8 +307,7 @@ function AnnotationCard({
       if (typeof (r) === 'object') {
         return {
           ...r,
-          alreadyExists: newAnnotationTags !== null
-            && newAnnotationTags.some((t) => r.tags === (typeof t === 'object' ? t.tags : t)),
+          alreadyExists: newAnnotationTags !== null ? newAnnotationTags.some((t) => r.tags === (typeof t === 'object' ? t.tags : t)) : annotationData.body.tags.some((t) => r.tags === t),
         };
       }
       return r;
@@ -319,10 +318,15 @@ function AnnotationCard({
         // eslint-disable-next-line react/jsx-props-no-spreading
         {...menuProps}
       >
-        {res.map((result, index) => {
+        <div className="menu-header">Tag search results</div>
+        {res.length === 0 && <div className="menu-no-results">no results</div>}
+        {res.sort((a) => (typeof (a) === 'object' && a.customOption ? -1 : 0)).map((result, index) => {
           const tagDiv = typeof (result) === 'object' ? (
             <>
-              <div className="tag-name">{result.tags}</div>
+              <div className="tag-name">
+                <span>{result.customOption && !result.alreadyExists && <b>new tag: </b>}</span>
+                <span>{result.tags}</span>
+              </div>
               {result.alreadyExists && <div className="tag-already-exists">already used</div>}
             </>
           ) : <div className="tag-name">{result}</div>;
@@ -702,6 +706,29 @@ function AnnotationCard({
           display: none;
         }
 
+        #typeahead-annotation-tags {
+          padding: 0px;
+        }
+
+        #typeahead-annotation-tags .tag-name {
+          font-size: 12px;
+        }
+
+        #typeahead-annotation-tags .menu-header {
+          font-size: 12px;
+          padding: 2px 4px;
+          border-bottom: 1px solid #eeeeee;
+          margin-bottom: 4px;
+          color: #424242;
+        }
+
+        #typeahead-annotation-tags .menu-no-results {
+          text-align: center;
+          font-size: 12px;
+          color: #616161;
+          padding-bottom: 4px;
+        }
+
         #typeahead-share-annotation-users-container .rbt-input-main {
           font-size: 12px;
           line-height: 20px;
@@ -869,11 +896,15 @@ function AnnotationCard({
             left: 3px;
         }
 
+        .annotation-more-options-dropdown svg {
+            position: relative !important;
+        }
+
         #dropdown-basic {
             padding: 0px;
-            background-color: basic;
-            height: 0px;
             border: none;
+            height: 0px;
+            background: white;
             box-shadow: none;
         }
         #dropdown-basic::after {
@@ -947,6 +978,7 @@ function AnnotationCard({
         border: none;
         border-radius: 0px;
         padding: 6px;
+        min-height: 30px;
       }
 
       .annotation-body textarea:focus {
