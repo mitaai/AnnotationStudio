@@ -168,7 +168,8 @@ export default function Document({
       const annotationBeginning = $(`#document-content-container span[annotation-id='${annotation._id}'] .annotation-beginning-marker`);
       const annotationEnding = $(`#document-content-container span[annotation-id='${annotation._id}'] .annotation-ending-marker`);
       if (annotationBeginning.get(0) === undefined) {
-        setAlerts([...alerts, { text: 'unable to annotate a piece of text', variant: 'danger' }]);
+        console.log('had trouble annotating a piece of text');
+        // setAlerts([...alerts, { text: 'unable to annotate a piece of text', variant: 'danger' }]);
       } else {
         const annotationBeginningPosition = annotationBeginning.offset();
         const annotationEndingPosition = annotationEnding.offset();

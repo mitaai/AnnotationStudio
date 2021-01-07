@@ -718,7 +718,6 @@ function AnnotationCard({
           font-size: 12px;
           padding: 2px 4px;
           border-bottom: 1px solid #eeeeee;
-          margin-bottom: 4px;
           color: #424242;
         }
 
@@ -726,7 +725,7 @@ function AnnotationCard({
           text-align: center;
           font-size: 12px;
           color: #616161;
-          padding-bottom: 4px;
+          padding: 4px 0px;
         }
 
         #typeahead-share-annotation-users-container .rbt-input-main {

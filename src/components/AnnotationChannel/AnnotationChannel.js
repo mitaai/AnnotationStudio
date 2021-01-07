@@ -156,7 +156,7 @@ const AnnotationChannel = ({
         }
       }
       // after we have placed everything in the correct spot then the channel is fully loaded
-      setTimeout(setAnnotationChannelLoaded, 500, true);
+      setAnnotationChannelLoaded(true);
     }
   });
 

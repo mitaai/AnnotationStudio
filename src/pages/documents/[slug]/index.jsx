@@ -85,11 +85,9 @@ function DeepCopyObj(obj) {
 }
 
 
-const DocumentPage = (props) => {
-  const {
-    document, annotations, initAlerts, query, statefulSession,
-  } = props;
-
+const DocumentPage = ({
+  document, annotations, initAlerts, query, statefulSession,
+}) => {
   let validQuery = false;
   let defaultPermissions = 0;
   if ((query && (query.mine === 'true' || query.mine === 'false')) && query.aid !== undefined) {
@@ -113,8 +111,8 @@ const DocumentPage = (props) => {
       permissions: defaultPermissions,
     },
   });
-  const [annotationChannel1Loaded, setAnnotationChannel1Loaded] = useState(false);
-  const [annotationChannel2Loaded, setAnnotationChannel2Loaded] = useState(false);
+  const [annotationChannel1Loaded, setAnnotationChannel1Loaded] = useState(annotations.length === 0);
+  const [annotationChannel2Loaded, setAnnotationChannel2Loaded] = useState(annotations.length === 0);
   const minDisplayWidth = 1150;
   // popovers for mobile
   // eslint-disable-next-line no-unused-vars
