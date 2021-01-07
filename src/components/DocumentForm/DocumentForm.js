@@ -253,7 +253,7 @@ const DocumentForm = ({
     const { id, slug, uploadContentType } = data;
     const patchUrl = `/api/document/${id}`;
     const { text, ...rest } = values;
-    const valuesWithSerializedText = (uploadContentType && uploadContentType !== '')
+    const valuesWithSerializedText = (uploadContentType && (data.uploadContentType.includes('pdf') && data.uploadContentType.includes('epub')))
       ? rest
       : {
         ...values,
@@ -282,14 +282,16 @@ const DocumentForm = ({
       type: DEFAULTS_PARAGRAPH.p.type,
     },
   ];
-  const [slateValue, setSlateValue] = (mode === 'edit' && data && (!data.uploadContentType || data.uploadContentType === ''))
+  const [slateValue, setSlateValue] = (mode === 'edit' && data && (!data.uploadContentType
+    || (!data.uploadContentType.includes('pdf') && !data.uploadContentType.includes('epub'))))
     ? useState(deserializeHTMLToDocument({ plugins, element: txtHtml.body }))
     : useState(slateInitialValue);
 
   let initialValues = {};
 
   if (mode === 'edit' && data) {
-    if (!data.uploadContentType || data.uploadContentType === '') {
+    if (!data.uploadContentType
+      || (!data.uploadContentType.includes('pdf') && !data.uploadContentType.includes('epub'))) {
       initialValues = {
         ...data,
         textSlate: deserializeHTMLToDocument({ plugins, element: txtHtml.body }),
@@ -362,7 +364,9 @@ const DocumentForm = ({
       {(props) => (
         <Form onSubmit={props.handleSubmit} noValidate className="pt-2">
           {(!data
-            || (data && data.state === 'draft' && (!data.uploadContentType || data.uploadContentType === ''))
+            || (data && data.state === 'draft' && (!data.uploadContentType
+              || (!data.uploadContentType.includes('pdf') && !data.uploadContentType.includes('epub')))
+            )
           ) && (
             <Form.Row>
               <Col>
