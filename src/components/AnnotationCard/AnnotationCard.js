@@ -605,8 +605,8 @@ function AnnotationCard({
                         </Dropdown.Toggle>
 
                         <Dropdown.Menu className="annotation-more-options-dropdown-menu">
-                          <Dropdown.Item href="#/action-1" onClick={() => { annotationData.editing = true; SetAndSaveAnnotationData(annotationData); setUpdateFocusOfAnnotation(true); }}>Edit</Dropdown.Item>
-                          <Dropdown.Item href="#/action-2" onClick={DeleteAnnotation}>Delete</Dropdown.Item>
+                          <Dropdown.Item onClick={() => { annotationData.editing = true; SetAndSaveAnnotationData(annotationData); setUpdateFocusOfAnnotation(true); }}>Edit</Dropdown.Item>
+                          <Dropdown.Item onClick={DeleteAnnotation}>Delete</Dropdown.Item>
                         </Dropdown.Menu>
                       </Dropdown>
                     ) : ''}
