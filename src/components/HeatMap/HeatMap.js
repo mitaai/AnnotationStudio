@@ -9,10 +9,13 @@ import { DocumentFiltersContext, DocumentAnnotationsContext } from '../../contex
 
 const HeatMap = ({ pdf }) => {
   const lineHeight = 18;
-  const documentHeight = $('#document-container').height() || 0;
-  const scaleFactor = $('#document-container').get(0) === undefined
-    ? 1
-    : $('#document-container').height() / $('#document-container').get(0).scrollHeight;
+  let documentHeight;
+  let documentScrollHeight;
+  if ($('#document-container').get(0) !== undefined) {
+    documentHeight = $('#document-container').height();
+    documentScrollHeight = $('#document-container').get(0).scrollHeight;
+  }
+  const scaleFactor = (documentHeight !== undefined && documentScrollHeight !== undefined && documentScrollHeight !== 0) ? (documentHeight / documentScrollHeight) : 1;
   const minStrokeHeight = 1;
   const offsetTop = $('#document-container').offset() === undefined
     ? 0
@@ -22,8 +25,8 @@ const HeatMap = ({ pdf }) => {
     : Math.ceil(minStrokeHeight / scaleFactor);
   const [channelAnnotations] = useContext(DocumentAnnotationsContext);
   const [documentFilters] = useContext(DocumentFiltersContext);
-  const n = (Math.ceil($('#document-card-container').height() / grandularity));
-  const map = new Array(Number.isNaN(n) ? 0 : n);
+  const n = documentScrollHeight !== undefined && grandularity !== undefined ? Math.ceil(documentScrollHeight / grandularity) : 0;
+  const map = new Array(n);
 
   for (const side in channelAnnotations) {
     if (channelAnnotations[side] !== null) {
