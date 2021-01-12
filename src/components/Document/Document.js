@@ -106,7 +106,7 @@ const RID = () => {
 
 
 export default function Document({
-  alerts, setAlerts, annotations, setChannelAnnotations, addActiveAnnotation, removeActiveAnnotation, user, addAnnotationToChannels, documentToAnnotate, annotateDocument, displayAnnotationsInChannels,
+  annotations, setChannelAnnotations, addActiveAnnotation, removeActiveAnnotation, user, addAnnotationToChannels, documentToAnnotate, annotateDocument, displayAnnotationsInChannels,
 }) {
   const myRef = useRef();
   const [target, setTarget] = useState(null);
@@ -336,54 +336,67 @@ export default function Document({
 
   useEffect(() => {
     // eslint-disable-next-line no-undef
-    document.addEventListener('selectionchange', debounce(async (documentContainer) => {
-      // we need to make sure that the annotate button disappears
-      // while the document selection is being made
-      if (target !== null || show !== false) {
-        setTarget(null);
-        setShow();
-      }
+    if (!annotationsHighlighted) {
+      document.addEventListener('selectionchange', () => {
+        const selection = document.getSelection();
+        if (selection.rangeCount === 1) {
+          const range = selection.getRangeAt(0);
+          if (range.collapsed) {
+            // we need to wait 500ms because clicking the annotate button can trigger this event so we want the annotate button to be clicked before removing it from the dom
+            setTimeout(() => {
+              setTarget(null);
+              setShow();
+            }, 500);
+          }
+        }
+      });
+      document.addEventListener('selectionchange', debounce(async (documentContainer) => {
+        // we need to make sure that the annotate button disappears
+        // while the document selection is being made
+        if (target !== null || show) {
+          setTarget(null);
+          setShow();
+        }
 
-      if (!$('#document-content-container').hasClass('unselectable')) {
+        if (!$('#document-content-container').hasClass('unselectable')) {
         // if the reason why the selection change is because you selected text
         // to annotate then don't remove class active from a text that was selected
         // otherwise the selection change so any text that was selected by the user
         // is no longer needed so we need to remove styling
-        if (!selectedTextToAnnotate) {
+          if (!selectedTextToAnnotate) {
           // if we are making a new selection we need to make sure all old selections are removed
-          $('.text-currently-being-annotated').removeClass('active');
-          $('#document-content-container').removeClass('unselectable');
-        } else {
-          setSelectedTextToAnnotate();
-        }
+            $('.text-currently-being-annotated').removeClass('active');
+            $('#document-content-container').removeClass('unselectable');
+          } else {
+            setSelectedTextToAnnotate();
+          }
 
-        // eslint-disable-next-line no-undef
-        const selection = document.getSelection();
-        if (selection.rangeCount === 1) {
-          const range = selection.getRangeAt(0);
-          if (!range.collapsed && range.toString().length > 0) {
+          // eslint-disable-next-line no-undef
+          const selection = document.getSelection();
+          if (selection.rangeCount === 1) {
+            const range = selection.getRangeAt(0);
+            if (!range.collapsed && range.toString().length > 0) {
             // we need to make sure this selection happened inside the
             // document card container and not some where outside of the document
-            if ($(range.commonAncestorContainer.parentElement).parents('#document-card-container').length !== 0) {
+              if ($(range.commonAncestorContainer.parentElement).parents('#document-card-container').length !== 0) {
               // make sure the range is something
               // eslint-disable-next-line no-undef
-              const scope = document.createRange();
-              scope.selectNodeContents(documentContainer);
-              // we need to make sure that the selection the user made is inside the
-              // scope, meaning that everything they selected is inside the document and
-              // not outside the document
-              const mySelector = await customDescibeTextQuote(range, scope);
-              positionAnnotateButton(selection, mySelector);
+                const scope = document.createRange();
+                scope.selectNodeContents(documentContainer);
+                // we need to make sure that the selection the user made is inside the
+                // scope, meaning that everything they selected is inside the document and
+                // not outside the document
+                const mySelector = await customDescibeTextQuote(range, scope);
+                positionAnnotateButton(selection, mySelector);
+              }
             }
           }
         }
-      }
 
       //
-    }, 500, myRef.current));
-    if (!annotationsHighlighted) {
+      }, 500, myRef.current));
       setAnnotationsHighlighted(true);
-      setTimeout(highlightTextForAllAnnotations, 2000, annotations, setChannelAnnotations);
+      setTimeout(highlightTextForAllAnnotations, 100, annotations, setChannelAnnotations);
     }
   });
 
@@ -415,7 +428,7 @@ export default function Document({
         {(props) => (
           <Tooltip
             id="annotate-document-tooltip"
-            onClick={async () => {
+            onMouseDown={async () => {
               if (documentToAnnotate.state !== 'draft') {
                 const rid = RID();
                 await annotateDocument(selector, rid);
@@ -434,6 +447,9 @@ export default function Document({
                 // put the annotation on
                 const annotateStartPositionSpan = $('#annotate-start-position-span').offset();
                 addNewAnnotationToDom(rid);
+                // after the text has been annotated we need to tell the annotate button to not show
+                setTarget(null);
+                setShow();
                 /* $('#document-container').animate({
                   scrollTop: annotateStartPositionSpan.top,
                 }, 500, () => { this.addNewAnnotationToDom(rid); }); */

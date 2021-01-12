@@ -650,7 +650,7 @@ function AnnotationCard({
       </Card>
       <style jsx global>
         {`
-        .truncated-annotation {
+        .truncated-annotation, .truncated-annotation .text-quote {
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
