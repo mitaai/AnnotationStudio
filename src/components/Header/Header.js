@@ -8,6 +8,7 @@ import {
   BoxArrowUpRight, BoxArrowInRight, BoxArrowRight, GearWideConnected,
 } from 'react-bootstrap-icons';
 import SecondNavbar from '../SecondNavbar';
+import FeedbackButton from '../FeedbackButton';
 
 function getEditProfileUrl(email) {
   const slug = email.replace(/[*+~.()'"!:@]/g, '-');
@@ -33,6 +34,7 @@ function Header({
           <Navbar.Toggle aria-controls="responsive-navbar-nav" />
           <Navbar.Collapse className="justify-content-end">
             <Nav>
+              <FeedbackButton session={session} />
               <NavDropdown title="About" id="basic-nav-dropdown" data-testid="nav-about-dropdown">
                 <NavDropdown.Item href="https://www.annotationstudio.org/project/">Project</NavDropdown.Item>
                 <NavDropdown.Item href="https://www.annotationstudio.org/pedagogy/">Pedagogy</NavDropdown.Item>
