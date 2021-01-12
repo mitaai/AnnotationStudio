@@ -986,7 +986,7 @@ function AnnotationCard({
       }
 
       .annotation-tags {
-        padding: 0.3rem !important;
+        padding: 0px 0.3rem 0.3rem 0.3rem !important; 
         font-size: 16px;
         font-weight: 500 !important;
         border-bottom-width: 1px !important
