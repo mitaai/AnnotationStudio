@@ -5,7 +5,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import $ from 'jquery';
 import { Overlay, Tooltip, Toast } from 'react-bootstrap';
-import { Pen } from 'react-bootstrap-icons';
+import { Pen, PencilFill, ChatLeftTextFill } from 'react-bootstrap-icons';
 import {
   createTextQuoteSelector,
   highlightRange,
@@ -424,17 +424,36 @@ export default function Document({
     <>
       <div id="show-cannot-annotate-document-toast-container">
         <Toast
-          onClose={() => setShowCannotAnnotateDocumentToast()}
+          onClose={() => setShowCannotAnnotateDocumentToast(false)}
           show={showCannotAnnotateDocumentToast}
-          // delay={8000}
-          variant="warning"
-        // autohide
         >
           <Toast.Header>
             <strong className="mr-auto">Cannot Annotate Document</strong>
           </Toast.Header>
           <Toast.Body>
-            This document is currently a draft so it cannot be annotated at the moment.
+            <p>
+              This document is currently a
+              {' '}
+              <PencilFill />
+              {' '}
+              <strong>Draft</strong>
+              . Documents in
+              {' '}
+              <PencilFill />
+              {' '}
+              <strong>Draft</strong>
+              {' '}
+              mode cannot be annotated.
+            </p>
+            <p>
+              Please edit the document and change its state to
+              {' '}
+              <ChatLeftTextFill />
+              {' '}
+              <strong>Published</strong>
+              {' '}
+              to enable annotation.
+            </p>
           </Toast.Body>
         </Toast>
       </div>
@@ -492,6 +511,7 @@ export default function Document({
             height: 0px;
             left: 10px;
             top: 130px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
           }
 
           #show-cannot-annotate-document-toast-container .toast {
