@@ -111,8 +111,12 @@ const DocumentPage = ({
       permissions: defaultPermissions,
     },
   });
-  const [annotationChannel1Loaded, setAnnotationChannel1Loaded] = useState(annotations.length === 0);
-  const [annotationChannel2Loaded, setAnnotationChannel2Loaded] = useState(annotations.length === 0);
+  const [
+    annotationChannel1Loaded, setAnnotationChannel1Loaded,
+  ] = useState(annotations.length === 0);
+  const [
+    annotationChannel2Loaded, setAnnotationChannel2Loaded,
+  ] = useState(annotations.length === 0);
   const minDisplayWidth = 1150;
   // popovers for mobile
   // eslint-disable-next-line no-unused-vars
@@ -584,83 +588,81 @@ const DocumentPage = ({
 
             <style jsx global>
               {`
-          #annotations-header-label {
-            padding: 12px 0px 0px 20px;
-          }
+              #annotations-header-label {
+                padding: 12px 0px 0px 20px;
+              }
 
-          #document-container {
-            height: calc(100vh - 230px);
-            overflow-y: scroll;
-            padding: 
-            ${(document.uploadContentType && document.uploadContentType.includes('pdf')) ? '0' : '10px 0px'};
-          }
+              #document-container {
+                height: calc(100vh - 230px);
+                overflow-y: scroll;
+                padding: 
+                ${(document.uploadContentType && document.uploadContentType.includes('pdf')) ? '0' : '10px 0px'};
+              }
 
-          ${(document.uploadContentType && document.uploadContentType.includes('pdf')) ? 'img.bi { display: none; }' : ''}
+              #document-container::-webkit-scrollbar {
+                background: transparent;
+                width: 10px;
+                border-radius: 8px;
+              }
 
-          #document-container::-webkit-scrollbar {
-            background: transparent;
-            width: 10px;
-            border-radius: 8px;
-          }
+              #document-container::-webkit-scrollbar-thumb {
+                background: rgba(0,0,0,0.1);
+                border: 1px solid rgba(0,0,0,0.6);
+                border-radius: 8px;
+              }
 
-          #document-container::-webkit-scrollbar-thumb {
-            background: rgba(0,0,0,0.1);
-            border: 1px solid rgba(0,0,0,0.6);
-            border-radius: 8px;
-          }
+              #document-container .annotation-channel-container{
+                width: calc(50vw - 375px)
+              }
+              
+              #document-container #annotation-well-card-container {
+                min-height: 100%;
+                background-color: transparent;
+              }
 
-          #document-container .annotation-channel-container{
-            width: calc(50vw - 375px)
-          }
-          
-          #document-container #annotation-well-card-container {
-            min-height: 100%;
-            background-color: transparent;
-          }
-
-          #document-container #document-card-container {
-            padding: 40px;
-            font-family: 'Times';
-            border-radius: 0px;
-            min-height: 100%;
-            border: none;
-            box-shadow: ${(document.uploadContentType && document.uploadContentType.includes('pdf'))
+              #document-container #document-card-container {
+                padding: 40px;
+                font-family: 'Times';
+                border-radius: 0px;
+                min-height: 100%;
+                border: none;
+                box-shadow: ${(document.uploadContentType && document.uploadContentType.includes('pdf'))
                 ? 'none'
                 : '3px 3px 9px 0px rgba(0,0,0,0.38)'
-            };
-            ${(document.uploadContentType && document.uploadContentType.includes('pdf')) ? 'background: none;' : ''}
-          }
+                };
+                ${(document.uploadContentType && document.uploadContentType.includes('pdf')) ? 'background: none;' : ''}
+              }
 
-          #document-container #annotation-well-card-container .card-body {
-            padding: 10px;
-          }
+              #document-container #annotation-well-card-container .card-body {
+                padding: 10px;
+              }
+                  
+              #document-container #annotation-well-card-container .card-body #annotation-well-header {
+                  margin-bottom: 10px;
+              }
+
+              #document-container #annotation-well-card-container .card-body #annotation-list-container > .col > .row {
+                margin-bottom: 5px;
+              }  
+      
+              #document-container #annotation-well-card-container .card-body #annotation-list-container > .col > .row .card {
+                border: none;
+                box-shadow: 0px 0px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12), 0 1px 5px 0 rgba(0, 0, 0, 0.2);
+              }
+      
+              #document-container #annotation-well-card-container .card-body .btn-group:first-child {
+                  margin-right: 10px;
+              }
+      
+              #document-container #annotation-well-card-container .card-body .list-group-item {
+                  padding: 5px 10px;
+              }
+
+              .text-currently-being-annotated.active {
+                background-color: rgba(0, 123, 255, 0.5);
+              }
               
-          #document-container #annotation-well-card-container .card-body #annotation-well-header {
-              margin-bottom: 10px;
-          }
-
-          #document-container #annotation-well-card-container .card-body #annotation-list-container > .col > .row {
-            margin-bottom: 5px;
-          }  
-  
-          #document-container #annotation-well-card-container .card-body #annotation-list-container > .col > .row .card {
-            border: none;
-            box-shadow: 0px 0px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12), 0 1px 5px 0 rgba(0, 0, 0, 0.2);
-          }
-  
-          #document-container #annotation-well-card-container .card-body .btn-group:first-child {
-              margin-right: 10px;
-          }
-  
-          #document-container #annotation-well-card-container .card-body .list-group-item {
-              padding: 5px 10px;
-          }
-
-          .text-currently-being-annotated.active {
-            background-color: rgba(0, 123, 255, 0.5);
-          }
-          
-        `}
+            `}
             </style>
           </DocumentFiltersContext.Provider>
         </DocumentAnnotationsContext.Provider>

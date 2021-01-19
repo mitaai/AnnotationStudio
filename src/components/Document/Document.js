@@ -106,7 +106,15 @@ const RID = () => {
 
 
 export default function Document({
-  annotations, setChannelAnnotations, addActiveAnnotation, removeActiveAnnotation, user, addAnnotationToChannels, documentToAnnotate, annotateDocument, displayAnnotationsInChannels,
+  annotations,
+  setChannelAnnotations,
+  addActiveAnnotation,
+  removeActiveAnnotation,
+  user,
+  addAnnotationToChannels,
+  documentToAnnotate,
+  annotateDocument,
+  displayAnnotationsInChannels,
 }) {
   const myRef = useRef();
   const [target, setTarget] = useState(null);
@@ -333,6 +341,12 @@ export default function Document({
     setSelectedTextToAnnotate(true);
   };
 
+  useEffect(() => {
+    if (documentToAnnotate && documentToAnnotate.text) {
+      const bgImages = $('img.bi');
+      bgImages.map((_index, bgImage) => bgImage.setAttribute('draggable', false));
+    }
+  }, [documentToAnnotate]);
 
   useEffect(() => {
     // eslint-disable-next-line no-undef
