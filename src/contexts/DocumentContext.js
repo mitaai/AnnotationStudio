@@ -5,5 +5,8 @@ const DocumentContext = React.createContext();
 const DocumentFiltersContext = React.createContext();
 const DocumentActiveAnnotationsContext = React.createContext();
 export {
-  DocumentAnnotationsContext, DocumentContext, DocumentFiltersContext, DocumentActiveAnnotationsContext,
+  DocumentAnnotationsContext,
+  DocumentContext,
+  DocumentFiltersContext,
+  DocumentActiveAnnotationsContext,
 };
