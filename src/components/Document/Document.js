@@ -3,7 +3,6 @@
 /* eslint-disable react/no-danger */
 /* eslint-disable no-restricted-syntax */
 import React, { useState, useEffect, useRef } from 'react';
-import ReactDOM from 'react-dom';
 import $ from 'jquery';
 import { Overlay, Tooltip, Toast } from 'react-bootstrap';
 import { Pen } from 'react-bootstrap-icons';
@@ -115,6 +114,8 @@ export default function Document({
   documentToAnnotate,
   annotateDocument,
   displayAnnotationsInChannels,
+  setAlerts,
+  alerts,
 }) {
   const myRef = useRef();
   const [target, setTarget] = useState(null);
@@ -141,15 +142,16 @@ export default function Document({
       if ($(e.target).hasClass('active')) {
         $(`#${aid} .annotation-header`).trigger('click');
       }
-      // if the display mode is for mobile then when the user clicks on an annotation it should add the annotation to the activeAnnotations state
+      // if the display mode is for mobile then when the user clicks on an annotation
+      // it should add the annotation to the activeAnnotations state
       if (!displayAnnotationsInChannels) {
         addActiveAnnotation(aid, $(e.target).get(0));
       }
     });
   };
 
-  const highlightTextForAllAnnotations = async (_annotations, setChannelAnnotations) => {
-    const annotations = {
+  const highlightTextForAllAnnotations = async (_annotations) => {
+    const annotationsLeftRight = {
       left: [],
       right: [],
     };
@@ -176,8 +178,9 @@ export default function Document({
       const annotationBeginning = $(`#document-content-container span[annotation-id='${annotation._id}'] .annotation-beginning-marker`);
       const annotationEnding = $(`#document-content-container span[annotation-id='${annotation._id}'] .annotation-ending-marker`);
       if (annotationBeginning.get(0) === undefined) {
-        console.log('had trouble annotating a piece of text');
-        // setAlerts([...alerts, { text: 'unable to annotate a piece of text', variant: 'danger' }]);
+        setAlerts([...alerts, {
+          text: `Highlight error for annotation with ID ${annotation._id}`, variant: 'warning',
+        }]);
       } else {
         const annotationBeginningPosition = annotationBeginning.offset();
         const annotationEndingPosition = annotationEnding.offset();
@@ -189,7 +192,7 @@ export default function Document({
         // ither to the left or right channel
         // eslint-disable-next-line no-undef
         if (annotationBeginningPosition.left < window.innerWidth / 2) {
-          annotations.left.push(
+          annotationsLeftRight.left.push(
             {
               position:
               {
@@ -201,7 +204,7 @@ export default function Document({
             },
           );
         } else {
-          annotations.right.push(
+          annotationsLeftRight.right.push(
             {
               position:
               {
@@ -220,7 +223,7 @@ export default function Document({
     // need them to be displayed in the their correct channels
     // before we set the channel annotations we are going to save
     // this data in the dom to be retrieved later by other components
-    annotations.left = annotations.left.sort((a, b) => {
+    annotationsLeftRight.left = annotationsLeftRight.left.sort((a, b) => {
       // if the tops are the same then we have to distinguish which
       // annotation comes first by who has the smaller left value
       if (a.position.top - b.position.top === 0) {
@@ -228,7 +231,7 @@ export default function Document({
       }
       return a.position.top - b.position.top;
     });
-    annotations.right = annotations.right.sort((a, b) => {
+    annotationsLeftRight.right = annotationsLeftRight.right.sort((a, b) => {
       // if the tops are the same then we have to distinguish which
       // annotation comes first by who has the smaller left value
       if (a.position.top - b.position.top === 0) {
@@ -237,7 +240,7 @@ export default function Document({
       return a.position.top - b.position.top;
     });
 
-    setChannelAnnotations(annotations);
+    setChannelAnnotations(annotationsLeftRight);
     addHoverEventListenersToAllHighlightedText();
   };
 
@@ -351,12 +354,14 @@ export default function Document({
   useEffect(() => {
     // eslint-disable-next-line no-undef
     if (!annotationsHighlighted) {
-      document.addEventListener('selectionchange', () => {
-        const selection = document.getSelection();
+      document.addEventListener('selectionchange', () => { // eslint-disable-line no-undef
+        const selection = document.getSelection(); // eslint-disable-line no-undef
         if (selection.rangeCount === 1) {
           const range = selection.getRangeAt(0);
           if (range.collapsed) {
-            // we need to wait 500ms because clicking the annotate button can trigger this event so we want the annotate button to be clicked before removing it from the dom
+            // we need to wait 500ms because clicking the annotate button can
+            // trigger this event so we want the annotate button to be clicked
+            // before removing it from the dom
             setTimeout(() => {
               setTarget(null);
               setShow();
@@ -364,7 +369,7 @@ export default function Document({
           }
         }
       });
-      document.addEventListener('selectionchange', debounce(async (documentContainer) => {
+      document.addEventListener('selectionchange', debounce(async (documentContainer) => { // eslint-disable-line no-undef
         // we need to make sure that the annotate button disappears
         // while the document selection is being made
         if (target !== null || show) {
@@ -410,7 +415,7 @@ export default function Document({
       //
       }, 500, myRef.current));
       setAnnotationsHighlighted(true);
-      setTimeout(highlightTextForAllAnnotations, 100, annotations, setChannelAnnotations);
+      setTimeout(highlightTextForAllAnnotations, 100, annotations);
     }
   });
 
@@ -459,7 +464,7 @@ export default function Document({
                 // first grabbing position data on the '#annotate-start-position-span'
                 // element so we know where the annotation starts and which side to
                 // put the annotation on
-                const annotateStartPositionSpan = $('#annotate-start-position-span').offset();
+                // const annotateStartPositionSpan = $('#annotate-start-position-span').offset();
                 addNewAnnotationToDom(rid);
                 // after the text has been annotated we need to tell the annotate button to not show
                 setTarget(null);

@@ -15,17 +15,28 @@ const HeatMap = ({ pdf }) => {
     documentHeight = $('#document-container').height();
     documentScrollHeight = $('#document-container').get(0).scrollHeight;
   }
-  const scaleFactor = (documentHeight !== undefined && documentScrollHeight !== undefined && documentScrollHeight !== 0) ? (documentHeight / documentScrollHeight) : 1;
+  const scaleFactor = (
+    documentHeight !== undefined
+    && documentScrollHeight !== undefined
+    && documentScrollHeight !== 0
+  )
+    ? (documentHeight / documentScrollHeight)
+    : 1;
   const minStrokeHeight = 1;
   const offsetTop = $('#document-container').offset() === undefined
     ? 0
     : $('#document-container').offset().top;
-  const grandularity = lineHeight * scaleFactor >= minStrokeHeight
+  const granularity = lineHeight * scaleFactor >= minStrokeHeight
     ? lineHeight
     : Math.ceil(minStrokeHeight / scaleFactor);
   const [channelAnnotations] = useContext(DocumentAnnotationsContext);
   const [documentFilters] = useContext(DocumentFiltersContext);
-  const n = documentScrollHeight !== undefined && grandularity !== undefined ? Math.ceil(documentScrollHeight / grandularity) : 0;
+  const n = (
+    documentScrollHeight !== undefined
+    && granularity !== undefined
+  )
+    ? Math.ceil(documentScrollHeight / granularity)
+    : 0;
   const map = new Array(n);
 
   for (const side in channelAnnotations) {
@@ -56,10 +67,10 @@ const HeatMap = ({ pdf }) => {
             // convert the annotation position and height
             // into starting and ending indexs for the map
             let startIndex = Math.floor(
-              (anno.position.top - offsetTop) / grandularity,
+              (anno.position.top - offsetTop) / granularity,
             );
             startIndex = startIndex < 0 ? 0 : startIndex;
-            const endIndex = Math.floor((anno.position.top + h - offsetTop) / grandularity);
+            const endIndex = Math.floor((anno.position.top + h - offsetTop) / granularity);
             for (let i = startIndex; i <= endIndex; i += 1) {
               if (i < n) {
                 if (map[i] === undefined) {
