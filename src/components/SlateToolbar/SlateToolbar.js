@@ -32,7 +32,7 @@ import {
   ToolbarList,
   ToolbarLink,
   ToolbarImage,
-  isNodeTypeIn,
+  someNode,
   toggleNodeType,
 } from '@udecode/slate-plugins';
 import {
@@ -62,7 +62,7 @@ const SlateToolbar = () => {
         <Dropdown.Menu>
           <Dropdown.Item
             active={
-              isNodeTypeIn(editor, DEFAULTS_BLOCKQUOTE.blockquote.type)
+              someNode(editor, { match: { type: DEFAULTS_BLOCKQUOTE.blockquote.type } })
             }
             eventKey="blockquote"
             onSelect={
@@ -78,7 +78,7 @@ const SlateToolbar = () => {
           </Dropdown.Item>
           <Dropdown.Item
             active={
-              isNodeTypeIn(editor, DEFAULTS_CODE_BLOCK.code_block.type)
+              someNode(editor, { match: { type: DEFAULTS_CODE_BLOCK.code_block.type } })
             }
             eventKey="codeBlock"
             onSelect={
@@ -94,7 +94,7 @@ const SlateToolbar = () => {
           </Dropdown.Item>
           <Dropdown.Item
             active={
-              isNodeTypeIn(editor, DEFAULTS_HEADING.h1.type)
+              someNode(editor, { match: { type: DEFAULTS_HEADING.h1.type } })
             }
             eventKey="h1"
             onSelect={
@@ -109,7 +109,7 @@ const SlateToolbar = () => {
             <h1 className="slate-h1">Heading 1</h1>
           </Dropdown.Item>
           <Dropdown.Item
-            active={isNodeTypeIn(editor, DEFAULTS_HEADING.h2.type)}
+            active={someNode(editor, { match: { type: DEFAULTS_HEADING.h2.type } })}
             eventKey="h2"
             onSelect={
               (eventKey, e) => {
@@ -123,7 +123,7 @@ const SlateToolbar = () => {
             <h2 className="slate-h2">Heading 2</h2>
           </Dropdown.Item>
           <Dropdown.Item
-            active={isNodeTypeIn(editor, DEFAULTS_HEADING.h3.type)}
+            active={someNode(editor, { match: { type: DEFAULTS_HEADING.h3.type } })}
             eventKey="h3"
             onSelect={
               (eventKey, e) => {
@@ -137,7 +137,7 @@ const SlateToolbar = () => {
             <h3 className="slate-h3">Heading 3</h3>
           </Dropdown.Item>
           <Dropdown.Item
-            active={isNodeTypeIn(editor, DEFAULTS_HEADING.h4.type)}
+            active={someNode(editor, { match: { type: DEFAULTS_HEADING.h4.type } })}
             eventKey="h4"
             onSelect={
               (eventKey, e) => {
@@ -151,7 +151,7 @@ const SlateToolbar = () => {
             <h4 className="slate-h4">Heading 4</h4>
           </Dropdown.Item>
           <Dropdown.Item
-            active={isNodeTypeIn(editor, DEFAULTS_HEADING.h5.type)}
+            active={someNode(editor, { match: { type: DEFAULTS_HEADING.h5.type } })}
             eventKey="h5"
             onSelect={
               (eventKey, e) => {
@@ -165,7 +165,7 @@ const SlateToolbar = () => {
             <h5 className="slate-h5">Heading 5</h5>
           </Dropdown.Item>
           <Dropdown.Item
-            active={isNodeTypeIn(editor, DEFAULTS_HEADING.h6.type)}
+            active={someNode(editor, { match: { type: DEFAULTS_HEADING.h6.type } })}
             eventKey="h6"
             onSelect={
               (eventKey, e) => {

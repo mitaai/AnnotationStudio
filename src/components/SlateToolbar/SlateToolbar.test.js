@@ -24,7 +24,7 @@ jest.mock('@udecode/slate-plugins', () => ({
   ToolbarButton() { return <div />; },
   ToolbarList() { return <div />; },
   ToolbarLink() { return <div />; },
-  isNodeTypeIn: jest.fn,
+  someNode: jest.fn,
   toggleNodeType: jest.fn,
   DEFAULTS_ALIGN: {
     align_left: { type: 'align_left' },
