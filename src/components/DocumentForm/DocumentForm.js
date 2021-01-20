@@ -253,7 +253,7 @@ const DocumentForm = ({
     const { id, slug, uploadContentType } = data;
     const patchUrl = `/api/document/${id}`;
     const { text, ...rest } = values;
-    const valuesWithSerializedText = (uploadContentType && (data.uploadContentType.includes('pdf') && data.uploadContentType.includes('epub')))
+    const valuesWithSerializedText = (uploadContentType && (data.uploadContentType.includes('pdf') || data.uploadContentType.includes('epub')))
       ? rest
       : {
         ...values,
