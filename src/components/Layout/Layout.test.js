@@ -3,7 +3,7 @@
  */
 
 import { act } from 'react-dom/test-utils';
-import { render, wait } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import Layout from './Layout';
 
 jest.mock('next/router', () => ({
@@ -22,7 +22,7 @@ test('first instance of /Annotation Studio/ has class navbar-brand', async () =>
     const { getAllByText } = render(<Layout />);
     brandElement = getAllByText(/Annotation Studio/);
   });
-  await wait(() => {
+  await waitFor(() => {
     expect(brandElement[0]).toHaveClass('navbar-brand');
   });
 });

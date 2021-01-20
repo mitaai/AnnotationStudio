@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 
-import { render, wait } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import Header from './Header';
 
 jest.mock('next/router', () => ({
@@ -18,7 +18,7 @@ jest.mock('next/router', () => ({
 test('renders site name', async () => {
   const { getByText } = render(<Header />);
   const nameElement = getByText(/Annotation Studio/);
-  await wait(() => {
+  await waitFor(() => {
     expect(nameElement).toBeInTheDocument();
   });
 });
@@ -26,7 +26,7 @@ test('renders site name', async () => {
 test('renders navbar', async () => {
   const { getAllByRole } = render(<Header />);
   const navElement = getAllByRole('navigation')[0];
-  await wait(() => {
+  await waitFor(() => {
     expect(navElement).toBeInTheDocument();
   });
 });
@@ -35,7 +35,7 @@ test('renders about dropdown', async () => {
   const { getAllByRole, getByTestId } = render(<Header />);
   const navElement = getAllByRole('navigation')[0];
   const aboutDropdown = getByTestId('nav-about-dropdown');
-  await wait(() => {
+  await waitFor(() => {
     expect(navElement).toContainElement(aboutDropdown);
   });
 });
@@ -44,7 +44,7 @@ test('renders help link', async () => {
   const { getAllByRole, getByTestId } = render(<Header />);
   const navElement = getAllByRole('navigation')[0];
   const helpLink = getByTestId('nav-help-link');
-  await wait(() => {
+  await waitFor(() => {
     expect(navElement).toContainElement(helpLink);
   });
 });

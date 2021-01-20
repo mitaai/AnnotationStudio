@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 
-import { render, wait } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import ViewGroup from '../../../pages/groups/[id]/index';
 import { group } from '../../../utils/testUtil';
 
@@ -20,7 +20,7 @@ describe('Group View Page', () => {
   it('renders group card', async () => {
     const { getByTestId } = render(<ViewGroup group={group} />);
     const cardBody = getByTestId('groupview-card-body');
-    await wait(() => {
+    await waitFor(() => {
       expect(cardBody).toBeInTheDocument();
     });
   });
@@ -28,7 +28,7 @@ describe('Group View Page', () => {
   it('renders members table', async () => {
     const { getByTestId } = render(<ViewGroup group={group} />);
     const membersTable = getByTestId('groupview-members-table');
-    await wait(() => {
+    await waitFor(() => {
       expect(membersTable).toBeInTheDocument();
     });
   });
@@ -36,7 +36,7 @@ describe('Group View Page', () => {
   it('renders button group', async () => {
     const { getByTestId } = render(<ViewGroup group={group} />);
     const buttonGroup = getByTestId('groupview-button-group');
-    await wait(() => {
+    await waitFor(() => {
       expect(buttonGroup).toBeInTheDocument();
     });
   });

@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 
-import { render, wait } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import GroupList from '../../pages/groups/index';
 
 jest.mock('next/router', () => ({
@@ -18,7 +18,7 @@ jest.mock('next/router', () => ({
 test('renders group list card', async () => {
   const { getByTestId } = render(<GroupList query={{ deletedGroupId: '' }} />);
   const cardBody = getByTestId('grouplist-card-body');
-  await wait(() => {
+  await waitFor(() => {
     expect(cardBody).toBeInTheDocument();
   });
 });
@@ -26,7 +26,7 @@ test('renders group list card', async () => {
 test('renders new group create button', async () => {
   const { getByTestId } = render(<GroupList query={{ deletedGroupId: '' }} />);
   const createButton = getByTestId('grouplist-create-button');
-  await wait(() => {
+  await waitFor(() => {
     expect(createButton).toBeInTheDocument();
   });
 });

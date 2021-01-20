@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 
-import { render, wait } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import NewUser from '../../pages/user/newuser';
 
 jest.mock('next/router', () => ({
@@ -18,7 +18,7 @@ jest.mock('next/router', () => ({
 test('renders registration card', async () => {
   const { getByText } = render(<NewUser />);
   const textElement = getByText(/Please fill out the following form to complete your registration/);
-  await wait(() => {
+  await waitFor(() => {
     expect(textElement).toBeInTheDocument();
   });
 });
@@ -26,7 +26,7 @@ test('renders registration card', async () => {
 test('renders registration form', async () => {
   const { getAllByRole } = render(<NewUser />);
   const textboxElements = getAllByRole('textbox');
-  await wait(() => {
+  await waitFor(() => {
     expect(textboxElements).toHaveLength(4);
   });
 });
@@ -34,7 +34,7 @@ test('renders registration form', async () => {
 test('renders submit button', async () => {
   const { getByTestId } = render(<NewUser />);
   const submitButton = getByTestId('newuser-submit-button');
-  await wait(() => {
+  await waitFor(() => {
     expect(submitButton).toBeInTheDocument();
   });
 });

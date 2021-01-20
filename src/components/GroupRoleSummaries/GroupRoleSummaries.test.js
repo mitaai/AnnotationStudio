@@ -2,13 +2,13 @@
  * @jest-environment jsdom
  */
 
-import { render, wait } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import GroupRoleSummaries from './GroupRoleSummaries';
 
 test('renders card', async () => {
   const { getByTestId } = render(<GroupRoleSummaries />);
   const cardElement = getByTestId('group-roles-card');
-  await wait(() => {
+  await waitFor(() => {
     expect(cardElement).toBeInTheDocument();
   });
 });
@@ -16,7 +16,7 @@ test('renders card', async () => {
 test('renders list', async () => {
   const { getByTestId } = render(<GroupRoleSummaries />);
   const listElement = getByTestId('group-roles-list');
-  await wait(() => {
+  await waitFor(() => {
     expect(listElement).toBeInTheDocument();
   });
 });
@@ -24,7 +24,7 @@ test('renders list', async () => {
 test('displays info text', async () => {
   const { getByText } = render(<GroupRoleSummaries />);
   const textElement = getByText('Members');
-  await wait(() => {
+  await waitFor(() => {
     expect(textElement).toBeInTheDocument();
   });
 });

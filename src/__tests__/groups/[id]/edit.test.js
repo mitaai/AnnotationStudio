@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 
-import { render, wait } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import EditGroup from '../../../pages/groups/[id]/edit';
 import { group } from '../../../utils/testUtil';
 
@@ -21,7 +21,7 @@ describe('Group Edit Page', () => {
   it('renders group card', async () => {
     const { getByTestId } = render(<EditGroup group={group} />);
     const cardBody = getByTestId('groupedit-card-body');
-    await wait(() => {
+    await waitFor(() => {
       expect(cardBody).toBeInTheDocument();
     });
   });
@@ -29,7 +29,7 @@ describe('Group Edit Page', () => {
   it('renders members table', async () => {
     const { getByTestId } = render(<EditGroup group={group} />);
     const membersTable = getByTestId('groupedit-members-table');
-    await wait(() => {
+    await waitFor(() => {
       expect(membersTable).toBeInTheDocument();
     });
   });
@@ -37,7 +37,7 @@ describe('Group Edit Page', () => {
   it('renders delete button', async () => {
     const { getByTestId } = render(<EditGroup group={group} />);
     const deleteButton = getByTestId('groupedit-delete-button');
-    await wait(() => {
+    await waitFor(() => {
       expect(deleteButton).toBeInTheDocument();
     });
   });

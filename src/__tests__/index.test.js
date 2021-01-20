@@ -3,7 +3,7 @@
  */
 
 import { act } from 'react-dom/test-utils';
-import { render, wait } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import fetch from 'unfetch';
 import Index from '../pages/index';
 
@@ -26,7 +26,7 @@ test('renders header', async () => {
     const { getAllByRole } = render(<Index props={{ groupId: '' }} />);
     [navElement] = getAllByRole('navigation');
   });
-  await wait(() => {
+  await waitFor(() => {
     expect(navElement).toBeInTheDocument();
   });
 });
@@ -37,7 +37,7 @@ test('renders footer', async () => {
     const { getByRole } = render(<Index props={{ groupId: '' }} />);
     footerElem = getByRole('contentinfo');
   });
-  await wait(() => {
+  await waitFor(() => {
     expect(footerElem).toBeInTheDocument();
   });
 });

@@ -2,13 +2,13 @@
  * @jest-environment jsdom
  */
 
-import { render, wait } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import GroupRoleBadge from '.';
 
 test('renders badge', async () => {
   const { getByTestId } = render(<GroupRoleBadge groupRole="test" />);
   const badgeElement = getByTestId('group-role-badge');
-  await wait(() => {
+  await waitFor(() => {
     expect(badgeElement).toBeInTheDocument();
   });
 });
@@ -16,7 +16,7 @@ test('renders badge', async () => {
 test('renders text', async () => {
   const { getByText } = render(<GroupRoleBadge groupRole="owner" />);
   const badgeText = getByText('owner');
-  await wait(() => {
+  await waitFor(() => {
     expect(badgeText).toBeInTheDocument();
   });
 });
