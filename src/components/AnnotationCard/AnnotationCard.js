@@ -473,7 +473,9 @@ function AnnotationCard({
                               toolbar:
                                 'bold italic underline | link image media | removeformat | undo redo',
                               statusbar: false,
-                              content_style: 'body { font-size: 12px; margin-left: 3px; margin-right: 3px; margin-top: 3px; } p { margin-top: 0; } iframe, img { max-width: 100%; }',
+                              content_style: 'body { font-size: 12px; margin-left: 5px; margin-right: 5px; margin-top: 5px; } p { margin-top: 0; } iframe, img { max-width: 100%; }',
+                              icons: 'small',
+                              skin: 'small',
                               image_dimensions: false,
                               media_dimensions: false,
                               extended_valid_elements: 'img[class|src|border=0|alt|title|onmouseover|onmouseout|name],iframe[align<bottom?left?middle?right?top|class|frameborder|id|longdesc|name|scrolling<auto?no?yes|src|style|title]',
