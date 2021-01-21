@@ -459,8 +459,9 @@ function AnnotationCard({
                               height: 200,
                               menubar: false,
                               plugins: [
-                                'autolink link image media',
+                                'autolink link image media paste',
                               ],
+                              paste_as_text: true,
                               toolbar:
                                 'bold italic underline | link image media | removeformat | undo redo',
                               statusbar: false,
