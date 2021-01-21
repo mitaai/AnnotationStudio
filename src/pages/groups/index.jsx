@@ -1,6 +1,6 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import { useSession } from 'next-auth/client';
-import { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
   Button, ButtonGroup, Card, Table,
@@ -36,7 +36,7 @@ const GroupList = ({ query, initAlerts, statefulSession }) => {
     setPageLoading(false);
   }
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (session && !deepEqual(session.user.groups, groups)) {
       setGroups(session.user.groups);
       setPageLoading(false);
