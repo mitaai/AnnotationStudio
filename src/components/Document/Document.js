@@ -537,7 +537,7 @@ export default function Document({
           }
 
           .annotation-highlighted-text.filtered.active, .annotation-highlighted-text.filtered.active * {
-            background: rgb(255, 228, 145);
+            background: rgba(255, 165, 10, 0.5);
           }
 
           #document-content-container.unselectable {

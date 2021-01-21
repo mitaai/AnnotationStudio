@@ -306,6 +306,13 @@ function AnnotationCard({
   };
 
   const renderMenu = (results, menuProps) => {
+    const style = {
+      ...menuProps.style,
+      width: menuProps.style.width - 15,
+      opacity: 0.95,
+      boxShadow: '1px 1px 2px 2px rgba(0,0,0,0.08)',
+    };
+
     const res = results.map((r) => {
       if (typeof (r) === 'object') {
         return {
@@ -320,6 +327,7 @@ function AnnotationCard({
       <Menu
         // eslint-disable-next-line react/jsx-props-no-spreading
         {...menuProps}
+        style={style}
       >
         <div className="menu-header">Tag search results</div>
         {res.length === 0 && <div className="menu-no-results">no results</div>}
@@ -851,16 +859,16 @@ function AnnotationCard({
 
 
         .annotation-card-container.active .line1, .annotation-card-container.active .line2 {
-            background-color: rgba(255, 194, 10, 0.5);
+            background-color: rgba(255, 165, 10, 0.5);
             z-index: 3;
         }
 
         .annotation-card-container.active .annotation-pointer-background-left {
-            border-left-color: rgba(255, 194, 10, 0.5);
+            border-left-color: rgba(255, 165, 10, 0.5);
         }
 
         .annotation-card-container.active .annotation-pointer-background-right {
-            border-right-color: rgba(255, 194, 10, 0.5);
+            border-right-color: rgba(255, 165, 10, 0.5);
         }
 
         .annotation-card-container .form-group {
@@ -878,7 +886,7 @@ function AnnotationCard({
         }
 
         .annotation-card-container.active {
-            border: 1px solid rgba(255, 194, 10, 0.5);
+            border: 1px solid rgba(255, 165, 10, 0.5);
         }
 
         .btn-save-annotation-edits {
