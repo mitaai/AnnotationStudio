@@ -118,7 +118,7 @@ const SecondNavbar = ({
                       str = document[key];
                     }
                     return (
-                      <tr>
+                      <tr key={key}>
                         <td className="table-meta-data-name">
                           <strong>{metadataFields[key]}</strong>
                         </td>

@@ -238,6 +238,13 @@ ol.breadcrumb {
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;  
   overflow: hidden;
+  max-height: 72px;
+  img, iframe {
+    max-width: 100%;
+  }
+  p {
+    margin: 0;
+  }
 }
 
 .ui.selection.dropdown,.ui.upward.selection.dropdown {

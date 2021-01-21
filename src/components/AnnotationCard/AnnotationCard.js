@@ -1,5 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import { useEffect, useState, useContext } from 'react';
+import { Editor } from '@tinymce/tinymce-react';
+import ReactHtmlParser from 'react-html-parser';
 import $ from 'jquery';
 import moment from 'moment';
 import {
@@ -34,6 +36,7 @@ import {
   DocumentActiveAnnotationsContext,
 } from '../../contexts/DocumentContext';
 import { FirstNameLastInitial } from '../../utils/nameUtil';
+import { fixIframes } from '../../utils/parseUtil';
 
 function addHoverEventListenersToAllHighlightedText() {
   $('.annotation-highlighted-text').on('mouseover', (e) => {
@@ -377,9 +380,9 @@ function AnnotationCard({
     </Menu>
   );
 
-  function handleAnnotationTextChange(event) {
-    setNewAnnotationText(event.target.value);
-  }
+  const handleAnnotationTextChange = (content) => {
+    setNewAnnotationText(content);
+  };
 
   function handleAnnotationPermissionsChange(num) {
     setNewAnnotationPermissions(num);
@@ -453,12 +456,28 @@ function AnnotationCard({
                         <Form.Group controlId="exampleForm.ControlTextarea1">
                           <Form.Control
                             style={{ fontSize: '12px' }}
-                            as="textarea"
+                            as={Editor}
                             rows="3"
                             placeholder="comments"
-                            defaultValue={annotationData.body.value}
-                            onChange={handleAnnotationTextChange}
+                            initialValue={annotationData.body.value}
+                            onEditorChange={handleAnnotationTextChange}
                             readOnly={savingAnnotation}
+                            apiKey={process.env.NEXT_PUBLIC_TINYMCE_API_KEY}
+                            init={{
+                              height: 200,
+                              menubar: false,
+                              plugins: [
+                                'autolink link image media paste',
+                              ],
+                              paste_as_text: true,
+                              toolbar:
+                                'bold italic underline | link image media | removeformat | undo redo',
+                              statusbar: false,
+                              content_style: 'body { font-size: 12px; margin-left: 3px; margin-right: 3px; margin-top: 3px; } p { margin-top: 0; } iframe, img { max-width: 100%; }',
+                              image_dimensions: false,
+                              media_dimensions: false,
+                              extended_valid_elements: 'img[class|src|border=0|alt|title|onmouseover|onmouseout|name],iframe[align<bottom?left?middle?right?top|class|frameborder|id|longdesc|name|scrolling<auto?no?yes|src|style|title]',
+                            }}
                           />
                         </Form.Group>
                       </ListGroup.Item>
@@ -541,18 +560,20 @@ function AnnotationCard({
                 <>
                   <ListGroup variant="flush" style={{ borderTop: 'none' }}>
                     <ListGroup.Item className="annotation-body" onClick={() => { setExpanded(); setUpdateFocusOfAnnotation(true); }}>
-                      {annotationData.body.value.length > 0 ? annotationData.body.value : (
-                        <>
-                          <span className="text-quote">
-                            <img
-                              className="quote-svg"
-                              src="/quote-left-svg.svg"
-                              alt="quote left"
-                            />
-                            {annotationData.target.selector.exact}
-                          </span>
-                        </>
-                      )}
+                      {annotationData.body.value.length > 0
+                        ? ReactHtmlParser(annotationData.body.value, { transform: fixIframes })
+                        : (
+                          <>
+                            <span className="text-quote">
+                              <img
+                                className="quote-svg"
+                                src="/quote-left-svg.svg"
+                                alt="quote left"
+                              />
+                              {annotationData.target.selector.exact}
+                            </span>
+                          </>
+                        )}
                     </ListGroup.Item>
                     {annotationData.body.tags.length > 0 ? (
                       <>
@@ -656,7 +677,7 @@ function AnnotationCard({
                       />
                       {annotationData.target.selector.exact}
                     </span>
-                  ) : annotationData.body.value}
+                  ) : ReactHtmlParser(annotationData.body.value, { transform: fixIframes })}
                 </div>
               </Card.Header>
             </OverlayTrigger>
@@ -667,9 +688,13 @@ function AnnotationCard({
       <style jsx global>
         {`
         .truncated-annotation, .truncated-annotation .text-quote {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          -webkit-line-clamp: 1;
+          -webkit-box-orient: vertical;
+          display: -webkit-box;
+          max-height: 20px;
         }
 
         .tag-already-exists {
@@ -1016,6 +1041,13 @@ function AnnotationCard({
           margin-right: 3px;
       }
 
+      .annotation-card-container p {
+        margin-bottom: 0;
+      }
+
+      iframe, img {
+        max-width: 100%;
+      }
 
           `}
       </style>
