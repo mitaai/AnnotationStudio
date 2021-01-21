@@ -5,10 +5,12 @@ import {
   Badge, Card, Col, ListGroup, Row, Tab, Tabs,
 } from 'react-bootstrap';
 import { format } from 'date-fns';
+import ReactHtmlParser from 'react-html-parser';
 import LoadingSpinner from '../../LoadingSpinner';
 import { getSharedAnnotations, getOwnAnnotations } from '../../../utils/annotationUtil';
 import { getGroupNameById } from '../../../utils/groupUtil';
 import { FirstNameLastInitial } from '../../../utils/nameUtil';
+import { fixIframes } from '../../../utils/parseUtil';
 
 const DashboardAnnotationList = ({
   session,
@@ -125,7 +127,7 @@ const DashboardAnnotationList = ({
                 </Row>
                 <Row>
                   <Col className="paragraph-ellipsis">
-                    {annotation.body.value}
+                    {ReactHtmlParser(annotation.body.value, { transform: fixIframes })}
                   </Col>
                 </Row>
                 <Row>
