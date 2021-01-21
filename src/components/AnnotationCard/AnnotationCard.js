@@ -462,7 +462,7 @@ function AnnotationCard({
                                 'autolink link image media',
                               ],
                               toolbar:
-                                'format bold italic underline | link image media | undo redo',
+                                'bold italic underline | link image media | removeformat | undo redo',
                               statusbar: false,
                               content_style: 'body { font-size: 12px; margin-left: 3px; margin-right: 3px; margin-top: 3px; } p { margin-top: 0; } iframe, img { max-width: 100%; }',
                               image_dimensions: false,
