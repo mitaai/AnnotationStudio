@@ -965,6 +965,7 @@ function AnnotationCard({
             position: absolute;
             right: -19px;
             top: 3px;
+            z-index: 1;
             width: 0px;
             height: 0px;
             border: 10px solid transparent;
@@ -1019,6 +1020,10 @@ function AnnotationCard({
         border-radius: 0px;
         padding: 6px;
         min-height: 30px;
+      }
+
+      .annotation-body .tox.tox-tinymce {
+        border: none;
       }
 
       .annotation-body textarea:focus {
