@@ -427,7 +427,7 @@ function AnnotationCard({
         onMouseOver={() => { setHovered(true); }}
         onMouseOut={() => { setHovered(); }}
         className={`annotation-card-container ${annotationData.new ? 'new-annotation' : ''} ${expanded ? 'expanded' : ''} ${expanded || hovered || activeAnnotations.annotations.includes(annotationData._id) ? 'active' : ''} ${annotationData.editing ? 'editing' : ''}`}
-        style={side === 'left' ? { left: '50px' } : { right: '50px' }}
+        style={side === 'left' ? { right: '0px' } : { left: '0px' }}
       >
         <div className="line1" />
         <div className="line2" />
@@ -885,6 +885,7 @@ function AnnotationCard({
             width: calc(100% - 50px);
             transition: border-color 0.5s;
             transition: top 0.5s;
+            max-width: 375px;
         }
 
         .annotation-card-container.active {
