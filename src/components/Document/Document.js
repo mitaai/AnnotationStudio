@@ -125,18 +125,23 @@ export default function Document({
   const [showCannotAnnotateDocumentToast, setShowCannotAnnotateDocumentToast] = useState(false);
   const [annotationsHighlighted, setAnnotationsHighlighted] = useState();
 
-  const addHoverEventListenersToAllHighlightedText = () => {
-    $('.annotation-highlighted-text').on('mouseover', (e) => {
-      const annoId = $(e.target).attr('annotation-id');
-      addActiveAnnotation(annoId, $(e.target).get(0));
-      // highlighting all every piece of the annotation a different color by setting it to active
+  const activateAnnotation = (e) => {
+    const annoId = $(e.target).attr('annotation-id');
+    // highlighting all every piece of the annotation a different color by setting it to active
+    if (!$(`.annotation-highlighted-text[annotation-id='${annoId}']`).hasClass('active')) {
       $(`.annotation-highlighted-text[annotation-id='${annoId}']`).addClass('active');
-    }).on('mouseout', (e) => {
+    }
+
+    addActiveAnnotation(annoId, $(e.target).get(0));
+  };
+
+  const addHoverEventListenersToAllHighlightedText = () => {
+    $('.annotation-highlighted-text').on('mouseover', activateAnnotation).on('mouseout', (e) => {
       const annoId = $(e.target).attr('annotation-id');
       if (!$(`#${annoId}`).hasClass('expanded')) {
         $(`.annotation-highlighted-text[annotation-id='${annoId}']`).removeClass('active');
-        removeActiveAnnotation(annoId);
       }
+      removeActiveAnnotation(annoId);
     }).on('click', (e) => {
       const aid = $(e.target).attr('annotation-id');
       if ($(e.target).hasClass('active')) {

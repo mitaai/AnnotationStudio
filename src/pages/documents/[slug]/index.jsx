@@ -141,13 +141,11 @@ const DocumentPage = ({
   }
 
   function removeActiveAnnotation(annoId) {
-    if (activeAnnotations.annotations.includes(annoId)) {
-      const newActiveAnnotations = activeAnnotations.annotations.filter((aid) => aid !== annoId);
-      setActiveAnnotations({
-        target: null,
-        annotations: newActiveAnnotations,
-      });
-    }
+    const newActiveAnnotations = activeAnnotations.annotations.filter((aid) => aid !== annoId);
+    setActiveAnnotations({
+      target: null,
+      annotations: newActiveAnnotations,
+    });
   }
 
 

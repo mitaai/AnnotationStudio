@@ -1022,7 +1022,7 @@ function AnnotationCard({
         border: none;
         border-radius: 0px;
         padding: 6px;
-        min-height: 30px;
+        min-height: 200px;
       }
 
       .annotation-body .tox.tox-tinymce {

@@ -201,7 +201,7 @@ function FilterPopover({ session }) {
     if (documentFilters.filterOnInit && documentFilters.annotationsLoaded) {
       FilterOnInit();
     }
-  });
+  }, [documentFilters]);
 
   const updateFilters = (type, selected) => {
     documentFilters.filters[type] = selected;
@@ -281,7 +281,7 @@ function FilterPopover({ session }) {
             <Popover.Content>
               <Card>
                 <Card.Header>
-                  <Card.Title>Filter Annotations</Card.Title>
+                  <h5 style={{ marginBottom: 0 }}>Filter Annotations</h5>
                 </Card.Header>
                 <Card.Body>
                   <Row>
