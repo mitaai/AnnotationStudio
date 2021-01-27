@@ -69,7 +69,11 @@ function AnnotationCard({
 }) {
   const [activeAnnotations] = useContext(DocumentActiveAnnotationsContext);
   const [, , saveAnnotationChanges, allAnnotationTags] = useContext(DocumentAnnotationsContext);
-  const [documentFilters, setDocumentFilters] = useContext(DocumentFiltersContext);
+  const [
+    documentFilters,
+    setDocumentFilters,
+    FilterAnnotations,
+  ] = useContext(DocumentFiltersContext);
   const [annotationData, setAnnotationData] = useState({ ...annotation });
   const [newAnnotationTags, setNewAnnotationTags] = useState(null);
   const [newAnnotationPermissions, setNewAnnotationPermissions] = useState(null);
@@ -404,6 +408,27 @@ function AnnotationCard({
     return i;
   }
 
+  const annotationMatchesCurrentFilters = () => {
+    const channelAnnos = { left: [], right: [] };
+    channelAnnos[side] = [{ ...annotationData }];
+    const ids = FilterAnnotations(channelAnnos, {
+      annotatedBy: documentFilters.filters.annotatedBy.map((opt) => opt.email),
+      byTags: documentFilters.filters.byTags.map((opt) => opt.name),
+      permissions: documentFilters.filters.permissions,
+    });
+    return ids[side].length > 0;
+  };
+
+  const saveButton = <Button size="sm" className="btn-save-annotation-edits float-right" variant="primary" onClick={SaveAnnotation}>Save</Button>;
+
+  const annotationSaveButton = annotationMatchesCurrentFilters() ? saveButton : (
+    <OverlayTrigger
+      overlay={<Tooltip id="tooltip-annotation-info">This annotation does not match the current permissions or filters so when it is saved it will not show on the document until the filters and or permissions are changed</Tooltip>}
+    >
+      {saveButton}
+    </OverlayTrigger>
+  );
+
   useEffect(() => {
     if (updateFocusOfAnnotation) {
       focusOnAnnotation();
@@ -617,9 +642,7 @@ function AnnotationCard({
                   || newAnnotationPermissions !== null
                   || newAnnotationText !== null
                     ? (
-                      <Button size="sm" className="btn-save-annotation-edits float-right" variant="primary" onClick={SaveAnnotation}>
-                        Save
-                      </Button>
+                      annotationSaveButton
                     ) : null }
                 </>
               ) : (
@@ -689,6 +712,9 @@ function AnnotationCard({
       </Card>
       <style jsx global>
         {`
+        #tooltip-annotation-info * {
+          font-size: 12px;
+        }
         .truncated-annotation, .truncated-annotation .text-quote {
           overflow: hidden;
           text-overflow: ellipsis;

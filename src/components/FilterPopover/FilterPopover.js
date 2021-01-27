@@ -30,45 +30,14 @@ import { DocumentFiltersContext, DocumentAnnotationsContext } from '../../contex
 
 function FilterPopover({ session }) {
   const [channelAnnotations] = useContext(DocumentAnnotationsContext);
-  const [documentFilters, setDocumentFilters] = useContext(DocumentFiltersContext);
+  const [
+    documentFilters,
+    setDocumentFilters,
+    FilterAnnotations,
+  ] = useContext(DocumentFiltersContext);
   const [byTagsTypeheadMarginTop, setByTagsTypeheadMarginTop] = useState(0);
   const [byTagsTypeheadMarginBottom, setByTagsTypeheadMarginBottom] = useState(0);
 
-
-  function ByPermissionsFilterMatch(userEmail, email, permissions, cf, userId) { // AND FUNCTION
-    if (cf.permissions === 0 && userEmail === email) { // mine
-      return true;
-    }
-
-    if (cf.permissions === 1 && !permissions.private && !permissions.sharedTo) { // shared
-      return true;
-    }
-
-    if (cf.permissions === 2 && permissions.sharedTo !== undefined) { // shared with specific people
-      return permissions.sharedTo.includes(userId);
-    }
-  }
-
-  function AnnotatedByFilterMatch(email, cf) { // AND FUNCTION
-    return cf.annotatedBy.length === 0 ? true : cf.annotatedBy.includes(email);
-  }
-
-  function ByTagFilterMatch(tags, cf) { // OR FUNCTION
-    if (cf.byTags.length === 0) {
-      return true;
-    }
-
-    if (tags === undefined) {
-      return false;
-    }
-
-    for (let i = 0; i < tags.length; i += 1) {
-      if (cf.byTags.includes(tags[i])) {
-        return true;
-      }
-    }
-    return false;
-  }
 
   function DeepCopyObj(obj) {
     return JSON.parse(JSON.stringify(obj));
@@ -78,42 +47,17 @@ function FilterPopover({ session }) {
     return self.indexOf(value) === index;
   }
 
-  const AnnotationMatchesFilters = (
-    userEmail, a, filters, userId,
-  ) => AnnotatedByFilterMatch(a.creator.email, filters)
-    && ByTagFilterMatch(a.body.tags, filters)
-    && ByPermissionsFilterMatch(userEmail, a.creator.email, a.permissions, filters, userId);
-
-  const FilterAnnotations = (userEmail, annotations, filters, userId) => {
-    const annotationIds = { left: [], right: [] };
-    for (const side in annotationIds) {
-      if (Array.isArray(annotations[side])) {
-        for (const a of annotations[side]) {
-          if (AnnotationMatchesFilters(userEmail, a, filters, userId)) {
-            annotationIds[side].push(a._id);
-          }
-        }
-      }
-    }
-
-    return annotationIds;
-  };
-
   // OR filter
-  const GetNumberOfMatchesForThisEmail = (
-    userEmail, annotations, currentFilters, filterEmail, userId,
-  ) => {
+  const GetNumberOfMatchesForThisEmail = (annotations, currentFilters, filterEmail) => {
     const f = Object.assign(DeepCopyObj(currentFilters), { annotatedBy: [filterEmail] });
-    const ids = FilterAnnotations(userEmail, annotations, f, userId);
+    const ids = FilterAnnotations(annotations, f);
     return ids.left.length + ids.right.length;
   };
 
   // OR filter
-  const GetNumberOfMatchesForThisTag = (
-    userEmail, annotations, currentFilters, filterTag, userId,
-  ) => {
+  const GetNumberOfMatchesForThisTag = (annotations, currentFilters, filterTag) => {
     const f = Object.assign(DeepCopyObj(currentFilters), { byTags: [filterTag] });
-    const ids = FilterAnnotations(userEmail, annotations, f, userId);
+    const ids = FilterAnnotations(annotations, f);
     return ids.left.length + ids.right.length;
   };
 
@@ -142,9 +86,7 @@ function FilterPopover({ session }) {
                 id: a.creator.email,
                 name: FirstNameLastInitial(a.creator.name),
                 email: a.creator.email,
-                matches: GetNumberOfMatchesForThisEmail(
-                  userEmail, annotations, filters, a.creator.email, session.user.id,
-                ),
+                matches: GetNumberOfMatchesForThisEmail(annotations, filters, a.creator.email),
               });
             }
           }
@@ -160,9 +102,7 @@ function FilterPopover({ session }) {
             filterOptions.byTags.push({
               id: tag,
               name: tag,
-              matches: GetNumberOfMatchesForThisTag(
-                userEmail, annotations, filters, tag, session.user.id,
-              ),
+              matches: GetNumberOfMatchesForThisTag(annotations, filters, tag),
             });
           }
         }
@@ -185,11 +125,11 @@ function FilterPopover({ session }) {
   });
 
   const FilterOnInit = () => {
-    const annotationIds = FilterAnnotations(session.user.email, channelAnnotations, {
+    const annotationIds = FilterAnnotations(channelAnnotations, {
       annotatedBy: documentFilters.filters.annotatedBy.map((opt) => opt.email),
       byTags: documentFilters.filters.byTags.map((opt) => opt.name),
       permissions: documentFilters.filters.permissions,
-    }, session.user.id);
+    });
     setDocumentFilters({
       annotationIds,
       filters: documentFilters.filters,
@@ -206,11 +146,11 @@ function FilterPopover({ session }) {
   const updateFilters = (type, selected) => {
     documentFilters.filters[type] = selected;
 
-    const annotationIds = FilterAnnotations(session.user.email, channelAnnotations, {
+    const annotationIds = FilterAnnotations(channelAnnotations, {
       annotatedBy: documentFilters.filters.annotatedBy.map((opt) => opt.email),
       byTags: documentFilters.filters.byTags.map((opt) => opt.name),
       permissions: documentFilters.filters.permissions,
-    }, session.user.id);
+    });
 
     setDocumentFilters({ annotationIds, filters: documentFilters.filters });
   };
