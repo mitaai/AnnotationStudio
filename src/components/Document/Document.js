@@ -534,6 +534,7 @@ export default function Document({
 
           #annotate-document-tooltip, #annotate-document-overlay {
               cursor: pointer;
+              z-index: 0;
           }
 
           .annotation-highlighted-text.filtered {

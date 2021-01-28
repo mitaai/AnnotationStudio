@@ -27,7 +27,7 @@ function Header({
   const [session, loading] = useSession();
   const router = useRouter();
   return (
-    <header sticky="top">
+    <header sticky="top" style={{ zIndex: 2 }}>
       <Navbar bg="dark" variant="dark" className="px-0">
         <Container fluid className="px-5">
           <Navbar.Brand href="/">Annotation Studio</Navbar.Brand>
