@@ -15,7 +15,7 @@ const handler = async (req, res) => {
         const { db } = await connectToDatabase();
         const condition = req.body.userId
           ? { owner: req.body.userId }
-          : { groups: { $in: req.body.groupIds } };
+          : { groups: { $in: req.body.groupIds }, state: { $not: { $eq: 'draft' } } };
         let arr;
         if (req.body.limit) {
           arr = await db
