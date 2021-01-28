@@ -33,6 +33,7 @@ import {
 import { getGroupById } from '../../../utils/groupUtil';
 import { FirstNameLastInitial } from '../../../utils/nameUtil';
 import AnnotationsOverlay from '../../../components/AnnotationsOverlay';
+import UnsavedChangesToast from '../../../components/UnsavedChangesToast/UnsavedChangesToast';
 
 
 const adjustLine = (from, to, line) => {
@@ -99,6 +100,8 @@ const DocumentPage = ({
 
   const [alerts, setAlerts] = useState(initAlerts || []);
   const [documentHighlightedAndLoaded, setDocumentHighlightedAndLoaded] = useState(false);
+  const [annotationIdBeingEdited, setAnnotationIdBeingEdited] = useState();
+  const [showUnsavedChangesToast, setShowUnsavedChangesToast] = useState();
   const [activeAnnotations, setActiveAnnotations] = useState({ annotations: [], target: null });
   const [channelAnnotations, setChannelAnnotations] = useState({ left: null, right: null });
   const [documentFilters, setDocumentFilters] = useState({
@@ -121,8 +124,10 @@ const DocumentPage = ({
   // popovers for mobile
   // eslint-disable-next-line no-unused-vars
   const [displayAnnotationsInChannels, setDisplayAnnotationsInChannels] = useState(!isMobile);
-
-  const [scrollToAnnotation, setScrollToAnnotation] = useState(validQuery);
+  const [
+    annotationIdToScrollTo,
+    setAnnotationIdToScrollTo,
+  ] = useState(validQuery ? query.aid : undefined);
 
   const [showMoreInfoShareModal, setShowMoreInfoShareModal] = useState();
 
@@ -230,6 +235,13 @@ const DocumentPage = ({
     const index = channelAnnotations[side].findIndex((a) => a._id === anno._id);
     channelAnnotations[side][index] = DeepCopyObj(anno);
     setChannelAnnotations(DeepCopyObj(channelAnnotations));
+    setAnnotationIdBeingEdited(anno.editing ? anno._id : undefined);
+  };
+
+  const scrollToAnnotation = () => {
+    if (annotationIdBeingEdited !== undefined) {
+      setAnnotationIdToScrollTo(annotationIdBeingEdited);
+    }
   };
 
   const highlightText = async (obj, domElement) => {
@@ -447,17 +459,17 @@ const DocumentPage = ({
     // if there is a key 'mine' and 'aid', and 'aid' value actually equals an annotation
     // id that we have then we will trigger scroll to the annotation
 
-    if (scrollToAnnotation) {
+    if (annotationIdToScrollTo !== undefined) {
       if (annotationChannel1Loaded && annotationChannel2Loaded) {
         if (!documentFilters.filterOnInit) {
           const f = DeepCopyObj(documentFilters);
           f.filterOnInit = true;
           setDocumentFilters(f);
         } else {
-          const anno = $(`#${query.aid}.annotation-card-container`);
+          const anno = $(`#${annotationIdToScrollTo}.annotation-card-container`);
           if (anno.length !== 0) {
             const scrollTo = anno.offset().top - $('#document-container').offset().top - 40;
-            setScrollToAnnotation(false);
+            setAnnotationIdToScrollTo(undefined);
             $('#document-container').animate({
               scrollTop: scrollTo < 0 ? 0 : scrollTo,
             }, 500, () => {
@@ -467,7 +479,7 @@ const DocumentPage = ({
         }
       }
     }
-  });
+  }, [annotationIdToScrollTo, documentFilters]);
 
   useEffect(() => {
     // eslint-disable-next-line no-undef
@@ -515,7 +527,14 @@ const DocumentPage = ({
     <DocumentActiveAnnotationsContext.Provider value={[activeAnnotations, setActiveAnnotations]}>
       <DocumentContext.Provider value={document}>
         <DocumentAnnotationsContext.Provider
-          value={[channelAnnotations, setChannelAnnotations, saveAnnotationChanges, getAllTags()]}
+          value={[
+            channelAnnotations,
+            setChannelAnnotations,
+            saveAnnotationChanges,
+            getAllTags(),
+            annotationIdBeingEdited,
+            setShowUnsavedChangesToast,
+          ]}
         >
           <DocumentFiltersContext.Provider
             value={[documentFilters, setDocumentFilters, FilterAnnotations]}
@@ -534,6 +553,11 @@ const DocumentPage = ({
               docView
               statefulSession={statefulSession}
             >
+              <UnsavedChangesToast
+                show={showUnsavedChangesToast}
+                onClose={() => { setShowUnsavedChangesToast(); }}
+                scrollToAnnotation={scrollToAnnotation}
+              />
               <HeatMap pdf={document.uploadContentType && document.uploadContentType.includes('pdf')} />
               {document && (
               <>
