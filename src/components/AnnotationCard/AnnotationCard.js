@@ -68,7 +68,12 @@ function AnnotationCard({
   setAlerts,
 }) {
   const [activeAnnotations] = useContext(DocumentActiveAnnotationsContext);
-  const [, , saveAnnotationChanges, allAnnotationTags] = useContext(DocumentAnnotationsContext);
+  const [,,
+    saveAnnotationChanges,
+    allAnnotationTags,
+    annotationIdBeingEdited,
+    setShowUnsavedChangesToast,
+  ] = useContext(DocumentAnnotationsContext);
   const [
     documentFilters,
     setDocumentFilters,
@@ -661,9 +666,13 @@ function AnnotationCard({
                         <Dropdown.Menu className="annotation-more-options-dropdown-menu">
                           <Dropdown.Item
                             onClick={() => {
-                              annotationData.editing = true;
-                              SetAndSaveAnnotationData(annotationData);
-                              setUpdateFocusOfAnnotation(true);
+                              if (annotationIdBeingEdited !== undefined) {
+                                setShowUnsavedChangesToast(true);
+                              } else {
+                                annotationData.editing = true;
+                                SetAndSaveAnnotationData(annotationData);
+                                setUpdateFocusOfAnnotation(true);
+                              }
                             }}
                           >
                             Edit
