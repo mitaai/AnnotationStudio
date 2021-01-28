@@ -24,12 +24,21 @@ const options = {
     }),
   ],
 
-  adapter: Adapters.TypeORM.Adapter(process.env.MONGODB_URI,
+  adapter: Adapters.TypeORM.Adapter(
+    {
+      type: 'mongodb',
+      url: process.env.MONGODB_URI,
+      w: 'majority',
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      retryWrites: true,
+    },
     {
       models: {
         User: Models.User,
       },
-    }),
+    },
+  ),
 
   session: {
     jwt: true,
