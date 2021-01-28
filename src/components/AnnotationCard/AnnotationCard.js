@@ -423,7 +423,15 @@ function AnnotationCard({
 
   const annotationSaveButton = annotationMatchesCurrentFilters() ? saveButton : (
     <OverlayTrigger
-      overlay={<Tooltip id="tooltip-annotation-info">This annotation does not match the current permissions or filters so when it is saved it will not show on the document until the filters and or permissions are changed</Tooltip>}
+      overlay={(
+        <Tooltip id="tooltip-annotation-info">
+          <strong>Note:</strong>
+          {' '}
+          Filters applied to this document may exclude
+          this annotation. It will be saved, but filters must be
+          adjusted to display it.
+        </Tooltip>
+      )}
     >
       {saveButton}
     </OverlayTrigger>
@@ -712,8 +720,17 @@ function AnnotationCard({
       </Card>
       <style jsx global>
         {`
-        #tooltip-annotation-info * {
+        #tooltip-annotation-info .tooltip-inner {
           font-size: 12px;
+          background-color: #f6f6f6;
+          color: black;
+          border: 1px solid rgba(0, 0, 0, 0.125);
+        }
+        #tooltip-annotation-info .arrow {
+          background-color: transparent;
+        }
+        #tooltip-annotation-info .arrow::before {
+          border-top-color: rgba(0, 0, 0, 0.125);
         }
         .truncated-annotation, .truncated-annotation .text-quote {
           overflow: hidden;
