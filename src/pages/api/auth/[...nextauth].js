@@ -2,7 +2,6 @@
 import NextAuth from 'next-auth';
 import Providers from 'next-auth/providers';
 import Adapters from 'next-auth/adapters';
-import fetch from 'isomorphic-unfetch';
 import sendVerificationRequestOverride from '../../../utils/verificationUtil';
 import Models from '../../../models';
 
@@ -32,9 +31,6 @@ const options = {
       useNewUrlParser: true,
       useUnifiedTopology: true,
       retryWrites: true,
-      authSource: 'admin',
-      replicaSet: process.env.MONGODB_REPLICA_SET,
-      ssl: true,
     },
     {
       models: {
@@ -75,6 +71,7 @@ const options = {
     session: async (session, sessionToken) => {
       const { id } = sessionToken;
       const url = `${process.env.SITE}/api/user/${id}`;
+      // eslint-disable-next-line no-undef
       const res = await fetch(url, {
         method: 'GET',
         headers: {

@@ -1,7 +1,6 @@
 import { setCookie } from 'nookies';
 import Router from 'next/router';
 import React, { useState } from 'react';
-import fetch from 'isomorphic-unfetch';
 import { csrfToken, useSession } from 'next-auth/client';
 import { Button, Card, Form } from 'react-bootstrap';
 import Layout from '../../components/Layout';
@@ -85,6 +84,7 @@ SignIn.getInitialProps = async (context) => {
       path: '/',
     });
     const url = `${process.env.SITE}/api/invite/${groupToken}`;
+    // eslint-disable-next-line no-undef
     const res = await fetch(url, {
       method: 'GET',
       headers: {

@@ -3,7 +3,6 @@ import { parseCookies, destroyCookie } from 'nookies';
 import {
   Button, Card, CardColumns, Col, Row,
 } from 'react-bootstrap';
-import fetch from 'isomorphic-unfetch';
 import { useSession } from 'next-auth/client';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -126,6 +125,7 @@ Home.getInitialProps = async (context) => {
     });
   } else if (cookies.ans_grouptoken) {
     const url = `${process.env.SITE}/api/invite/${cookies.ans_grouptoken}`;
+    // eslint-disable-next-line no-undef
     const res = await fetch(url, {
       method: 'GET',
       headers: {

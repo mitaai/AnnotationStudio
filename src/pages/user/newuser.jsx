@@ -2,7 +2,7 @@
 import { parseCookies, destroyCookie } from 'nookies';
 import { useState, useEffect } from 'react';
 import { useSession, getSession } from 'next-auth/client';
-import fetch from 'isomorphic-unfetch';
+import unfetch from 'unfetch';
 import { Formik } from 'formik';
 import * as yup from 'yup';
 import {
@@ -70,7 +70,7 @@ const NewUser = ({ groupId, updateSession, statefulSession }) => {
 
     updateSession(regSession);
 
-    const res = await fetch('/api/users', {
+    const res = await unfetch('/api/users', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
@@ -283,6 +283,7 @@ NewUser.getInitialProps = async (context) => {
   let groupId = '';
   if (ans_grouptoken) {
     const url = `${process.env.SITE}/api/invite/${ans_grouptoken}`;
+    // eslint-disable-next-line no-undef
     const res = await fetch(url, {
       method: 'GET',
       headers: {
