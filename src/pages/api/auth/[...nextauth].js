@@ -32,6 +32,9 @@ const options = {
       useNewUrlParser: true,
       useUnifiedTopology: true,
       retryWrites: true,
+      authSource: 'admin',
+      replicaSet: process.env.MONGODB_REPLICA_SET,
+      ssl: true,
     },
     {
       models: {
