@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Nav, Navbar, Breadcrumb, Container, Modal, Table,
 } from 'react-bootstrap';
@@ -32,6 +32,8 @@ const SecondNavbar = ({
     notes: 'Notes',
     state: 'State',
   };
+
+  const ref = useRef(null);
 
   const [showMoreDocumentInfo, setShowMoreDocumentInfo] = useState();
   return (
@@ -82,8 +84,8 @@ const SecondNavbar = ({
             </Breadcrumb>
           </Nav>
           {type === 'document' && document && docView && (
-            <div style={{ display: 'flex', flexWrap: 'nowrap' }}>
-              <FilterPopover session={session} />
+            <div ref={ref} style={{ display: 'flex', flexWrap: 'nowrap' }}>
+              <FilterPopover session={session} container={ref} />
             </div>
           )}
         </Container>

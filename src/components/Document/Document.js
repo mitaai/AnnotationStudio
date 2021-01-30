@@ -488,14 +488,17 @@ export default function Document({
                 // first grabbing position data on the '#annotate-start-position-span'
                 // element so we know where the annotation starts and which side to
                 // put the annotation on
-                // const annotateStartPositionSpan = $('#annotate-start-position-span').offset();
-                addNewAnnotationToDom(rid);
-                // after the text has been annotated we need to tell the annotate button to not show
-                setTarget(null);
-                setShow();
-                /* $('#document-container').animate({
-                  scrollTop: annotateStartPositionSpan.top,
-                }, 500, () => { this.addNewAnnotationToDom(rid); }); */
+                const annotateStartPositionSpan = $('#annotate-start-position-span').offset();
+                const currentScrollValue = $('#document-container').scrollTop();
+                const scrollTo = currentScrollValue + annotateStartPositionSpan.top - $('#document-container').offset().top - 40;
+                $('#document-container').animate({
+                  scrollTop: scrollTo < 0 ? 0 : scrollTo,
+                }, 500, () => {
+                  addNewAnnotationToDom(rid);
+                  // after text is annotated hide annotate button
+                  setTarget(null);
+                  setShow();
+                });
               } else {
                 setShowCannotAnnotateDocumentToast(true);
               }

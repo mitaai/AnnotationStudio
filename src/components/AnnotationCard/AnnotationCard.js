@@ -62,13 +62,15 @@ function AnnotationCard({
   focusOnAnnotation,
   deleteAnnotationFromChannels,
   user,
+  expanded,
   setShowMoreInfoShareModal,
   membersIntersection,
   alerts,
   setAlerts,
 }) {
   const [activeAnnotations] = useContext(DocumentActiveAnnotationsContext);
-  const [,,
+  const [,,,
+    expandAnnotation,
     saveAnnotationChanges,
     allAnnotationTags,
     annotationIdBeingEdited,
@@ -86,7 +88,6 @@ function AnnotationCard({
   const [cancelingAnnotation, setCancelingAnnotation] = useState(false);
   const [savingAnnotation, setSavingAnnotation] = useState(false);
   const [deletingAnnotation, setDeletingAnnotation] = useState(false);
-  const [expanded, setExpanded] = useState(annotation.editing);
   const [updateFocusOfAnnotation, setUpdateFocusOfAnnotation] = useState(annotation.editing);
   const [hovered, setHovered] = useState();
   const [newSelectedUsersToShare, setNewSelectedUsersToShare] = useState(null);
@@ -124,6 +125,10 @@ function AnnotationCard({
       </>
     ),
   ];
+
+  const setExpanded = (bool) => {
+    expandAnnotation(annotationData._id, bool);
+  };
 
   function AddClassActive(id) {
     // changing color of highlighted text

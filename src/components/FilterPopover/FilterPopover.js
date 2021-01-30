@@ -1,13 +1,17 @@
+/* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable guard-for-in */
 /* eslint-disable no-restricted-syntax */
-import React, { useState, useContext, useEffect } from 'react';
+import React, {
+  useState, useContext, useEffect,
+} from 'react';
 import $ from 'jquery';
 import {
   Row,
   Col,
   Button,
   OverlayTrigger,
+  Overlay,
   Popover,
   Form,
   Card,
@@ -28,8 +32,11 @@ import { FirstNameLastInitial } from '../../utils/nameUtil';
 import { DocumentFiltersContext, DocumentAnnotationsContext } from '../../contexts/DocumentContext';
 
 
-function FilterPopover({ session }) {
-  const [channelAnnotations] = useContext(DocumentAnnotationsContext);
+function FilterPopover({ session, container }) {
+  const [
+    channelAnnotations, , , , , ,
+    annotationIdBeingEdited, , scrollToAnnotation,
+  ] = useContext(DocumentAnnotationsContext);
   const [
     documentFilters,
     setDocumentFilters,
@@ -37,6 +44,8 @@ function FilterPopover({ session }) {
   ] = useContext(DocumentFiltersContext);
   const [byTagsTypeheadMarginTop, setByTagsTypeheadMarginTop] = useState(0);
   const [byTagsTypeheadMarginBottom, setByTagsTypeheadMarginBottom] = useState(0);
+  const [show, setShow] = useState(false);
+  const [target, setTarget] = useState(null);
 
 
   function DeepCopyObj(obj) {
@@ -155,6 +164,17 @@ function FilterPopover({ session }) {
     setDocumentFilters({ annotationIds, filters: documentFilters.filters });
   };
 
+  const handlePermissionsClick = (ev, n) => {
+    if (annotationIdBeingEdited !== undefined) {
+      setShow(true);
+      setTarget(ev.target);
+    } else {
+      setShow(false);
+      setTarget(null);
+      updateFilters('permissions', n);
+    }
+  };
+
   const renderMenu = (results, menuProps) => (
     <Menu
       // eslint-disable-next-line react/jsx-props-no-spreading
@@ -186,126 +206,178 @@ function FilterPopover({ session }) {
     </Token>
   );
 
+  const filterPopoverComponent = (
+    <Popover id="filter-popover">
+      <Popover.Content>
+        <Card>
+          <Card.Header>
+            <h5 style={{ marginBottom: 0 }}>Filter Annotations</h5>
+          </Card.Header>
+          <Card.Body>
+            <Row>
+              <Col>
+                <Form.Group style={{ marginTop: '0px' }}>
+                  <Form.Label>By User</Form.Label>
+                  <Typeahead
+                    id="typehead-annotated-by"
+                    labelKey="name"
+                    renderMenu={renderMenu}
+                    renderToken={renderToken}
+                    multiple
+                    clearButton
+                    highlightOnlyResult
+                    disabled={documentFilters.filters.permissions === 0}
+                    selected={
+                  UpdateSelectedTokensMatchesValue(
+                    'annotatedBy',
+                    DeepCopyObj(documentFilters.filters.annotatedBy),
+                  )
+                }
+                    onChange={(selected) => { updateFilters('annotatedBy', selected); }}
+                    onMenuToggle={(isOpen) => {
+                      if (isOpen) {
+                        setByTagsTypeheadMarginTop($('#typehead-annotated-by').height() + 10);
+                      } else {
+                        setByTagsTypeheadMarginTop(0);
+                      }
+                    }}
+                    onInputChange={() => { setByTagsTypeheadMarginTop($('#typehead-annotated-by').height() + 10); }}
+                    options={filterOptions.annotatedBy}
+                    placeholder="Select one or more user(s)"
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row>
+              <Col>
+                <Form.Group style={{ marginTop: `${byTagsTypeheadMarginTop}px`, marginBottom: `${byTagsTypeheadMarginBottom}px` }}>
+                  <Form.Label>By Tags</Form.Label>
+                  <Typeahead
+                    id="typehead-by-tags"
+                    labelKey="name"
+                    renderMenu={renderMenu}
+                    renderToken={renderToken}
+                    multiple
+                    clearButton
+                    highlightOnlyResult
+                    selected={UpdateSelectedTokensMatchesValue('byTags', DeepCopyObj(documentFilters.filters.byTags))}
+                    onChange={(selected) => { updateFilters('byTags', selected); }}
+                    onMenuToggle={(isOpen) => {
+                      if (isOpen) {
+                        setByTagsTypeheadMarginBottom($('#typehead-by-tags').height() + 20);
+                      } else {
+                        setByTagsTypeheadMarginBottom(0);
+                      }
+                    }}
+                    onInputChange={() => { setByTagsTypeheadMarginBottom($('#typehead-by-tags').height() + 20); }}
+                    options={filterOptions.byTags}
+                    placeholder="Select one or more tag(s)"
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+          </Card.Body>
+        </Card>
+      </Popover.Content>
+    </Popover>
+  );
+
+  const unsavedChangesPopoverComponent = (
+    <Popover id="popover-contained">
+      <Popover.Title as="h3">
+        <img
+          src="holder.js/20x20?text=%20"
+          className="rounded mr-2"
+          alt=""
+        />
+        <span>Unsaved changes</span>
+      </Popover.Title>
+      <Popover.Content>
+        You have an annotation that has unsaved changes.
+        {' '}
+        <span
+          id="scroll-to-annotation-text"
+          onClick={() => {
+            scrollToAnnotation();
+            setShow(false);
+          }}
+          onKeyDown={() => {}}
+        >
+          Scroll to
+        </span>
+        {' '}
+        and save the annotation before changing the document view or filtering.
+        {' '}
+      </Popover.Content>
+    </Popover>
+  );
+
+  const unsavedChangesOverlay = (
+    <Overlay
+      show={show}
+      target={target}
+      placement="bottom"
+      container={container.current}
+      containerPadding={20}
+      onHide={() => { setShow(false); }}
+      rootClose
+    >
+      {unsavedChangesPopoverComponent}
+    </Overlay>
+  );
+
   return (
     <>
       <ButtonGroup size="sm" aria-label="Permissions" className="permissions-buttons">
         <Button
           variant={documentFilters.filters.permissions === 0 ? 'primary' : 'outline-primary'}
-          onClick={() => { updateFilters('permissions', 0); }}
+          onClick={(ev) => { handlePermissionsClick(ev, 0); }}
         >
           <PersonFill size="1.2em" />
           <div className="mine">Mine</div>
         </Button>
         <Button
           variant={documentFilters.filters.permissions === 1 ? 'primary' : 'outline-primary'}
-          onClick={() => { updateFilters('permissions', 1); }}
+          onClick={(ev) => { handlePermissionsClick(ev, 1); }}
         >
           <PeopleFill size="1.2em" />
           <div className="shared-with-groups">Shared with group(s)</div>
         </Button>
         <Button
           variant={documentFilters.filters.permissions === 2 ? 'primary' : 'outline-primary'}
-          onClick={() => { updateFilters('permissions', 2); }}
+          onClick={(ev) => { handlePermissionsClick(ev, 2); }}
         >
           <PersonPlusFill size="1.2em" />
           <div className="shared-with-me">Shared with me</div>
         </Button>
       </ButtonGroup>
+      {unsavedChangesOverlay}
       <OverlayTrigger
         trigger="click"
         key="filter-popover"
         placement="bottom"
         rootClose
-        overlay={(
-          <Popover id="filter-popover">
-            <Popover.Content>
-              <Card>
-                <Card.Header>
-                  <h5 style={{ marginBottom: 0 }}>Filter Annotations</h5>
-                </Card.Header>
-                <Card.Body>
-                  <Row>
-                    <Col>
-                      <Form.Group style={{ marginTop: '0px' }}>
-                        <Form.Label>By User</Form.Label>
-                        <Typeahead
-                          id="typehead-annotated-by"
-                          labelKey="name"
-                          renderMenu={renderMenu}
-                          renderToken={renderToken}
-                          multiple
-                          clearButton
-                          highlightOnlyResult
-                          disabled={documentFilters.filters.permissions === 0}
-                          selected={
-                            UpdateSelectedTokensMatchesValue(
-                              'annotatedBy',
-                              DeepCopyObj(documentFilters.filters.annotatedBy),
-                            )
-                          }
-                          onChange={(selected) => { updateFilters('annotatedBy', selected); }}
-                          onMenuToggle={(isOpen) => {
-                            if (isOpen) {
-                              setByTagsTypeheadMarginTop($('#typehead-annotated-by').height() + 10);
-                            } else {
-                              setByTagsTypeheadMarginTop(0);
-                            }
-                          }}
-                          onInputChange={() => { setByTagsTypeheadMarginTop($('#typehead-annotated-by').height() + 10); }}
-                          options={filterOptions.annotatedBy}
-                          placeholder="Select one or more user(s)"
-                        />
-                      </Form.Group>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col>
-                      <Form.Group style={{ marginTop: `${byTagsTypeheadMarginTop}px`, marginBottom: `${byTagsTypeheadMarginBottom}px` }}>
-                        <Form.Label>By Tags</Form.Label>
-                        <Typeahead
-                          id="typehead-by-tags"
-                          labelKey="name"
-                          renderMenu={renderMenu}
-                          renderToken={renderToken}
-                          multiple
-                          clearButton
-                          highlightOnlyResult
-                          selected={UpdateSelectedTokensMatchesValue('byTags', DeepCopyObj(documentFilters.filters.byTags))}
-                          onChange={(selected) => { updateFilters('byTags', selected); }}
-                          onMenuToggle={(isOpen) => {
-                            if (isOpen) {
-                              setByTagsTypeheadMarginBottom($('#typehead-by-tags').height() + 20);
-                            } else {
-                              setByTagsTypeheadMarginBottom(0);
-                            }
-                          }}
-                          onInputChange={() => { setByTagsTypeheadMarginBottom($('#typehead-by-tags').height() + 20); }}
-                          options={filterOptions.byTags}
-                          placeholder="Select one or more tag(s)"
-                        />
-                      </Form.Group>
-                    </Col>
-                  </Row>
-                </Card.Body>
-              </Card>
-            </Popover.Content>
-          </Popover>
-                  )}
+        overlay={annotationIdBeingEdited !== undefined
+          ? unsavedChangesPopoverComponent
+          : filterPopoverComponent}
       >
         <Button
           id="btn-filter-annotation-well"
           size="sm"
           variant={documentFilters.filters.annotatedBy.length + documentFilters.filters.byTags.length > 0 ? 'primary' : 'outline-primary'}
-
         >
           <Filter size="1em" />
           <span>Filter</span>
-
         </Button>
       </OverlayTrigger>
 
       <style jsx global>
         {`
+
+        #scroll-to-annotation-text {
+          color: #007bff;
+          cursor: pointer;
+        }
 
         .permissions-buttons {
           margin-top: 7px;

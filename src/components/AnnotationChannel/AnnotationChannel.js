@@ -114,7 +114,7 @@ const AnnotationChannel = ({
   alerts,
   setAlerts,
 }) => {
-  const [channelAnnotations] = useContext(DocumentAnnotationsContext);
+  const [channelAnnotations, , expandedAnnotations] = useContext(DocumentAnnotationsContext);
   const [documentFilters] = useContext(DocumentFiltersContext);
   // first we filter annotations if there are any filters applied
   let sortedAnnotations = channelAnnotations[side] !== null
@@ -158,7 +158,7 @@ const AnnotationChannel = ({
       // after we have placed everything in the correct spot then the channel is fully loaded
       setAnnotationChannelLoaded(true);
     }
-  });
+  }, [channelAnnotations, documentFilters]);
 
   return show && (
   <Col className="annotation-channel-container">
@@ -170,7 +170,7 @@ const AnnotationChannel = ({
             deleteAnnotationFromChannels={deleteAnnotationFromChannels}
             key={annotation._id}
             side={side}
-            expanded={false}
+            expanded={expandedAnnotations.includes(annotation._id) || annotation.editing}
             annotation={annotation}
             user={user}
             showMoreInfoShareModal={showMoreInfoShareModal}

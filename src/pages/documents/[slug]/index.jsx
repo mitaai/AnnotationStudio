@@ -104,6 +104,7 @@ const DocumentPage = ({
   const [showUnsavedChangesToast, setShowUnsavedChangesToast] = useState();
   const [activeAnnotations, setActiveAnnotations] = useState({ annotations: [], target: null });
   const [channelAnnotations, setChannelAnnotations] = useState({ left: null, right: null });
+  const [expandedAnnotations, setExpandedAnnotations] = useState([]);
   const [documentFilters, setDocumentFilters] = useState({
     filterOnInit: true,
     annotationsLoaded: false,
@@ -136,6 +137,18 @@ const DocumentPage = ({
   const [groupIntersection, setGroupIntersection] = useState();
   // other users this user can share annotations with, generated from groupIntersection
   const [membersIntersection, setMembersIntersection] = useState([]);
+
+  const expandAnnotation = (aid, expand) => {
+    const aidExistInList = expandedAnnotations.includes(aid);
+    let newExpandedAnnotations = expandedAnnotations.slice();
+    if (expand && !aidExistInList) {
+      newExpandedAnnotations.push(aid);
+      setExpandedAnnotations(newExpandedAnnotations);
+    } else if (aidExistInList) {
+      newExpandedAnnotations = newExpandedAnnotations.filter((id) => id !== aid);
+      setExpandedAnnotations(expandedAnnotations);
+    }
+  };
 
 
   // functions for filtering
@@ -468,7 +481,8 @@ const DocumentPage = ({
         } else {
           const anno = $(`#${annotationIdToScrollTo}.annotation-card-container`);
           if (anno.length !== 0) {
-            const scrollTo = anno.offset().top - $('#document-container').offset().top - 40;
+            const currentScrollValue = $('#document-container').scrollTop();
+            const scrollTo = currentScrollValue + anno.offset().top - $('#document-container').offset().top - 40;
             setAnnotationIdToScrollTo(undefined);
             $('#document-container').animate({
               scrollTop: scrollTo < 0 ? 0 : scrollTo,
@@ -530,10 +544,13 @@ const DocumentPage = ({
           value={[
             channelAnnotations,
             setChannelAnnotations,
+            expandedAnnotations,
+            expandAnnotation,
             saveAnnotationChanges,
             getAllTags(),
             annotationIdBeingEdited,
             setShowUnsavedChangesToast,
+            scrollToAnnotation,
           ]}
         >
           <DocumentFiltersContext.Provider

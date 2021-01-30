@@ -31,7 +31,7 @@ export default function UnsavedChangesToast({
               Scroll to
             </span>
             {' '}
-            and save the annotation before editing another annotation
+            and save the annotation before editing another annotation.
             {' '}
           </Toast.Body>
         </Toast>
