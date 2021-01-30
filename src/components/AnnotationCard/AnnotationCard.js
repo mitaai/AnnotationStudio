@@ -870,7 +870,7 @@ function AnnotationCard({
         }
 
         .text-quote {
-          color: #616161;
+          color: #757575;
           display: -webkit-box;
           -webkit-line-clamp: 3;
           -webkit-box-orient: vertical;  
