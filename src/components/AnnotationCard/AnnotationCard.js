@@ -154,6 +154,7 @@ function AnnotationCard({
       return;
     }
     setSavingAnnotation(true);
+    setHovered();
 
     // reassign values to the annotationData
     const newAnnotationData = JSON.parse(JSON.stringify(annotationData));

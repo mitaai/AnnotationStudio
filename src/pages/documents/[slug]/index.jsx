@@ -146,7 +146,7 @@ const DocumentPage = ({
       setExpandedAnnotations(newExpandedAnnotations);
     } else if (aidExistInList) {
       newExpandedAnnotations = newExpandedAnnotations.filter((id) => id !== aid);
-      setExpandedAnnotations(expandedAnnotations);
+      setExpandedAnnotations(newExpandedAnnotations);
     }
   };
 
