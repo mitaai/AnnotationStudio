@@ -95,10 +95,10 @@ const SecondNavbar = ({
           size="lg"
           show={showMoreDocumentInfo}
           onHide={() => setShowMoreDocumentInfo(false)}
-          aria-labelledby="example-modal-sizes-title-sm"
+          aria-labelledby="document-metadata-modal"
         >
           <Modal.Header closeButton>
-            <Modal.Title id="example-modal-sizes-title-sm">
+            <Modal.Title id="document-metadata-modal">
               Metadata
             </Modal.Title>
           </Modal.Header>
@@ -150,6 +150,10 @@ const SecondNavbar = ({
             margin-left: 5px;
             color: #007bff;
             cursor: pointer;
+        }
+
+        .modal-title.h4 {
+          height: auto !important;
         }
 
       `}
