@@ -309,7 +309,7 @@ const DocumentPage = ({
     const newChannelAnnotations = DeepCopyObj(channelAnnotations);
     newChannelAnnotations[side].splice(indexForNewAnnotation, 0, newAnnotation);
     setChannelAnnotations(newChannelAnnotations);
-    setDocumentFilters(Object.assign(DeepCopyObj(documentFilters), { filterOnInit: true }));
+    setDocumentFilters({ ...documentFilters, filterOnInit: true });
   };
 
   const deleteAnnotationFromChannels = (side, annotationID) => {
@@ -475,9 +475,7 @@ const DocumentPage = ({
     if (annotationIdToScrollTo !== undefined) {
       if (annotationChannel1Loaded && annotationChannel2Loaded) {
         if (!documentFilters.filterOnInit) {
-          const f = DeepCopyObj(documentFilters);
-          f.filterOnInit = true;
-          setDocumentFilters(f);
+          setDocumentFilters({ ...documentFilters, filterOnInit: true });
         } else {
           const anno = $(`#${annotationIdToScrollTo}.annotation-card-container`);
           if (anno.length !== 0) {

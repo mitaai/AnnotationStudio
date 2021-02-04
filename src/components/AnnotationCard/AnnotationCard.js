@@ -52,10 +52,6 @@ function addHoverEventListenersToAllHighlightedText() {
   });
 }
 
-function DeepCopyObj(obj) {
-  return JSON.parse(JSON.stringify(obj));
-}
-
 function AnnotationCard({
   side,
   annotation,
@@ -146,7 +142,7 @@ function AnnotationCard({
   function SetAndSaveAnnotationData(anno) {
     setAnnotationData(anno);
     saveAnnotationChanges(anno, side);
-    setDocumentFilters(Object.assign(DeepCopyObj(documentFilters), { filterOnInit: true }));
+    setDocumentFilters({ ...documentFilters, filterOnInit: true });
   }
 
   function SaveAnnotation() {
@@ -420,8 +416,28 @@ function AnnotationCard({
   }
 
   const annotationMatchesCurrentFilters = () => {
+    const newPermissions = { ...annotationData.permissions };
+    if (newAnnotationPermissions !== null) {
+      if (newAnnotationPermissions === 0) {
+        // user wants the annotation to be private
+        newPermissions.private = true;
+        newPermissions.sharedTo = undefined;
+      } else if (newAnnotationPermissions === 1) {
+        // user wants the annotation to be shared with groups
+        // groups intersection
+        newPermissions.groups = user.groups
+          .filter(({ id }) => (annotationData.target.document.groups.includes(id)))
+          .map(({ id }) => id);
+        newPermissions.sharedTo = undefined;
+        newPermissions.private = false;
+      } else if (newAnnotationPermissions === 2) {
+        // user wants annotation to be shared with document owner only
+        newPermissions.private = false;
+        newPermissions.sharedTo = selectedUsersToShare.map(({ id }) => id);
+      }
+    }
     const channelAnnos = { left: [], right: [] };
-    channelAnnos[side] = [{ ...annotationData }];
+    channelAnnos[side] = [{ ...annotationData, permissions: { ...newPermissions } }];
     const ids = FilterAnnotations(channelAnnos, {
       annotatedBy: documentFilters.filters.annotatedBy.map((opt) => opt.email),
       byTags: documentFilters.filters.byTags.map((opt) => opt.name),
