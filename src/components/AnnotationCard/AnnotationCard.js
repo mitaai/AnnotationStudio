@@ -435,7 +435,7 @@ function AnnotationCard({
   const annotationSaveButton = annotationMatchesCurrentFilters() ? saveButton : (
     <OverlayTrigger
       overlay={(
-        <Tooltip id="tooltip-annotation-info">
+        <Tooltip className="styled-tooltip">
           <strong>Note:</strong>
           {' '}
           Filters applied to this document may exclude
@@ -735,18 +735,6 @@ function AnnotationCard({
       </Card>
       <style jsx global>
         {`
-        #tooltip-annotation-info .tooltip-inner {
-          font-size: 12px;
-          background-color: #f6f6f6;
-          color: black;
-          border: 1px solid rgba(0, 0, 0, 0.125);
-        }
-        #tooltip-annotation-info .arrow {
-          background-color: transparent;
-        }
-        #tooltip-annotation-info .arrow::before {
-          border-top-color: rgba(0, 0, 0, 0.125);
-        }
         .truncated-annotation, .truncated-annotation .text-quote {
           overflow: hidden;
           text-overflow: ellipsis;

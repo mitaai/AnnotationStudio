@@ -14,7 +14,7 @@ import {
 } from 'react-bootstrap-icons';
 import { format } from 'date-fns';
 import LoadingSpinner from '../LoadingSpinner';
-import { getGroupNameById } from '../../utils/groupUtil';
+import { getGroupNameById, filterGroupIdsByUser } from '../../utils/groupUtil';
 import { deleteDocumentById } from '../../utils/docUtil';
 import ConfirmationDialog from '../ConfirmationDialog';
 import { ucFirst } from '../../utils/stringUtil';
@@ -27,6 +27,7 @@ const DocumentList = ({
   userId,
   alerts,
   setAlerts,
+  userGroups,
 }) => {
   const [groupState, setGroupState] = useState({});
   const [showModal, setShowModal] = useState('');
@@ -114,8 +115,8 @@ const DocumentList = ({
                     {format(new Date(document.createdAt), 'MM/dd/yyyy')}
                   </td>
                   <td>
-                    {(document.groups && document.groups.length > 0)
-                      ? document.groups.sort().map((group) => (
+                    {(document.groups && document.groups.length > 0 && userGroups)
+                      ? filterGroupIdsByUser(document.groups, userGroups).sort().map((group) => (
                         <Badge
                           variant="info"
                           className="mr-1"

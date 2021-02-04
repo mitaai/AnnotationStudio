@@ -2,12 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
-  Badge, Button, Card, Col, ListGroup, Row, Tab, Tabs,
+  Badge, Button, Card, Col, ListGroup, OverlayTrigger, Row, Tab, Tabs, Tooltip,
 } from 'react-bootstrap';
+import { Plus } from 'react-bootstrap-icons';
 import { format } from 'date-fns';
 import LoadingSpinner from '../../LoadingSpinner';
 import { getSharedDocumentsByGroup, getDocumentsByUser } from '../../../utils/docUtil';
-import { getGroupNameById } from '../../../utils/groupUtil';
+import { getGroupNameById, filterGroupIdsByUser } from '../../../utils/groupUtil';
 
 const DashboardDocumentList = ({
   session,
@@ -98,14 +99,32 @@ const DashboardDocumentList = ({
                   <Link href={`/documents/${document.slug}`}>{document.title}</Link>
                 </Col>
                 <Col className="text-right">
-                  {document.groups && document.groups.length > 0 && (
+                  {session && session.user.groups && document.groups
+                  && filterGroupIdsByUser(document.groups, session.user.groups).length > 0 && (
                   <Badge
                     variant="info"
-                    key={document.groups.sort()[0]}
+                    key={filterGroupIdsByUser(document.groups, session.user.groups).sort()[0]}
                     className="mr-2"
                   >
-                    {documentGroupState[document.groups.sort()[0]]}
+                    {documentGroupState[filterGroupIdsByUser(document.groups, session.user.groups)
+                      .sort()[0]]}
                   </Badge>
+                  )}
+                  {document.groups && session && session.user.groups
+                  && filterGroupIdsByUser(document.groups, session.user.groups).length > 1 && (
+                    <OverlayTrigger
+                      overlay={(
+                        <Tooltip className="styled-tooltip">
+                          Shared with additional groups
+                        </Tooltip>
+                      )}
+                      placement="top"
+                    >
+                      <Plus
+                        className="mr-1 ml-n1 mb-1"
+                        title="Tooltip on left"
+                      />
+                    </OverlayTrigger>
                   )}
                   <>
                     {format(new Date(document.createdAt), 'MM/dd/yyyy')}

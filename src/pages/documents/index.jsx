@@ -97,6 +97,7 @@ const DocumentsIndex = ({
               setAlerts={setAlerts}
               loading={listLoading}
               setLoading={setListLoading}
+              userGroups={session.user.groups}
               userId={session.user.id}
             />
           )}
