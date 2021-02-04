@@ -348,7 +348,7 @@ const DocumentPage = ({
       : -40;
     for (let i = focusIndex; i < annos.length; i += 1) {
       if (documentFilters.annotationIds[side] === null
-        || !documentFilters.annotationIds[side].includes(annos[i]._id)) {
+        || (!documentFilters.annotationIds[side].includes(annos[i]._id) && !annos[i].new)) {
         continue;
       }
 
@@ -410,7 +410,7 @@ const DocumentPage = ({
       - adjustmentTopNumber;
     for (let i = focusIndex - 1; i >= 0; i -= 1) {
       if (documentFilters.annotationIds[side] === null
-        || !documentFilters.annotationIds[side].includes(annos[i]._id)) {
+        || (!documentFilters.annotationIds[side].includes(annos[i]._id) && !annos[i].new)) {
         continue;
       }
 

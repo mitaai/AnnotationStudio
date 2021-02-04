@@ -469,7 +469,7 @@ function AnnotationCard({
       focusOnAnnotation();
       setUpdateFocusOfAnnotation(false);
     }
-  });
+  }, [updateFocusOfAnnotation]);
 
   useEffect(() => {
     if (expanded || hovered) {
@@ -483,7 +483,6 @@ function AnnotationCard({
     <>
       <Card
         id={annotationData._id}
-        onClick={() => { setUpdateFocusOfAnnotation(true); }}
         onMouseOver={() => { setHovered(true); }}
         onMouseOut={() => { setHovered(); }}
         className={`annotation-card-container ${annotationData.new ? 'new-annotation' : ''} ${expanded ? 'expanded' : ''} ${expanded || hovered || activeAnnotations.annotations.includes(annotationData._id) ? 'active' : ''} ${annotationData.editing ? 'editing' : ''}`}
@@ -621,7 +620,7 @@ function AnnotationCard({
               : (
                 <>
                   <ListGroup variant="flush" style={{ borderTop: 'none' }}>
-                    <ListGroup.Item className="annotation-body" onClick={() => { setExpanded(); setUpdateFocusOfAnnotation(true); }}>
+                    <ListGroup.Item className="annotation-body" onClick={() => { setExpanded(); }}>
                       {annotationData.body.value.length > 0
                         ? ReactHtmlParser(annotationData.body.value, { transform: fixIframes })
                         : (
@@ -730,7 +729,7 @@ function AnnotationCard({
                 </Tooltip>
       )}
             >
-              <Card.Header className="annotation-header" onClick={() => { setExpanded(true); }}>
+              <Card.Header className="annotation-header" onClick={() => { setExpanded(true); setUpdateFocusOfAnnotation(true); }}>
                 <div className="truncated-annotation">
                   {annotationData.body.value.length === 0 ? (
                     <span className="text-quote">
