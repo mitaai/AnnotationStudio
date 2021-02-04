@@ -306,5 +306,20 @@ ol.breadcrumb {
   }
 }
 
+.styled-tooltip {
+  .tooltip-inner {
+    font-size: 12px;
+    background-color: #f6f6f6;
+    color: black;
+    border: 1px solid rgba(0, 0, 0, 0.125);
+  }
+  .arrow {
+    background-color: transparent;
+  }
+  .arrow::before {
+    border-top-color: rgba(0, 0, 0, 0.125) !important;
+  }
+}
+
 /* import bootstrap */
 @import "~bootstrap/scss/bootstrap";
