@@ -140,9 +140,9 @@ function FilterPopover({ session, container }) {
       permissions: documentFilters.filters.permissions,
     });
     setDocumentFilters({
+      ...documentFilters,
       annotationIds,
-      filters: documentFilters.filters,
-      annotationsLoaded: documentFilters.annotationsLoaded,
+      filterOnInit: false,
     });
   };
 
@@ -161,7 +161,7 @@ function FilterPopover({ session, container }) {
       permissions: documentFilters.filters.permissions,
     });
 
-    setDocumentFilters({ annotationIds, filters: documentFilters.filters });
+    setDocumentFilters({ ...documentFilters, annotationIds });
   };
 
   const handlePermissionsClick = (ev, n) => {
