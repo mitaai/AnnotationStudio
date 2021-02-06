@@ -13,6 +13,7 @@ const DocumentMetadata = ({
   handleBlur,
   errors,
   touched,
+  disabled,
 }) => {
   const contributorTypes = ['Author', 'Editor', 'Translator', 'Contributor'];
 
@@ -40,6 +41,7 @@ const DocumentMetadata = ({
                               onChange={handleChange}
                               onBlur={handleBlur}
                               value={contributor.type}
+                              disabled={disabled}
                             >
                               {contributorTypes.map(
                                 ((type) => (
@@ -55,6 +57,7 @@ const DocumentMetadata = ({
                               onBlur={handleBlur}
                               value={contributor.name}
                               maxLength={255}
+                              disabled={disabled}
                             />
                             <InputGroup.Append>
                               <Button
@@ -62,6 +65,7 @@ const DocumentMetadata = ({
                                 className="rounded-right"
                                 variant="outline-primary"
                                 onClick={() => arrayHelpers.remove(index)}
+                                disabled={disabled}
                               >
                                 ✕
                               </Button>
@@ -77,6 +81,7 @@ const DocumentMetadata = ({
                       size="sm"
                       variant="link"
                       onClick={() => arrayHelpers.push({ type: 'Author', name: '' })}
+                      disabled={disabled}
                     >
                       + Add a contributor
                     </Button>
@@ -104,6 +109,7 @@ const DocumentMetadata = ({
               isValid={touched.title && !errors.title}
               isInvalid={!!errors.title}
               maxLength={255}
+              disabled={disabled}
             />
             <Form.Control.Feedback type="invalid">
               {errors.title}
@@ -130,6 +136,7 @@ const DocumentMetadata = ({
                   isValid={touched.publication && !errors.publication}
                   isInvalid={!!errors.publication}
                   maxLength={255}
+                  disabled={disabled}
                 />
                 <Form.Control.Feedback type="invalid">
                   {errors.publication}
@@ -153,6 +160,7 @@ const DocumentMetadata = ({
                   && !errors.publicationDate}
                   isInvalid={!!errors.publicationDate}
                   maxLength={255}
+                  disabled={disabled}
                 />
                 <Form.Control.Feedback type="invalid">
                   {errors.publicationDate}
@@ -172,6 +180,7 @@ const DocumentMetadata = ({
                   isValid={touched.publisher && !errors.publisher}
                   isInvalid={!!errors.publisher}
                   maxLength={255}
+                  disabled={disabled}
                 />
                 <Form.Control.Feedback type="invalid">
                   {errors.publisher}
@@ -194,6 +203,7 @@ const DocumentMetadata = ({
                   isValid={touched.location && !errors.location}
                   isInvalid={!!errors.location}
                   maxLength={255}
+                  disabled={disabled}
                 />
                 <Form.Control.Feedback type="invalid">
                   {errors.location}
@@ -210,6 +220,7 @@ const DocumentMetadata = ({
                   onChange={handleChange}
                   onBlur={handleBlur}
                   value={values.rightsStatus}
+                  disabled={disabled}
                 >
                   <option>Copyrighted</option>
                   <option>Creative Commons</option>
@@ -236,6 +247,7 @@ const DocumentMetadata = ({
                   isValid={touched.volume && !errors.volume}
                   isInvalid={!!errors.volume}
                   maxLength={255}
+                  disabled={disabled}
                 />
                 <Form.Control.Feedback type="invalid">
                   {errors.volume}
@@ -256,6 +268,7 @@ const DocumentMetadata = ({
                     isValid={touched.issue && !errors.issue}
                     isInvalid={!!errors.issue}
                     maxLength={255}
+                    disabled={disabled}
                   />
                   <Form.Control.Feedback type="invalid">
                     {errors.issue}
@@ -277,6 +290,7 @@ const DocumentMetadata = ({
                     isValid={touched.edition && !errors.edition}
                     isInvalid={!!errors.edition}
                     maxLength={255}
+                    disabled={disabled}
                   />
                   <Form.Control.Feedback type="invalid">
                     {errors.edition}
@@ -301,6 +315,7 @@ const DocumentMetadata = ({
                   isValid={touched.pageNumbers && !errors.pageNumbers}
                   isInvalid={!!errors.pageNumbers}
                   maxLength={255}
+                  disabled={disabled}
                 />
                 <Form.Control.Feedback type="invalid">
                   {errors.pageNumbers}
@@ -324,6 +339,7 @@ const DocumentMetadata = ({
                   isValid={touched.series && !errors.series}
                   isInvalid={!!errors.series}
                   maxLength={255}
+                  disabled={disabled}
                 />
                 <Form.Control.Feedback type="invalid">
                   {errors.series}
@@ -343,6 +359,7 @@ const DocumentMetadata = ({
                   isValid={touched.seriesNumber && !errors.seriesNumber}
                   isInvalid={!!errors.seriesNumber}
                   maxLength={255}
+                  disabled={disabled}
                 />
                 <Form.Control.Feedback type="invalid">
                   {errors.seriesNumber}
@@ -365,6 +382,7 @@ const DocumentMetadata = ({
                   isValid={touched.url && !errors.url}
                   isInvalid={!!errors.url}
                   maxLength={255}
+                  disabled={disabled}
                 />
                 <Form.Control.Feedback type="invalid">
                   {errors.url}
@@ -384,6 +402,7 @@ const DocumentMetadata = ({
                   isValid={touched.accessed && !errors.accessed}
                   isInvalid={!!errors.accessed}
                   maxLength={255}
+                  disabled={disabled}
                 />
                 <Form.Control.Feedback type="invalid">
                   {errors.accessed}
@@ -398,6 +417,7 @@ const DocumentMetadata = ({
                 variant="outline-primary"
                 size="sm"
                 onClick={() => setNotesOn(true)}
+                disabled={disabled}
               >
                 + Notes
               </Button>
@@ -410,6 +430,7 @@ const DocumentMetadata = ({
                     size="sm"
                     className="mb-1"
                     onClick={() => setNotesOn(false)}
+                    disabled={disabled}
                   >
                     - Notes
                   </Button>
@@ -422,6 +443,7 @@ const DocumentMetadata = ({
                   value={values.notes}
                   isValid={touched.notes && !errors.notes}
                   isInvalid={!!errors.notes}
+                  disabled={disabled}
                 />
                 <Form.Control.Feedback type="invalid">
                   {errors.notes}
@@ -438,6 +460,7 @@ const DocumentMetadata = ({
             onClick={() => setExpandMeta(!expandMeta)}
             variant="link"
             size="sm"
+            disabled={disabled}
           >
             {expandMeta ? '- Hide ' : '+ Show '}
             additional metadata

@@ -42,14 +42,14 @@ import {
   insertVideoEmbed,
 } from '../../utils/slateUtil';
 
-const SlateToolbar = () => {
+const SlateToolbar = ({ disabled }) => {
   const editor = useSlate();
   return (
     <div
       className="slate-toolbar"
       data-testid="slate-toolbar"
     >
-      <Dropdown>
+      <Dropdown disabled={disabled}>
         <OverlayTrigger overlay={<Tooltip>Styles</Tooltip>}>
           <Dropdown.Toggle
             size="sm"
@@ -180,62 +180,69 @@ const SlateToolbar = () => {
           </Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>
-      <MarkButton format="bold">
+      <MarkButton format="bold" disabled={disabled}>
         <TypeBold />
       </MarkButton>
       <OverlayTrigger overlay={<Tooltip>Italic</Tooltip>}>
-        <MarkButton format="italic">
+        <MarkButton format="italic" disabled={disabled}>
           <TypeItalic />
         </MarkButton>
       </OverlayTrigger>
       <OverlayTrigger overlay={<Tooltip>Underline</Tooltip>}>
-        <MarkButton format="underline">
+        <MarkButton format="underline" disabled={disabled}>
           <TypeUnderline />
         </MarkButton>
       </OverlayTrigger>
       <OverlayTrigger overlay={<Tooltip>Strikethrough</Tooltip>}>
-        <MarkButton format="strikethrough" className="group-end">
+        <MarkButton format="strikethrough" className="group-end" disabled={disabled}>
           <TypeStrikethrough />
         </MarkButton>
       </OverlayTrigger>
       <ToolbarAlign
+        disabled={disabled}
         type={DEFAULTS_ALIGN.align_left.type}
-        icon={<BlockButton format="align-left"><TextLeft /></BlockButton>}
+        icon={<BlockButton format="align-left" disabled={disabled}><TextLeft /></BlockButton>}
       />
       <ToolbarAlign
+        disabled={disabled}
         type={DEFAULTS_ALIGN.align_center.type}
-        icon={<BlockButton format="align-center"><TextCenter /></BlockButton>}
+        icon={<BlockButton format="align-center" disabled={disabled}><TextCenter /></BlockButton>}
       />
       <ToolbarAlign
+        disabled={disabled}
         type={DEFAULTS_ALIGN.align_right.type}
         className="group-end"
-        icon={<BlockButton format="align-right"><TextRight /></BlockButton>}
+        icon={<BlockButton format="align-right" disabled={disabled}><TextRight /></BlockButton>}
       />
       <ToolbarList
+        disabled={disabled}
         typeList={DEFAULTS_LIST.ul.type}
-        icon={<BlockButton format="bulleted-list"><ListUl /></BlockButton>}
+        icon={<BlockButton format="bulleted-list" disabled={disabled}><ListUl /></BlockButton>}
       />
       <ToolbarList
+        disabled={disabled}
         typeList={DEFAULTS_LIST.ol.type}
         className="group-end"
-        icon={<BlockButton format="numbered-list"><ListOl /></BlockButton>}
+        icon={<BlockButton format="numbered-list" disabled={disabled}><ListOl /></BlockButton>}
       />
       <ToolbarLink
         options={DEFAULTS_LINK}
-        icon={<BlockButton format="link"><Link45deg /></BlockButton>}
+        icon={<BlockButton format="link" disabled={disabled}><Link45deg /></BlockButton>}
       />
       <ToolbarImage
         options={DEFAULTS_IMAGE}
-        icon={<BlockButton format="image"><Image /></BlockButton>}
+        icon={<BlockButton format="image" disabled={disabled}><Image /></BlockButton>}
       />
       <ToolbarButton
+        disabled={disabled}
         type={ELEMENT_MEDIA_EMBED}
         className="group-end"
         icon={(
           <OverlayTrigger
+            disabled={disabled}
             overlay={<Tooltip>Video embed</Tooltip>}
           >
-            <Button size="sm" variant="outline-secondary"><CameraVideoFill /></Button>
+            <Button disabled={disabled} size="sm" variant="outline-secondary"><CameraVideoFill /></Button>
           </OverlayTrigger>
         )}
         onMouseDown={(event) => {
@@ -248,7 +255,7 @@ const SlateToolbar = () => {
           insertVideoEmbed(editor, embedUrl);
         }}
       />
-      <OverlayTrigger overlay={<Tooltip>Code view (coming soon?)</Tooltip>}>
+      <OverlayTrigger disabled={disabled} overlay={<Tooltip>Code view (coming soon?)</Tooltip>}>
         <span className="d-inline-block">
           <Button disabled size="sm" variant="outline-secondary" style={{ pointerEvents: 'none' }}>
             <CodeSquare />

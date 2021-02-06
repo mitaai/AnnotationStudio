@@ -24,6 +24,7 @@ const DocumentStatusSelect = ({
   onBlur,
   session,
   disableDraft,
+  disabled,
 }) => (
   <Row className="mt-3">
     <Col>
@@ -31,6 +32,7 @@ const DocumentStatusSelect = ({
         <Form.Check
           name="state"
           id="draft"
+          disabled={disabled}
         >
           <FormCheck.Input
             name="state"
@@ -39,7 +41,7 @@ const DocumentStatusSelect = ({
             onChange={onChange}
             onBlur={onBlur}
             as={Field}
-            disabled={disableDraft}
+            disabled={disableDraft || disabled}
           />
           <FormCheck.Label>
             <PencilFill className="mb-1" />
@@ -50,6 +52,7 @@ const DocumentStatusSelect = ({
         <Form.Check
           name="state"
           id="published"
+          disabled={disabled}
         >
           <FormCheck.Input
             name="state"
@@ -57,6 +60,7 @@ const DocumentStatusSelect = ({
             value="published"
             onChange={onChange}
             onBlur={onBlur}
+            disabled={disabled}
             as={Field}
           />
           <FormCheck.Label>
@@ -66,6 +70,7 @@ const DocumentStatusSelect = ({
           </FormCheck.Label>
         </Form.Check>
         <Form.Check
+          disabled={disabled}
           name="state"
           id="archived"
         >
@@ -76,6 +81,7 @@ const DocumentStatusSelect = ({
             onChange={onChange}
             onBlur={onBlur}
             as={Field}
+            disabled={disabled}
           />
           <FormCheck.Label>
             <ArchiveFill className="mb-1" />
@@ -83,10 +89,11 @@ const DocumentStatusSelect = ({
             Archived
           </FormCheck.Label>
         </Form.Check>
-        {session.user.role === 'admin' && (
+        {session.user.role === 'admin' && process.env.ALLOW_PUBLIC && (
           <Form.Check
             name="state"
             id="public"
+            disabled={disabled}
           >
             <FormCheck.Input
               name="state"
@@ -95,6 +102,7 @@ const DocumentStatusSelect = ({
               onChange={onChange}
               onBlur={onBlur}
               as={Field}
+              disabled={disabled}
             />
             <FormCheck.Label>
               <Globe className="mb-1" />
