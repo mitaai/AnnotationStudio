@@ -90,7 +90,7 @@ const HeatMap = ({ pdf }) => {
       <div
         id="heat-map"
         data-testid="heat-map"
-        style={{ height: documentHeight + (pdf ? 0 : 18) }}
+        style={{ height: (documentHeight === undefined ? 0 : documentHeight) + (pdf ? 0 : 18) }}
       >
         {map.map((v, i) => (
           <div
