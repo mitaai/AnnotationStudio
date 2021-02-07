@@ -57,7 +57,6 @@ const DocumentForm = ({
   mode,
   data,
   setErrors,
-  errors,
 }) => {
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
