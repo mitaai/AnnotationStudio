@@ -13,7 +13,7 @@ import { adminGetList } from '../../../utils/adminUtil';
 import LoadingSpinner from '../../LoadingSpinner';
 
 const AdminPanel = ({
-  alerts, setAlerts, session, activeKey, setKey,
+  setAlerts, session, activeKey, setKey,
 }) => {
   const [totalPages, setTotalPages] = useState(1);
   const [page, setPage] = useState(1);
@@ -50,7 +50,7 @@ const AdminPanel = ({
             setListLoading(false);
           })
           .catch((err) => {
-            setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+            setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
             setListLoading(false);
           });
       }

@@ -8,7 +8,6 @@ const GroupJoinCard = ({
   groupId,
   session,
   updateSession,
-  alerts,
   setAlerts,
   pageFrom,
   token,
@@ -66,7 +65,7 @@ const GroupJoinCard = ({
                       destroyCookie(null, 'ans_grouptoken', {
                         path: '/',
                       });
-                      setAlerts([...alerts, { text: 'Group successfully joined', variant: 'success' }]);
+                      setAlerts((prevState) => [...prevState, { text: 'Group successfully joined', variant: 'success' }]);
                       setVisible(false);
                     } else {
                       Router.push({
@@ -78,7 +77,7 @@ const GroupJoinCard = ({
                       });
                     }
                   }).catch((err) => {
-                    setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+                    setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
                   });
                 }}
               >

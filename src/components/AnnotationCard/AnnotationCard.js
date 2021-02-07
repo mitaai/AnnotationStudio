@@ -61,7 +61,6 @@ function AnnotationCard({
   expanded,
   setShowMoreInfoShareModal,
   membersIntersection,
-  alerts,
   setAlerts,
 }) {
   const [activeAnnotations] = useContext(DocumentActiveAnnotationsContext);
@@ -219,7 +218,7 @@ function AnnotationCard({
         // focus annotation so that things get shifted to their correct spots
         focusOnAnnotation();
       }).catch((err) => {
-        setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+        setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
         setSavingAnnotation(false);
       });
     } else {
@@ -245,7 +244,7 @@ function AnnotationCard({
         // on the annotation so that things get shifted to their correct spots
         focusOnAnnotation();
       }).catch((err) => {
-        setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+        setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
         setSavingAnnotation(false);
       });
     }
@@ -294,7 +293,7 @@ function AnnotationCard({
         // we need to delete this annotation from the channel it is in
         deleteAnnotationFromChannels(side, annotationData._id);
       }).catch((err) => {
-        setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+        setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
         setDeletingAnnotation(false);
       });
   }

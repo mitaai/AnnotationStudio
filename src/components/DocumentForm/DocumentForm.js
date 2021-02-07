@@ -204,7 +204,7 @@ const DocumentForm = ({
         throw new Error('Failed');
       })
       .then((text) => text)
-      .catch((err) => setErrors([...errors, { text: err.message, variant: 'danger' }]));
+      .catch((err) => setErrors((prevState) => [...prevState, { text: err.message, variant: 'danger' }]));
   };
 
   const getProcessedDocument = async (url) => fetchRetry(url, {
@@ -356,7 +356,7 @@ const DocumentForm = ({
               });
             })
             .catch((err) => {
-              setErrors([...errors, { text: err.message, variant: 'danger' }]);
+              setErrors((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
             });
           actions.setSubmitting(false);
         }, 1000);
@@ -401,7 +401,7 @@ const DocumentForm = ({
                                     },
                                   )
                                 }
-                                onError={((status) => setErrors([...errors, { text: status, variant: 'danger' }]))}
+                                onError={((status) => setErrors((prevState) => [...prevState, { text: status, variant: 'danger' }]))}
                                 onFinish={async (signRes, file) => {
                                   const fileUrl = signRes.signedUrl.substring(
                                     0, signRes.signedUrl.indexOf('?'),
@@ -424,7 +424,7 @@ const DocumentForm = ({
                                       setContentType(fileObj.contentType);
                                     })
                                     .catch((err) => {
-                                      setErrors([...errors, { text: err.message, variant: 'danger' }]);
+                                      setErrors((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
                                     });
                                 }}
                                 uploadRequestHeaders={{ 'x-amz-acl': 'public-read' }}
@@ -649,7 +649,7 @@ const DocumentForm = ({
                                 },
                               });
                             }).catch((err) => {
-                              setErrors([...errors, { text: err.message, variant: 'danger' }]);
+                              setErrors((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
                             });
                             handleCloseModal();
                           }}

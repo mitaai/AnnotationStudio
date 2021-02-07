@@ -10,7 +10,7 @@ import { getUserById } from '../../../../utils/userUtil';
 import { deleteDocumentById } from '../../../../utils/docUtil';
 import ConfirmationDialog from '../../../ConfirmationDialog';
 
-const AdminDocumentTable = ({ document, alerts, setAlerts }) => {
+const AdminDocumentTable = ({ document, setAlerts }) => {
   const [groupState, setGroupState] = useState({});
   const [namesState, setNamesState] = useState({});
 
@@ -24,7 +24,7 @@ const AdminDocumentTable = ({ document, alerts, setAlerts }) => {
         document.groups.map(async (group) => {
           const name = await getGroupNameById(group)
             .catch((err) => {
-              setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+              setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
             });
           setGroupState((prevState) => ({
             ...prevState,
@@ -232,7 +232,7 @@ const AdminDocumentTable = ({ document, alerts, setAlerts }) => {
                 },
               });
             }).catch((err) => {
-              setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+              setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
             });
           handleCloseModal();
         }}
