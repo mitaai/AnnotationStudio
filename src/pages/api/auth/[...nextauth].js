@@ -6,8 +6,6 @@ import sendVerificationRequestOverride from '../../../utils/verificationUtil';
 import Models from '../../../models';
 
 const options = {
-  debug: true,
-
   providers: [
     Providers.Email({
       server: {
