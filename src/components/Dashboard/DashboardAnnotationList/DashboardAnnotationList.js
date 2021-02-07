@@ -14,7 +14,6 @@ import { fixIframes } from '../../../utils/parseUtil';
 
 const DashboardAnnotationList = ({
   session,
-  alerts,
   setAlerts,
   tab,
   mode,
@@ -36,7 +35,7 @@ const DashboardAnnotationList = ({
                 setListLoading(false);
               })
               .catch((err) => {
-                setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+                setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
                 setListLoading(false);
               });
           } else {
@@ -50,7 +49,7 @@ const DashboardAnnotationList = ({
               setListLoading(false);
             })
             .catch((err) => {
-              setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+              setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
               setListLoading(false);
             });
         }
@@ -67,7 +66,7 @@ const DashboardAnnotationList = ({
           if (!annotationsGroupState[group]) {
             const name = await getGroupNameById(group)
               .catch((err) => {
-                setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+                setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
               });
             setAnnotationsGroupState((prevState) => ({
               ...prevState,

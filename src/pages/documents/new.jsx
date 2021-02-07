@@ -37,6 +37,7 @@ const NewDocument = ({ statefulSession }) => {
                   mode="new"
                   session={session}
                   setErrors={setErrors}
+                  errors={errors}
                   setPageLoading={setPageLoading}
                 />
               </Card.Body>

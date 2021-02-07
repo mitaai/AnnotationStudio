@@ -87,7 +87,7 @@ const ViewGroup = ({ group, statefulSession }) => {
                           }, '/groups');
                         });
                       }).catch((err) => {
-                        setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+                        setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
                       });
                     }}
                   >
@@ -121,7 +121,7 @@ const ViewGroup = ({ group, statefulSession }) => {
                           },
                         }, '/groups');
                       }).catch((err) => {
-                        setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+                        setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
                       });
                       handleCloseModal();
                     }}

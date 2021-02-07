@@ -12,7 +12,6 @@ import { getGroupNameById, filterGroupIdsByUser } from '../../../utils/groupUtil
 
 const DashboardDocumentList = ({
   session,
-  alerts,
   setAlerts,
   forceUpdate,
 }) => {
@@ -31,7 +30,7 @@ const DashboardDocumentList = ({
               setDocuments(docs);
               setListLoading(false);
             }).catch((err) => {
-              setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+              setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
               setListLoading(false);
             });
         } else if (key === 'mine') {
@@ -40,7 +39,7 @@ const DashboardDocumentList = ({
               setDocuments(docs);
               setListLoading(false);
             }).catch((err) => {
-              setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+              setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
               setListLoading(false);
             });
         }
@@ -57,7 +56,7 @@ const DashboardDocumentList = ({
           if (!documentGroupState[group]) {
             const name = await getGroupNameById(group)
               .catch((err) => {
-                setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+                setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
               });
             setDocumentGroupState((prevState) => ({
               ...prevState,

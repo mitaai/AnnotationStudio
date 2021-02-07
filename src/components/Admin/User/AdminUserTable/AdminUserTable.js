@@ -24,7 +24,7 @@ import ConfirmationDialog from '../../../ConfirmationDialog';
 import AdminAnnotation from './AdminAnnotation';
 
 const AdminUserTable = ({
-  user, alerts, setAlerts, isSelf,
+  user, setAlerts, isSelf,
 }) => {
   const [docs, setDocs] = useState({});
   const [annotations, setAnnotations] = useState({});
@@ -48,7 +48,7 @@ const AdminUserTable = ({
           },
         });
       })
-      .catch((err) => setAlerts([...alerts, { text: err.message, variant: 'danger' }]));
+      .catch((err) => setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]));
   };
 
   const fetchCreated = async (type) => {
@@ -57,12 +57,12 @@ const AdminUserTable = ({
       if (type === 'documents') {
         setDocs({
           found: await getDocumentsByUser(id)
-            .catch((err) => setAlerts([...alerts, { text: err.message, variant: 'danger' }])),
+            .catch((err) => setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }])),
         });
       } else if (type === 'annotations') {
         const params = `?userId=${id}`;
         setAnnotations(await adminGetList('annotations', params)
-          .catch((err) => setAlerts([...alerts, { text: err.message, variant: 'danger' }])));
+          .catch((err) => setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }])));
       }
     }
   };
@@ -239,7 +239,7 @@ const AdminUserTable = ({
                 },
               });
             }).catch((err) => {
-              setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+              setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
             });
           handleCloseDeleteModal();
         }}
@@ -273,7 +273,7 @@ const AdminUserTable = ({
                 await reassignAnnotationsToUser(user, values.email).then((data) => {
                   if (data.matchedCount === 0) {
                     handleCloseReassignModal();
-                    setAlerts([...alerts, { text: 'Unable to reassign annotations: none found for user', variant: 'danger' }]);
+                    setAlerts((prevState) => [...prevState, { text: 'Unable to reassign annotations: none found for user', variant: 'danger' }]);
                   } else {
                     Router.push({
                       pathname: '/admin',
@@ -285,7 +285,7 @@ const AdminUserTable = ({
                   }
                 }).catch((err) => {
                   handleCloseReassignModal();
-                  setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+                  setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
                 });
                 actions.setSubmitting(false);
               }, 1000);

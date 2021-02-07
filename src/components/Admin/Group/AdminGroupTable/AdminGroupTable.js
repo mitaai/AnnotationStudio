@@ -9,7 +9,7 @@ import ConfirmationDialog from '../../../ConfirmationDialog';
 import { getAllDocumentsByGroup } from '../../../../utils/docUtil';
 import { deleteGroupById } from '../../../../utils/groupUtil';
 
-const AdminGroupTable = ({ group, alerts, setAlerts }) => {
+const AdminGroupTable = ({ group, setAlerts }) => {
   const [showModal, setShowModal] = useState(false);
   const handleCloseModal = () => setShowModal(false);
   const handleShowModal = () => setShowModal(true);
@@ -19,7 +19,7 @@ const AdminGroupTable = ({ group, alerts, setAlerts }) => {
     if (group) {
       setDocs({
         found: await getAllDocumentsByGroup([group])
-          .catch((err) => setAlerts([...alerts, { text: err.message, variant: 'danger' }])),
+          .catch((err) => setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }])),
       });
     }
   };
@@ -140,7 +140,7 @@ const AdminGroupTable = ({ group, alerts, setAlerts }) => {
                 },
               });
             }).catch((err) => {
-              setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+              setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
             });
           handleCloseModal();
         }}

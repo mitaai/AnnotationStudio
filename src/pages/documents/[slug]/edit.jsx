@@ -39,6 +39,7 @@ const EditDocument = ({ document, alerts, statefulSession }) => {
                   session={session}
                   data={document}
                   setErrors={setErrors}
+                  errors={errors}
                   setPageLoading={setPageLoading}
                 />
               </Card.Body>

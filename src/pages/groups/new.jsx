@@ -80,7 +80,7 @@ const NewGroup = ({ statefulSession }) => {
                   setTimeout(() => {
                     createGroup(values)
                       .catch((err) => {
-                        setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+                        setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
                         setPageLoading(false);
                       });
                     actions.setSubmitting(false);

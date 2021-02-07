@@ -92,7 +92,7 @@ const EditProfile = ({ user, updateSession, statefulSession }) => {
             } return Promise.resolve(groupResult);
           } return Promise.reject(Error(`Error: received code ${groupRes.status} from server`));
         })).catch((err) => {
-          setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+          setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
         }).then(async () => {
           const userToUpdate = {
             id: _id,
@@ -131,10 +131,10 @@ const EditProfile = ({ user, updateSession, statefulSession }) => {
                   setTimeout(() => {
                     submitHandler(values)
                       .then(() => {
-                        setAlerts([...alerts, { text: 'Profile updated successfully.', variant: 'success' }]);
+                        setAlerts((prevState) => [...prevState, { text: 'Profile updated successfully.', variant: 'success' }]);
                       })
                       .catch((err) => {
-                        setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+                        setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
                       });
                     actions.setSubmitting(false);
                   }, 1000);

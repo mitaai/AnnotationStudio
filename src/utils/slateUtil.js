@@ -250,7 +250,9 @@ const FigurePlugin = (options) => ({
 });
 
 // Toolbar UI elements
-const BlockButton = ({ format, className, children }) => {
+const BlockButton = ({
+  format, className, disabled, children,
+}) => {
   const editor = useSlate();
   return (
     <OverlayTrigger overlay={<Tooltip>{tooltipText[format]}</Tooltip>}>
@@ -263,6 +265,7 @@ const BlockButton = ({ format, className, children }) => {
         onMouseDown={(event) => {
           event.preventDefault();
         }}
+        disabled={disabled}
       >
         {children}
       </Button>
@@ -270,7 +273,9 @@ const BlockButton = ({ format, className, children }) => {
   );
 };
 
-const MarkButton = ({ format, className, children }) => {
+const MarkButton = ({
+  format, className, disabled, children,
+}) => {
   const editor = useSlate();
   return (
     <OverlayTrigger overlay={<Tooltip>{tooltipText[format]}</Tooltip>}>
@@ -284,6 +289,7 @@ const MarkButton = ({ format, className, children }) => {
           event.preventDefault();
           toggleMark(editor, format);
         }}
+        disabled={disabled}
       >
         {children}
       </Button>

@@ -2,34 +2,43 @@ import { useState, useEffect } from 'react';
 import { Alert } from 'react-bootstrap';
 
 function Alerts({ alerts }) {
-  const [show, setShow] = useState({});
+  const [mount, setMount] = useState({});
+
   useEffect(() => {
-    const alertsToAdd = {};
+    const alertsToMount = {};
+
     for (let i = 0; i < alerts.length; i += 1) {
-      if (!Object.keys(show).includes(`alert[${i}]`)) {
-        alertsToAdd[`alert[${i}]`] = true;
+      if (!Object.keys(mount).includes(`alert[${i}]`)) {
+        alertsToMount[`alert[${i}]`] = true;
         setTimeout(() => {
-          alertsToAdd[`alert[${i}]`] = false;
-          setShow(
-            (prevState) => ({ ...prevState, ...alertsToAdd }),
+          alertsToMount[`alert[${i}]`] = false;
+          setMount(
+            (prevState) => ({ ...prevState, ...alertsToMount }),
           );
-        }, 2000);
+        }, 5000);
       }
     }
-    setShow(
-      (prevState) => ({ ...prevState, ...alertsToAdd }),
+    setMount(
+      (prevState) => ({ ...prevState, ...alertsToMount }),
     );
   }, [alerts]);
 
   return (
     <>
-      {alerts && alerts.length > 0 && show && alerts.map((alert, idx) => (
-        show[`alert[${idx}]`] && (
+      {alerts && alerts.length > 0 && mount && alerts.map((alert, idx) => (
+        mount[`alert[${idx}]`] && (
           <Alert
             variant={alert.variant}
-            onClose={() => setShow({ ...show, [`alert[${idx}]`]: false })}
+            onClose={(prevState) => setMount({ ...prevState, [`alert[${idx}]`]: false })}
             dismissible
-            key={`alert[${idx}]`} // eslint-disable-line react/no-array-index-key
+            key={`${alert.text}${Math.random()}`}
+            style={{
+              position: 'fixed',
+              top: '10%',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: '5',
+            }}
           >
             {alert.text}
           </Alert>

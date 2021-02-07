@@ -86,12 +86,12 @@ const NewUser = ({ groupId, updateSession, statefulSession }) => {
         addUserToGroup({ id: groupId }, session.user.email).then(() => {
           pushToHome(regSession);
         }).catch((err) => {
-          setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+          setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
           setPageLoading(false);
         });
       } else pushToHome(regSession);
     } else {
-      setAlerts([...alerts, { text: res.text(), variant: 'danger' }]);
+      setAlerts((prevState) => [...prevState, { text: res.text(), variant: 'danger' }]);
       setPageLoading(false);
     }
   };

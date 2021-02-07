@@ -30,7 +30,7 @@ const DocumentsIndex = ({
               setListLoading(false);
             })
             .catch((err) => {
-              setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+              setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
               setListLoading(false);
             });
         } else if (key === 'mine') {
@@ -40,7 +40,7 @@ const DocumentsIndex = ({
               setListLoading(false);
             })
             .catch((err) => {
-              setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+              setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
               setListLoading(false);
             });
         }

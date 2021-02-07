@@ -99,14 +99,14 @@ const GroupList = ({ query, initAlerts, statefulSession }) => {
                               await getUserByEmail(session.user.email).then((user) => {
                                 removeUserFromGroup(group, user).then(() => {
                                   setGroups(groups.filter((g) => g.id !== group.id));
-                                  setAlerts([...alerts, {
+                                  setAlerts((prevState) => [...prevState, {
                                     text: 'You have successfully left the group.',
                                     variant: 'warning',
                                   }]);
                                   setPageLoading(false);
                                 });
                               }).catch((err) => {
-                                setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+                                setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
                                 setPageLoading(false);
                               });
                             }}
@@ -139,13 +139,13 @@ const GroupList = ({ query, initAlerts, statefulSession }) => {
                                 event.target.setAttribute('disabled', 'true');
                                 deleteGroupById(group.id).then(() => {
                                   setGroups(groups.filter((g) => g.id !== group.id));
-                                  setAlerts([...alerts, {
+                                  setAlerts((prevState) => [...prevState, {
                                     text: 'You have successfully deleted the group.',
                                     variant: 'warning',
                                   }]);
                                   setPageLoading(false);
                                 }).catch((err) => {
-                                  setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+                                  setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
                                   setPageLoading(false);
                                 });
                                 handleCloseModal();

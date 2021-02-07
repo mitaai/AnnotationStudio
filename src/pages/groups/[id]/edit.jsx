@@ -130,7 +130,7 @@ const EditGroup = ({
                     setTimeout(() => {
                       setPageLoading(true);
                       renameGroup(group, values.groupName).then(() => {
-                        setAlerts([...alerts, {
+                        setAlerts((prevState) => [...prevState, {
                           text: 'Group successfully renamed.',
                           variant: 'success',
                         }]);
@@ -139,7 +139,7 @@ const EditGroup = ({
                         });
                         setPageLoading(false);
                       }).catch((err) => {
-                        setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+                        setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
                         setPageLoading(false);
                       });
                       actions.setSubmitting(false);
@@ -222,13 +222,13 @@ const EditGroup = ({
                                       const newMember = { ...member, role: 'member' };
                                       newArray[idx] = newMember;
                                       setState({ ...state, members: newArray });
-                                      setAlerts([...alerts, {
+                                      setAlerts((prevState) => [...prevState, {
                                         text: 'User\'s role changed successfully.',
                                         variant: 'success',
                                       }]);
                                       setPageLoading(false);
                                     }).catch((err) => {
-                                      setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+                                      setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
                                       setPageLoading(false);
                                     });
                                   }}
@@ -244,13 +244,13 @@ const EditGroup = ({
                                       const newMember = { ...member, role: 'manager' };
                                       newArray[idx] = newMember;
                                       setState({ ...state, members: newArray });
-                                      setAlerts([...alerts, {
+                                      setAlerts((prevState) => [...prevState, {
                                         text: 'User\'s role changed successfully.',
                                         variant: 'success',
                                       }]);
                                       setPageLoading(false);
                                     }).catch((err) => {
-                                      setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+                                      setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
                                       setPageLoading(false);
                                     });
                                   }}
@@ -272,13 +272,13 @@ const EditGroup = ({
                                   removeUserFromGroup(group, member).then(() => {
                                     const members = state.members.filter((val, i) => i !== idx);
                                     setState({ ...state, members });
-                                    setAlerts([...alerts, {
+                                    setAlerts((prevState) => [...prevState, {
                                       text: 'User successfully removed from group.',
                                       variant: 'warning',
                                     }]);
                                     setPageLoading(false);
                                   }).catch((err) => {
-                                    setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+                                    setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
                                     setPageLoading(false);
                                   });
                                 }}
@@ -306,13 +306,13 @@ const EditGroup = ({
                             generateInviteToken(group).then((data) => {
                               const inviteUrl = `${baseUrl}/auth/signin?callbackUrl=${baseUrl}&groupToken=${data.value.inviteToken}`;
                               setState({ ...state, inviteUrl });
-                              setAlerts([...alerts, {
+                              setAlerts((prevState) => [...prevState, {
                                 text: 'Group invite token created successfully.',
                                 variant: 'success',
                               }]);
                               setPageLoading(false);
                             }).catch((err) => {
-                              setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+                              setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
                               setPageLoading(false);
                             });
                           }}
@@ -337,13 +337,13 @@ const EditGroup = ({
                               setPageLoading(true);
                               deleteInviteToken(group).then(() => {
                                 setState({ ...state, inviteUrl: '' });
-                                setAlerts([...alerts, {
+                                setAlerts((prevState) => [...prevState, {
                                   text: 'Group invite token deleted successfully.',
                                   variant: 'warning',
                                 }]);
                                 setPageLoading(false);
                               }).catch((err) => {
-                                setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+                                setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
                                 setPageLoading(false);
                               });
                             }}
@@ -414,14 +414,14 @@ const EditGroup = ({
                               name, email, id: _id, role: 'member',
                             };
                             setState({ ...state, members: [...state.members, member] });
-                            setAlerts([...alerts, {
+                            setAlerts((prevState) => [...prevState, {
                               text: 'User successfully added to group.',
                               variant: 'success',
                             }]);
                             actions.resetForm();
                             setPageLoading(false);
                           }).catch((err) => {
-                            setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+                            setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
                             setPageLoading(false);
                           });
                           actions.setSubmitting(false);
@@ -504,7 +504,7 @@ const EditGroup = ({
                               },
                             }, '/groups');
                           }).catch((err) => {
-                            setAlerts([...alerts, { text: err.message, variant: 'danger' }]);
+                            setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
                             setPageLoading(false);
                           });
                           handleCloseModal();

@@ -115,7 +115,6 @@ export default function Document({
   annotateDocument,
   displayAnnotationsInChannels,
   setAlerts,
-  alerts,
 }) {
   const myRef = useRef();
   const [target, setTarget] = useState(null);
@@ -183,7 +182,7 @@ export default function Document({
       const annotationBeginning = $(`#document-content-container span[annotation-id='${annotation._id}'] .annotation-beginning-marker`);
       const annotationEnding = $(`#document-content-container span[annotation-id='${annotation._id}'] .annotation-ending-marker`);
       if (annotationBeginning.get(0) === undefined) {
-        setAlerts([...alerts, {
+        setAlerts((prevState) => [...prevState, {
           text: `Highlight error for annotation with ID ${annotation._id}`, variant: 'warning',
         }]);
       } else {

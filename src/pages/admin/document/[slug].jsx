@@ -33,7 +33,7 @@ const AdminManageDocument = (props) => {
           <AdminHeader
             activeKey="documents"
             setKey={
-              (k) => Router.push(`/admin?tab=${k}`).catch((err) => setAlerts([...alerts, { text: err.message, variant: 'danger' }]))
+              (k) => Router.push(`/admin?tab=${k}`).catch((err) => setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]))
             }
           />
           <Card.Body>

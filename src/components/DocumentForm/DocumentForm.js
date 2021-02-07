@@ -57,7 +57,6 @@ const DocumentForm = ({
   mode,
   data,
   setErrors,
-  setPageLoading,
 }) => {
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
@@ -204,7 +203,7 @@ const DocumentForm = ({
         throw new Error('Failed');
       })
       .then((text) => text)
-      .catch((err) => setErrors([JSON.stringify(err)]));
+      .catch((err) => setErrors((prevState) => [...prevState, { text: err.message, variant: 'danger' }]));
   };
 
   const getProcessedDocument = async (url) => fetchRetry(url, {
@@ -337,7 +336,6 @@ const DocumentForm = ({
     <Formik
       onSubmit={(values, actions) => {
         const submitFunction = mode === 'edit' ? editDocument : createDocument;
-        setPageLoading(true);
         setTimeout(() => {
           submitFunction(values)
             .then(() => {
@@ -351,8 +349,7 @@ const DocumentForm = ({
               });
             })
             .catch((err) => {
-              setErrors([err.message]);
-              setPageLoading(false);
+              setErrors((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
             });
           actions.setSubmitting(false);
         }, 1000);
@@ -387,7 +384,7 @@ const DocumentForm = ({
                                 signingUrlMethod="GET"
                                 accept=".docx,.pdf,.odt,.epub"
                                 s3path="files/"
-                                disabled={progress.started}
+                                disabled={props.isSubmitting || (progress.started && progress.status !== 'Complete' && progress.status !== 'Failed')}
                                 onProgress={
                                   (percent, status) => setProgress(
                                     {
@@ -397,7 +394,7 @@ const DocumentForm = ({
                                     },
                                   )
                                 }
-                                onError={((status) => setErrors([status]))}
+                                onError={((status) => setErrors((prevState) => [...prevState, { text: status, variant: 'danger' }]))}
                                 onFinish={async (signRes, file) => {
                                   const fileUrl = signRes.signedUrl.substring(
                                     0, signRes.signedUrl.indexOf('?'),
@@ -415,12 +412,12 @@ const DocumentForm = ({
                                     processedUrl,
                                   };
                                   await getProcessedDocument(fileObj.processedUrl)
-                                    .then((result) => {
-                                      setHtmlValue(result);
+                                    .then(() => {
+                                      setHtmlValue(fileObj.processedUrl);
                                       setContentType(fileObj.contentType);
                                     })
                                     .catch((err) => {
-                                      setErrors([{ text: err.message, variant: 'danger' }]);
+                                      setErrors((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
                                     });
                                 }}
                                 uploadRequestHeaders={{ 'x-amz-acl': 'public-read' }}
@@ -463,13 +460,16 @@ const DocumentForm = ({
                                 <Slate
                                   editor={editor}
                                   value={slateValue}
+                                  disabled={props.isSubmitting}
                                   onChange={(value) => {
                                     setSlateLoading(false);
                                     setSlateValue(value);
                                     props.setFieldValue(field.name, value);
                                   }}
                                 >
-                                  <SlateToolbar />
+                                  <SlateToolbar
+                                    disabled={props.isSubmitting}
+                                  />
                                   {slateLoading && (
                                     <div id="slate-loader">
                                       <Spinner animation="border" role="status">
@@ -488,6 +488,7 @@ const DocumentForm = ({
                                   )}
                                   <EditablePlugins
                                     plugins={plugins}
+                                    disabled={props.isSubmitting}
                                     onKeyDown={[(e) => {
                                       const isPasteCapture = (e.ctrlKey || e.metaKey)
                                         && e.keyCode === 86;
@@ -527,6 +528,7 @@ const DocumentForm = ({
                       onChange={props.handleChange}
                       onBlur={props.handleBlur}
                       value={props.values.resourceType}
+                      disabled={props.isSubmitting}
                     >
                       {resourceTypeList.map(
                         ((resourceType) => (
@@ -542,6 +544,7 @@ const DocumentForm = ({
                     errors={props.errors}
                     touched={props.touched}
                     resourceType={props.values.resourceType}
+                    disabled={props.isSubmitting}
                   />
                 </Card.Body>
               </Card>
@@ -564,6 +567,7 @@ const DocumentForm = ({
                           fluid
                           multiple
                           selection
+                          disabled={props.isSubmitting}
                           options={
                             session.user.groups.map((group) => ({
                               key: group.id,
@@ -590,6 +594,7 @@ const DocumentForm = ({
                     values={props.values}
                     onChange={props.handleChange}
                     onBlur={props.handleBlur}
+                    disabled={props.isSubmitting}
                     disableDraft={data && data.state !== 'draft'}
                   />
                   <small className="text-muted">
@@ -606,6 +611,7 @@ const DocumentForm = ({
                       type="button"
                       onClick={() => router.back()}
                       variant="outline-secondary"
+                      disabled={props.isSubmitting}
                     >
                       Cancel
                     </Button>
@@ -616,6 +622,7 @@ const DocumentForm = ({
                           type="button"
                           onClick={handleShowModal}
                           data-testid="documentedit-delete-button"
+                          disabled={props.isSubmitting}
                         >
                           Delete Document
                         </Button>
@@ -625,7 +632,6 @@ const DocumentForm = ({
                           handleCloseModal={handleCloseModal}
                           show={showModal}
                           onClick={(event) => {
-                            setPageLoading(true);
                             event.target.setAttribute('disabled', 'true');
                             deleteDocumentById(data.id).then(() => {
                               router.push({
@@ -636,8 +642,7 @@ const DocumentForm = ({
                                 },
                               });
                             }).catch((err) => {
-                              setErrors([err.message]);
-                              setPageLoading(false);
+                              setErrors((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
                             });
                             handleCloseModal();
                           }}
