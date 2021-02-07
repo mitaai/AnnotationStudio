@@ -57,6 +57,7 @@ const DocumentForm = ({
   mode,
   data,
   setErrors,
+  errors,
 }) => {
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
@@ -203,7 +204,7 @@ const DocumentForm = ({
         throw new Error('Failed');
       })
       .then((text) => text)
-      .catch((err) => setErrors([{ text: err.message, variant: 'danger' }]));
+      .catch((err) => setErrors([...errors, { text: err.message, variant: 'danger' }]));
   };
 
   const getProcessedDocument = async (url) => fetchRetry(url, {
@@ -216,36 +217,42 @@ const DocumentForm = ({
   const createDocument = async (values) => {
     const slug = `${slugify(values.title)}-${cryptoRandomString({ length: 5, type: 'hex' })}`;
     const postUrl = '/api/document';
-    const valuesWithSerializedText = htmlValue !== ''
-      ? {
-        ...values,
-        uploadContentType: contentType,
-        text: htmlValue,
+    const byteLength = (new TextEncoder().encode(htmlValue !== '' ? htmlValue : serializeHTMLFromNodes({ plugins, nodes: values.textSlate }))).length;
+    if (byteLength / 1000000.0 < 4.0) {
+      const valuesWithSerializedText = htmlValue !== ''
+        ? {
+          ...values,
+          uploadContentType: contentType,
+          text: htmlValue,
+        }
+        : {
+          ...values,
+          text: serializeHTMLFromNodes({ plugins, nodes: values.textSlate }),
+        };
+      const res = await unfetch(postUrl, {
+        method: 'POST',
+        body: JSON.stringify({
+          ...valuesWithSerializedText,
+          slug,
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      if (res.status === 200) {
+        const result = await res.json();
+        return Promise.resolve(result);
+      } if (res.status === 413) {
+        return Promise.reject(Error(
+          'Sorry, this file is too large to use on Annotation Studio. '
+          + 'You may try breaking it up into smaller parts.',
+        ));
       }
-      : {
-        ...values,
-        text: serializeHTMLFromNodes({ plugins, nodes: values.textSlate }),
-      };
-    const res = await unfetch(postUrl, {
-      method: 'POST',
-      body: JSON.stringify({
-        ...valuesWithSerializedText,
-        slug,
-      }),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    if (res.status === 200) {
-      const result = await res.json();
-      return Promise.resolve(result);
-    } if (res.status === 413) {
-      return Promise.reject(Error(
-        'Sorry, this file is too large to use on Annotation Studio. '
-        + 'You may try breaking it up into smaller parts.',
-      ));
-    }
-    return Promise.reject(Error(`Unable to create document: error ${res.status} received from server`));
+      return Promise.reject(Error(`Unable to create document: error ${res.status} received from server`));
+    } return Promise.reject(Error(
+      'Sorry, this file is too large to use on Annotation Studio. '
+      + 'You may try breaking it up into smaller parts.',
+    ));
   };
 
   const editDocument = async (values) => {
@@ -349,7 +356,7 @@ const DocumentForm = ({
               });
             })
             .catch((err) => {
-              setErrors([{ text: err.message, variant: 'danger' }]);
+              setErrors([...errors, { text: err.message, variant: 'danger' }]);
             });
           actions.setSubmitting(false);
         }, 1000);
@@ -394,7 +401,7 @@ const DocumentForm = ({
                                     },
                                   )
                                 }
-                                onError={((status) => setErrors([{ text: status, variant: 'danger' }]))}
+                                onError={((status) => setErrors([...errors, { text: status, variant: 'danger' }]))}
                                 onFinish={async (signRes, file) => {
                                   const fileUrl = signRes.signedUrl.substring(
                                     0, signRes.signedUrl.indexOf('?'),
@@ -417,7 +424,7 @@ const DocumentForm = ({
                                       setContentType(fileObj.contentType);
                                     })
                                     .catch((err) => {
-                                      setErrors([{ text: err.message, variant: 'danger' }]);
+                                      setErrors([...errors, { text: err.message, variant: 'danger' }]);
                                     });
                                 }}
                                 uploadRequestHeaders={{ 'x-amz-acl': 'public-read' }}
@@ -642,7 +649,7 @@ const DocumentForm = ({
                                 },
                               });
                             }).catch((err) => {
-                              setErrors([{ text: err.message, variant: 'danger' }]);
+                              setErrors([...errors, { text: err.message, variant: 'danger' }]);
                             });
                             handleCloseModal();
                           }}
