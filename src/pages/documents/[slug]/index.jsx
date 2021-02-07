@@ -503,7 +503,7 @@ const DocumentPage = ({
 
   async function getIntersectionOfGroupsAndUsers() {
     // when session loaded, get intersection of groups and the users that applies to
-    if (session && !groupIntersection) {
+    if (session && document && !groupIntersection) {
       const userGroupIds = session.user.groups.map((g) => g.id);
       const intersection = userGroupIds.filter((id) => document.groups.includes(id));
       const intersectionGroups = await Promise.all(intersection.map((id) => getGroupById(id)));
@@ -568,14 +568,14 @@ const DocumentPage = ({
               docView
               statefulSession={statefulSession}
             >
-              <UnsavedChangesToast
-                show={showUnsavedChangesToast}
-                onClose={() => { setShowUnsavedChangesToast(); }}
-                scrollToAnnotation={scrollToAnnotation}
-              />
-              <HeatMap pdf={document.uploadContentType && document.uploadContentType.includes('pdf')} />
               {document && (
               <>
+                <UnsavedChangesToast
+                  show={showUnsavedChangesToast}
+                  onClose={() => { setShowUnsavedChangesToast(); }}
+                  scrollToAnnotation={scrollToAnnotation}
+                />
+                <HeatMap pdf={document.uploadContentType && document.uploadContentType.includes('pdf')} />
                 {!displayAnnotationsInChannels && <AnnotationsOverlay />}
                 <Row id="document-container">
                   <AnnotationChannel
@@ -698,7 +698,7 @@ const DocumentPage = ({
                 height: calc(100vh - 230px);
                 overflow-y: scroll;
                 padding: 
-                ${(document.uploadContentType && document.uploadContentType.includes('pdf')) ? '0' : '10px 0px'};
+                ${(document && document.uploadContentType && document.uploadContentType.includes('pdf')) ? '0' : '10px 0px'};
               }
 
               #document-container::-webkit-scrollbar {
@@ -728,11 +728,11 @@ const DocumentPage = ({
                 border-radius: 0px;
                 min-height: 100%;
                 border: none;
-                box-shadow: ${(document.uploadContentType && document.uploadContentType.includes('pdf'))
+                box-shadow: ${(document && document.uploadContentType && document.uploadContentType.includes('pdf'))
                 ? 'none'
                 : '3px 3px 9px 0px rgba(0,0,0,0.38)'
                 };
-                ${(document.uploadContentType && document.uploadContentType.includes('pdf')) ? 'background: none;' : ''}
+                ${(document && document.uploadContentType && document.uploadContentType.includes('pdf')) ? 'background: none;' : ''}
               }
 
               #document-container #annotation-well-card-container .card-body {
@@ -778,11 +778,26 @@ const DocumentPage = ({
 export async function getServerSideProps(context) {
   const { slug } = context.params;
   let props = { query: context.query };
-  await prefetchDocumentBySlug(slug, context.req.headers.cookie).then((response) => {
+  await prefetchDocumentBySlug(slug, context.req.headers.cookie).then(async (response) => {
     props.document = {
       slug,
       ...response,
     };
+    if (response.text.startsWith(process.env.NEXT_PUBLIC_SIGNING_URL.split('/url')[0])) {
+      await fetch(response.text, { // eslint-disable-line no-undef
+        method: 'GET',
+        headers: {
+          'Content-Type': 'text/html',
+        },
+      }).then(async (res) => {
+        const result = await res.text();
+        props.document.text = result;
+      }).catch((err) => {
+        props = {
+          initAlerts: [{ text: err.message, variant: 'danger' }],
+        };
+      });
+    }
   }).catch((err) => {
     props = {
       initAlerts: [{ text: err.message, variant: 'danger' }],

@@ -216,42 +216,36 @@ const DocumentForm = ({
   const createDocument = async (values) => {
     const slug = `${slugify(values.title)}-${cryptoRandomString({ length: 5, type: 'hex' })}`;
     const postUrl = '/api/document';
-    const byteLength = (new TextEncoder().encode(htmlValue !== '' ? htmlValue : serializeHTMLFromNodes({ plugins, nodes: values.textSlate }))).length;
-    if (byteLength / 1000000.0 < 4.0) {
-      const valuesWithSerializedText = htmlValue !== ''
-        ? {
-          ...values,
-          uploadContentType: contentType,
-          text: htmlValue,
-        }
-        : {
-          ...values,
-          text: serializeHTMLFromNodes({ plugins, nodes: values.textSlate }),
-        };
-      const res = await unfetch(postUrl, {
-        method: 'POST',
-        body: JSON.stringify({
-          ...valuesWithSerializedText,
-          slug,
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      if (res.status === 200) {
-        const result = await res.json();
-        return Promise.resolve(result);
-      } if (res.status === 413) {
-        return Promise.reject(Error(
-          'Sorry, this file is too large to use on Annotation Studio. '
-          + 'You may try breaking it up into smaller parts.',
-        ));
+    const valuesWithSerializedText = htmlValue !== ''
+      ? {
+        ...values,
+        uploadContentType: contentType,
+        text: htmlValue,
       }
-      return Promise.reject(Error(`Unable to create document: error ${res.status} received from server`));
-    } return Promise.reject(Error(
-      'Sorry, this file is too large to use on Annotation Studio. '
-      + 'You may try breaking it up into smaller parts.',
-    ));
+      : {
+        ...values,
+        text: serializeHTMLFromNodes({ plugins, nodes: values.textSlate }),
+      };
+    const res = await unfetch(postUrl, {
+      method: 'POST',
+      body: JSON.stringify({
+        ...valuesWithSerializedText,
+        slug,
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    if (res.status === 200) {
+      const result = await res.json();
+      return Promise.resolve(result);
+    } if (res.status === 413) {
+      return Promise.reject(Error(
+        'Sorry, this file is too large to use on Annotation Studio. '
+        + 'You may try breaking it up into smaller parts.',
+      ));
+    }
+    return Promise.reject(Error(`Unable to create document: error ${res.status} received from server`));
   };
 
   const editDocument = async (values) => {
@@ -418,8 +412,8 @@ const DocumentForm = ({
                                     processedUrl,
                                   };
                                   await getProcessedDocument(fileObj.processedUrl)
-                                    .then((result) => {
-                                      setHtmlValue(result);
+                                    .then(() => {
+                                      setHtmlValue(fileObj.processedUrl);
                                       setContentType(fileObj.contentType);
                                     })
                                     .catch((err) => {
