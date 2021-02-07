@@ -34,11 +34,10 @@ function Alerts({ alerts }) {
             key={`${alert.text}${Math.random()}`}
             style={{
               position: 'fixed',
-              top: '2rem',
+              top: '10%',
               left: '50%',
               transform: 'translateX(-50%)',
               zIndex: '5',
-              transition: 'opacity 500ms ease-in',
             }}
           >
             {alert.text}
