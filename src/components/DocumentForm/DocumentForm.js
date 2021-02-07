@@ -384,7 +384,7 @@ const DocumentForm = ({
                                 signingUrlMethod="GET"
                                 accept=".docx,.pdf,.odt,.epub"
                                 s3path="files/"
-                                disabled={props.isSubmitting || progress.started}
+                                disabled={props.isSubmitting || (progress.started && progress.status !== 'Complete' && progress.status !== 'Failed')}
                                 onProgress={
                                   (percent, status) => setProgress(
                                     {
