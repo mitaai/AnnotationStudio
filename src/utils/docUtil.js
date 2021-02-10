@@ -83,10 +83,61 @@ const deleteDocumentById = async (id) => {
   } return Promise.reject(Error(`Unable to delete document: error ${res.status} received from server`));
 };
 
+const prefetchManyGroupNamesById = async (groupIds, cookie) => {
+  const url = `${process.env.SITE}/api/groups`;
+  const body = { groupIds };
+  // eslint-disable-next-line no-undef
+  const res = await fetch(url, {
+    method: 'POST',
+    body: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+      Cookie: cookie,
+    },
+  });
+  if (res.status === 200) {
+    const response = await res.json();
+    return Promise.resolve(response);
+  } return Promise.reject(Error(`Unable to fecth group names: error ${res.status} received from server`));
+};
+
+const getManyGroupNamesById = async (groupIds) => {
+  const url = '/api/groups';
+  const body = { groupIds };
+  const res = await unfetch(url, {
+    method: 'POST',
+    body: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (res.status === 200) {
+    const response = await res.json();
+    return Promise.resolve(response);
+  } return Promise.reject(Error(`Unable to fecth group names: error ${res.status} received from server`));
+};
+
+const addGroupNamesToDocuments = async (docsToAlter) => {
+  const altered = Promise.all(docsToAlter.map(async (document) => {
+    const doc = document;
+    if (document.groups && document.groups.length > 0) {
+      await getManyGroupNamesById(document.groups)
+        .then((res) => {
+          doc.groups = res.groups;
+        });
+    }
+    return doc;
+  }));
+  return altered;
+};
+
 export {
+  addGroupNamesToDocuments,
   deleteDocumentById,
-  getDocumentsByUser,
   getAllDocumentsByGroup,
+  getDocumentsByUser,
+  getManyGroupNamesById,
   getSharedDocumentsByGroup,
   prefetchDocumentBySlug,
+  prefetchManyGroupNamesById,
 };

@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import React, { useEffect, useState } from 'react';
 import Router from 'next/router';
 import Link from 'next/link';
@@ -5,13 +6,11 @@ import {
   Badge, Button, Dropdown, DropdownButton, Table,
 } from 'react-bootstrap';
 import { format } from 'date-fns';
-import { getGroupNameById } from '../../../../utils/groupUtil';
 import { getUserById } from '../../../../utils/userUtil';
 import { deleteDocumentById } from '../../../../utils/docUtil';
 import ConfirmationDialog from '../../../ConfirmationDialog';
 
 const AdminDocumentTable = ({ document, setAlerts }) => {
-  const [groupState, setGroupState] = useState({});
   const [namesState, setNamesState] = useState({});
 
   const [showModal, setShowModal] = useState(false);
@@ -20,19 +19,6 @@ const AdminDocumentTable = ({ document, setAlerts }) => {
 
   useEffect(() => {
     if (document) {
-      const fetchGroupState = async () => {
-        document.groups.map(async (group) => {
-          const name = await getGroupNameById(group)
-            .catch((err) => {
-              setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
-            });
-          setGroupState((prevState) => ({
-            ...prevState,
-            [group]: name,
-          }));
-        });
-      };
-      fetchGroupState();
       const fetchOwnerName = async () => {
         await getUserById(document.owner)
           .then((result) => setNamesState((prevState) => ({
@@ -190,10 +176,10 @@ const AdminDocumentTable = ({ document, setAlerts }) => {
                     variant="info"
                     className="mr-1"
                     as={Button}
-                    href={`/admin/group/${group}`}
-                    key={group}
+                    href={`/admin/group/${group._id}`}
+                    key={group._id}
                   >
-                    {groupState[group]}
+                    {group.name}
                   </Badge>
                 ))
                 : (<Badge>[no groups]</Badge>)}

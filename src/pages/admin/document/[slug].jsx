@@ -5,7 +5,7 @@ import { Card } from 'react-bootstrap';
 import AdminHeader from '../../../components/Admin/AdminHeader';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import Layout from '../../../components/Layout';
-import { prefetchDocumentBySlug } from '../../../utils/docUtil';
+import { prefetchDocumentBySlug, prefetchManyGroupNamesById } from '../../../utils/docUtil';
 import AdminDocumentTable from '../../../components/Admin/Document/AdminDocumentTable';
 
 const AdminManageDocument = (props) => {
@@ -53,8 +53,15 @@ export async function getServerSideProps(context) {
   const { slug } = context.params;
   let props = {};
   await prefetchDocumentBySlug(slug, context.req.headers.cookie)
-    .then((document) => {
-      props = { document: { ...document, slug } };
+    .then(async (document) => {
+      const doc = document;
+      if (document.groups && document.groups.length > 0) {
+        await prefetchManyGroupNamesById(document.groups, context.req.headers.cookie)
+          .then((res) => {
+            doc.groups = res.groups;
+          });
+      }
+      props = { document: { ...doc, slug } };
     })
     .catch((err) => {
       props = { initAlert: [{ text: err.message, variant: 'danger' }] };

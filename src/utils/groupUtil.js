@@ -314,23 +314,6 @@ const deleteInviteToken = async (group) => {
   } return Promise.reject(Error(`Unable to delete token: error ${res.status} received from server`));
 };
 
-const getGroupNameById = async (id) => {
-  const url = `/api/group/${id}`;
-  const res = await unfetch(url, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
-  if (res.status === 200) {
-    const response = await res.json();
-    const { name } = response;
-    return Promise.resolve(name);
-  } if (res.status === 404) {
-    return Promise.resolve('[group not found]');
-  } return Promise.reject(Error(`Unable to find group with id ${id}: error ${res.status} received from server`));
-};
-
 const prefetchGroupById = async (id, cookie) => {
   const url = `${process.env.SITE}/api/group/${id}`;
   // eslint-disable-next-line no-undef
@@ -359,13 +342,6 @@ const getGroupById = async (id) => {
   } return Promise.reject(Error(`Unable to get group ${id}: error ${res.status} received from server`));
 };
 
-const filterGroupIdsByUser = (groupIds, userGroups) => {
-  if (userGroups) {
-    const filtered = userGroups.filter((grp) => groupIds.includes(grp.id));
-    return filtered.map((grp) => grp.id);
-  } return [];
-};
-
 export {
   addGroupToUser,
   addUserToGroup,
@@ -373,10 +349,8 @@ export {
   deleteGroup,
   deleteGroupById,
   deleteInviteToken,
-  filterGroupIdsByUser,
   generateInviteToken,
   getGroupById,
-  getGroupNameById,
   prefetchGroupById,
   removeUserFromGroup,
   renameGroup,

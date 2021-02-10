@@ -7,8 +7,7 @@ import {
 import { format } from 'date-fns';
 import ReactHtmlParser from 'react-html-parser';
 import LoadingSpinner from '../../LoadingSpinner';
-import { getSharedAnnotations, getOwnAnnotations } from '../../../utils/annotationUtil';
-import { getGroupNameById } from '../../../utils/groupUtil';
+import { getSharedAnnotations, getOwnAnnotations, addGroupNamesToAnnotations } from '../../../utils/annotationUtil';
 import { FirstNameLastInitial } from '../../../utils/nameUtil';
 import { fixIframes } from '../../../utils/parseUtil';
 
@@ -18,7 +17,6 @@ const DashboardAnnotationList = ({
   tab,
   mode,
 }) => {
-  const [annotationsGroupState, setAnnotationsGroupState] = useState({});
   const [key, setKey] = useState(tab || 'mine');
   const [listLoading, setListLoading] = useState(true);
   const [annotations, setAnnotations] = useState([]);
@@ -30,9 +28,12 @@ const DashboardAnnotationList = ({
         if (key === 'shared') {
           if (session.user.groups && session.user.groups.length > 0) {
             await getSharedAnnotations(session.user.groups, limit)
-              .then((annos) => {
-                setAnnotations(annos);
-                setListLoading(false);
+              .then(async (annos) => {
+                await addGroupNamesToAnnotations(annos)
+                  .then((annosWithGroupNames) => {
+                    setAnnotations(annosWithGroupNames);
+                    setListLoading(false);
+                  });
               })
               .catch((err) => {
                 setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
@@ -44,9 +45,12 @@ const DashboardAnnotationList = ({
           }
         } else if (key === 'mine') {
           await getOwnAnnotations(session.user.id, limit)
-            .then((annos) => {
-              setAnnotations(annos);
-              setListLoading(false);
+            .then(async (annos) => {
+              await addGroupNamesToAnnotations(annos)
+                .then((annosWithGroupNames) => {
+                  setAnnotations(annosWithGroupNames);
+                  setListLoading(false);
+                });
             })
             .catch((err) => {
               setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
@@ -57,27 +61,6 @@ const DashboardAnnotationList = ({
     }
     fetchData();
   }, [key]);
-
-
-  useEffect(() => {
-    if (annotations) {
-      const fetchGroupState = async () => {
-        annotations.map((annotation) => annotation.permissions.groups.map(async (group) => {
-          if (!annotationsGroupState[group]) {
-            const name = await getGroupNameById(group)
-              .catch((err) => {
-                setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
-              });
-            setAnnotationsGroupState((prevState) => ({
-              ...prevState,
-              [group]: name,
-            }));
-          }
-        }));
-      };
-      fetchGroupState();
-    }
-  }, [annotations]);
 
   return (
     <Card data-testid="dash-annotation-list">
@@ -143,10 +126,10 @@ const DashboardAnnotationList = ({
                       && (
                       <Badge
                         variant="info"
-                        key={annotation.permissions.groups.sort()[0]}
+                        key={annotation.permissions.groups.sort()[0]._id}
                         className="mL-2"
                       >
-                        {annotationsGroupState[annotation.permissions.groups.sort()[0]]}
+                        {annotation.permissions.groups.sort()[0].name}
                       </Badge>
                       )}
                     </small>
