@@ -7,7 +7,7 @@ import Layout from '../../components/Layout';
 import DocumentList from '../../components/DocumentList';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import UnauthorizedCard from '../../components/UnauthorizedCard';
-import { getSharedDocumentsByGroup, getDocumentsByUser } from '../../utils/docUtil';
+import { getSharedDocumentsByGroup, getDocumentsByUser, addGroupNamesToDocuments } from '../../utils/docUtil';
 
 const DocumentsIndex = ({
   props,
@@ -24,10 +24,13 @@ const DocumentsIndex = ({
     async function fetchData() {
       if (session && (session.user.groups || session.user.id)) {
         if (key === 'shared') {
-          await getSharedDocumentsByGroup(session.user.groups)
-            .then((docs) => {
-              setDocuments(docs);
-              setListLoading(false);
+          getSharedDocumentsByGroup(session.user.groups)
+            .then(async (docs) => {
+              await addGroupNamesToDocuments(docs)
+                .then((docsWithGroupNames) => {
+                  setDocuments(docsWithGroupNames);
+                  setListLoading(false);
+                });
             })
             .catch((err) => {
               setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
@@ -35,9 +38,12 @@ const DocumentsIndex = ({
             });
         } else if (key === 'mine') {
           await getDocumentsByUser(session.user.id)
-            .then((docs) => {
-              setDocuments(docs);
-              setListLoading(false);
+            .then(async (docs) => {
+              await addGroupNamesToDocuments(docs)
+                .then((docsWithGroupNames) => {
+                  setDocuments(docsWithGroupNames);
+                  setListLoading(false);
+                });
             })
             .catch((err) => {
               setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);

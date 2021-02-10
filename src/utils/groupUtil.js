@@ -359,13 +359,6 @@ const getGroupById = async (id) => {
   } return Promise.reject(Error(`Unable to get group ${id}: error ${res.status} received from server`));
 };
 
-const filterGroupIdsByUser = (groupIds, userGroups) => {
-  if (userGroups) {
-    const filtered = userGroups.filter((grp) => groupIds.includes(grp.id));
-    return filtered.map((grp) => grp.id);
-  } return [];
-};
-
 export {
   addGroupToUser,
   addUserToGroup,
@@ -373,7 +366,6 @@ export {
   deleteGroup,
   deleteGroupById,
   deleteInviteToken,
-  filterGroupIdsByUser,
   generateInviteToken,
   getGroupById,
   getGroupNameById,

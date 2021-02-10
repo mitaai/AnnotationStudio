@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   Badge, Button, ButtonGroup, Table,
 } from 'react-bootstrap';
@@ -14,7 +14,6 @@ import {
 } from 'react-bootstrap-icons';
 import { format } from 'date-fns';
 import LoadingSpinner from '../LoadingSpinner';
-import { getGroupNameById, filterGroupIdsByUser } from '../../utils/groupUtil';
 import { deleteDocumentById } from '../../utils/docUtil';
 import ConfirmationDialog from '../ConfirmationDialog';
 import { ucFirst } from '../../utils/stringUtil';
@@ -26,9 +25,7 @@ const DocumentList = ({
   setLoading,
   userId,
   setAlerts,
-  userGroups,
 }) => {
-  const [groupState, setGroupState] = useState({});
   const [showModal, setShowModal] = useState('');
   const handleCloseModal = () => setShowModal('');
   const handleShowModal = (event) => {
@@ -44,26 +41,6 @@ const DocumentList = ({
       default: return '';
     }
   };
-
-  useEffect(() => {
-    if (documents) {
-      const fetchGroupState = async () => {
-        documents.map((document) => document.groups.map(async (group) => {
-          if (!groupState[group]) {
-            const name = await getGroupNameById(group)
-              .catch((err) => {
-                setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
-              });
-            setGroupState((prevState) => ({
-              ...prevState,
-              [group]: name,
-            }));
-          }
-        }));
-      };
-      fetchGroupState();
-    }
-  }, [documents, groupState]);
 
   return (
     <>
@@ -114,16 +91,16 @@ const DocumentList = ({
                     {format(new Date(document.createdAt), 'MM/dd/yyyy')}
                   </td>
                   <td>
-                    {(document.groups && document.groups.length > 0 && userGroups)
-                      ? filterGroupIdsByUser(document.groups, userGroups).sort().map((group) => (
+                    {(document.groups && document.groups.length > 0)
+                      ? document.groups.map((group) => (
                         <Badge
                           variant="info"
                           className="mr-1"
                           as={Button}
-                          href={`/groups/${group}`}
-                          key={group}
+                          href={`/groups/${group._id}`}
+                          key={group._id}
                         >
-                          {groupState[group]}
+                          {group.name}
                         </Badge>
                       )) : (<Badge>[no groups]</Badge>)}
                   </td>

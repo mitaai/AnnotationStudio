@@ -7,15 +7,13 @@ import {
 import { Plus } from 'react-bootstrap-icons';
 import { format } from 'date-fns';
 import LoadingSpinner from '../../LoadingSpinner';
-import { getSharedDocumentsByGroup, getDocumentsByUser } from '../../../utils/docUtil';
-import { getGroupNameById, filterGroupIdsByUser } from '../../../utils/groupUtil';
+import { getSharedDocumentsByGroup, getDocumentsByUser, addGroupNamesToDocuments } from '../../../utils/docUtil';
 
 const DashboardDocumentList = ({
   session,
   setAlerts,
   forceUpdate,
 }) => {
-  const [documentGroupState, setDocumentGroupState] = useState({});
   const [key, setKey] = useState('shared');
   const [listLoading, setListLoading] = useState(true);
   const [documents, setDocuments] = useState([]);
@@ -26,19 +24,27 @@ const DashboardDocumentList = ({
         setListLoading(true);
         if (key === 'shared') {
           await getSharedDocumentsByGroup(session.user.groups, 7)
-            .then((docs) => {
-              setDocuments(docs);
-              setListLoading(false);
-            }).catch((err) => {
+            .then(async (docs) => {
+              await addGroupNamesToDocuments(docs)
+                .then((docsWithGroupNames) => {
+                  setDocuments(docsWithGroupNames);
+                  setListLoading(false);
+                });
+            })
+            .catch((err) => {
               setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
               setListLoading(false);
             });
         } else if (key === 'mine') {
           await getDocumentsByUser(session.user.id, 7)
-            .then((docs) => {
-              setDocuments(docs);
-              setListLoading(false);
-            }).catch((err) => {
+            .then(async (docs) => {
+              await addGroupNamesToDocuments(docs)
+                .then((docsWithGroupNames) => {
+                  setDocuments(docsWithGroupNames);
+                  setListLoading(false);
+                });
+            })
+            .catch((err) => {
               setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
               setListLoading(false);
             });
@@ -47,27 +53,6 @@ const DashboardDocumentList = ({
     }
     fetchData();
   }, [key, forceUpdate]);
-
-
-  useEffect(() => {
-    if (documents) {
-      const fetchGroupState = async () => {
-        documents.map((document) => document.groups.map(async (group) => {
-          if (!documentGroupState[group]) {
-            const name = await getGroupNameById(group)
-              .catch((err) => {
-                setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
-              });
-            setDocumentGroupState((prevState) => ({
-              ...prevState,
-              [group]: name,
-            }));
-          }
-        }));
-      };
-      fetchGroupState();
-    }
-  }, [documents, documentGroupState]);
 
   return (
     <Card data-testid="dash-document-list">
@@ -98,19 +83,16 @@ const DashboardDocumentList = ({
                   <Link href={`/documents/${document.slug}`}>{document.title}</Link>
                 </Col>
                 <Col className="text-right">
-                  {session && session.user.groups && document.groups
-                  && filterGroupIdsByUser(document.groups, session.user.groups).length > 0 && (
-                  <Badge
-                    variant="info"
-                    key={filterGroupIdsByUser(document.groups, session.user.groups).sort()[0]}
-                    className="mr-2"
-                  >
-                    {documentGroupState[filterGroupIdsByUser(document.groups, session.user.groups)
-                      .sort()[0]]}
-                  </Badge>
+                  {document.groups && (
+                    <Badge
+                      variant="info"
+                      className="mr-2"
+                      key={document.groups[0]._id}
+                    >
+                      {document.groups[0].name}
+                    </Badge>
                   )}
-                  {document.groups && session && session.user.groups
-                  && filterGroupIdsByUser(document.groups, session.user.groups).length > 1 && (
+                  {document.groups.length > 1 && (
                     <OverlayTrigger
                       overlay={(
                         <Tooltip className="styled-tooltip">
