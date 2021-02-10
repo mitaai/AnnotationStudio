@@ -1,4 +1,5 @@
 import unfetch from 'unfetch';
+import { getManyGroupNamesById } from './docUtil';
 
 const deleteAnnotationById = async (id) => {
   const url = `/api/annotation/${id}`;
@@ -192,7 +193,22 @@ const getOwnAnnotations = async (userId, limit) => {
   } return Promise.reject(Error(`Unable to retrieve annotations: error ${res.status} received from server`));
 };
 
+const addGroupNamesToAnnotations = async (annosToAlter) => {
+  const altered = Promise.all(annosToAlter.map(async (annotation) => {
+    const anno = annotation;
+    if (annotation.permissions.groups && annotation.permissions.groups.length > 0) {
+      await getManyGroupNamesById(annotation.permissions.groups)
+        .then((res) => {
+          anno.permissions.groups = res.groups;
+        });
+    }
+    return anno;
+  }));
+  return altered;
+};
+
 export {
+  addGroupNamesToAnnotations,
   deleteAnnotationById,
   getAnnotationById,
   getOwnAnnotations,
