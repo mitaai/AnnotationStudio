@@ -83,7 +83,7 @@ const DashboardDocumentList = ({
                   <Link href={`/documents/${document.slug}`}>{document.title}</Link>
                 </Col>
                 <Col className="text-right">
-                  {document.groups && (
+                  {!!document.groups && !!document.groups[0] && (
                     <Badge
                       variant="info"
                       className="mr-2"
@@ -92,7 +92,7 @@ const DashboardDocumentList = ({
                       {document.groups[0].name}
                     </Badge>
                   )}
-                  {document.groups.length > 1 && (
+                  {!!document.groups && document.groups.length > 1 && (
                     <OverlayTrigger
                       overlay={(
                         <Tooltip className="styled-tooltip">
