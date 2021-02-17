@@ -537,9 +537,14 @@ const DocumentPage = ({
 
   const [documentLoading, setDocumentLoading] = useState(true);
 
+  const cloudfrontUrl = process.env.NEXT_PUBLIC_SIGNING_URL.split('/url')[0];
+
   useEffect(() => {
-    if (document && document.text && document.text.startsWith(process.env.NEXT_PUBLIC_SIGNING_URL.split('/url')[0])) {
-      unfetch(document.text, {
+    if (document && document.text
+      && document.text.length < 255 && document.text.includes(cloudfrontUrl)) {
+      unfetch(document.text.substring(
+        document.text.indexOf(cloudfrontUrl), document.text.indexOf('.html') + 5,
+      ), {
         method: 'GET',
         headers: {
           'Content-Type': 'text/html',
