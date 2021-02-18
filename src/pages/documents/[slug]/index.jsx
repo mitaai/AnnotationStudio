@@ -86,6 +86,18 @@ function DeepCopyObj(obj) {
   return JSON.parse(JSON.stringify(obj));
 }
 
+/*
+transform: ${
+  !zoomed
+    ? 'scale(1) translateY(0)'
+    : `scale(1.5) translateY(${
+      (document && document.uploadContentType && document.uploadContentType.includes('pdf'))
+        ? '80px'
+        : 'calc(100% / 6.0)'
+    })`
+};
+*/
+
 
 const DocumentPage = ({
   document, annotations, initAlerts, query, statefulSession,
@@ -103,6 +115,7 @@ const DocumentPage = ({
   const [documentHighlightedAndLoaded, setDocumentHighlightedAndLoaded] = useState(false);
   const [annotationIdBeingEdited, setAnnotationIdBeingEdited] = useState();
   const [showUnsavedChangesToast, setShowUnsavedChangesToast] = useState();
+  const [documentZoom, setDocumentZoom] = useState(100);
   const [activeAnnotations, setActiveAnnotations] = useState({ annotations: [], target: null });
   const [channelAnnotations, setChannelAnnotations] = useState({ left: null, right: null });
   const [expandedAnnotations, setExpandedAnnotations] = useState([]);
@@ -565,7 +578,7 @@ const DocumentPage = ({
 
   return (
     <DocumentActiveAnnotationsContext.Provider value={[activeAnnotations, setActiveAnnotations]}>
-      <DocumentContext.Provider value={document}>
+      <DocumentContext.Provider value={[document, documentZoom, setDocumentZoom]}>
         <DocumentAnnotationsContext.Provider
           value={[
             channelAnnotations,
@@ -622,8 +635,20 @@ const DocumentPage = ({
                       alerts={alerts}
                       setAlerts={setAlerts}
                     />
-                    <Col style={{ minWidth: 750, maxWidth: 750 }}>
-                      <Card id="document-card-container">
+                    <Col style={{
+                      minWidth: 750,
+                      maxWidth: 750,
+                      marginLeft: (documentZoom - 100) * 4,
+                      marginRight: (documentZoom - 100) * 4,
+                    }}
+                    >
+                      <Card
+                        id="document-card-container"
+                        style={{
+                          transform: `scale(${documentZoom / 100}) translateY(0px)`,
+                          transformOrigin: 'top center',
+                        }}
+                      >
                         <Card.Body>
                           <Document
                             addActiveAnnotation={addActiveAnnotation}
@@ -753,7 +778,6 @@ const DocumentPage = ({
                 padding: 40px;
                 font-family: 'Times';
                 border-radius: 0px;
-                min-height: 100%;
                 border: none;
                 box-shadow: ${(document && document.uploadContentType && document.uploadContentType.includes('pdf'))
                 ? 'none'

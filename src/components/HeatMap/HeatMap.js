@@ -15,6 +15,7 @@ const HeatMap = ({ pdf }) => {
     documentHeight = $('#document-container').height();
     documentScrollHeight = $('#document-container').get(0).scrollHeight;
   }
+
   const scaleFactor = (
     documentHeight !== undefined
     && documentScrollHeight !== undefined
@@ -70,7 +71,9 @@ const HeatMap = ({ pdf }) => {
               (anno.position.top - offsetTop) / granularity,
             );
             startIndex = startIndex < 0 ? 0 : startIndex;
-            const endIndex = Math.floor((anno.position.top + h - offsetTop) / granularity);
+            const endIndex = Math.floor(
+              ((anno.position.top + h) - offsetTop) / granularity,
+            );
             for (let i = startIndex; i <= endIndex; i += 1) {
               if (i < n) {
                 if (map[i] === undefined) {

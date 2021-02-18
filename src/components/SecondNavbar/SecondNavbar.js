@@ -5,6 +5,7 @@ import {
 import { InfoSquare } from 'react-bootstrap-icons';
 import FilterPopover from '../FilterPopover';
 import { publicationFieldName } from '../../utils/metadataUtil';
+import DocumentZoomSlider from '../DocumentZoomSlider/DocumentZoomSlider';
 
 const SecondNavbar = ({
   session,
@@ -84,8 +85,13 @@ const SecondNavbar = ({
             </Breadcrumb>
           </Nav>
           {type === 'document' && document && docView && (
-            <div ref={ref} style={{ display: 'flex', flexWrap: 'nowrap' }}>
-              <FilterPopover session={session} container={ref} />
+            <div style={{ display: 'flex', flexDirection: 'row' }}>
+              <div style={{ marginTop: 6, marginRight: 6 }}>
+                <DocumentZoomSlider />
+              </div>
+              <div ref={ref} style={{ display: 'flex', flexWrap: 'nowrap' }}>
+                <FilterPopover session={session} container={ref} />
+              </div>
             </div>
           )}
         </Container>
