@@ -1,20 +1,30 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable guard-for-in */
 /* eslint-disable no-restricted-syntax */
-import React, { useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import $ from 'jquery';
 
 import { DocumentFiltersContext, DocumentAnnotationsContext } from '../../contexts/DocumentContext';
 
 
-const HeatMap = ({ pdf }) => {
+const HeatMap = ({ pdf, documentZoom }) => {
+  const [documentHeight, setDocumentHeight] = useState(undefined);
+  const [documentScrollHeight, setDocumentScrollHeight] = useState(undefined);
   const lineHeight = 18;
-  let documentHeight;
-  let documentScrollHeight;
-  if ($('#document-container').get(0) !== undefined) {
-    documentHeight = $('#document-container').height();
-    documentScrollHeight = $('#document-container').get(0).scrollHeight;
+
+  if (documentScrollHeight !== undefined) {
+    const h = documentZoom < 100
+      ? documentScrollHeight * (documentZoom / 100)
+      : documentScrollHeight;
+    $('#document-container-col').height(h);
   }
+
+  useEffect(() => {
+    if ($('#document-container').get(0) !== undefined && documentHeight === undefined && documentScrollHeight === undefined) {
+      setDocumentHeight($('#document-container').height());
+      setDocumentScrollHeight($('#document-container').get(0).scrollHeight / (documentZoom / 100));
+    }
+  }, [documentZoom]);
 
   const scaleFactor = (
     documentHeight !== undefined
