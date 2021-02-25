@@ -3,6 +3,7 @@
 import unfetch from 'unfetch';
 import { getAllDocumentsByGroup } from './docUtil';
 import { getUserByEmail } from './userUtil';
+import { appendProtocolIfMissing } from './fetchUtil';
 
 const updateMemberCounts = async (group) => {
   const { members } = group;
@@ -315,7 +316,7 @@ const deleteInviteToken = async (group) => {
 };
 
 const prefetchGroupById = async (id, cookie) => {
-  const url = `${process.env.SITE}/api/group/${id}`;
+  const url = `${appendProtocolIfMissing(process.env.SITE)}/api/group/${id}`;
   // eslint-disable-next-line no-undef
   const res = await fetch(url, {
     method: 'GET',

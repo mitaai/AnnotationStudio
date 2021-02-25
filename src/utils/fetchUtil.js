@@ -1,3 +1,7 @@
-import fetch from 'unfetch';
-
-export default function fetcher(url) { return fetch(url).then((r) => r.json()); }
+// eslint-disable-next-line import/prefer-default-export
+export const appendProtocolIfMissing = (url) => {
+  if (url && !url.startsWith('http')) {
+    return `https://${url}`;
+  }
+  return url;
+};

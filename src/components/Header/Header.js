@@ -9,21 +9,22 @@ import {
 } from 'react-bootstrap-icons';
 import SecondNavbar from '../SecondNavbar';
 import FeedbackButton from '../FeedbackButton';
+import { appendProtocolIfMissing } from '../../utils/fetchUtil';
 
-function getEditProfileUrl(email) {
+const getEditProfileUrl = (email) => {
   const slug = email.replace(/[*+~.()'"!:@]/g, '-');
   const editUrl = `/user/${slug}/editprofile`;
   return editUrl;
-}
+};
 
-function Header({
+const Header = ({
   type,
   document,
   docView,
   annotations,
   newReg,
   statefulSession,
-}) {
+}) => {
   const [session, loading] = useSession();
   const router = useRouter();
   return (
@@ -48,7 +49,7 @@ function Header({
                 <Nav.Link disabled>Loading...</Nav.Link>
               )}
               {!session && !loading && (
-                <Nav.Link href={`/api/auth/signin?callbackUrl=${process.env.SITE}`} data-testid="nav-login-link" disabled={type === 'signin'}>
+                <Nav.Link href={`/api/auth/signin?callbackUrl=${appendProtocolIfMissing(process.env.SITE)}`} data-testid="nav-login-link" disabled={type === 'signin'}>
                   Log In
                   <BoxArrowInRight className="align-text-bottom ml-1" />
                 </Nav.Link>
@@ -98,6 +99,6 @@ function Header({
       )}
     </header>
   );
-}
+};
 
 export default Header;

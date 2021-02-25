@@ -6,6 +6,7 @@ import { Button, Card, Form } from 'react-bootstrap';
 import Layout from '../../components/Layout';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import GroupJoinCard from '../../components/GroupJoinCard';
+import { appendProtocolIfMissing } from '../../utils/fetchUtil';
 
 const SignIn = ({
   props,
@@ -83,7 +84,7 @@ SignIn.getInitialProps = async (context) => {
       maxAge: 30 * 24 * 60 * 60,
       path: '/',
     });
-    const url = `${process.env.SITE}/api/invite/${groupToken}`;
+    const url = `${appendProtocolIfMissing(process.env.SITE)}/api/invite/${groupToken}`;
     // eslint-disable-next-line no-undef
     const res = await fetch(url, {
       method: 'GET',

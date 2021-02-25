@@ -28,7 +28,7 @@ const AdminView = ({ props, statefulSession }) => {
           </Card.Body>
         </Card>
       )}
-      {!loading && session && session.user.role === 'admin' && (
+      {!loading && session && session.user && session.user.role === 'admin' && (
         <AdminPanel
           alerts={alerts}
           setAlerts={setAlerts}

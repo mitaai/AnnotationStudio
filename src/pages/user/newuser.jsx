@@ -16,6 +16,7 @@ import Layout from '../../components/Layout';
 import UnauthorizedCard from '../../components/UnauthorizedCard';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { addUserToGroup } from '../../utils/groupUtil';
+import { appendProtocolIfMissing } from '../../utils/fetchUtil';
 
 const NewUser = ({ groupId, updateSession, statefulSession }) => {
   const [session, loading] = useSession();
@@ -130,7 +131,8 @@ const NewUser = ({ groupId, updateSession, statefulSession }) => {
               </Card.Text>
             </Card.Body>
           )}
-          {!pageLoading && session && !session.user.firstName && !statefulSession && (
+          {!pageLoading && session
+          && session.user && !session.user.firstName && !statefulSession && (
             <Card.Body>
               <Card.Title>Welcome to Annotation Studio</Card.Title>
               <Card.Text>
@@ -282,7 +284,7 @@ NewUser.getInitialProps = async (context) => {
   const { ans_grouptoken } = cookies;
   let groupId = '';
   if (ans_grouptoken) {
-    const url = `${process.env.SITE}/api/invite/${ans_grouptoken}`;
+    const url = `${appendProtocolIfMissing(process.env.SITE)}/api/invite/${ans_grouptoken}`;
     // eslint-disable-next-line no-undef
     const res = await fetch(url, {
       method: 'GET',
