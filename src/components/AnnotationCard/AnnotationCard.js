@@ -679,7 +679,7 @@ function AnnotationCard({
                   </ListGroup>
                 </>
               )}
-            <Card.Header className="annotation-header grey-background" onClick={() => { setExpanded(true); setUpdateFocusOfAnnotation(true); }}>
+            <Card.Header className="annotation-header grey-background" onClick={() => { setUpdateFocusOfAnnotation(true); }}>
               <span className="float-left">{FirstNameLastInitial(annotationData.creator.name)}</span>
               {annotationData.editing ? (
                 <>
