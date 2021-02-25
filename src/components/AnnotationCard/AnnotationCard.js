@@ -76,7 +76,34 @@ function AnnotationCard({
     setDocumentFilters,
     FilterAnnotations,
   ] = useContext(DocumentFiltersContext);
-  const [annotationData, setAnnotationData] = useState({ ...annotation });
+
+  const initPermissions = (n) => {
+    const permissions = {};
+    if (n === 0) {
+      // user wants the annotation to be private
+      permissions.private = true;
+      permissions.sharedTo = undefined;
+    } else if (n === 1) {
+      // user wants the annotation to be shared with groups
+      // groups intersection
+      permissions.groups = user.groups
+        .filter(({ id }) => (annotation.target.document.groups.includes(id)))
+        .map(({ id }) => id);
+      permissions.sharedTo = undefined;
+      permissions.private = false;
+    } else if (n === 2) {
+      // user wants annotation to be shared with document owner only
+      permissions.private = false;
+      // when we first init permission there will be no specific users to share to
+      permissions.sharedTo = [];
+    }
+
+    return permissions;
+  };
+
+  const [annotationData, setAnnotationData] = useState(annotation.new
+    ? { ...annotation, permissions: initPermissions(documentFilters.filters.permissions) }
+    : { ...annotation });
   const [newAnnotationTags, setNewAnnotationTags] = useState(null);
   const [newAnnotationPermissions, setNewAnnotationPermissions] = useState(null);
   const [newAnnotationText, setNewAnnotationText] = useState(annotation.editing !== undefined ? '' : null);
@@ -86,6 +113,7 @@ function AnnotationCard({
   const [updateFocusOfAnnotation, setUpdateFocusOfAnnotation] = useState(annotation.editing);
   const [hovered, setHovered] = useState();
   const [newSelectedUsersToShare, setNewSelectedUsersToShare] = useState(null);
+
   let selectedUsersToShare = newSelectedUsersToShare;
   if (selectedUsersToShare === null) {
     selectedUsersToShare = annotationData.permissions.sharedTo === undefined
@@ -406,8 +434,10 @@ function AnnotationCard({
       // private
       i = 0;
     } else if (!annotationData.permissions.sharedTo && !annotationData.permissions.private) {
+      // shared with groups
       i = 1;
     } else if (annotationData.permissions.sharedTo !== undefined) {
+      // shared to
       i = 2;
     }
 
@@ -649,7 +679,7 @@ function AnnotationCard({
                   </ListGroup>
                 </>
               )}
-            <Card.Header className="annotation-header grey-background">
+            <Card.Header className="annotation-header grey-background" onClick={() => { setExpanded(true); setUpdateFocusOfAnnotation(true); }}>
               <span className="float-left">{FirstNameLastInitial(annotationData.creator.name)}</span>
               {annotationData.editing ? (
                 <>
