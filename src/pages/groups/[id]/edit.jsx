@@ -32,6 +32,7 @@ import {
   generateInviteToken,
   deleteInviteToken,
 } from '../../../utils/groupUtil';
+import { appendProtocolIfMissing } from '../../../utils/fetchUtil';
 
 
 const EditGroup = ({
@@ -535,7 +536,7 @@ export async function getServerSideProps(context) {
     }];
   }
 
-  const url = `${process.env.SITE}/api/group/${id}`;
+  const url = `${appendProtocolIfMissing(process.env.SITE)}/api/group/${id}`;
   // eslint-disable-next-line no-undef
   const res = await fetch(url, {
     method: 'GET',
@@ -558,11 +559,11 @@ export async function getServerSideProps(context) {
     };
     group.inviteToken = inviteToken || null;
     group.inviteUrl = inviteToken
-      ? `${process.env.SITE}/auth/signin?callbackUrl=${process.env.SITE}&groupToken=${inviteToken}`
+      ? `${appendProtocolIfMissing(process.env.SITE)}/auth/signin?callbackUrl=${appendProtocolIfMissing(process.env.SITE)}&groupToken=${inviteToken}`
       : '';
     return {
       props: {
-        group, initAlerts, baseUrl: process.env.SITE,
+        group, initAlerts, baseUrl: appendProtocolIfMissing(process.env.SITE),
       },
     };
   }

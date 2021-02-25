@@ -12,6 +12,7 @@ import GroupJoinCard from '../components/GroupJoinCard';
 import DashboardAnnotationList from '../components/Dashboard/DashboardAnnotationList';
 import DashboardDocumentList from '../components/Dashboard/DashboardDocumentList';
 import DashboardGroupList from '../components/Dashboard/DashboardGroupList';
+import { appendProtocolIfMissing } from '../utils/fetchUtil';
 
 export default function Home({
   query,
@@ -124,7 +125,7 @@ Home.getInitialProps = async (context) => {
       path: '/',
     });
   } else if (cookies.ans_grouptoken) {
-    const url = `${process.env.SITE}/api/invite/${cookies.ans_grouptoken}`;
+    const url = `${appendProtocolIfMissing(process.env.SITE)}/api/invite/${cookies.ans_grouptoken}`;
     // eslint-disable-next-line no-undef
     const res = await fetch(url, {
       method: 'GET',

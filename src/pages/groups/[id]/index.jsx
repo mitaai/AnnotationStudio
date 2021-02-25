@@ -15,6 +15,7 @@ import GroupRoleSummaries from '../../../components/GroupRoleSummaries';
 import GroupRoleBadge from '../../../components/GroupRoleBadge';
 import { deleteGroup, removeUserFromGroup } from '../../../utils/groupUtil';
 import { getUserByEmail } from '../../../utils/userUtil';
+import { appendProtocolIfMissing } from '../../../utils/fetchUtil';
 
 const ViewGroup = ({ group, statefulSession }) => {
   const [session, loading] = useSession();
@@ -141,7 +142,7 @@ const ViewGroup = ({ group, statefulSession }) => {
 export async function getServerSideProps(context) {
   const { id } = context.params;
 
-  const url = `${process.env.SITE}/api/group/${id}`;
+  const url = `${appendProtocolIfMissing(process.env.SITE)}/api/group/${id}`;
   // eslint-disable-next-line no-undef
   const res = await fetch(url, {
     method: 'GET',

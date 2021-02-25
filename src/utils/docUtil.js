@@ -1,4 +1,5 @@
 import unfetch from 'unfetch';
+import { appendProtocolIfMissing } from './fetchUtil';
 
 const getDocumentsByUser = async (id, limit) => {
   const url = '/api/documents';
@@ -18,7 +19,7 @@ const getDocumentsByUser = async (id, limit) => {
 };
 
 const prefetchDocumentBySlug = async (slug, cookie) => {
-  const url = `${process.env.SITE}/api/document/slug/${slug}`;
+  const url = `${appendProtocolIfMissing(process.env.SITE)}/api/document/slug/${slug}`;
   // eslint-disable-next-line no-undef
   const res = await fetch(url, {
     method: 'GET',
@@ -84,7 +85,7 @@ const deleteDocumentById = async (id) => {
 };
 
 const prefetchManyGroupNamesById = async (groupIds, cookie) => {
-  const url = `${process.env.SITE}/api/groups`;
+  const url = `${appendProtocolIfMissing(process.env.SITE)}/api/groups`;
   const body = { groupIds };
   // eslint-disable-next-line no-undef
   const res = await fetch(url, {

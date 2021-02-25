@@ -4,6 +4,7 @@ import Providers from 'next-auth/providers';
 import Adapters from 'next-auth/adapters';
 import sendVerificationRequestOverride from '../../../utils/verificationUtil';
 import Models from '../../../models';
+import { appendProtocolIfMissing } from '../../../utils/fetchUtil';
 
 const options = {
   providers: [
@@ -65,7 +66,7 @@ const options = {
       if (profile) {
         token.auth_time = Date.now();
         token.id = profile.id;
-        const url = `${process.env.SITE}/api/user/${profile.id}`;
+        const url = `${appendProtocolIfMissing(process.env.SITE)}/api/user/${profile.id}`;
         // eslint-disable-next-line no-undef
         const res = await fetch(url, {
           method: 'GET',

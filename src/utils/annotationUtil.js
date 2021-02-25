@@ -1,5 +1,6 @@
 import unfetch from 'unfetch';
 import { getManyGroupNamesById } from './docUtil';
+import { appendProtocolIfMissing } from './fetchUtil';
 
 const deleteAnnotationById = async (id) => {
   const url = `/api/annotation/${id}`;
@@ -51,7 +52,7 @@ const postAnnotation = async ({
 };
 
 const prefetchSharedAnnotationsOnDocument = async (slug, cookie) => {
-  const url = `${process.env.SITE}/api/annotations?slug=${slug}`;
+  const url = `${appendProtocolIfMissing(process.env.SITE)}/api/annotations?slug=${slug}`;
   // eslint-disable-next-line no-undef
   const res = await fetch(url, {
     method: 'GET',

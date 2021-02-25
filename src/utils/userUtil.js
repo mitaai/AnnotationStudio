@@ -1,6 +1,7 @@
 /* eslint-disable import/no-cycle */
 import unfetch from 'unfetch';
 import { removeUserFromGroup, deleteGroupById } from './groupUtil';
+import { appendProtocolIfMissing } from './fetchUtil';
 
 const getUserByEmail = async (email) => {
   const url = `/api/user/email/${email}`;
@@ -29,7 +30,7 @@ const getUserById = async (id) => {
 };
 
 const prefetchUserById = async (id, cookie) => {
-  const url = `${process.env.SITE}/api/user/${id}`;
+  const url = `${appendProtocolIfMissing(process.env.SITE)}/api/user/${id}`;
   // eslint-disable-next-line no-undef
   const res = await fetch(url, {
     method: 'GET',
