@@ -5,7 +5,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import $ from 'jquery';
 import { Overlay, Tooltip, Toast } from 'react-bootstrap';
-import { Pen, PencilFill, ChatLeftTextFill } from 'react-bootstrap-icons';
+import {
+  ArchiveFill, Pen, PencilFill, ChatLeftTextFill,
+} from 'react-bootstrap-icons';
 import {
   createTextQuoteSelector,
   highlightRange,
@@ -436,21 +438,45 @@ export default function Document({
           </Toast.Header>
           <Toast.Body>
             <p>
-              This document is currently a
+              This document is currently
               {' '}
-              <PencilFill />
-              {' '}
-              <strong>Draft</strong>
+              {documentToAnnotate.state === 'draft' && (
+                <>
+                  a
+                  {' '}
+                  <PencilFill alt="draft" />
+                  {' '}
+                  <strong>Draft</strong>
+                </>
+              )}
+              {documentToAnnotate.state === 'archived' && (
+                <>
+                  <ArchiveFill alt="archived" />
+                  {' '}
+                  <strong>Archived</strong>
+                </>
+              )}
               . Documents in
               {' '}
-              <PencilFill />
-              {' '}
-              <strong>Draft</strong>
+              {documentToAnnotate.state === 'draft' && (
+                <>
+                  <PencilFill alt="draft" />
+                  {' '}
+                  <strong>Draft</strong>
+                </>
+              )}
+              {documentToAnnotate.state === 'archived' && (
+                <>
+                  <ArchiveFill alt="archived" />
+                  {' '}
+                  <strong>Archived</strong>
+                </>
+              )}
               {' '}
               mode cannot be annotated.
             </p>
             <p>
-              Please edit the document and change its state to
+              If you are the document owner, please edit the document and change its state to
               {' '}
               <ChatLeftTextFill />
               {' '}
@@ -471,7 +497,7 @@ export default function Document({
           <Tooltip
             id="annotate-document-tooltip"
             onMouseDown={async () => {
-              if (documentToAnnotate.state !== 'draft') {
+              if (!['draft', 'archived'].includes(documentToAnnotate.state)) {
                 const rid = RID();
                 await annotateDocument(selector, rid);
 
