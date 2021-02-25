@@ -41,7 +41,7 @@ export default function Home({
         <Card.Body>Welcome to Annotation Studio. Please log in to use the application.</Card.Body>
       </Card>
       )}
-      {session && !session.user.firstName && !statefulSession && (
+      {session && session.user && !session.user.firstName && !statefulSession && (
         <Card>
           <Card.Header><Card.Title>Please complete registration</Card.Title></Card.Header>
           <Card.Body>
@@ -67,7 +67,7 @@ export default function Home({
           </Card.Body>
         </Card>
       )}
-      {session && (session.user.firstName || statefulSession) && !loading && groupId && groupId !== '' && (
+      {session && ((session.user && session.user.firstName) || statefulSession) && !loading && groupId && groupId !== '' && (
         <GroupJoinCard
           alerts={alerts}
           setAlerts={setAlerts}
@@ -78,7 +78,7 @@ export default function Home({
           token={groupToken}
         />
       )}
-      {session && (session.user.firstName || statefulSession) && !loading && (
+      {session && ((session.user && session.user.firstName) || statefulSession) && !loading && (
         <Row>
           <Col>
             <CardColumns style={{ columnCount: 1 }}>

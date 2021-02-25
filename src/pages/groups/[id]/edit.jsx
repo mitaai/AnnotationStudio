@@ -97,7 +97,7 @@ const EditGroup = ({
           <UnauthorizedCard />
         )}
         {session && !loading && !pageLoading && group
-          && (session.user.role === 'admin'
+          && ((session.user && session.user.role === 'admin')
             || roleInGroup(session) === 'owner'
             || roleInGroup(session) === 'manager')
           && (

@@ -130,7 +130,8 @@ const NewUser = ({ groupId, updateSession, statefulSession }) => {
               </Card.Text>
             </Card.Body>
           )}
-          {!pageLoading && session && !session.user.firstName && !statefulSession && (
+          {!pageLoading && session
+          && session.user && !session.user.firstName && !statefulSession && (
             <Card.Body>
               <Card.Title>Welcome to Annotation Studio</Card.Title>
               <Card.Text>

@@ -89,7 +89,7 @@ const DocumentStatusSelect = ({
             Archived
           </FormCheck.Label>
         </Form.Check>
-        {session.user.role === 'admin' && process.env.ALLOW_PUBLIC && (
+        {session.user && session.user.role === 'admin' && process.env.ALLOW_PUBLIC && (
           <Form.Check
             name="state"
             id="public"
