@@ -17,12 +17,6 @@ const getEditProfileUrl = (email) => {
   return editUrl;
 };
 
-const getCurrentName = (session, statefulSession) => {
-  if (statefulSession && statefulSession.user.name && statefulSession.user.name !== session.user.name) {
-    return statefulSession.user.name;
-  } return session.user.name;
-};
-
 const Header = ({
   type,
   document,
@@ -62,25 +56,36 @@ const Header = ({
               )}
               {session && (
                 <>
-                  {session.user && session.user.role === 'admin' && (
+                  {session.user.role === 'admin' && (
                     <Nav.Link href="/admin">
                       Administration
                       <GearWideConnected className="align-text-bottom ml-1" />
                     </Nav.Link>
                   )}
-                  <NavDropdown title={getCurrentName(session, statefulSession)} id="basic-nav-dropdown" data-testid="nav-profile-dropdown">
-                    <NavDropdown.Item href={getEditProfileUrl(session.user.email)}>My Profile</NavDropdown.Item>
-                    <NavDropdown.Item href="/api/auth/signout" data-testid="nav-login-link">
-                      Log Out
-                      <BoxArrowRight className="align-text-bottom ml-1" />
-                    </NavDropdown.Item>
-                  </NavDropdown>
-                  {!newReg && !(session.user && session.user.firstName) && !(statefulSession && statefulSession.user && statefulSession.user.email) && router.pathname !== '/user/newuser' && (
+                  {statefulSession && statefulSession.user && statefulSession.user.email && (
+                    <NavDropdown title={statefulSession.user.name} id="basic-nav-dropdown" data-testid="nav-profile-dropdown">
+                      <NavDropdown.Item href={getEditProfileUrl(statefulSession.user.email)}>My Profile</NavDropdown.Item>
+                      <NavDropdown.Item href="/api/auth/signout" data-testid="nav-login-link">
+                        Log Out
+                        <BoxArrowRight className="align-text-bottom ml-1" />
+                      </NavDropdown.Item>
+                    </NavDropdown>
+                  )}
+                  {!statefulSession && session.user.firstName && (
+                    <NavDropdown title={session.user.name} id="basic-nav-dropdown" data-testid="nav-profile-dropdown">
+                      <NavDropdown.Item href={getEditProfileUrl(session.user.email)}>My Profile</NavDropdown.Item>
+                      <NavDropdown.Item href="/api/auth/signout" data-testid="nav-login-link">
+                        Log Out
+                        <BoxArrowRight className="align-text-bottom ml-1" />
+                      </NavDropdown.Item>
+                    </NavDropdown>
+                  )}
+                  {!newReg && !session.user.firstName && !(statefulSession && statefulSession.user && statefulSession.user.email) && router.pathname !== '/user/newuser' && (
                     <Nav.Link href="/user/newuser" className="text-danger">
                       Complete Registration
                     </Nav.Link>
                   )}
-                  {newReg && !(session.user && session.user.firstName) && !statefulSession && (
+                  {newReg && !session.user.firstName && !statefulSession && (
                     <Nav.Link onClick={() => router.reload()} className="text-warning">Refresh this page</Nav.Link>
                   )}
                 </>

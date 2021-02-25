@@ -62,37 +62,37 @@ const options = {
   },
 
   callbacks: {
-    jwt: async (token, profile) => {
-      if (profile) {
-        token.auth_time = Date.now();
-        token.id = profile.id;
-        const url = `${appendProtocolIfMissing(process.env.SITE)}/api/user/${profile.id}`;
-        // eslint-disable-next-line no-undef
-        const res = await fetch(url, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-        });
-        if (res.ok) {
-          const user = await res.json();
-          token.user = {
-            id: profile.id,
-            email: profile.email,
-            name: user.name,
-            firstName: user.firstName,
-            groups: user.groups,
-            role: user.role ?? 'user',
-          };
-        }
+    jwt: async (token, user) => {
+      const isSignIn = !!(user);
+      if (isSignIn) {
+        token.auth_time = Number(new Date());
+        token.id = user.id;
       }
-      return token;
+      return Promise.resolve(token);
     },
 
-    session: async (session, jwt) => {
-      session.user = jwt.user;
-      return session;
+    session: async (session, sessionToken) => {
+      const { id } = sessionToken;
+      const url = `${appendProtocolIfMissing(process.env.SITE)}/api/user/${id}`;
+      // eslint-disable-next-line no-undef
+      const res = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+      if (res.status === 200) {
+        const user = await res.json();
+        session.user.id = id;
+        session.user.name = user.name;
+        session.user.firstName = user.firstName;
+        session.user.groups = user.groups;
+        session.user.role = user.role ? user.role : 'user';
+      } else {
+        return Promise.reject();
+      }
+      return Promise.resolve(session);
     },
   },
 
