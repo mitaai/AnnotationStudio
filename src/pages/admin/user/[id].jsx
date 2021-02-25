@@ -30,7 +30,7 @@ const AdminManageUser = (props) => {
           </Card.Body>
         </Card>
       )}
-      {!loading && session && session.user.role === 'admin' && (
+      {!loading && session && session.user && session.user.role === 'admin' && (
         <Card>
           <AdminHeader
             activeKey="users"

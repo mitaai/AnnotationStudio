@@ -10,6 +10,7 @@ import Layout from '../../../components/Layout';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import UnauthorizedCard from '../../../components/UnauthorizedCard';
 import { updateAllAnnotationsByUser } from '../../../utils/annotationUtil';
+import { appendProtocolIfMissing } from '../../../utils/fetchUtil';
 
 const EditProfile = ({ user, updateSession, statefulSession }) => {
   // eslint-disable-next-line prefer-const
@@ -247,7 +248,7 @@ const EditProfile = ({ user, updateSession, statefulSession }) => {
 export async function getServerSideProps(context) {
   const { slug } = context.params;
 
-  const url = `${process.env.SITE}/api/user/slug/${slug}`;
+  const url = `${appendProtocolIfMissing(process.env.SITE)}/api/user/slug/${slug}`;
   // eslint-disable-next-line no-undef
   const res = await fetch(url, {
     method: 'GET',

@@ -12,6 +12,7 @@ import GroupJoinCard from '../components/GroupJoinCard';
 import DashboardAnnotationList from '../components/Dashboard/DashboardAnnotationList';
 import DashboardDocumentList from '../components/Dashboard/DashboardDocumentList';
 import DashboardGroupList from '../components/Dashboard/DashboardGroupList';
+import { appendProtocolIfMissing } from '../utils/fetchUtil';
 
 export default function Home({
   query,
@@ -41,7 +42,7 @@ export default function Home({
         <Card.Body>Welcome to Annotation Studio. Please log in to use the application.</Card.Body>
       </Card>
       )}
-      {session && !session.user.firstName && !statefulSession && (
+      {session && session.user && !session.user.firstName && !statefulSession && (
         <Card>
           <Card.Header><Card.Title>Please complete registration</Card.Title></Card.Header>
           <Card.Body>
@@ -67,7 +68,7 @@ export default function Home({
           </Card.Body>
         </Card>
       )}
-      {session && (session.user.firstName || statefulSession) && !loading && groupId && groupId !== '' && (
+      {session && ((session.user && session.user.firstName) || statefulSession) && !loading && groupId && groupId !== '' && (
         <GroupJoinCard
           alerts={alerts}
           setAlerts={setAlerts}
@@ -78,7 +79,7 @@ export default function Home({
           token={groupToken}
         />
       )}
-      {session && (session.user.firstName || statefulSession) && !loading && (
+      {session && ((session.user && session.user.firstName) || statefulSession) && !loading && (
         <Row>
           <Col>
             <CardColumns style={{ columnCount: 1 }}>
@@ -124,7 +125,7 @@ Home.getInitialProps = async (context) => {
       path: '/',
     });
   } else if (cookies.ans_grouptoken) {
-    const url = `${process.env.SITE}/api/invite/${cookies.ans_grouptoken}`;
+    const url = `${appendProtocolIfMissing(process.env.SITE)}/api/invite/${cookies.ans_grouptoken}`;
     // eslint-disable-next-line no-undef
     const res = await fetch(url, {
       method: 'GET',

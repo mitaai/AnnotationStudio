@@ -4,6 +4,7 @@ import Providers from 'next-auth/providers';
 import Adapters from 'next-auth/adapters';
 import sendVerificationRequestOverride from '../../../utils/verificationUtil';
 import Models from '../../../models';
+import { appendProtocolIfMissing } from '../../../utils/fetchUtil';
 
 const options = {
   providers: [
@@ -39,6 +40,8 @@ const options = {
     },
   ),
 
+  debug: true,
+
   session: {
     jwt: true,
     maxAge: 30 * 24 * 60 * 60, // 30 days
@@ -70,7 +73,7 @@ const options = {
 
     session: async (session, sessionToken) => {
       const { id } = sessionToken;
-      const url = `${process.env.SITE}/api/user/${id}`;
+      const url = `${appendProtocolIfMissing(process.env.SITE)}/api/user/${id}`;
       // eslint-disable-next-line no-undef
       const res = await fetch(url, {
         method: 'GET',
