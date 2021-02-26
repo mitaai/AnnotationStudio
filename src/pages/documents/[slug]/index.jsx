@@ -9,7 +9,6 @@ import $ from 'jquery';
 import {
   Row,
   Col,
-  Card,
   Modal,
   ProgressBar,
 } from 'react-bootstrap';
@@ -42,18 +41,6 @@ function DeepCopyObj(obj) {
   return JSON.parse(JSON.stringify(obj));
 }
 
-/*
-transform: ${
-  !zoomed
-    ? 'scale(1) translateY(0)'
-    : `scale(1.5) translateY(${
-      (document && document.uploadContentType && document.uploadContentType.includes('pdf'))
-        ? '80px'
-        : 'calc(100% / 6.0)'
-    })`
-};
-*/
-
 
 const DocumentPage = ({
   document, annotations, initAlerts, query, statefulSession,
@@ -66,6 +53,8 @@ const DocumentPage = ({
       defaultPermissions = query.mine === 'true' ? 0 : 1;
     }
   }
+
+  const documentIsPDF = document && document.uploadContentType && document.uploadContentType.includes('pdf');
 
   const [alerts, setAlerts] = useState(initAlerts || []);
   const [documentHighlightedAndLoaded, setDocumentHighlightedAndLoaded] = useState(false);
@@ -575,7 +564,7 @@ const DocumentPage = ({
                     scrollToAnnotation={scrollToAnnotation}
                   />
                   <HeatMap
-                    pdf={document.uploadContentType && document.uploadContentType.includes('pdf')}
+                    pdf={documentIsPDF}
                     documentZoom={documentZoom}
                   />
                   {!displayAnnotationsInChannels && <AnnotationsOverlay />}
@@ -597,44 +586,36 @@ const DocumentPage = ({
                     <Col
                       id="document-container-col"
                       style={{
+                        transform: `scale(${documentZoom / 100}) translateY(0px)`,
+                        transformOrigin: 'top center',
                         minWidth: 750,
-                        marginLeft: (documentZoom - 100) * 4,
-                        marginRight: (documentZoom - 100) * 4,
+                        // marginLeft: (documentZoom - 100) * 4,
+                        // marginRight: (documentZoom - 100) * 4,
                       }}
                     >
-                      <Card
-                        id="document-card-container"
-                        style={{
-                          transform: `scale(${documentZoom / 100}) translateY(0px)`,
-                          transformOrigin: 'top center',
-                        }}
-                      >
-                        <Card.Body>
-                          <Document
-                            addActiveAnnotation={addActiveAnnotation}
-                            removeActiveAnnotation={removeActiveAnnotation}
-                            displayAnnotationsInChannels={displayAnnotationsInChannels}
-                            setChannelAnnotations={
-                              (annos) => {
-                                setChannelAnnotations(annos);
-                                setDocumentHighlightedAndLoaded(true);
-                              }
+                      <Document
+                        addActiveAnnotation={addActiveAnnotation}
+                        removeActiveAnnotation={removeActiveAnnotation}
+                        displayAnnotationsInChannels={displayAnnotationsInChannels}
+                        setChannelAnnotations={
+                            (annos) => {
+                              setChannelAnnotations(annos);
+                              setDocumentHighlightedAndLoaded(true);
                             }
-                            annotations={annotations}
-                            documentHighlightedAndLoaded={documentHighlightedAndLoaded}
-                            addAnnotationToChannels={addAnnotationToChannels}
-                            annotateDocument={
-                              async (mySelector, annotationID) => {
-                                await highlightTextToAnnotate(mySelector, annotationID);
-                              }
+                          }
+                        annotations={annotations}
+                        documentHighlightedAndLoaded={documentHighlightedAndLoaded}
+                        addAnnotationToChannels={addAnnotationToChannels}
+                        annotateDocument={
+                            async (mySelector, annotationID) => {
+                              await highlightTextToAnnotate(mySelector, annotationID);
                             }
-                            documentToAnnotate={document}
-                            alerts={alerts}
-                            setAlerts={setAlerts}
-                            user={session ? session.user : undefined}
-                          />
-                        </Card.Body>
-                      </Card>
+                          }
+                        documentToAnnotate={document}
+                        alerts={alerts}
+                        setAlerts={setAlerts}
+                        user={session ? session.user : undefined}
+                      />
                     </Col>
                     <AnnotationChannel
                       show={displayAnnotationsInChannels}
@@ -710,7 +691,7 @@ const DocumentPage = ({
                 height: calc(100vh - 230px);
                 overflow-y: scroll;
                 padding: 
-                ${(document && document.uploadContentType && document.uploadContentType.includes('pdf')) ? '0' : '10px 0px'};
+                ${documentIsPDF ? '0' : '10px 0px'};
               }
 
               #document-container::-webkit-scrollbar {
@@ -740,11 +721,11 @@ const DocumentPage = ({
                 font-family: 'Times';
                 border-radius: 0px;
                 border: none;
-                box-shadow: ${(document && document.uploadContentType && document.uploadContentType.includes('pdf'))
+                box-shadow: ${documentIsPDF
                 ? 'none'
                 : '3px 3px 9px 0px rgba(0,0,0,0.38)'
                 };
-                ${(document && document.uploadContentType && document.uploadContentType.includes('pdf')) ? 'background: none;' : ''}
+                ${documentIsPDF ? 'background: none;' : ''}
               }
 
               #document-container #annotation-well-card-container .card-body {

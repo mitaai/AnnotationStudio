@@ -4,7 +4,9 @@
 /* eslint-disable no-restricted-syntax */
 import React, { useState, useEffect, useRef } from 'react';
 import $ from 'jquery';
-import { Overlay, Tooltip, Toast } from 'react-bootstrap';
+import {
+  Overlay, Tooltip, Toast, Card,
+} from 'react-bootstrap';
 import { Pen, PencilFill, ChatLeftTextFill } from 'react-bootstrap-icons';
 import {
   createTextQuoteSelector,
@@ -423,7 +425,17 @@ export default function Document({
     }
   });
 
-
+  const documentContentContainer = (
+    <Card
+      id="document-card-container"
+    >
+      <Card.Body>
+        <div id="document-content-container" ref={myRef}>
+          <div dangerouslySetInnerHTML={{ __html: documentToAnnotate ? documentToAnnotate.text : '' }} />
+        </div>
+      </Card.Body>
+    </Card>
+  );
   return (
     <>
       <div id="show-cannot-annotate-document-toast-container">
@@ -461,11 +473,7 @@ export default function Document({
           </Toast.Body>
         </Toast>
       </div>
-
-
-      <div id="document-content-container" ref={myRef}>
-        <div dangerouslySetInnerHTML={{ __html: documentToAnnotate ? documentToAnnotate.text : '' }} />
-      </div>
+      {documentContentContainer}
       <Overlay id="annotate-document-overlay" target={target} show={show} placement="top">
         {(props) => (
           <Tooltip
