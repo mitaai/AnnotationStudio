@@ -45,3 +45,16 @@ export default function adjustLine(from, to, line) {
 export function mapRanges(input, istart, iend, ostart, oend) {
   return ostart + ((oend - ostart) / (iend - istart)) * (input - istart);
 }
+
+export const debounce = (func, wait, options) => {
+  let timeout;
+  return function executedFunction() {
+    const later = (opts) => {
+      clearTimeout(timeout);
+      func(opts);
+    };
+
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait, options);
+  };
+};

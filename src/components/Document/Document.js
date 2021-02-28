@@ -12,19 +12,7 @@ import {
   createTextQuoteSelector,
   highlightRange,
 } from 'apache-annotator/dom';
-
-const debounce = (func, wait, options) => {
-  let timeout;
-  return function executedFunction() {
-    const later = (opts) => {
-      clearTimeout(timeout);
-      func(opts);
-    };
-
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait, options);
-  };
-};
+import { debounce } from '../../utils/docUIUtils';
 
 const highlightText = async (obj, domElement) => {
   const s = createTextQuoteSelector(obj.selector);

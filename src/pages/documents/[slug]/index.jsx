@@ -2,7 +2,7 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-restricted-syntax */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { isMobile } from 'react-device-detect';
 import { useSession } from 'next-auth/client';
 import $ from 'jquery';
@@ -17,6 +17,7 @@ import {
   highlightRange,
 } from 'apache-annotator/dom';
 import unfetch from 'unfetch';
+import debounce from 'lodash.debounce';
 import HeatMap from '../../../components/HeatMap';
 import Layout from '../../../components/Layout';
 import LoadingSpinner from '../../../components/LoadingSpinner';
@@ -55,6 +56,22 @@ const DocumentPage = ({
   }
 
   const documentIsPDF = document && document.uploadContentType && document.uploadContentType.includes('pdf');
+
+  const focusedAnnotationsRef = useRef({ left: null, right: null }).current;
+  const debouncedRepositioning = useRef(
+    debounce((nextZoom, filteredAnnotationIds, channelAnnotations, setChannelAnnotations) => {
+      if (channelAnnotations.left === null || channelAnnotations.right === null) { return; }
+      for (const s of ['left', 'right']) {
+        for (const anno of channelAnnotations[s]) {
+          const annotationBeginning = $(`#document-content-container span[annotation-id='${anno._id}'] .annotation-beginning-marker`);
+          const annotationBeginningPositionTop = annotationBeginning.offset().top + $('#document-container').scrollTop();
+          anno.position.top = annotationBeginningPositionTop;
+        }
+      }
+
+      setChannelAnnotations(DeepCopyObj(channelAnnotations));
+    }, 1000),
+  ).current;
 
   const [alerts, setAlerts] = useState(initAlerts || []);
   const [documentHighlightedAndLoaded, setDocumentHighlightedAndLoaded] = useState(false);
@@ -292,6 +309,10 @@ const DocumentPage = ({
     // we want to focus on in the annotations array
     const focusIndex = annos.findIndex((annotation) => annotation._id === focusID);
 
+    if (focusIndex !== -1) {
+      focusedAnnotationsRef[side] = focusID;
+    }
+
 
     // first we need to focus the annotation and then place all other
     // annotations after it under it
@@ -521,6 +542,16 @@ const DocumentPage = ({
     }
   }, [document]);
 
+
+  useEffect(() => {
+    debouncedRepositioning(
+      documentZoom,
+      documentFilters.annotationIds,
+      channelAnnotations,
+      setChannelAnnotations,
+    );
+  }, [documentZoom]);
+
   return (
     <DocumentActiveAnnotationsContext.Provider value={[activeAnnotations, setActiveAnnotations]}>
       <DocumentContext.Provider value={[document, documentZoom, setDocumentZoom]}>
@@ -575,6 +606,7 @@ const DocumentPage = ({
                       setAnnotationChannelLoaded={setAnnotationChannel1Loaded}
                       focusOnAnnotation={moveAnnotationsToCorrectSpotBasedOnFocus}
                       side="left"
+                      focusedAnnotation={focusedAnnotationsRef.left}
                       annotations={channelAnnotations.left}
                       user={session ? session.user : undefined}
                       showMoreInfoShareModal={showMoreInfoShareModal}
@@ -623,6 +655,7 @@ const DocumentPage = ({
                       setAnnotationChannelLoaded={setAnnotationChannel2Loaded}
                       focusOnAnnotation={moveAnnotationsToCorrectSpotBasedOnFocus}
                       side="right"
+                      focusedAnnotation={focusedAnnotationsRef.right}
                       annotations={channelAnnotations.right}
                       user={session ? session.user : undefined}
                       showMoreInfoShareModal={showMoreInfoShareModal}
