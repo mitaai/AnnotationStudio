@@ -66,6 +66,7 @@ const AnnotationChannel = ({
   user,
   deleteAnnotationFromChannels,
   focusOnAnnotation,
+  focusedAnnotation,
   showMoreInfoShareModal,
   setShowMoreInfoShareModal,
   membersIntersection,
@@ -96,7 +97,16 @@ const AnnotationChannel = ({
   useEffect(() => {
     if (channelAnnotations[side] !== null) {
       if (show) {
-        PlaceAnnotationsInCorrectSpot(sortedAnnotations, side);
+        if (focusedAnnotation !== null
+          && (
+            documentFilters.annotationIds[side] === null
+            || documentFilters.annotationIds[side].includes(focusedAnnotation)
+          )
+        ) {
+          focusOnAnnotation(side, focusedAnnotation);
+        } else {
+          PlaceAnnotationsInCorrectSpot(sortedAnnotations, side);
+        }
       }
 
       // once everything is placed in the correct spot we need to make sure the correct text has the
