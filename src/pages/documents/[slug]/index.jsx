@@ -7,8 +7,6 @@ import { isMobile } from 'react-device-detect';
 import { useSession } from 'next-auth/client';
 import $ from 'jquery';
 import {
-  Row,
-  Col,
   Modal,
   ProgressBar,
 } from 'react-bootstrap';
@@ -59,7 +57,7 @@ const DocumentPage = ({
 
   const focusedAnnotationsRef = useRef({ left: null, right: null }).current;
   const debouncedRepositioning = useRef(
-    debounce((nextZoom, filteredAnnotationIds, channelAnnotations, setChannelAnnotations) => {
+    debounce((channelAnnotations, setChannelAnnotations) => {
       if (channelAnnotations.left === null || channelAnnotations.right === null) { return; }
       for (const s of ['left', 'right']) {
         for (const anno of channelAnnotations[s]) {
@@ -70,7 +68,13 @@ const DocumentPage = ({
       }
 
       setChannelAnnotations(DeepCopyObj(channelAnnotations));
-    }, 1000),
+      // for some reason the heat map is not updating the way it should
+      // on the first state change so I put this second state change
+      // to make sure the heat map looks correct
+      setTimeout((obj) => {
+        setChannelAnnotations(obj);
+      }, 1000, DeepCopyObj(channelAnnotations));
+    }, 750),
   ).current;
 
   const [alerts, setAlerts] = useState(initAlerts || []);
@@ -113,6 +117,12 @@ const DocumentPage = ({
   const [groupIntersection, setGroupIntersection] = useState();
   // other users this user can share annotations with, generated from groupIntersection
   const [membersIntersection, setMembersIntersection] = useState([]);
+
+  const [extraWidth, setExtraWidth] = useState(0);
+  const extraMargin = (documentZoom - 100) * 3.5;
+  const documentWidth = 750;
+  const minChannelWidth = 400;
+
 
   const expandAnnotation = (aid, expand) => {
     const aidExistInList = expandedAnnotations.includes(aid);
@@ -289,6 +299,9 @@ const DocumentPage = ({
   };
 
   const deleteAnnotationFromChannels = (side, annotationID) => {
+    if (focusedAnnotationsRef[side] === annotationID) {
+      focusedAnnotationsRef[side] = null;
+    }
     const annotationIndex = channelAnnotations[side]
       .findIndex(
         (annotation) => annotation._id === annotationID,
@@ -327,6 +340,7 @@ const DocumentPage = ({
       ? $('#document-card-container').offset().left + 25
       : -40;
     for (let i = focusIndex; i < annos.length; i += 1) {
+      if (annos[i] === undefined) { continue; }
       if (documentFilters.annotationIds[side] === null
         || (!documentFilters.annotationIds[side].includes(annos[i]._id) && !annos[i].new)) {
         continue;
@@ -389,6 +403,7 @@ const DocumentPage = ({
       + tempTopAdjustment
       - adjustmentTopNumber;
     for (let i = focusIndex - 1; i >= 0; i -= 1) {
+      if (annos[i] === undefined) { continue; }
       if (documentFilters.annotationIds[side] === null
         || (!documentFilters.annotationIds[side].includes(annos[i]._id) && !annos[i].new)) {
         continue;
@@ -545,11 +560,12 @@ const DocumentPage = ({
 
   useEffect(() => {
     debouncedRepositioning(
-      documentZoom,
-      documentFilters.annotationIds,
       channelAnnotations,
       setChannelAnnotations,
     );
+    // eslint-disable-next-line no-undef
+    const channelWidth = (window.innerWidth - documentWidth - (2 * extraMargin)) / 2;
+    setExtraWidth(channelWidth < minChannelWidth ? minChannelWidth - channelWidth : 0);
   }, [documentZoom]);
 
   return (
@@ -599,72 +615,78 @@ const DocumentPage = ({
                     documentZoom={documentZoom}
                   />
                   {!displayAnnotationsInChannels && <AnnotationsOverlay />}
-                  <Row id="document-container">
-                    <AnnotationChannel
-                      show={displayAnnotationsInChannels}
-                      deleteAnnotationFromChannels={deleteAnnotationFromChannels}
-                      setAnnotationChannelLoaded={setAnnotationChannel1Loaded}
-                      focusOnAnnotation={moveAnnotationsToCorrectSpotBasedOnFocus}
-                      side="left"
-                      focusedAnnotation={focusedAnnotationsRef.left}
-                      annotations={channelAnnotations.left}
-                      user={session ? session.user : undefined}
-                      showMoreInfoShareModal={showMoreInfoShareModal}
-                      setShowMoreInfoShareModal={setShowMoreInfoShareModal}
-                      membersIntersection={membersIntersection}
-                      alerts={alerts}
-                      setAlerts={setAlerts}
-                    />
-                    <Col
-                      id="document-container-col"
-                      style={{
-                        transform: `scale(${documentZoom / 100}) translateY(0px)`,
-                        transformOrigin: 'top center',
-                        minWidth: 750,
-                        // marginLeft: (documentZoom - 100) * 4,
-                        // marginRight: (documentZoom - 100) * 4,
-                      }}
-                    >
-                      <Document
-                        addActiveAnnotation={addActiveAnnotation}
-                        removeActiveAnnotation={removeActiveAnnotation}
-                        displayAnnotationsInChannels={displayAnnotationsInChannels}
-                        setChannelAnnotations={
+
+                  <div id="document-container">
+                    <div id="document-inner-container">
+                      <AnnotationChannel
+                        show={displayAnnotationsInChannels}
+                        deleteAnnotationFromChannels={deleteAnnotationFromChannels}
+                        setAnnotationChannelLoaded={setAnnotationChannel1Loaded}
+                        focusOnAnnotation={moveAnnotationsToCorrectSpotBasedOnFocus}
+                        side="left"
+                        focusedAnnotation={focusedAnnotationsRef.left}
+                        annotations={channelAnnotations.left}
+                        user={session ? session.user : undefined}
+                        showMoreInfoShareModal={showMoreInfoShareModal}
+                        setShowMoreInfoShareModal={setShowMoreInfoShareModal}
+                        membersIntersection={membersIntersection}
+                        alerts={alerts}
+                        setAlerts={setAlerts}
+                      />
+                      <div
+                        id="document-container-col"
+                        style={{
+                          transform: `scale(${documentZoom / 100}) translateY(0px)`,
+                          transformOrigin: 'top center',
+                          minWidth: documentWidth,
+                          maxWidth: documentWidth,
+                          marginLeft: extraMargin,
+                          marginRight: extraMargin,
+                        }}
+                      >
+                        <Document
+                          addActiveAnnotation={addActiveAnnotation}
+                          removeActiveAnnotation={removeActiveAnnotation}
+                          displayAnnotationsInChannels={displayAnnotationsInChannels}
+                          setChannelAnnotations={
                             (annos) => {
                               setChannelAnnotations(annos);
                               setDocumentHighlightedAndLoaded(true);
                             }
                           }
-                        annotations={annotations}
-                        documentHighlightedAndLoaded={documentHighlightedAndLoaded}
-                        addAnnotationToChannels={addAnnotationToChannels}
-                        annotateDocument={
+                          annotations={annotations}
+                          documentHighlightedAndLoaded={documentHighlightedAndLoaded}
+                          addAnnotationToChannels={addAnnotationToChannels}
+                          annotateDocument={
                             async (mySelector, annotationID) => {
                               await highlightTextToAnnotate(mySelector, annotationID);
                             }
                           }
-                        documentToAnnotate={document}
+                          documentToAnnotate={document}
+                          alerts={alerts}
+                          setAlerts={setAlerts}
+                          user={session ? session.user : undefined}
+                        />
+                      </div>
+                      <AnnotationChannel
+                        show={displayAnnotationsInChannels}
+                        deleteAnnotationFromChannels={deleteAnnotationFromChannels}
+                        setAnnotationChannelLoaded={setAnnotationChannel2Loaded}
+                        focusOnAnnotation={moveAnnotationsToCorrectSpotBasedOnFocus}
+                        side="right"
+                        focusedAnnotation={focusedAnnotationsRef.right}
+                        annotations={channelAnnotations.right}
+                        user={session ? session.user : undefined}
+                        showMoreInfoShareModal={showMoreInfoShareModal}
+                        setShowMoreInfoShareModal={setShowMoreInfoShareModal}
+                        membersIntersection={membersIntersection}
                         alerts={alerts}
                         setAlerts={setAlerts}
-                        user={session ? session.user : undefined}
                       />
-                    </Col>
-                    <AnnotationChannel
-                      show={displayAnnotationsInChannels}
-                      deleteAnnotationFromChannels={deleteAnnotationFromChannels}
-                      setAnnotationChannelLoaded={setAnnotationChannel2Loaded}
-                      focusOnAnnotation={moveAnnotationsToCorrectSpotBasedOnFocus}
-                      side="right"
-                      focusedAnnotation={focusedAnnotationsRef.right}
-                      annotations={channelAnnotations.right}
-                      user={session ? session.user : undefined}
-                      showMoreInfoShareModal={showMoreInfoShareModal}
-                      setShowMoreInfoShareModal={setShowMoreInfoShareModal}
-                      membersIntersection={membersIntersection}
-                      alerts={alerts}
-                      setAlerts={setAlerts}
-                    />
-                  </Row>
+                    </div>
+
+                  </div>
+
                   <Modal
                     show={!(annotationChannel1Loaded && annotationChannel2Loaded)}
                     backdrop="static"
@@ -723,13 +745,25 @@ const DocumentPage = ({
               #document-container {
                 height: calc(100vh - 230px);
                 overflow-y: scroll;
+                overflow-x: scroll;
                 padding: 
                 ${documentIsPDF ? '0' : '10px 0px'};
               }
 
+              #document-inner-container {
+                display: flex;
+                flex-direction: row;
+                width: calc(100% + ${extraWidth}px);
+              }
+
+              #document-container::-webkit-scrollbar-corner {
+                background: rgba(0,0,0,0);
+              }
+
               #document-container::-webkit-scrollbar {
-                background: transparent;
+                background: rgba(0,0,0,0.05);
                 width: 10px;
+                height: 10px;
                 border-radius: 8px;
               }
 
@@ -740,8 +774,10 @@ const DocumentPage = ({
               }
 
               #document-container .annotation-channel-container{
-                width: calc(50vw - 375px);
                 height: 0px;
+                flex: 1;
+                position: relative;
+                z-index: 2;
               }
               
               #document-container #annotation-well-card-container {

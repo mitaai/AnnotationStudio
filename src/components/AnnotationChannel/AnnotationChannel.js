@@ -3,9 +3,6 @@
 import { useEffect, useContext } from 'react';
 import $ from 'jquery';
 import {
-  Col,
-} from 'react-bootstrap';
-import {
   DocumentAnnotationsContext,
   DocumentFiltersContext,
 } from '../../contexts/DocumentContext';
@@ -130,7 +127,7 @@ const AnnotationChannel = ({
   }, [channelAnnotations, documentFilters]);
 
   return show && (
-  <Col className="annotation-channel-container">
+  <div className="annotation-channel-container">
     <div id={`annotation-channel-${side}`}>
       <div>
         {sortedAnnotations.map((annotation) => (
@@ -156,7 +153,7 @@ const AnnotationChannel = ({
         `}
       </style>
     </div>
-  </Col>
+  </div>
   );
 };
 

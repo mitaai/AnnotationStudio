@@ -1,3 +1,5 @@
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable no-underscore-dangle */
 import { useEffect, useState, useContext } from 'react';
 import { Editor } from '@tinymce/tinymce-react';
@@ -493,6 +495,13 @@ function AnnotationCard({
     </OverlayTrigger>
   );
 
+  const expandedAndFocus = () => {
+    if (!expanded) {
+      setExpanded(true);
+    }
+    setUpdateFocusOfAnnotation(true);
+  };
+
   useEffect(() => {
     if (updateFocusOfAnnotation) {
       focusOnAnnotation();
@@ -515,10 +524,13 @@ function AnnotationCard({
         onMouseOver={() => { setHovered(true); }}
         onMouseOut={() => { setHovered(); }}
         className={`annotation-card-container ${annotationData.new ? 'new-annotation' : ''} ${expanded ? 'expanded' : ''} ${expanded || hovered || activeAnnotations.annotations.includes(annotationData._id) ? 'active' : ''} ${annotationData.editing ? 'editing' : ''}`}
-        style={side === 'left' ? { right: '0px' } : { left: '0px' }}
+        style={side === 'left' ? { right: '15px' } : { left: '15px' }}
       >
-        <div className="line1" />
-        <div className="line2" />
+        <div
+          className="line1"
+          onClick={expandedAndFocus}
+        />
+        <div className="line2" onClick={expandedAndFocus} />
         {side === 'left'
           ? (
             <>
@@ -758,7 +770,7 @@ function AnnotationCard({
                 </Tooltip>
       )}
             >
-              <Card.Header className="annotation-header" onClick={() => { setExpanded(true); setUpdateFocusOfAnnotation(true); }}>
+              <Card.Header className="annotation-header" onClick={expandedAndFocus}>
                 <div className="truncated-annotation">
                   {annotationData.body.value.length === 0 ? (
                     <span className="text-quote">
@@ -924,11 +936,11 @@ function AnnotationCard({
 
         .line1, .line2 {
             visibility: hidden;
-            position:absolute;
+            position: absolute;
             width:1px;
             margin-top:-1px;
             background-color:#eeeeee;
-            z-index: 2;
+            z-index: 1;
             transition: background-color 0.5s;
         }
 

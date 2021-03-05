@@ -9,20 +9,21 @@ import { DocumentFiltersContext, DocumentAnnotationsContext } from '../../contex
 
 const HeatMap = ({ pdf, documentZoom }) => {
   const [documentHeight, setDocumentHeight] = useState(undefined);
-  const [documentScrollHeight, setDocumentScrollHeight] = useState(undefined);
+  const [initDocumentScrollHeight, setInitDocumentScrollHeight] = useState(undefined);
   const lineHeight = 18;
+  const documentScrollHeight = initDocumentScrollHeight !== undefined ? $('#document-container').get(0).scrollHeight : undefined;
 
-  if (documentScrollHeight !== undefined) {
+  if (initDocumentScrollHeight !== undefined) {
     const h = documentZoom < 100
-      ? documentScrollHeight * (documentZoom / 100)
-      : documentScrollHeight;
+      ? initDocumentScrollHeight * (documentZoom / 100)
+      : initDocumentScrollHeight;
     $('#document-container-col').height(h);
   }
 
   useEffect(() => {
     if ($('#document-container').get(0) !== undefined && documentHeight === undefined && documentScrollHeight === undefined) {
-      setDocumentHeight($('#document-container').height());
-      setDocumentScrollHeight($('#document-container').get(0).scrollHeight / (documentZoom / 100));
+      setDocumentHeight($('#document-container').height() - 10);
+      setInitDocumentScrollHeight($('#document-container').get(0).scrollHeight);
     }
   }, [documentZoom]);
 
@@ -123,11 +124,10 @@ const HeatMap = ({ pdf, documentZoom }) => {
         #heat-map {
           background: #c4c4c4;
           position: absolute;
-          right: 3px;
           width: 8px;
           border-radius: 8px;
           z-index: -1;
-          right: 2px;
+          right: 17px;
         }
 
         #heat-map .stroke {
