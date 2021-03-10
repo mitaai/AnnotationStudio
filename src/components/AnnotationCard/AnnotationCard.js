@@ -528,9 +528,14 @@ function AnnotationCard({
       >
         <div
           className="line1"
+          style={{ zIndex: -1 }}
           onClick={expandedAndFocus}
         />
-        <div className="line2" onClick={expandedAndFocus} />
+        <div
+          className="line2"
+          style={{ zIndex: -1 }}
+          onClick={expandedAndFocus}
+        />
         {side === 'left'
           ? (
             <>
@@ -550,117 +555,115 @@ function AnnotationCard({
             {annotationData.editing
               ? (
                 <>
-                  <Form>
-                    <ListGroup variant="flush" style={{ borderTop: 'none' }}>
-                      <ListGroup.Item className="annotation-body">
-                        <Form.Group controlId="exampleForm.ControlTextarea1">
-                          <Form.Control
-                            style={{ fontSize: '12px' }}
-                            as={Editor}
-                            rows="3"
-                            placeholder="comments"
-                            initialValue={annotationData.body.value}
-                            onEditorChange={handleAnnotationTextChange}
-                            readOnly={savingAnnotation}
-                            apiKey={process.env.NEXT_PUBLIC_TINYMCE_API_KEY}
-                            init={{
-                              height: 200,
-                              menubar: false,
-                              plugins: [
-                                'autolink link image media paste',
-                              ],
-                              paste_as_text: true,
-                              toolbar:
+                  <ListGroup variant="flush" style={{ borderTop: 'none', zIndex: 2, position: 'relative' }}>
+                    <ListGroup.Item className="annotation-body">
+                      <Form.Group controlId="exampleForm.ControlTextarea1">
+                        <Form.Control
+                          style={{ fontSize: '12px' }}
+                          as={Editor}
+                          rows="3"
+                          placeholder="comments"
+                          initialValue={annotationData.body.value}
+                          onEditorChange={handleAnnotationTextChange}
+                          readOnly={savingAnnotation}
+                          apiKey={process.env.NEXT_PUBLIC_TINYMCE_API_KEY}
+                          init={{
+                            height: 200,
+                            menubar: false,
+                            plugins: [
+                              'autolink link image media paste',
+                            ],
+                            paste_as_text: true,
+                            toolbar:
                                 'bold italic underline | link image media | removeformat | undo redo',
-                              statusbar: false,
-                              content_style: 'body { font-size: 12px; margin-left: 5px; margin-right: 5px; margin-top: 5px; } p { margin-top: 0; } iframe, img { max-width: 100%; }',
-                              icons: 'small',
-                              skin: 'small',
-                              image_dimensions: false,
-                              media_dimensions: false,
-                              extended_valid_elements: 'img[class|src|border=0|alt|title|onmouseover|onmouseout|name],iframe[align<bottom?left?middle?right?top|class|frameborder|id|longdesc|name|scrolling<auto?no?yes|src|style|title]',
-                            }}
-                          />
-                        </Form.Group>
-                      </ListGroup.Item>
-                      <ListGroup.Item className="annotation-tags">
-                        <Typeahead
-                          id="typeahead-annotation-tags"
-                          disabled={savingAnnotation}
-                          labelKey="tags"
-                          placeholder="tags"
-                          multiple
-                          selected={
+                            statusbar: false,
+                            content_style: 'body { font-size: 12px; margin-left: 5px; margin-right: 5px; margin-top: 5px; } p { margin-top: 0; } iframe, img { max-width: 100%; }',
+                            icons: 'small',
+                            skin: 'small',
+                            image_dimensions: false,
+                            media_dimensions: false,
+                            extended_valid_elements: 'img[class|src|border=0|alt|title|onmouseover|onmouseout|name],iframe[align<bottom?left?middle?right?top|class|frameborder|id|longdesc|name|scrolling<auto?no?yes|src|style|title]',
+                          }}
+                        />
+                      </Form.Group>
+                    </ListGroup.Item>
+                    <ListGroup.Item className="annotation-tags">
+                      <Typeahead
+                        id="typeahead-annotation-tags"
+                        disabled={savingAnnotation}
+                        labelKey="tags"
+                        placeholder="tags"
+                        multiple
+                        selected={
                             newAnnotationTags === null
                               ? annotationData.body.tags
                               : newAnnotationTags
                           }
-                          options={allAnnotationTags}
-                          renderToken={renderToken}
-                          renderMenu={renderMenu}
-                          allowNew
-                          onChange={(selected) => {
-                            setNewAnnotationTags(
-                              selected.filter((s) => (typeof (s) !== 'object' || !s.alreadyExists)),
-                            );
+                        options={allAnnotationTags}
+                        renderToken={renderToken}
+                        renderMenu={renderMenu}
+                        allowNew
+                        onChange={(selected) => {
+                          setNewAnnotationTags(
+                            selected.filter((s) => (typeof (s) !== 'object' || !s.alreadyExists)),
+                          );
+                        }}
+                      />
+                    </ListGroup.Item>
+                    <ListGroup.Item className="annotation-permissions">
+                      <div id="dropdown-permission-options-container">
+                        <DropdownButton drop="down" variant="outline-primary" id="dropdown-permission-options" title={permissionText[showPermissionNumber()]} disabled={savingAnnotation}>
+                          <Dropdown.Item
+                            onClick={() => { handleAnnotationPermissionsChange(0); }}
+                          >
+                            <PersonFill />
+                            {' '}
+                            Private
+                          </Dropdown.Item>
+                          <Dropdown.Item
+                            onClick={() => { handleAnnotationPermissionsChange(1); }}
+                          >
+                            <PeopleFill />
+                            {' '}
+                            Share with group(s)
+                          </Dropdown.Item>
+                          <Dropdown.Item
+                            onClick={() => { handleAnnotationPermissionsChange(2); }}
+                          >
+                            <PersonPlusFill />
+                            {' '}
+                            Share with user(s)
+                          </Dropdown.Item>
+                        </DropdownButton>
+                      </div>
+                      <QuestionCircle style={{ fontSize: 14, color: '#007bff', marginLeft: 4 }} onClick={() => { setShowMoreInfoShareModal(true); }} />
+                      <div id="typeahead-share-annotation-users-container" className={showPermissionNumber() === 2 ? 'show' : ''}>
+                        <Typeahead
+                          id="typeahead-share-annotation-users"
+                          disabled={savingAnnotation}
+                          labelKey="name"
+                          placeholder="search by user name or email"
+                          multiple
+                          highlightOnlyResult
+                          renderToken={renderUserShareToken}
+                          renderMenu={renderUserShareMenu}
+                          selected={selectedUsersToShare}
+                          options={membersIntersection}
+                          onChange={(s) => {
+                            if (newAnnotationPermissions === null) {
+                              setNewAnnotationPermissions(showPermissionNumber);
+                            }
+                            setNewSelectedUsersToShare(s);
                           }}
                         />
-                      </ListGroup.Item>
-                      <ListGroup.Item className="annotation-permissions">
-                        <div id="dropdown-permission-options-container">
-                          <DropdownButton drop="down" variant="outline-primary" id="dropdown-permission-options" title={permissionText[showPermissionNumber()]} disabled={savingAnnotation}>
-                            <Dropdown.Item
-                              onClick={() => { handleAnnotationPermissionsChange(0); }}
-                            >
-                              <PersonFill />
-                              {' '}
-                              Private
-                            </Dropdown.Item>
-                            <Dropdown.Item
-                              onClick={() => { handleAnnotationPermissionsChange(1); }}
-                            >
-                              <PeopleFill />
-                              {' '}
-                              Share with group(s)
-                            </Dropdown.Item>
-                            <Dropdown.Item
-                              onClick={() => { handleAnnotationPermissionsChange(2); }}
-                            >
-                              <PersonPlusFill />
-                              {' '}
-                              Share with user(s)
-                            </Dropdown.Item>
-                          </DropdownButton>
-                        </div>
-                        <QuestionCircle style={{ fontSize: 14, color: '#007bff', marginLeft: 4 }} onClick={() => { setShowMoreInfoShareModal(true); }} />
-                        <div id="typeahead-share-annotation-users-container" className={showPermissionNumber() === 2 ? 'show' : ''}>
-                          <Typeahead
-                            id="typeahead-share-annotation-users"
-                            disabled={savingAnnotation}
-                            labelKey="name"
-                            placeholder="search by user name or email"
-                            multiple
-                            highlightOnlyResult
-                            renderToken={renderUserShareToken}
-                            renderMenu={renderUserShareMenu}
-                            selected={selectedUsersToShare}
-                            options={membersIntersection}
-                            onChange={(s) => {
-                              if (newAnnotationPermissions === null) {
-                                setNewAnnotationPermissions(showPermissionNumber);
-                              }
-                              setNewSelectedUsersToShare(s);
-                            }}
-                          />
-                        </div>
-                      </ListGroup.Item>
-                    </ListGroup>
-                  </Form>
+                      </div>
+                    </ListGroup.Item>
+                  </ListGroup>
                 </>
               )
               : (
                 <>
-                  <ListGroup variant="flush" style={{ borderTop: 'none' }}>
+                  <ListGroup variant="flush" style={{ borderTop: 'none', zIndex: 2, position: 'relative' }}>
                     <ListGroup.Item className="annotation-body" onClick={() => { setExpanded(); }}>
                       {annotationData.body.value.length > 0
                         ? ReactHtmlParser(annotationData.body.value, { transform: fixIframes })
@@ -940,7 +943,7 @@ function AnnotationCard({
             width:1px;
             margin-top:-1px;
             background-color:#eeeeee;
-            z-index: 1;
+            z-index: 2;
             transition: background-color 0.5s;
         }
 
