@@ -406,19 +406,33 @@ function AnnotationCard({
     </Token>
   );
 
-  const renderUserShareMenu = (results, menuProps) => (
-    <Menu
+  const renderUserShareMenu = (results, menuProps) => {
+    const sortedResults = results.sort((a, b) => {
+      if (a.name.toLowerCase() < b.name.toLowerCase()) {
+        return -1;
+      }
+      if (a.name.toLowerCase() === b.name.toLowerCase()) {
+        if (a.name < b.name) {
+          return -1;
+        }
+        return 0;
+      }
+      return 1;
+    });
+    return (
+      <Menu
       // eslint-disable-next-line react/jsx-props-no-spreading
-      {...menuProps}
-    >
-      {results.map((result, index) => (
-        <MenuItem option={result} key={result.email} position={index}>
-          <div className="user-share-name">{result.name}</div>
-          <div className="user-share-email">{result.email}</div>
-        </MenuItem>
-      ))}
-    </Menu>
-  );
+        {...menuProps}
+      >
+        {sortedResults.map((result, index) => (
+          <MenuItem option={result} key={result.email} position={index}>
+            <div className="user-share-name">{result.name}</div>
+            <div className="user-share-email">{result.email}</div>
+          </MenuItem>
+        ))}
+      </Menu>
+    );
+  };
 
   const handleAnnotationTextChange = (content) => {
     setNewAnnotationText(content);

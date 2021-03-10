@@ -175,24 +175,38 @@ function FilterPopover({ session, container }) {
     }
   };
 
-  const renderMenu = (results, menuProps) => (
-    <Menu
+  const renderMenu = (results, menuProps) => {
+    const sortedResults = results.sort((a, b) => {
+      if (a.name.toLowerCase() < b.name.toLowerCase()) {
+        return -1;
+      }
+      if (a.name.toLowerCase() === b.name.toLowerCase()) {
+        if (a.name < b.name) {
+          return -1;
+        }
+        return 0;
+      }
+      return 1;
+    });
+    return (
+      <Menu
       // eslint-disable-next-line react/jsx-props-no-spreading
-      {...menuProps}
-    >
-      {results.map((result, index) => (
-        <MenuItem
-          option={result}
-          key={result.name}
-          position={index}
-          disabled={result.matches === 0}
-        >
-          <span>{result.name}</span>
-          <span style={{ float: 'right' }}>{result.matches}</span>
-        </MenuItem>
-      ))}
-    </Menu>
-  );
+        {...menuProps}
+      >
+        {sortedResults.map((result, index) => (
+          <MenuItem
+            option={result}
+            key={result.name}
+            position={index}
+            disabled={result.matches === 0}
+          >
+            <span>{result.name}</span>
+            <span style={{ float: 'right' }}>{result.matches}</span>
+          </MenuItem>
+        ))}
+      </Menu>
+    );
+  };
 
   const renderToken = (option, { onRemove }, index) => (
     <Token
