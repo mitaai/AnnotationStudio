@@ -67,8 +67,6 @@ const DocumentPage = ({
         }
       }
 
-      console.log('channelAnnotations', channelAnnotations);
-
       setChannelAnnotations(DeepCopyObj(channelAnnotations));
       // for some reason the heat map is not updating the way it should
       // on the first state change so I put this second state change
@@ -316,7 +314,6 @@ const DocumentPage = ({
 
   const moveAnnotationsToCorrectSpotBasedOnFocus = (side, focusID) => {
     const annos = channelAnnotations[side];
-    console.log('annos', annos);
     // this function will focus the annotation that has been clicked on
     // in the channel. It works very similar to the function
     // "PlaceAnnotationsInCorrectSpot"
