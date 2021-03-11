@@ -67,6 +67,8 @@ const DocumentPage = ({
         }
       }
 
+      console.log('channelAnnotations', channelAnnotations);
+
       setChannelAnnotations(DeepCopyObj(channelAnnotations));
       // for some reason the heat map is not updating the way it should
       // on the first state change so I put this second state change
@@ -314,6 +316,7 @@ const DocumentPage = ({
 
   const moveAnnotationsToCorrectSpotBasedOnFocus = (side, focusID) => {
     const annos = channelAnnotations[side];
+    console.log('annos', annos);
     // this function will focus the annotation that has been clicked on
     // in the channel. It works very similar to the function
     // "PlaceAnnotationsInCorrectSpot"
@@ -325,7 +328,6 @@ const DocumentPage = ({
     if (focusIndex !== -1) {
       focusedAnnotationsRef[side] = focusID;
     }
-
 
     // first we need to focus the annotation and then place all other
     // annotations after it under it
@@ -417,15 +419,15 @@ const DocumentPage = ({
         - documentContainerOffset.top
         + tempTopAdjustment
         - adjustmentTopNumber;
+      // if where you want to be is greater than where you can be then we will set you
+      // to where you can be
       // if where you are is greater than where you can be then we have to set your
       // position to where you can be. Otherwise just set your position to where you are
-      if (
-        lastLowestPoint - $(`#document-container #${annos[i]._id}`).height() - marginBottom
-        < $(`#document-container #${annos[i]._id}`).position().top
-      ) {
+      if (lastLowestPoint - $(`#document-container #${annos[i]._id}`).height() - marginBottom
+      < trueTop) {
         top = lastLowestPoint - $(`#document-container #${annos[i]._id}`).height() - marginBottom;
       } else {
-        top = $(`#document-container #${annos[i]._id}`).position().top;
+        top = trueTop;
       }
 
       lastLowestPoint = top;
