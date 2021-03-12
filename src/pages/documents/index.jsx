@@ -3,6 +3,7 @@ import { useSession } from 'next-auth/client';
 import {
   Button, Card, Container, Tabs, Tab,
 } from 'react-bootstrap';
+import { Plus } from 'react-bootstrap-icons';
 import Layout from '../../components/Layout';
 import DocumentList from '../../components/DocumentList';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -75,9 +76,13 @@ const DocumentsIndex = ({
       {!loading && session && !listLoading && (
       <Card>
         <Card.Header>
-          <Card.Title>
+          <Card.Title className="float-left">
             Documents
           </Card.Title>
+          <Button href="/documents/new" className="float-right">
+            <Plus className="mr-1 ml-n1 mt-n1" />
+            Create New Document
+          </Button>
         </Card.Header>
         <Card.Body>
           <Tabs
@@ -113,6 +118,7 @@ const DocumentsIndex = ({
             </Container>
           )}
           <Button href="/documents/new">
+            <Plus className="mr-1 ml-n1 mt-n1" />
             Create New Document
           </Button>
         </Card.Body>
