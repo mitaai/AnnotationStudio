@@ -21,7 +21,7 @@ function Layout({
         newReg={newReg}
         statefulSession={statefulSession}
       />
-      <main role="main" className="flex-shrink-0 p-3">
+      <main role="main" className={type === 'document' ? 'flex-shrink-0' : 'flex-shrink-0 p-3'}>
         {!docView && (
           <Container>
             {alerts && (<Alerts alerts={alerts} />)}

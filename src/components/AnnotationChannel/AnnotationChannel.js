@@ -18,7 +18,9 @@ function PlaceAnnotationsInCorrectSpot(annotations, side) {
   const adjustmentTopNumber = 6;
   let top;
   let trueTop;
-  const offsetLeftForLine1 = side === 'left' ? $('#document-card-container').offset().left + 25 : -40;
+  const offsetLeftForLine1 = (side === 'left'
+    ? $('#document-card-container').offset().left + 25
+    : -40);
   for (let i = 0; i < annotations.length; i += 1) {
     const offsetLeftForLine2 = side === 'left' ? annotations[i].position.left : annotations[i].position.left - $(`#document-container #${annotations[i]._id}`).offset().left;
     trueTop = annotations[i].position.top

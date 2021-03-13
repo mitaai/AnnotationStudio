@@ -4,7 +4,9 @@
 /* eslint-disable no-restricted-syntax */
 import React, { useState, useEffect, useRef } from 'react';
 import $ from 'jquery';
-import { Overlay, Tooltip, Toast, Card } from 'react-bootstrap';
+import {
+  Overlay, Tooltip, Toast, Card,
+} from 'react-bootstrap';
 import {
   ArchiveFill, Pen, PencilFill, ChatLeftTextFill,
 } from 'react-bootstrap-icons';
@@ -275,6 +277,7 @@ export default function Document({
   };
 
   const addNewAnnotationToDom = (rid) => {
+    // $('#document-container').animate({ scrollLeft: 0 }, 1000);
     $($(`#document-content-container span[annotation-id='${rid}']`).get(0))
       .prepend("<span class='annotation-beginning-marker'></span>");
     $($(`#document-content-container span[annotation-id='${rid}']`).get(-1))
@@ -286,6 +289,7 @@ export default function Document({
     annotationBeginningPosition.top += $('#document-container').scrollTop();
     annotationEndingPosition.top += $('#document-container').scrollTop();
     const annotateStartPositionSpan = $('#annotate-start-position-span').offset();
+    annotateStartPositionSpan.left += $('#document-container').scrollLeft();
     annotateStartPositionSpan.top += $('#document-container').scrollTop();
     // eslint-disable-next-line no-undef
     const side = (annotateStartPositionSpan.left < window.innerWidth / 2)

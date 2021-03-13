@@ -127,7 +127,7 @@ const HeatMap = ({ pdf, documentZoom }) => {
           width: 8px;
           border-radius: 8px;
           z-index: -1;
-          right: 17px;
+          right: 1px;
         }
 
         #heat-map .stroke {

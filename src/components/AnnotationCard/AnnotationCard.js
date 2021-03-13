@@ -243,6 +243,9 @@ function AnnotationCard({
         // and make the document selectable again
         $('#document-content-container').removeClass('unselectable');
         // once the new annotation data saves properly on the database,
+        // expanding annotation when it is done saving
+        setExpanded(true);
+        AddClassActive(newAnnotationData._id);
         // update the annotation data
         SetAndSaveAnnotationData(newAnnotationData);
         // focus annotation so that things get shifted to their correct spots

@@ -29,7 +29,7 @@ function DocumentZoomSlider() {
           <span style={{ width: 30, textAlign: 'center' }}>{documentZoom}</span>
           <span>%</span>
         </div>
-        <div className="rangeSlider-container" style={{ width: hovered ? widthOfSlider : 0 }}>
+        <div className="rangeSlider-container" style={{ width: hovered ? widthOfSlider : 0, overflow: 'hidden' }}>
           <div style={{
             minWidth: widthOfSlider, paddingLeft: 7, paddingRight: 3, height: 60,
           }}

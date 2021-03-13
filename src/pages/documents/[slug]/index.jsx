@@ -63,6 +63,8 @@ const DocumentPage = ({
         for (const anno of channelAnnotations[s]) {
           const annotationBeginning = $(`#document-content-container span[annotation-id='${anno._id}'] .annotation-beginning-marker`);
           const annotationBeginningPositionTop = annotationBeginning.offset().top + $('#document-container').scrollTop();
+          const annotationBeginningPositionLeft = annotationBeginning.offset().left;
+          anno.position.left = annotationBeginningPositionLeft;
           anno.position.top = annotationBeginningPositionTop;
         }
       }
@@ -291,7 +293,7 @@ const DocumentPage = ({
 
 
     // updating annotation channel data with new annotation
-
+    setAnnotationIdBeingEdited(newAnnotation.editing ? newAnnotation._id : undefined);
     const newChannelAnnotations = DeepCopyObj(channelAnnotations);
     newChannelAnnotations[side].splice(indexForNewAnnotation, 0, newAnnotation);
     setChannelAnnotations(newChannelAnnotations);
@@ -335,9 +337,9 @@ const DocumentPage = ({
     const adjustmentTopNumber = 6;
     let top;
     let trueTop;
-    const offsetLeftForLine1 = side === 'left'
+    const offsetLeftForLine1 = (side === 'left'
       ? $('#document-card-container').offset().left + 25
-      : -40;
+      : -40);
     for (let i = focusIndex; i < annos.length; i += 1) {
       if (annos[i] === undefined) { continue; }
       if (documentFilters.annotationIds[side] === null
@@ -742,11 +744,12 @@ const DocumentPage = ({
               }
 
               #document-container {
-                height: calc(100vh - 230px);
+                height: calc(100vh - 200px);
                 overflow-y: scroll;
                 overflow-x: scroll;
                 padding: 
                 ${documentIsPDF ? '0' : '10px 0px'};
+                scrollbar-color: rgba(0,0,0,0.1) !important;
               }
 
               #document-inner-container {
@@ -756,20 +759,21 @@ const DocumentPage = ({
               }
 
               #document-container::-webkit-scrollbar-corner {
-                background: rgba(0,0,0,0);
+                background: rgba(0,0,0,0) !important;
               }
 
               #document-container::-webkit-scrollbar {
-                background: rgba(0,0,0,0.05);
-                width: 10px;
-                height: 10px;
-                border-radius: 8px;
+                background: rgba(0,0,0,0.05) !important;
+                width: 10px !important;
+                height: 10px !important;
+                border-radius: 8px !important;
               }
 
               #document-container::-webkit-scrollbar-thumb {
-                background: rgba(0,0,0,0.1);
-                border: 1px solid rgba(0,0,0,0.6);
-                border-radius: 8px;
+                visibility: visible !important;
+                background: rgba(0,0,0,0.1) !important;
+                border: 1px solid rgba(0,0,0,0.6) !important;
+                border-radius: 8px !important;
               }
 
               #document-container .annotation-channel-container{
