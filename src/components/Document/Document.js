@@ -346,7 +346,7 @@ export default function Document({
     const { scrollWidth } = $('#document-container').get(0);
     $('#document-container').animate({
       scrollLeft: selectedTextToAnnotate === 'left' ? '0px' : `${10 + scrollWidth - $('#document-container').width()}px`,
-    }, 1500);
+    }, 750);
   }, [selectedTextToAnnotate]);
 
   useEffect(() => {

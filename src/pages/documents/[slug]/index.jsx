@@ -123,7 +123,7 @@ const DocumentPage = ({
   const [extraWidth, setExtraWidth] = useState(0);
   const extraMargin = (documentZoom - 100) * 3.5;
   const documentWidth = 750;
-  const minChannelWidth = 400;
+  const minChannelWidth = 450;
 
 
   const expandAnnotation = (aid, expand) => {
@@ -309,6 +309,7 @@ const DocumentPage = ({
         (annotation) => annotation._id === annotationID,
       );
 
+    setAnnotationIdBeingEdited(); // set it to undefined because there is no annotation being edited
     const newChannelAnnotations = DeepCopyObj(channelAnnotations);
     newChannelAnnotations[side].splice(annotationIndex, 1);
     setChannelAnnotations(newChannelAnnotations);
@@ -335,7 +336,7 @@ const DocumentPage = ({
     const annotationDistanceFromEdgeOfScreen = $(`#annotation-channel-${side}`).width() - $(`#document-container #${focusID}.annotation-card-container`).width() - smallestDistanceFromEdgeOfScreen;
     // first we need to focus the annotation and then place all other
     // annotations after it under it
-    const tempTopAdjustment = 0;
+    const documentZoomTopAdjustment = (documentZoom - 100) * 0.1;
     const documentContainerOffset = $('#document-container').offset();
     let lastHighestPoint = -1000;
     const marginBottom = 8;
@@ -343,7 +344,7 @@ const DocumentPage = ({
     let top;
     let trueTop;
     const offsetLeftForLine1 = (side === 'left'
-      ? $('#document-card-container').offset().left + 40 - (1.1 * annotationDistanceFromEdgeOfScreen)
+      ? $('#document-card-container').offset().left + 40 - (1.1 * annotationDistanceFromEdgeOfScreen) + $('#document-container').scrollLeft()
       : -70);
     for (let i = focusIndex; i < annos.length; i += 1) {
       if (annos[i] === undefined) { continue; }
@@ -354,11 +355,11 @@ const DocumentPage = ({
 
 
       const offsetLeftForLine2 = side === 'left'
-        ? annos[i].position.left
-        : annos[i].position.left - $(`#document-container #${annos[i]._id}`).offset().left;
+        ? annos[i].position.left - annotationDistanceFromEdgeOfScreen - 10
+        : annos[i].position.left - $(`#document-container #${annos[i]._id}`).offset().left - $('#document-container').scrollLeft();
       trueTop = annos[i].position.top
         - documentContainerOffset.top
-        + tempTopAdjustment
+        + documentZoomTopAdjustment
         - adjustmentTopNumber;
       if (lastHighestPoint > trueTop) {
         top = lastHighestPoint + marginBottom;
@@ -406,7 +407,6 @@ const DocumentPage = ({
     // current top position of the focused index annotation
     let lastLowestPoint = annos[focusIndex].position.top
       - documentContainerOffset.top
-      + tempTopAdjustment
       - adjustmentTopNumber;
     for (let i = focusIndex - 1; i >= 0; i -= 1) {
       if (annos[i] === undefined) { continue; }
@@ -416,12 +416,12 @@ const DocumentPage = ({
       }
 
       const offsetLeftForLine2 = side === 'left'
-        ? annos[i].position.left
-        : annos[i].position.left - $(`#document-container #${annos[i]._id}`).offset().left;
+        ? annos[i].position.left - annotationDistanceFromEdgeOfScreen - 10
+        : annos[i].position.left - $(`#document-container #${annos[i]._id}`).offset().left - $('#document-container').scrollLeft();
       // this is where the annotation wants to be
       trueTop = annos[i].position.top
         - documentContainerOffset.top
-        + tempTopAdjustment
+        + documentZoomTopAdjustment
         - adjustmentTopNumber;
       // if where you want to be is greater than where you can be then we will set you
       // to where you can be
@@ -750,8 +750,8 @@ const DocumentPage = ({
 
               #document-container {
                 height: calc(100vh - 200px);
-                overflow-y: scroll;
-                overflow-x: scroll;
+                overflow-y: scroll !important;
+                overflow-x: scroll !important;
                 padding: 
                 ${documentIsPDF ? '0' : '10px 0px'};
                 scrollbar-color: rgba(0,0,0,0.1) !important;

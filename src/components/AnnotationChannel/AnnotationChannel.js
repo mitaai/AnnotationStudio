@@ -3,6 +3,7 @@
 import { useEffect, useContext } from 'react';
 import $ from 'jquery';
 import {
+  DocumentContext,
   DocumentAnnotationsContext,
   DocumentFiltersContext,
 } from '../../contexts/DocumentContext';
@@ -10,11 +11,11 @@ import AnnotationCard from '../AnnotationCard';
 import adjustLine from '../../utils/docUIUtils';
 
 
-function PlaceAnnotationsInCorrectSpot(annotations, side) {
+function PlaceAnnotationsInCorrectSpot(annotations, side, documentZoom) {
   if (annotations.length === 0) { return; }
   const smallestDistanceFromEdgeOfScreen = 27;
   const annotationDistanceFromEdgeOfScreen = $(`#annotation-channel-${side}`).width() - $(`#document-container #${annotations[0]._id}.annotation-card-container`).width() - smallestDistanceFromEdgeOfScreen;
-  const tempTopAdjustment = 0;
+  const documentZoomTopAdjustment = (documentZoom - 100) * 0.1;
   const documentContainerOffset = $('#document-container').offset();
   let lastHighestPoint = -1000;
   const marginBottom = 8;
@@ -22,13 +23,15 @@ function PlaceAnnotationsInCorrectSpot(annotations, side) {
   let top;
   let trueTop;
   const offsetLeftForLine1 = (side === 'left'
-    ? $('#document-card-container').offset().left + 40 - (1.1 * annotationDistanceFromEdgeOfScreen)
+    ? $('#document-card-container').offset().left + 40 - (1.1 * annotationDistanceFromEdgeOfScreen) + $('#document-container').scrollLeft()
     : -70);
   for (let i = 0; i < annotations.length; i += 1) {
-    const offsetLeftForLine2 = side === 'left' ? annotations[i].position.left : annotations[i].position.left - $(`#document-container #${annotations[i]._id}`).offset().left;
+    const offsetLeftForLine2 = side === 'left'
+      ? annotations[i].position.left - annotationDistanceFromEdgeOfScreen - 10
+      : annotations[i].position.left - $(`#document-container #${annotations[i]._id}`).offset().left - $('#document-container').scrollLeft();
     trueTop = annotations[i].position.top
     - documentContainerOffset.top
-    + tempTopAdjustment
+    + documentZoomTopAdjustment
     - adjustmentTopNumber;
     if (lastHighestPoint > trueTop) {
       top = lastHighestPoint + marginBottom;
@@ -76,6 +79,7 @@ const AnnotationChannel = ({
   alerts,
   setAlerts,
 }) => {
+  const [, documentZoom] = useContext(DocumentContext);
   const [channelAnnotations, , expandedAnnotations] = useContext(DocumentAnnotationsContext);
   const [documentFilters] = useContext(DocumentFiltersContext);
   // first we filter annotations if there are any filters applied
@@ -107,7 +111,7 @@ const AnnotationChannel = ({
         ) {
           focusOnAnnotation(side, focusedAnnotation);
         } else {
-          PlaceAnnotationsInCorrectSpot(sortedAnnotations, side);
+          PlaceAnnotationsInCorrectSpot(sortedAnnotations, side, documentZoom);
         }
       }
 
