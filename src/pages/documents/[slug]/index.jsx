@@ -63,7 +63,7 @@ const DocumentPage = ({
         for (const anno of channelAnnotations[s]) {
           const annotationBeginning = $(`#document-content-container span[annotation-id='${anno._id}'] .annotation-beginning-marker`);
           const annotationBeginningPositionTop = annotationBeginning.offset().top + $('#document-container').scrollTop();
-          const annotationBeginningPositionLeft = annotationBeginning.offset().left;
+          const annotationBeginningPositionLeft = annotationBeginning.offset().left + $('#document-container').scrollLeft();
           anno.position.left = annotationBeginningPositionLeft;
           anno.position.top = annotationBeginningPositionTop;
         }
@@ -326,8 +326,13 @@ const DocumentPage = ({
 
     if (focusIndex !== -1) {
       focusedAnnotationsRef[side] = focusID;
+    } else {
+      return;
     }
-
+    // these constants help control the first line and its depth into the document which then is
+    // replaced by a horitzontal line that from their goes to the exact position of the annotation
+    const smallestDistanceFromEdgeOfScreen = 27;
+    const annotationDistanceFromEdgeOfScreen = $(`#annotation-channel-${side}`).width() - $(`#document-container #${focusID}.annotation-card-container`).width() - smallestDistanceFromEdgeOfScreen;
     // first we need to focus the annotation and then place all other
     // annotations after it under it
     const tempTopAdjustment = 0;
@@ -338,8 +343,8 @@ const DocumentPage = ({
     let top;
     let trueTop;
     const offsetLeftForLine1 = (side === 'left'
-      ? $('#document-card-container').offset().left + 25
-      : -40);
+      ? $('#document-card-container').offset().left + 40 - (1.1 * annotationDistanceFromEdgeOfScreen)
+      : -70);
     for (let i = focusIndex; i < annos.length; i += 1) {
       if (annos[i] === undefined) { continue; }
       if (documentFilters.annotationIds[side] === null

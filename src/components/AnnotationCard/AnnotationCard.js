@@ -441,10 +441,6 @@ function AnnotationCard({
     setNewAnnotationText(content);
   };
 
-  function handleAnnotationPermissionsChange(num) {
-    setNewAnnotationPermissions(num);
-  }
-
   function showPermissionNumber() {
     let i = 0;
     if (newAnnotationPermissions !== null) {
@@ -461,6 +457,14 @@ function AnnotationCard({
     }
 
     return i;
+  }
+
+  function handleAnnotationPermissionsChange(num) {
+    const previousPermission = showPermissionNumber();
+    setNewAnnotationPermissions(num);
+    if (previousPermission === 2 || num === 2) {
+      setUpdateFocusOfAnnotation(true);
+    }
   }
 
   const annotationMatchesCurrentFilters = () => {
@@ -572,7 +576,7 @@ function AnnotationCard({
             {annotationData.editing
               ? (
                 <>
-                  <ListGroup variant="flush" style={{ borderTop: 'none', zIndex: 2, position: 'relative' }}>
+                  <ListGroup variant="flush" style={{ borderTop: 'none', zIndex: 1, position: 'relative' }}>
                     <ListGroup.Item className="annotation-body">
                       <Form.Group controlId="exampleForm.ControlTextarea1">
                         <Form.Control
@@ -680,7 +684,7 @@ function AnnotationCard({
               )
               : (
                 <>
-                  <ListGroup variant="flush" style={{ borderTop: 'none', zIndex: 2, position: 'relative' }}>
+                  <ListGroup variant="flush" style={{ borderTop: 'none', zIndex: 1, position: 'relative' }}>
                     <ListGroup.Item className="annotation-body" onClick={() => { setExpanded(); }}>
                       {annotationData.body.value.length > 0
                         ? ReactHtmlParser(annotationData.body.value, { transform: fixIframes })
@@ -840,6 +844,8 @@ function AnnotationCard({
 
         #dropdown-permission-options-container {
           display: inline-block;
+          position: relative;
+          top: -2px;
         }
 
         #popover-share-annotation-options.z-index-1 {
@@ -1004,7 +1010,7 @@ function AnnotationCard({
             cursor: pointer;
             border: 1px solid rgb(220, 220, 220);
             border-radius: 0px;
-            width: calc(100% - 50px);
+            width: calc(100% - 25px);
             transition: border-color 0.5s;
             transition: top 0.5s;
             max-width: 375px;
@@ -1125,6 +1131,10 @@ function AnnotationCard({
 
       .grey-background {
         background-color: rgb(250,250,250) !important;
+      }
+
+      .editing {
+        z-index: 2 !important;
       }
 
       .editing .annotation-body {

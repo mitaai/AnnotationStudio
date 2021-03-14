@@ -1,13 +1,22 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable guard-for-in */
 /* eslint-disable no-restricted-syntax */
-import React, { useState, useContext, useEffect } from 'react';
+import React, {
+  useState, useContext, useEffect, useRef,
+} from 'react';
 import $ from 'jquery';
 
+import debounce from 'lodash.debounce';
 import { DocumentFiltersContext, DocumentAnnotationsContext } from '../../contexts/DocumentContext';
 
 
 const HeatMap = ({ pdf, documentZoom }) => {
+  const resizeHeatMap = useRef(
+    debounce((setDocumentHeight, setInitDocumentScrollHeight) => {
+      setDocumentHeight($('#document-container').height() - 10);
+      setInitDocumentScrollHeight($('#document-container').get(0).scrollHeight);
+    }, 750),
+  ).current;
   const [documentHeight, setDocumentHeight] = useState(undefined);
   const [initDocumentScrollHeight, setInitDocumentScrollHeight] = useState(undefined);
   const lineHeight = 18;
@@ -19,6 +28,13 @@ const HeatMap = ({ pdf, documentZoom }) => {
       : initDocumentScrollHeight;
     $('#document-container-col').height(h);
   }
+
+  useEffect(() => {
+    // eslint-disable-next-line no-undef
+    window.addEventListener('resize', () => {
+      resizeHeatMap(setDocumentHeight, setInitDocumentScrollHeight);
+    });
+  }, []);
 
   useEffect(() => {
     if ($('#document-container').get(0) !== undefined && documentHeight === undefined && documentScrollHeight === undefined) {

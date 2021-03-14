@@ -277,7 +277,6 @@ export default function Document({
   };
 
   const addNewAnnotationToDom = (rid) => {
-    // $('#document-container').animate({ scrollLeft: 0 }, 1000);
     $($(`#document-content-container span[annotation-id='${rid}']`).get(0))
       .prepend("<span class='annotation-beginning-marker'></span>");
     $($(`#document-content-container span[annotation-id='${rid}']`).get(-1))
@@ -339,8 +338,16 @@ export default function Document({
     };
 
     addAnnotationToChannels(side, newAnnotation);
-    setSelectedTextToAnnotate(true);
+    setSelectedTextToAnnotate(side);
   };
+
+  useEffect(() => {
+    if (selectedTextToAnnotate === undefined) { return; }
+    const { scrollWidth } = $('#document-container').get(0);
+    $('#document-container').animate({
+      scrollLeft: selectedTextToAnnotate === 'left' ? '0px' : `${10 + scrollWidth - $('#document-container').width()}px`,
+    }, 1500);
+  }, [selectedTextToAnnotate]);
 
   useEffect(() => {
     if (documentToAnnotate && documentToAnnotate.text) {
@@ -380,7 +387,7 @@ export default function Document({
         // to annotate then don't remove class active from a text that was selected
         // otherwise the selection change so any text that was selected by the user
         // is no longer needed so we need to remove styling
-          if (!selectedTextToAnnotate) {
+          if (selectedTextToAnnotate === undefined) {
           // if we are making a new selection we need to make sure all old selections are removed
             $('.text-currently-being-annotated').removeClass('active');
             $('#document-content-container').removeClass('unselectable');

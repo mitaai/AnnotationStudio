@@ -11,6 +11,9 @@ import adjustLine from '../../utils/docUIUtils';
 
 
 function PlaceAnnotationsInCorrectSpot(annotations, side) {
+  if (annotations.length === 0) { return; }
+  const smallestDistanceFromEdgeOfScreen = 27;
+  const annotationDistanceFromEdgeOfScreen = $(`#annotation-channel-${side}`).width() - $(`#document-container #${annotations[0]._id}.annotation-card-container`).width() - smallestDistanceFromEdgeOfScreen;
   const tempTopAdjustment = 0;
   const documentContainerOffset = $('#document-container').offset();
   let lastHighestPoint = -1000;
@@ -19,8 +22,8 @@ function PlaceAnnotationsInCorrectSpot(annotations, side) {
   let top;
   let trueTop;
   const offsetLeftForLine1 = (side === 'left'
-    ? $('#document-card-container').offset().left + 25
-    : -40);
+    ? $('#document-card-container').offset().left + 40 - (1.1 * annotationDistanceFromEdgeOfScreen)
+    : -70);
   for (let i = 0; i < annotations.length; i += 1) {
     const offsetLeftForLine2 = side === 'left' ? annotations[i].position.left : annotations[i].position.left - $(`#document-container #${annotations[i]._id}`).offset().left;
     trueTop = annotations[i].position.top
