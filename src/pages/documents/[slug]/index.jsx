@@ -669,6 +669,7 @@ const DocumentPage = ({
                             }
                           }
                           documentToAnnotate={document}
+                          documentZoom={documentZoom}
                           alerts={alerts}
                           setAlerts={setAlerts}
                           user={session ? session.user : undefined}

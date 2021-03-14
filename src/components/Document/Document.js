@@ -104,6 +104,7 @@ export default function Document({
   user,
   addAnnotationToChannels,
   documentToAnnotate,
+  documentZoom,
   annotateDocument,
   displayAnnotationsInChannels,
   setAlerts,
@@ -423,6 +424,14 @@ export default function Document({
       setTimeout(highlightTextForAllAnnotations, 100, annotations);
     }
   });
+
+  useEffect(() => {
+    // when the document is scrolled it updates the position of the Annotation Pen Tooltip so
+    // that it stays in the correct spot as we zoom in and out of the document
+    const st = $('#document-container').scrollTop();
+    $('#document-container').scrollTop(st + 1);
+    $('#document-container').scrollTop(st);
+  }, [documentZoom]);
 
   const documentContentContainer = (
     <Card
