@@ -46,6 +46,16 @@ export function mapRanges(input, istart, iend, ostart, oend) {
   return ostart + ((oend - ostart) / (iend - istart)) * (input - istart);
 }
 
+export const RID = () => {
+  const c = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let rid = '';
+  for (let i = 0; i < 15; i += 1) {
+    const r = Math.random() * c.length;
+    rid += c.substring(r, r + 1);
+  }
+  return rid;
+};
+
 export const debounce = (func, wait, options) => {
   let timeout;
   return function executedFunction() {

@@ -103,7 +103,6 @@ const DocumentPage = ({
   const [
     annotationChannel2Loaded, setAnnotationChannel2Loaded,
   ] = useState(annotations.length === 0);
-  const minDisplayWidth = 1150;
   // popovers for mobile
   // eslint-disable-next-line no-unused-vars
   const [displayAnnotationsInChannels, setDisplayAnnotationsInChannels] = useState(!isMobile);
@@ -122,8 +121,9 @@ const DocumentPage = ({
 
   const [extraWidth, setExtraWidth] = useState(0);
   const extraMargin = (documentZoom - 100) * 3.5;
+  const minDisplayWidth = 1150;
   const documentWidth = 750;
-  const minChannelWidth = 450;
+  const minChannelWidth = (minDisplayWidth - documentWidth) / 2;
 
 
   const expandAnnotation = (aid, expand) => {
@@ -494,14 +494,6 @@ const DocumentPage = ({
     }
   }, [annotationIdToScrollTo, documentFilters]);
 
-  useEffect(() => {
-    // eslint-disable-next-line no-undef
-    window.addEventListener('resize', () => {
-      // eslint-disable-next-line no-undef
-      setDisplayAnnotationsInChannels(window.innerWidth > minDisplayWidth && !isMobile);
-    });
-  });
-
   async function getIntersectionOfGroupsAndUsers() {
     // when session loaded, get intersection of groups and the users that applies to
     if (session && document && !groupIntersection) {
@@ -563,6 +555,22 @@ const DocumentPage = ({
     }
   }, [document]);
 
+
+  const windowResize = useRef(
+    debounce((setDZ) => {
+      setDZ((prevDocumentZoom) => prevDocumentZoom + 1);
+      setDZ((prevDocumentZoom) => prevDocumentZoom - 1);
+    }, 750),
+  ).current;
+
+  useEffect(() => {
+    // eslint-disable-next-line no-undef
+    window.addEventListener('resize', () => {
+      windowResize(setDocumentZoom);
+      // eslint-disable-next-line no-undef
+      setDisplayAnnotationsInChannels(window.innerWidth > minDisplayWidth && !isMobile);
+    });
+  }, []);
 
   useEffect(() => {
     debouncedRepositioning(

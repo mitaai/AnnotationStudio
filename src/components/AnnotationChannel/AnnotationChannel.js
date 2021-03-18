@@ -100,20 +100,25 @@ const AnnotationChannel = ({
     return a.position.top - b.position.top;
   });
 
+  const focusOrPlaceAnnotations = () => {
+    if (show && channelAnnotations[side] !== null) {
+      if (focusedAnnotation !== null
+        && (
+          documentFilters.annotationIds[side] === null
+          || documentFilters.annotationIds[side].includes(focusedAnnotation)
+        )
+      ) {
+        focusOnAnnotation(side, focusedAnnotation);
+      } else {
+        PlaceAnnotationsInCorrectSpot(sortedAnnotations, side, documentZoom);
+      }
+    }
+  };
+
   useEffect(() => {
     if (channelAnnotations[side] !== null) {
-      if (show) {
-        if (focusedAnnotation !== null
-          && (
-            documentFilters.annotationIds[side] === null
-            || documentFilters.annotationIds[side].includes(focusedAnnotation)
-          )
-        ) {
-          focusOnAnnotation(side, focusedAnnotation);
-        } else {
-          PlaceAnnotationsInCorrectSpot(sortedAnnotations, side, documentZoom);
-        }
-      }
+      // this makes sure that the focus of annotation is preserved between rerenders
+      focusOrPlaceAnnotations();
 
       // once everything is placed in the correct spot we need to make sure the correct text has the
       // highlights it needs and remove highlights from text that doesn't need it

@@ -14,7 +14,7 @@ import {
   createTextQuoteSelector,
   highlightRange,
 } from 'apache-annotator/dom';
-import { debounce } from '../../utils/docUIUtils';
+import { debounce, RID } from '../../utils/docUIUtils';
 
 const highlightText = async (obj, domElement) => {
   const s = createTextQuoteSelector(obj.selector);
@@ -82,17 +82,6 @@ const customDescibeTextQuote = async (range, scope) => {
 
   // if we couldn't find a unique match just return the full selector
   return fullTextSelector;
-};
-
-
-const RID = () => {
-  const c = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let rid = '';
-  for (let i = 0; i < 15; i += 1) {
-    const r = Math.random() * c.length;
-    rid += c.substring(r, r + 1);
-  }
-  return rid;
 };
 
 

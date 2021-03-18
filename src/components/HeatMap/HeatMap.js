@@ -8,6 +8,7 @@ import $ from 'jquery';
 
 import debounce from 'lodash.debounce';
 import { DocumentFiltersContext, DocumentAnnotationsContext } from '../../contexts/DocumentContext';
+import { RID } from '../../utils/docUIUtils';
 
 
 const HeatMap = ({ pdf, documentZoom }) => {
@@ -124,6 +125,7 @@ const HeatMap = ({ pdf, documentZoom }) => {
       >
         {map.map((v, i) => (
           <div
+            key={RID()}
             className="stroke"
             style={{
               height: lineHeight * scaleFactor,
