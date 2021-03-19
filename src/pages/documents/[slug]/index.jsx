@@ -120,10 +120,11 @@ const DocumentPage = ({
   const [membersIntersection, setMembersIntersection] = useState([]);
 
   const [extraWidth, setExtraWidth] = useState(0);
-  const extraMargin = (documentZoom - 100) * 3.5;
-  const minDisplayWidth = 1150;
+  const extraMarginGrowthFactor = 3.5;
+  const extraMargin = (documentZoom - 100) * extraMarginGrowthFactor;
+  const minDisplayWidth = 0;
   const documentWidth = 750;
-  const minChannelWidth = (minDisplayWidth - documentWidth) / 2;
+  const minChannelWidth = (1250 - documentWidth) / 2;
 
 
   const expandAnnotation = (aid, expand) => {
@@ -581,6 +582,29 @@ const DocumentPage = ({
     const channelWidth = (window.innerWidth - documentWidth - (2 * extraMargin)) / 2;
     setExtraWidth(channelWidth < minChannelWidth ? minChannelWidth - channelWidth : 0);
   }, [documentZoom]);
+
+  useEffect(() => {
+    // when we load the page for the first time we need to check what the width of the screen
+    // is and if it is smaller than the document width then the default value of
+    // documentZoom must be adjusted
+    // eslint-disable-next-line no-undef
+    const ww = window.innerWidth;
+    if (ww < documentWidth) {
+      const newInitDocumentZoom = 100 - Math.floor(
+        ((documentWidth - ww) / (2 * extraMarginGrowthFactor)),
+      );
+      setDocumentZoom(newInitDocumentZoom);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (session && !loading && document && !documentLoading && $('#document-container').length !== 0) {
+      const { scrollWidth, offsetWidth } = $('#document-container').get(0);
+      if (scrollWidth > offsetWidth) {
+        $('#document-container').scrollLeft((scrollWidth - offsetWidth) / 2);
+      }
+    }
+  }, [session, loading, document, documentLoading]);
 
   return (
     <DocumentActiveAnnotationsContext.Provider value={[activeAnnotations, setActiveAnnotations]}>

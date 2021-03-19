@@ -38,7 +38,7 @@ function DocumentZoomSlider() {
               variant="primary"
               tooltip="off"
               size="sm"
-              min={75}
+              min={50}
               max={200}
               value={documentZoom}
               onChange={

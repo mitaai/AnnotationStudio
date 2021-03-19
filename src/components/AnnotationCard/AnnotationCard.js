@@ -538,6 +538,8 @@ function AnnotationCard({
     }
   }, [expanded, hovered]);
 
+  const leftRightPositionForAnnotation = annotationData.editing ? -10 : 15;
+
   return (
     <>
       <Card
@@ -545,7 +547,7 @@ function AnnotationCard({
         onMouseOver={() => { setHovered(true); }}
         onMouseOut={() => { setHovered(); }}
         className={`annotation-card-container ${annotationData.new ? 'new-annotation' : ''} ${expanded ? 'expanded' : ''} ${expanded || hovered || activeAnnotations.annotations.includes(annotationData._id) ? 'active' : ''} ${annotationData.editing ? 'editing' : ''}`}
-        style={side === 'left' ? { right: '15px' } : { left: '15px' }}
+        style={side === 'left' ? { right: leftRightPositionForAnnotation } : { left: leftRightPositionForAnnotation }}
       >
         <div
           className="line1"
@@ -864,7 +866,7 @@ function AnnotationCard({
         }
 
         .annotation-tags .rbt-input.focus {
-          border-bottom: 1px solid #007bff;
+          border-bottom: 1px solid rgba(0,123,255,0.5);
           box-shadow: none;
         }
 
@@ -917,7 +919,7 @@ function AnnotationCard({
 
         #typeahead-share-annotation-users-container .rbt-input.focus {
           box-shadow: none !important;
-          border-bottom: 1px solid #007bff;
+          border-bottom: 1px solid rgba(0,123,255,0.5);
         }
 
         .annotation-tag-token, .annotation-share-token {
@@ -960,6 +962,14 @@ function AnnotationCard({
           visibility: visible;
         }
 
+        .annotation-header.card-header {
+          border-bottom: none !important;
+        }
+
+        .annotation-card-container > .list-group {
+          border-bottom: none !important;
+        }
+
         .line1, .line2 {
             visibility: hidden;
             position: absolute;
@@ -971,20 +981,20 @@ function AnnotationCard({
         }
 
         .annotation-card-container.new-annotation {
-            border: 1px solid #007bff;
+            border: 1px solid rgba(0,123,255,0.5) !important;
         }
 
         .annotation-card-container.new-annotation .line1, .annotation-card-container.new-annotation .line2 {
-            background-color: #007bff;
+            background-color: rgba(0,123,255,0.5) !important;
             z-index: 3;
         }
 
         .annotation-card-container.new-annotation .annotation-pointer-background-left {
-            border-left-color: #007bff;
+            border-left-color: rgba(0,123,255,0.5);
         }
 
         .annotation-card-container.new-annotation .annotation-pointer-background-right {
-            border-right-color: #007bff;
+            border-right-color: rgba(0,123,255,0.5);
         }
 
 
@@ -1011,8 +1021,8 @@ function AnnotationCard({
             border: 1px solid rgb(220, 220, 220);
             border-radius: 0px;
             width: calc(100% - 25px);
-            transition: border-color 0.5s;
-            transition: top 0.5s;
+            transition: all 0.5s;
+            transition-property: border-color, top, left, right;
             max-width: 375px;
         }
 
@@ -1092,6 +1102,11 @@ function AnnotationCard({
             border-left-color: rgb(220,220,220);
             transition: border-left-color 0.5s;
         }
+
+        .annotation-card-container.new-annotation .annotation-pointer-background-left {
+          border-left-color: rgba(0,123,255,0.5) !important;
+        }
+
         .annotation-pointer-left {
             position: absolute;
             right: -19px;
@@ -1113,6 +1128,11 @@ function AnnotationCard({
           border-right-color: rgb(220,220,220);
           transition: border-right-color 0.5s;
       }
+
+      .annotation-card-container.new-annotation .annotation-pointer-background-right {
+        border-right-color: rgba(0,123,255,0.5) !important;
+      }
+
       .annotation-pointer-right {
           position: absolute;
           left: -19px;
@@ -1148,6 +1168,7 @@ function AnnotationCard({
       .annotation-body {
         padding: 0.3rem;
         font-size: 12px;
+        border-bottom-width: 1px !important;
       }
 
       .annotation-body textarea {
@@ -1163,7 +1184,7 @@ function AnnotationCard({
 
       .annotation-body textarea:focus {
         box-shadow: none;
-        border-bottom: 1px solid #007bff;
+        border-bottom: 1px solid rgba(0,123,255,0.5);
       }
 
       .annotation-tags {
