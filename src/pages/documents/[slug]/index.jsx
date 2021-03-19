@@ -3,7 +3,6 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-restricted-syntax */
 import { useState, useEffect, useRef } from 'react';
-import { isMobile } from 'react-device-detect';
 import { useSession } from 'next-auth/client';
 import $ from 'jquery';
 import {
@@ -104,6 +103,7 @@ const DocumentPage = ({
     annotationChannel2Loaded, setAnnotationChannel2Loaded,
   ] = useState(annotations.length === 0);
   // popovers for mobile
+  const isMobile = false; // placeholder for when we have a mobile version of site
   // eslint-disable-next-line no-unused-vars
   const [displayAnnotationsInChannels, setDisplayAnnotationsInChannels] = useState(!isMobile);
   const [
@@ -785,8 +785,7 @@ const DocumentPage = ({
                 height: calc(100vh - 200px);
                 overflow-y: scroll !important;
                 overflow-x: scroll !important;
-                padding: 
-                ${documentIsPDF ? '0' : '10px 0px'};
+                padding: 25px 0px 15px 0px;
                 scrollbar-color: rgba(0,0,0,0.1) !important;
               }
 
@@ -819,6 +818,7 @@ const DocumentPage = ({
                 flex: 1;
                 position: relative;
                 z-index: 2;
+                top: -25px;
               }
               
               #document-container #annotation-well-card-container {

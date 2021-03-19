@@ -14,7 +14,7 @@ import { RID } from '../../utils/docUIUtils';
 const HeatMap = ({ pdf, documentZoom }) => {
   const resizeHeatMap = useRef(
     debounce((setDocumentHeight, setInitDocumentScrollHeight) => {
-      setDocumentHeight($('#document-container').height() - 10);
+      setDocumentHeight($('#document-container').height() + 30);
       setInitDocumentScrollHeight($('#document-container').get(0).scrollHeight);
     }, 750),
   ).current;
@@ -38,8 +38,8 @@ const HeatMap = ({ pdf, documentZoom }) => {
   }, []);
 
   useEffect(() => {
-    if ($('#document-container').get(0) !== undefined && documentHeight === undefined && documentScrollHeight === undefined) {
-      setDocumentHeight($('#document-container').height() - 10);
+    if ($('#document-container').length !== 0 && documentHeight === undefined && documentScrollHeight === undefined) {
+      setDocumentHeight($('#document-container').height() + 30);
       setInitDocumentScrollHeight($('#document-container').get(0).scrollHeight);
     }
   }, [documentZoom]);
@@ -52,9 +52,10 @@ const HeatMap = ({ pdf, documentZoom }) => {
     ? (documentHeight / documentScrollHeight)
     : 1;
   const minStrokeHeight = 1;
-  const offsetTop = $('#document-container').offset() === undefined
+  const documentContainerPaddingTop = 25;
+  const offsetTop = -documentContainerPaddingTop + ($('#document-container').offset() === undefined
     ? 0
-    : $('#document-container').offset().top;
+    : $('#document-container').offset().top);
   const granularity = lineHeight * scaleFactor >= minStrokeHeight
     ? lineHeight
     : Math.ceil(minStrokeHeight / scaleFactor);
