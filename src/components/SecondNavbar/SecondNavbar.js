@@ -1,6 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
-  Nav, Navbar, Breadcrumb, Container, Modal, Table,
+  Nav, Navbar, Breadcrumb, Container, Modal, Table, Row, Col,
 } from 'react-bootstrap';
 import { InfoSquare } from 'react-bootstrap-icons';
 import FilterPopover from '../FilterPopover';
@@ -36,58 +36,86 @@ const SecondNavbar = ({
   const ref = useRef(null);
 
   const [showMoreDocumentInfo, setShowMoreDocumentInfo] = useState();
+  const [mobileView, setMobileView] = useState();
+
+  useEffect(() => {
+    if (type === 'document') {
+      // eslint-disable-next-line no-undef
+      const w = window;
+      w.addEventListener('resize', () => {
+        if (w.innerWidth < 875) {
+          setMobileView(true);
+        } else if (w.innerWidth >= 875) {
+          setMobileView();
+        }
+      });
+    }
+  }, []);
+
+  const documentColumnSize = mobileView ? 12 : 8;
+
   return (
     <>
       <Navbar bg="light" variant="light" className="second-navbar px-0" data-testid="second-navbar">
         <Container fluid className="px-5">
-          <Nav>
-            <Breadcrumb>
-              <Breadcrumb.Item active={type === 'dashboard'} href="/">Dashboard</Breadcrumb.Item>
-              {type === 'document' && (
-              <Breadcrumb.Item href="/documents" active={!document}>
-                Documents
-              </Breadcrumb.Item>
-              )}
-              {type === 'group' && (
-              <Breadcrumb.Item href="/groups" active={!document}>
-                Groups
-              </Breadcrumb.Item>
-              )}
-              {type === 'admin' && (
-              <Breadcrumb.Item active={!document}>
-                Administration
-              </Breadcrumb.Item>
-              )}
-              {type === 'profile' && (
-              <Breadcrumb.Item active>
-                Edit Profile
-              </Breadcrumb.Item>
-              )}
-              {type === 'newuser' && (
-              <Breadcrumb.Item active>
-                Registration
-              </Breadcrumb.Item>
-              )}
-              {type === 'annotations' && (
-              <Breadcrumb.Item active>
-                Annotations
-              </Breadcrumb.Item>
-              )}
-              {document && (
-              <Breadcrumb.Item active>{document.title}</Breadcrumb.Item>
-              )}
-              {type === 'document' && document && docView && (
-              <span id="btn-document-more-info">
-                <InfoSquare size="1.4em" onClick={() => { setShowMoreDocumentInfo(true); }} />
-              </span>
-              )}
-            </Breadcrumb>
-          </Nav>
-          {type === 'document' && document && docView && (
-            <div ref={ref} style={{ display: 'flex', flexWrap: 'nowrap' }}>
-              <FilterPopover session={session} container={ref} />
-            </div>
-          )}
+          <Row style={{ width: '100%' }}>
+            <Col md={type === 'document' ? documentColumnSize : 12}>
+              <Nav>
+                <Breadcrumb>
+                  <Breadcrumb.Item active={type === 'dashboard'} href="/">Dashboard</Breadcrumb.Item>
+                  {type === 'document' && (
+                  <Breadcrumb.Item href="/documents" active={!document}>
+                    Documents
+                  </Breadcrumb.Item>
+                  )}
+                  {type === 'group' && (
+                  <Breadcrumb.Item href="/groups" active={!document}>
+                    Groups
+                  </Breadcrumb.Item>
+                  )}
+                  {type === 'admin' && (
+                  <Breadcrumb.Item active={!document}>
+                    Administration
+                  </Breadcrumb.Item>
+                  )}
+                  {type === 'profile' && (
+                  <Breadcrumb.Item active>
+                    Edit Profile
+                  </Breadcrumb.Item>
+                  )}
+                  {type === 'newuser' && (
+                  <Breadcrumb.Item active>
+                    Registration
+                  </Breadcrumb.Item>
+                  )}
+                  {type === 'annotations' && (
+                  <Breadcrumb.Item active>
+                    Annotations
+                  </Breadcrumb.Item>
+                  )}
+                  {document && (
+                  <Breadcrumb.Item active>{document.title}</Breadcrumb.Item>
+                  )}
+                  {type === 'document' && document && docView && (
+                  <span id="btn-document-more-info">
+                    <InfoSquare size="1.4em" onClick={() => { setShowMoreDocumentInfo(true); }} />
+                  </span>
+                  )}
+                </Breadcrumb>
+              </Nav>
+            </Col>
+
+            {type === 'document' && document && docView && (
+            <Col md={mobileView ? 12 : 4} style={{ paddingRight: 0 }}>
+              <div ref={ref} style={{ display: 'flex', flexWrap: 'nowrap', float: mobileView ? 'left' : 'right' }}>
+                <FilterPopover session={session} container={ref} />
+              </div>
+            </Col>
+            )}
+
+          </Row>
+
+
         </Container>
       </Navbar>
       {type === 'document' && document && docView && (
