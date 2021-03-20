@@ -328,5 +328,12 @@ ol.breadcrumb {
   }
 }
 
+// Bootstrap overrides
+$theme-colors: (
+  'primary': #015999,
+  'info': #015999,
+  'dark': #343434
+);
+
 /* import bootstrap */
 @import "~bootstrap/scss/bootstrap";
