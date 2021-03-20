@@ -7,7 +7,7 @@ import moment from 'moment';
 
 function Footer() {
   return (
-    <footer className="footer mt-auto py-3">
+    <footer className="footer mt-auto py-3 as-footer">
       <Container fluid className="px-5">
         <Row>
           <Col>

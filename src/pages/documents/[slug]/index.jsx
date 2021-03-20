@@ -126,6 +126,8 @@ const DocumentPage = ({
   const documentWidth = 750;
   const minChannelWidth = (1250 - documentWidth) / 2;
 
+  const [headerAndFooterHeight, setHeaderAndFooterHeight] = useState(200);
+
 
   const expandAnnotation = (aid, expand) => {
     const aidExistInList = expandedAnnotations.includes(aid);
@@ -568,6 +570,7 @@ const DocumentPage = ({
     // eslint-disable-next-line no-undef
     window.addEventListener('resize', () => {
       windowResize(setDocumentZoom);
+      setHeaderAndFooterHeight($('.as-header').height() + $('.as-footer').height() + 35);
       // eslint-disable-next-line no-undef
       setDisplayAnnotationsInChannels(window.innerWidth > minDisplayWidth && !isMobile);
     });
@@ -782,7 +785,7 @@ const DocumentPage = ({
               }
 
               #document-container {
-                height: calc(100vh - 200px);
+                height: calc(100vh - ${headerAndFooterHeight}px);
                 overflow-y: scroll !important;
                 overflow-x: scroll !important;
                 padding: 25px 0px 15px 0px;
