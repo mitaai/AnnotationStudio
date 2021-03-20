@@ -604,7 +604,7 @@ function AnnotationCard({
                             </Dropdown.Item>
                           </DropdownButton>
                         </div>
-                        <QuestionCircle style={{ fontSize: 14, color: '#007bff', marginLeft: 4 }} onClick={() => { setShowMoreInfoShareModal(true); }} />
+                        <QuestionCircle id="question-circle-icon" onClick={() => { setShowMoreInfoShareModal(true); }} />
                         <div id="typeahead-share-annotation-users-container" className={showPermissionNumber() === 2 ? 'show' : ''}>
                           <Typeahead
                             id="typeahead-share-annotation-users"
@@ -810,7 +810,7 @@ function AnnotationCard({
         }
 
         .annotation-tags .rbt-input.focus {
-          border-bottom: 1px solid #007bff;
+          border-bottom: 1px solid $primary;
           box-shadow: none;
         }
 
@@ -863,7 +863,7 @@ function AnnotationCard({
 
         #typeahead-share-annotation-users-container .rbt-input.focus {
           box-shadow: none !important;
-          border-bottom: 1px solid #007bff;
+          border-bottom: 1px solid $primary;
         }
 
         .annotation-tag-token, .annotation-share-token {
@@ -917,20 +917,20 @@ function AnnotationCard({
         }
 
         .annotation-card-container.new-annotation {
-            border: 1px solid #007bff;
+            border: 1px solid $primary;
         }
 
         .annotation-card-container.new-annotation .line1, .annotation-card-container.new-annotation .line2 {
-            background-color: #007bff;
+            background-color: $primary;
             z-index: 3;
         }
 
         .annotation-card-container.new-annotation .annotation-pointer-background-left {
-            border-left-color: #007bff;
+            border-left-color: $primary;
         }
 
         .annotation-card-container.new-annotation .annotation-pointer-background-right {
-            border-right-color: #007bff;
+            border-right-color: $primary;
         }
 
 
@@ -1105,7 +1105,7 @@ function AnnotationCard({
 
       .annotation-body textarea:focus {
         box-shadow: none;
-        border-bottom: 1px solid #007bff;
+        border-bottom: 1px solid $primary;
       }
 
       .annotation-tags {

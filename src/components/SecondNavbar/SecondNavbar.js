@@ -148,7 +148,6 @@ const SecondNavbar = ({
         .second-navbar #btn-document-more-info {
             float: right;
             margin-left: 5px;
-            color: #007bff;
             cursor: pointer;
         }
 
