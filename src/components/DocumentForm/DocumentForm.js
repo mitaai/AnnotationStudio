@@ -266,9 +266,11 @@ const DocumentForm = ({
       },
     });
     if (res.status === 200) {
-      await res.json();
+      const result = await res.json();
       const documentToUpdate = { ...valuesWithSerializedText, slug };
-      return Promise.resolve(await updateAllAnnotationsOnDocument(documentToUpdate));
+      if (valuesWithSerializedText.state === 'draft') {
+        return Promise.resolve(result);
+      } return Promise.resolve(await updateAllAnnotationsOnDocument(documentToUpdate));
     }
     return Promise.reject(Error(`Unable to edit document: error ${res.status} received from server`));
   };
