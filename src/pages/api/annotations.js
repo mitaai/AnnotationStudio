@@ -99,9 +99,6 @@ const handler = async (req, res) => {
           findCondition = { 'target.document.slug': documentToUpdate.slug };
         }
         if (!documentToUpdate.format) documentToUpdate.format = 'text/html';
-        const { groups } = userObj;
-        const userGroups = groups.map((group) => group.id);
-        const groupIntersection = documentToUpdate.groups.filter((id) => userGroups.includes(id));
         const arr = await db
           .collection('annotations')
           .updateMany(
@@ -109,7 +106,6 @@ const handler = async (req, res) => {
             {
               $set: {
                 'target.document': documentToUpdate,
-                'permissions.groups': groupIntersection,
               },
               $currentDate: { modified: true },
             },
