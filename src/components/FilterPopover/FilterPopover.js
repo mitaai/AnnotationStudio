@@ -487,7 +487,7 @@ function FilterPopover({ session, container }) {
             font-size: 10px;
             border-radius: 5px;
             padding: 1px 2px;
-            border: 1px solid #015999;
+            border: 1px solid #007bff;
         }
 
         .rbt-token-active .token-badge {
