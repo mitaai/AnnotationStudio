@@ -1,7 +1,9 @@
 /* custom colors */
 $theme-colors: (
   "ans-color": #fcce02,
-  "dark": #000000,
+  "dark": #343434,
+  "primary": #015999,
+  "info": #015999,
 );
 
 ol.breadcrumb {
@@ -327,13 +329,6 @@ ol.breadcrumb {
     border-top-color: rgba(0, 0, 0, 0.125) !important;
   }
 }
-
-// Bootstrap overrides
-$theme-colors: (
-  "primary": #015999,
-  "info": #015999,
-  "dark": #343434,
-);
 
 $breadcrumb-bg: transparent;
 
