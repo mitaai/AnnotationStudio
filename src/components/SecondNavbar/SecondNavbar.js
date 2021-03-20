@@ -137,7 +137,6 @@ const SecondNavbar = ({
       <style jsx global>
         {`
         .second-navbar .breadcrumb {
-          background-color: #f8f9fa !important;
           margin-bottom: 0px;
         }
 

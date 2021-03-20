@@ -330,10 +330,12 @@ ol.breadcrumb {
 
 // Bootstrap overrides
 $theme-colors: (
-  'primary': #015999,
-  'info': #015999,
-  'dark': #343434
+  "primary": #015999,
+  "info": #015999,
+  "dark": #343434,
 );
+
+$breadcrumb-bg: transparent;
 
 /* import bootstrap */
 @import "~bootstrap/scss/bootstrap";
@@ -351,4 +353,8 @@ $theme-colors: (
   font-size: 14;
   color: theme-color("primary");
   margin-left: 4;
+}
+
+.btn-cancel-annotation-edits {
+  color: theme-color("secondary");
 }

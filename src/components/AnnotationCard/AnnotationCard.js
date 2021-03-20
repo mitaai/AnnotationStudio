@@ -985,7 +985,6 @@ function AnnotationCard({
           height: 18px;
           padding-top: 2.3px;
           background-color: transparent;
-          color: #6c757d;
         }
 
         .annotation-more-options-dropdown-menu {
