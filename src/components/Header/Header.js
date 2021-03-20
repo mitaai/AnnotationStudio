@@ -31,7 +31,16 @@ const Header = ({
     <header sticky="top" style={{ zIndex: 2 }}>
       <Navbar bg="dark" variant="dark" className="px-0">
         <Container fluid className="px-5">
-          <Navbar.Brand href="/">Annotation Studio</Navbar.Brand>
+          <Navbar.Brand href="/">
+            {process.env.NEXT_PUBLIC_LOGO_SVG && (
+              <img
+                className="header-logo-svg"
+                src={`/${process.env.NEXT_PUBLIC_LOGO_SVG}`}
+                alt="logo"
+              />
+            )}
+            {process.env.NEXT_PUBLIC_SITE_NAME || 'Annotation Studio'}
+          </Navbar.Brand>
           <Navbar.Toggle aria-controls="responsive-navbar-nav" />
           <Navbar.Collapse className="justify-content-end">
             <Nav>
