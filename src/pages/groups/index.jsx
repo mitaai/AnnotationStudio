@@ -37,7 +37,9 @@ const GroupList = ({ query, initAlerts, statefulSession }) => {
   }
 
   useEffect(() => {
-    if (session && !deepEqual(session.user.groups, groups)) {
+    if (session && session.user && !session.user.groups) {
+      setPageLoading(false);
+    } else if (session && !deepEqual(session.user.groups, groups)) {
       setGroups(session.user.groups);
       setPageLoading(false);
     }
