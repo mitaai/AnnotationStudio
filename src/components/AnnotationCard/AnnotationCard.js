@@ -659,7 +659,7 @@ function AnnotationCard({
                           </Dropdown.Item>
                         </DropdownButton>
                       </div>
-                      <QuestionCircle style={{ fontSize: 14, color: '#007bff', marginLeft: 4 }} onClick={() => { setShowMoreInfoShareModal(true); }} />
+                      <QuestionCircle style={{ fontSize: 14, color: '#015999', marginLeft: 4 }} onClick={() => { setShowMoreInfoShareModal(true); }} />
                       <div id="typeahead-share-annotation-users-container" className={showPermissionNumber() === 2 ? 'show' : ''}>
                         <Typeahead
                           id="typeahead-share-annotation-users"
@@ -866,7 +866,7 @@ function AnnotationCard({
         }
 
         .annotation-tags .rbt-input.focus {
-          border-bottom: 1px solid rgba(0,123,255,0.5);
+          border-bottom: 1px solid rgba(1, 90, 153, 0.5);
           box-shadow: none;
         }
 
@@ -919,7 +919,7 @@ function AnnotationCard({
 
         #typeahead-share-annotation-users-container .rbt-input.focus {
           box-shadow: none !important;
-          border-bottom: 1px solid rgba(0,123,255,0.5);
+          border-bottom: 1px solid rgba(1, 90, 153, 0.5);
         }
 
         .annotation-tag-token, .annotation-share-token {
@@ -981,20 +981,20 @@ function AnnotationCard({
         }
 
         .annotation-card-container.new-annotation {
-            border: 1px solid rgba(0,123,255,0.5) !important;
+            border: 1px solid rgba(1, 90, 153, 0.5) !important;
         }
 
         .annotation-card-container.new-annotation .line1, .annotation-card-container.new-annotation .line2 {
-            background-color: rgba(0,123,255,0.5) !important;
+            background-color: rgba(1, 90, 153, 0.5) !important;
             z-index: 3;
         }
 
         .annotation-card-container.new-annotation .annotation-pointer-background-left {
-            border-left-color: rgba(0,123,255,0.5);
+            border-left-color: rgba(1, 90, 153, 0.5);
         }
 
         .annotation-card-container.new-annotation .annotation-pointer-background-right {
-            border-right-color: rgba(0,123,255,0.5);
+            border-right-color: rgba(1, 90, 153, 0.5);
         }
 
 
@@ -1104,7 +1104,7 @@ function AnnotationCard({
         }
 
         .annotation-card-container.new-annotation .annotation-pointer-background-left {
-          border-left-color: rgba(0,123,255,0.5) !important;
+          border-left-color: rgba(1, 90, 153, 0.5) !important;
         }
 
         .annotation-pointer-left {
@@ -1130,7 +1130,7 @@ function AnnotationCard({
       }
 
       .annotation-card-container.new-annotation .annotation-pointer-background-right {
-        border-right-color: rgba(0,123,255,0.5) !important;
+        border-right-color: rgba(1, 90, 153, 0.5) !important;
       }
 
       .annotation-pointer-right {
@@ -1184,7 +1184,7 @@ function AnnotationCard({
 
       .annotation-body textarea:focus {
         box-shadow: none;
-        border-bottom: 1px solid rgba(0,123,255,0.5);
+        border-bottom: 1px solid rgba(1, 90, 153, 0.5);
       }
 
       .annotation-tags {

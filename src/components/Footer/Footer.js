@@ -40,6 +40,10 @@ function Footer() {
       <style jsx>
         {`
           .footer { background-color: #f5f5f5 }
+
+          .as-footer a {
+            color: #015999 !important;
+          }
         `}
       </style>
     </footer>

@@ -389,7 +389,7 @@ function FilterPopover({ session, container }) {
         {`
 
         #scroll-to-annotation-text {
-          color: #007bff;
+          color: #015999;
           cursor: pointer;
         }
 
@@ -487,7 +487,7 @@ function FilterPopover({ session, container }) {
             font-size: 10px;
             border-radius: 5px;
             padding: 1px 2px;
-            border: 1px solid #007bff;
+            border: 1px solid #015999;
         }
 
         .rbt-token-active .token-badge {

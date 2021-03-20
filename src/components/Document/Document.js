@@ -541,6 +541,9 @@ export default function Document({
 
       <style jsx global>
         {`
+          #document-container a {
+            color: #015999 !important;
+          }
 
           #show-cannot-annotate-document-toast-container {
             position: fixed;

@@ -46,7 +46,7 @@ export default function UnsavedChangesToast({
           }
 
           #scroll-to-annotation-text {
-            color: #007bff;
+            color: #015999;
             cursor: pointer;
           }
 

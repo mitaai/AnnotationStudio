@@ -13,7 +13,7 @@ function DocumentZoomSlider() {
   const [, documentZoom, setDocumentZoom] = useContext(DocumentContext);
   const [hovered, setHovered] = useState();
   const widthOfSlider = 100;
-  const colorOfSliderText = hovered ? '#007bff' : '#616161';
+  const colorOfSliderText = hovered ? '#015999' : '#616161';
   return (
     <>
       <Button
@@ -65,6 +65,9 @@ function DocumentZoomSlider() {
             transition: width 0.5s;
             display: flex;
             overflow-x: hidden;
+          }
+          input[type="range"]::-webkit-slider-thumb {
+            background-color: #015999 !important;
           }
           `}
       </style>

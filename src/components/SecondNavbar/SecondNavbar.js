@@ -147,6 +147,10 @@ const SecondNavbar = ({
           margin-bottom: 0px;
         }
 
+        .second-navbar .breadcrumb-item a {
+          color: #015999;
+        }
+
         .table-meta-data-name {
           width: 150px;
         }
@@ -154,7 +158,7 @@ const SecondNavbar = ({
         .second-navbar #btn-document-more-info {
             float: right;
             margin-left: 5px;
-            color: #007bff;
+            color: #015999;
             cursor: pointer;
         }
 

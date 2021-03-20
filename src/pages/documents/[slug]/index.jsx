@@ -780,6 +780,23 @@ const DocumentPage = ({
             </Layout>
             <style jsx global>
               {`
+
+              .btn-primary, .btn-primary:hover {
+                background-color: #015999 !important;
+                border-color: #015999 !important;
+              }
+
+              .btn-outline-primary:hover {
+                color: white !important;
+                background-color: #015999 !important;
+                border-color: #015999 !important;
+              }
+
+              .btn-outline-primary {
+                color: #015999 !important;
+                border-color: #015999 !important;
+              }
+
               #annotations-header-label {
                 padding: 12px 0px 0px 20px;
               }
@@ -867,7 +884,7 @@ const DocumentPage = ({
               }
 
               .text-currently-being-annotated.active {
-                background-color: rgba(0, 123, 255, 0.5);
+                background-color: rgba(1, 90, 153, 0.5);
               }
               
             `}
