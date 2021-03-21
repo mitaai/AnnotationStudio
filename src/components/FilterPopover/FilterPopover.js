@@ -441,6 +441,9 @@ function FilterPopover({ session, container }) {
         #btn-filter-annotation-well {
           margin-top: 7px;
           float: right;
+          text-overflow: ellipsis;
+          overflow: hidden;
+          white-space: nowrap;
         }
 
         #btn-filter-annotation-well svg {

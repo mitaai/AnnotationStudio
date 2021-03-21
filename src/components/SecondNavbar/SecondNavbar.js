@@ -107,7 +107,7 @@ const SecondNavbar = ({
             </Col>
             {type === 'document' && document && docView && (
             <Col md={mobileView ? 12 : 5} style={{ paddingLeft: 0, paddingRight: 0 }}>
-              <div style={{ display: 'flex', flexDirection: 'row', float: mobileView ? 'left' : 'right' }}>
+              <div style={{ display: 'flex', flexDirection: 'row', float: mobileView ? 'left' : 'right', top: 4, position: 'relative' }}>
                 <div style={{ marginTop: 6, marginRight: 6 }}>
                   <DocumentZoomSlider />
                 </div>
