@@ -14,7 +14,7 @@ import { RID } from '../../utils/docUIUtils';
 const HeatMap = ({ pdf, documentZoom }) => {
   const resizeHeatMap = useRef(
     debounce((setDocumentHeight, setInitDocumentScrollHeight) => {
-      setDocumentHeight($('#document-container').height() + 30);
+      setDocumentHeight($('#document-container').height() + 10);
       setInitDocumentScrollHeight($('#document-container').get(0).scrollHeight);
     }, 750),
   ).current;
@@ -39,7 +39,7 @@ const HeatMap = ({ pdf, documentZoom }) => {
 
   useEffect(() => {
     if ($('#document-container').length !== 0 && documentHeight === undefined && documentScrollHeight === undefined) {
-      setDocumentHeight($('#document-container').height() + 30);
+      setDocumentHeight($('#document-container').height() + 10);
       setInitDocumentScrollHeight($('#document-container').get(0).scrollHeight);
     }
   }, [documentZoom]);
