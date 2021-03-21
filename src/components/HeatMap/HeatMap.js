@@ -11,10 +11,11 @@ import { DocumentFiltersContext, DocumentAnnotationsContext } from '../../contex
 import { RID } from '../../utils/docUIUtils';
 
 
-const HeatMap = ({ pdf, documentZoom }) => {
+const HeatMap = ({ documentZoom }) => {
+  const extraHeight = 28;
   const resizeHeatMap = useRef(
     debounce((setDocumentHeight, setInitDocumentScrollHeight) => {
-      setDocumentHeight($('#document-container').height() + 10);
+      setDocumentHeight($('#document-container').height() + extraHeight);
       setInitDocumentScrollHeight($('#document-container').get(0).scrollHeight);
     }, 750),
   ).current;
@@ -39,7 +40,7 @@ const HeatMap = ({ pdf, documentZoom }) => {
 
   useEffect(() => {
     if ($('#document-container').length !== 0 && documentHeight === undefined && documentScrollHeight === undefined) {
-      setDocumentHeight($('#document-container').height() + 10);
+      setDocumentHeight($('#document-container').height() + extraHeight);
       setInitDocumentScrollHeight($('#document-container').get(0).scrollHeight);
     }
   }, [documentZoom]);
@@ -122,7 +123,7 @@ const HeatMap = ({ pdf, documentZoom }) => {
       <div
         id="heat-map"
         data-testid="heat-map"
-        style={{ height: (documentHeight === undefined ? 0 : documentHeight) + (pdf ? 0 : 18) }}
+        style={{ height: (documentHeight === undefined ? 0 : documentHeight) }}
       >
         {map.map((v, i) => (
           <div

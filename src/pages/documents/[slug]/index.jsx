@@ -652,7 +652,6 @@ const DocumentPage = ({
                     scrollToAnnotation={scrollToAnnotation}
                   />
                   <HeatMap
-                    pdf={documentIsPDF}
                     documentZoom={documentZoom}
                   />
                   {!displayAnnotationsInChannels && <AnnotationsOverlay />}
