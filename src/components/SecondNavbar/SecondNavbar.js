@@ -53,7 +53,7 @@ const SecondNavbar = ({
     }
   }, []);
 
-  const documentColumnSize = mobileView ? 12 : 8;
+  const documentColumnSize = mobileView ? 12 : 7;
 
   return (
     <>
@@ -106,8 +106,8 @@ const SecondNavbar = ({
               </Nav>
             </Col>
             {type === 'document' && document && docView && (
-            <Col md={mobileView ? 12 : 4} style={{ paddingRight: 0 }}>
-              <div style={{ display: 'flex', flexDirection: 'row' }}>
+            <Col md={mobileView ? 12 : 5} style={{ paddingLeft: 0, paddingRight: 0 }}>
+              <div style={{ display: 'flex', flexDirection: 'row', float: mobileView ? 'left' : 'right' }}>
                 <div style={{ marginTop: 6, marginRight: 6 }}>
                   <DocumentZoomSlider />
                 </div>
