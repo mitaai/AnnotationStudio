@@ -86,6 +86,8 @@ const customDescibeTextQuote = async (range, scope) => {
 
 
 export default function Document({
+  setShowUnsavedChangesToast,
+  annotationIdBeingEdited,
   annotations,
   setChannelAnnotations,
   addActiveAnnotation,
@@ -500,7 +502,9 @@ export default function Document({
           <Tooltip
             id="annotate-document-tooltip"
             onMouseDown={async () => {
-              if (!['draft', 'archived'].includes(documentToAnnotate.state)) {
+              if (annotationIdBeingEdited !== undefined) {
+                setShowUnsavedChangesToast(true);
+              } else if (!['draft', 'archived'].includes(documentToAnnotate.state)) {
                 const rid = RID();
                 await annotateDocument(selector, rid);
 

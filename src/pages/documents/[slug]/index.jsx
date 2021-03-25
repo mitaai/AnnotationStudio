@@ -685,6 +685,8 @@ const DocumentPage = ({
                         }}
                       >
                         <Document
+                          setShowUnsavedChangesToast={setShowUnsavedChangesToast}
+                          annotationIdBeingEdited={annotationIdBeingEdited}
                           addActiveAnnotation={addActiveAnnotation}
                           removeActiveAnnotation={removeActiveAnnotation}
                           displayAnnotationsInChannels={displayAnnotationsInChannels}
