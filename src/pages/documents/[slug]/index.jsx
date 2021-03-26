@@ -79,6 +79,7 @@ const DocumentPage = ({
   ).current;
 
   const [documentLoading, setDocumentLoading] = useState(true);
+  const [initializedXScollPosition, setInitializedXScollPosition] = useState(false);
   const [alerts, setAlerts] = useState(initAlerts || []);
   const [documentHighlightedAndLoaded, setDocumentHighlightedAndLoaded] = useState(false);
   const [annotationIdBeingEdited, setAnnotationIdBeingEdited] = useState();
@@ -539,12 +540,6 @@ const DocumentPage = ({
         );
         setDocumentZoom(newInitDocumentZoom);
       }
-      if (session && !loading && document && !documentLoading && $('#document-container').length !== 0) {
-        const { scrollWidth, offsetWidth } = $('#document-container').get(0);
-        if (scrollWidth > offsetWidth) {
-          $('#document-container').scrollLeft((scrollWidth - offsetWidth) / 2);
-        }
-      }
     }
   }, [annotationChannel1Loaded, annotationChannel2Loaded]);
 
@@ -601,6 +596,16 @@ const DocumentPage = ({
     const channelWidth = (window.innerWidth - documentWidth - (2 * extraMargin)) / 2;
     setExtraWidth(channelWidth < minChannelWidth ? (minChannelWidth - channelWidth) * 2 : 0);
   }, [documentZoom]);
+
+  useEffect(() => {
+    if (!initializedXScollPosition && session && !loading && document && !documentLoading && $('#document-container').length !== 0) {
+      const { scrollWidth, offsetWidth } = $('#document-container').get(0);
+      if (scrollWidth > offsetWidth) {
+        $('#document-container').scrollLeft((scrollWidth - offsetWidth) / 2);
+        setInitializedXScollPosition(true);
+      }
+    }
+  }, [extraWidth]);
 
   useEffect(() => {
     if (session && !loading && document && !documentLoading && $('#document-container').length !== 0) {

@@ -106,7 +106,10 @@ const SecondNavbar = ({
               </Nav>
             </Col>
             {type === 'document' && document && docView && (
-            <Col md={mobileView ? 12 : 5} style={{ paddingLeft: 0, paddingRight: 0 }}>
+            <Col
+              md={mobileView ? 12 : 5}
+              style={{ paddingLeft: (mobileView ? 15 : 0), paddingRight: 0 }}
+            >
               <div style={{
                 display: 'flex', flexDirection: 'row', float: mobileView ? 'left' : 'right', top: 4, position: 'relative',
               }}
