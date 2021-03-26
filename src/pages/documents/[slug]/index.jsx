@@ -78,6 +78,7 @@ const DocumentPage = ({
     }, 750),
   ).current;
 
+  const [documentLoading, setDocumentLoading] = useState(true);
   const [alerts, setAlerts] = useState(initAlerts || []);
   const [documentHighlightedAndLoaded, setDocumentHighlightedAndLoaded] = useState(false);
   const [annotationIdBeingEdited, setAnnotationIdBeingEdited] = useState();
@@ -124,7 +125,7 @@ const DocumentPage = ({
   const extraMargin = (documentZoom - 100) * extraMarginGrowthFactor;
   const minDisplayWidth = 0;
   const documentWidth = 750;
-  const minChannelWidth = (1250 - documentWidth) / 2;
+  const minChannelWidth = (1400 - documentWidth) / 2;
 
   const [headerAndFooterHeight, setHeaderAndFooterHeight] = useState(200);
 
@@ -527,10 +528,25 @@ const DocumentPage = ({
   useEffect(() => {
     if (annotationChannel1Loaded && annotationChannel2Loaded) {
       setDocumentFilters({ ...documentFilters, annotationsLoaded: true });
+      // when we load the page for the first time we need to check what the width of the screen
+      // is and if it is smaller than the document width then the default value of
+      // documentZoom must be adjusted
+      // eslint-disable-next-line no-undef
+      const ww = window.innerWidth;
+      if (ww < documentWidth) {
+        const newInitDocumentZoom = 100 - Math.floor(
+          ((documentWidth - ww) / (2 * extraMarginGrowthFactor)),
+        );
+        setDocumentZoom(newInitDocumentZoom);
+      }
+      if (session && !loading && document && !documentLoading && $('#document-container').length !== 0) {
+        const { scrollWidth, offsetWidth } = $('#document-container').get(0);
+        if (scrollWidth > offsetWidth) {
+          $('#document-container').scrollLeft((scrollWidth - offsetWidth) / 2);
+        }
+      }
     }
   }, [annotationChannel1Loaded, annotationChannel2Loaded]);
-
-  const [documentLoading, setDocumentLoading] = useState(true);
 
   const cloudfrontUrl = process.env.NEXT_PUBLIC_SIGNING_URL.split('/url')[0];
 
@@ -583,22 +599,8 @@ const DocumentPage = ({
     );
     // eslint-disable-next-line no-undef
     const channelWidth = (window.innerWidth - documentWidth - (2 * extraMargin)) / 2;
-    setExtraWidth(channelWidth < minChannelWidth ? minChannelWidth - channelWidth : 0);
+    setExtraWidth(channelWidth < minChannelWidth ? (minChannelWidth - channelWidth) * 2 : 0);
   }, [documentZoom]);
-
-  useEffect(() => {
-    // when we load the page for the first time we need to check what the width of the screen
-    // is and if it is smaller than the document width then the default value of
-    // documentZoom must be adjusted
-    // eslint-disable-next-line no-undef
-    const ww = window.innerWidth;
-    if (ww < documentWidth) {
-      const newInitDocumentZoom = 100 - Math.floor(
-        ((documentWidth - ww) / (2 * extraMarginGrowthFactor)),
-      );
-      setDocumentZoom(newInitDocumentZoom);
-    }
-  }, []);
 
   useEffect(() => {
     if (session && !loading && document && !documentLoading && $('#document-container').length !== 0) {

@@ -39,6 +39,7 @@ export default function UnsavedChangesToast({
       <style jsx global>
         {`
           #unsaved-changes-toast {
+            top: 150px;
             position: absolute;
             z-index: 5;
             left: 50vw;
@@ -52,6 +53,7 @@ export default function UnsavedChangesToast({
 
           #unsaved-changes-toast > .toast {
             max-width: 645px;
+            border: 1px solid #015999;
           }
               
         `}
