@@ -74,13 +74,13 @@ function FilterPopover({ session, container }) {
   const badgeInitWidth = 8.25 + permissionTextMargin;
   const widthOfPermissionsBtns = [
     40 + badgeInitWidth + badgeNumWidth * (numberOfMatchesForPermissions[0] > 0
-      ? Math.ceil(Math.log10(numberOfMatchesForPermissions[0]))
+      ? Math.floor(Math.log10(numberOfMatchesForPermissions[0]) + 1)
       : 1),
     145 + badgeInitWidth + badgeNumWidth * (numberOfMatchesForPermissions[1] > 0
-      ? Math.ceil(Math.log10(numberOfMatchesForPermissions[1]))
+      ? Math.floor(Math.log10(numberOfMatchesForPermissions[1]) + 1)
       : 1),
     115 + badgeInitWidth + badgeNumWidth * (numberOfMatchesForPermissions[2] > 0
-      ? Math.ceil(Math.log10(numberOfMatchesForPermissions[2]))
+      ? Math.floor(Math.log10(numberOfMatchesForPermissions[2]) + 1)
       : 1),
   ];
   const widthOfInactiveFilter = 70;
@@ -89,10 +89,12 @@ function FilterPopover({ session, container }) {
     1 // this represent the extra '/' that the filter button has ex. xx/xx
     + (
       (totalNumberOfFilteredAnnotations > 0
-        ? Math.ceil(Math.log10(totalNumberOfFilteredAnnotations))
+        ? Math.floor(Math.log10(totalNumberOfFilteredAnnotations) + 1)
         : 1)
       + (numberOfMatchesForPermissions[documentFilters.filters.permissions] > 0
-        ? Math.ceil(Math.log10(numberOfMatchesForPermissions[documentFilters.filters.permissions]))
+        ? Math.floor(
+          Math.log10(numberOfMatchesForPermissions[documentFilters.filters.permissions]) + 1,
+        )
         : 1)
     )
   );
