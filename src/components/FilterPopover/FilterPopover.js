@@ -16,6 +16,7 @@ import {
   Form,
   Card,
   ButtonGroup,
+  Badge,
 } from 'react-bootstrap';
 
 import {
@@ -47,6 +48,54 @@ function FilterPopover({ session, container }) {
   const [show, setShow] = useState(false);
   const [target, setTarget] = useState(null);
 
+  const GetNumberOfMatchesForThisPermission = (permissions) => {
+    const ids = FilterAnnotations(channelAnnotations, {
+      annotatedBy: [],
+      byTags: [],
+      permissions,
+    });
+    return ids.left.length + ids.right.length;
+  };
+
+
+  const totalNumberOfFilteredAnnotations = (
+    documentFilters.annotationIds.left === null
+    || documentFilters.annotationIds.right === null
+  )
+    ? 0
+    : documentFilters.annotationIds.left.length + documentFilters.annotationIds.right.length;
+  const numberOfMatchesForPermissions = [
+    GetNumberOfMatchesForThisPermission(0),
+    GetNumberOfMatchesForThisPermission(1),
+    GetNumberOfMatchesForThisPermission(2),
+  ];
+  const permissionTextMargin = 3;
+  const badgeNumWidth = 7.25;
+  const badgeInitWidth = 8.25 + permissionTextMargin;
+  const widthOfPermissionsBtns = [
+    40 + badgeInitWidth + badgeNumWidth * (numberOfMatchesForPermissions[0] > 0
+      ? Math.ceil(Math.log10(numberOfMatchesForPermissions[0]))
+      : 1),
+    145 + badgeInitWidth + badgeNumWidth * (numberOfMatchesForPermissions[1] > 0
+      ? Math.ceil(Math.log10(numberOfMatchesForPermissions[1]))
+      : 1),
+    115 + badgeInitWidth + badgeNumWidth * (numberOfMatchesForPermissions[2] > 0
+      ? Math.ceil(Math.log10(numberOfMatchesForPermissions[2]))
+      : 1),
+  ];
+  const widthOfInactiveFilter = 70;
+  const widthOfActiveFilter = widthOfInactiveFilter + permissionTextMargin + badgeInitWidth
+  + badgeNumWidth * (
+    1 // this represent the extra '/' that the filter button has ex. xx/xx
+    + (
+      (totalNumberOfFilteredAnnotations > 0
+        ? Math.ceil(Math.log10(totalNumberOfFilteredAnnotations))
+        : 1)
+      + (numberOfMatchesForPermissions[documentFilters.filters.permissions] > 0
+        ? Math.ceil(Math.log10(numberOfMatchesForPermissions[documentFilters.filters.permissions]))
+        : 1)
+    )
+  );
 
   function DeepCopyObj(obj) {
     return JSON.parse(JSON.stringify(obj));
@@ -340,6 +389,9 @@ function FilterPopover({ session, container }) {
     </Overlay>
   );
 
+  const filterActive = (documentFilters.filters.annotatedBy.length
+  + documentFilters.filters.byTags.length > 0);
+
   return (
     <>
       <ButtonGroup size="sm" aria-label="Permissions" className="permissions-buttons">
@@ -348,21 +400,30 @@ function FilterPopover({ session, container }) {
           onClick={(ev) => { handlePermissionsClick(ev, 0); }}
         >
           <PersonFill size="1.2em" />
-          <div className="mine">Mine</div>
+          <div className="mine">
+            <span className="text">Mine</span>
+            <Badge variant="light">{numberOfMatchesForPermissions[0]}</Badge>
+          </div>
         </Button>
         <Button
           variant={documentFilters.filters.permissions === 1 ? 'primary' : 'outline-primary'}
           onClick={(ev) => { handlePermissionsClick(ev, 1); }}
         >
           <PeopleFill size="1.2em" />
-          <div className="shared-with-groups">Shared with group(s)</div>
+          <div className="shared-with-groups">
+            <span className="text">Shared with group(s)</span>
+            <Badge variant="light">{numberOfMatchesForPermissions[1]}</Badge>
+          </div>
         </Button>
         <Button
           variant={documentFilters.filters.permissions === 2 ? 'primary' : 'outline-primary'}
           onClick={(ev) => { handlePermissionsClick(ev, 2); }}
         >
           <PersonPlusFill size="1.2em" />
-          <div className="shared-with-me">Shared with me</div>
+          <div className="shared-with-me">
+            <span className="text">Shared with me</span>
+            <Badge variant="light">{numberOfMatchesForPermissions[2]}</Badge>
+          </div>
         </Button>
       </ButtonGroup>
       {unsavedChangesOverlay}
@@ -378,10 +439,17 @@ function FilterPopover({ session, container }) {
         <Button
           id="btn-filter-annotation-well"
           size="sm"
-          variant={documentFilters.filters.annotatedBy.length + documentFilters.filters.byTags.length > 0 ? 'primary' : 'outline-primary'}
+          variant={filterActive ? 'primary' : 'outline-primary'}
         >
-          <Filter size="1em" />
-          <span>Filter</span>
+          <div>
+            <Filter size="1em" />
+            <span className="text">Filter</span>
+            <Badge className={filterActive && 'active'} variant="light">
+              {
+              `${totalNumberOfFilteredAnnotations}/${numberOfMatchesForPermissions[documentFilters.filters.permissions]}`
+              }
+            </Badge>
+          </div>
         </Button>
       </OverlayTrigger>
 
@@ -420,30 +488,52 @@ function FilterPopover({ session, container }) {
           width: 0px;
         }
 
+        #btn-filter-annotation-well .text {
+          margin-right: ${permissionTextMargin}px;
+        }
+
+        #btn-filter-annotation-well .badge {
+          opacity: 0.0;
+          transition: opacity 0.25s;
+        }
+        #btn-filter-annotation-well .badge.active {
+          opacity: 1.0;
+        }
+
+        .permissions-buttons .btn.btn-primary div > .text {
+          margin-right: ${permissionTextMargin}px;
+        }
+
         .permissions-buttons .btn.btn-primary div.mine {
           margin-left: 10px;
-          width: 40px;
+          width: ${widthOfPermissionsBtns[0]}px;
           opacity: 1;
         }
 
         .permissions-buttons .btn.btn-primary div.shared-with-groups {
-          width: 145px;
+          width: ${widthOfPermissionsBtns[1]}px;
           margin-left:10px;
           opacity: 1;
         }
 
         .permissions-buttons .btn.btn-primary div.shared-with-me {
-          width: 115px;
+          width: ${widthOfPermissionsBtns[2]}px;
           margin-left: 10px;
           opacity: 1;
         }
         
         #btn-filter-annotation-well {
+          transition: width 0.5s;
+          width: ${widthOfInactiveFilter}px;
           margin-top: 7px;
           float: right;
           text-overflow: ellipsis;
           overflow: hidden;
           white-space: nowrap;
+        }
+
+        #btn-filter-annotation-well.btn.btn-primary {
+          width: ${widthOfActiveFilter}px;
         }
 
         #btn-filter-annotation-well svg {
