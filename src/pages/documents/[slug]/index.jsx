@@ -134,7 +134,11 @@ const DocumentPage = ({
   const minHeaderHeight = 121;
   const [headerHeight, setHeaderHeight] = useState(minHeaderHeight);
   const [footerHeight, setFooterHeight] = useState(0);
-  let footerHeightRef = useRef(0).current;
+  const debounceSetFooterHeight = useRef(
+    debounce((setFooterH, footerH) => {
+      setFooterH(footerH);
+    }, 250),
+  ).current;
 
 
   const expandAnnotation = (aid, expand) => {
@@ -546,10 +550,7 @@ const DocumentPage = ({
       setHeaderHeight(headerH < minHeaderHeight ? minHeaderHeight : headerH);
     }
 
-    if (footerHeightRef !== footerH) {
-      setFooterHeight(footerH);
-      footerHeightRef = footerH;
-    }
+    debounceSetFooterHeight(setFooterHeight, footerH);
   };
 
   const documentContainerResized = () => {
@@ -618,6 +619,22 @@ const DocumentPage = ({
       documentContainerResized();
     });
   }, []);
+
+  useEffect(() => {
+    if (session && !loading && document && !documentLoading && $('#document-container').length !== 0) {
+      // if the footer height changes we want to make sure the scrollTop value of the document
+      // container is at the complete buttom if the footer has a height other than 0 meaning
+      // that it is showing
+      const {
+        scrollHeight,
+      } = $('#document-container').get(0);
+      if (footerHeight > 0) {
+        $('#document-container').scrollTop(scrollHeight);
+      } else {
+        // pass
+      }
+    }
+  }, [footerHeight]);
 
   useEffect(() => {
     debouncedRepositioning(
