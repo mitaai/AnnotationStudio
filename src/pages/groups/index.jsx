@@ -37,7 +37,11 @@ const GroupList = ({ query, initAlerts, statefulSession }) => {
   }
 
   useEffect(() => {
-    if (session && !deepEqual(session.user.groups, groups)) {
+    if (session && (!session.user.groups
+      || (Array.isArray(session.user.groups) && session.user.groups.length === 0))
+    ) {
+      setPageLoading(false);
+    } else if (session && !deepEqual(session.user.groups, groups)) {
       setGroups(session.user.groups);
       setPageLoading(false);
     }
@@ -55,7 +59,13 @@ const GroupList = ({ query, initAlerts, statefulSession }) => {
         {session && !loading && !pageLoading && (
           <>
             <Card.Header>
-              Groups
+              <Card.Title className="float-left">
+                Groups
+              </Card.Title>
+              <Button variant="primary" href="/groups/new" className="float-right">
+                <Plus className="mr-1 ml-n1 mt-n1" />
+                Create New Group
+              </Button>
             </Card.Header>
             <Card.Body data-testid="grouplist-card-body">
               {groups.length === 0 && (

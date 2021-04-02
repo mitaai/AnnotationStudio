@@ -46,11 +46,6 @@ export default function UnsavedChangesToast({
             transform: translate(-50%);
           }
 
-          #scroll-to-annotation-text {
-            color: #007bff;
-            cursor: pointer;
-          }
-
           #unsaved-changes-toast > .toast {
             max-width: 645px;
             border: 1px solid #015999;

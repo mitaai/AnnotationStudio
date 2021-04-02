@@ -85,7 +85,7 @@ const DashboardDocumentList = ({
                 <Col className="text-right">
                   {!!document.groups && !!document.groups[0] && (
                     <Badge
-                      variant="info"
+                      variant="primary"
                       className="mr-2"
                       key={document.groups[0]._id}
                     >

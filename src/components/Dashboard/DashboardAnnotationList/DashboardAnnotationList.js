@@ -125,7 +125,7 @@ const DashboardAnnotationList = ({
                       && annotation.permissions.sharedTo === undefined
                       && (
                       <Badge
-                        variant="info"
+                        variant="primary"
                         key={annotation.permissions.groups.sort()[0]._id}
                         className="mL-2"
                       >

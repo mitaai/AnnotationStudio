@@ -659,7 +659,7 @@ function AnnotationCard({
                           </Dropdown.Item>
                         </DropdownButton>
                       </div>
-                      <QuestionCircle style={{ fontSize: 14, color: '#007bff', marginLeft: 4 }} onClick={() => { setShowMoreInfoShareModal(true); }} />
+                      <QuestionCircle id="question-circle-icon" onClick={() => { setShowMoreInfoShareModal(true); }} />
                       <div id="typeahead-share-annotation-users-container" className={showPermissionNumber() === 2 ? 'show' : ''}>
                         <Typeahead
                           id="typeahead-share-annotation-users"
@@ -865,11 +865,6 @@ function AnnotationCard({
           padding-left: 5px;
         }
 
-        .annotation-tags .rbt-input.focus {
-          border-bottom: 1px solid rgba(0,123,255,0.5);
-          box-shadow: none;
-        }
-
         #typeahead-share-annotation-users {
           width: 100%;
         }
@@ -915,11 +910,6 @@ function AnnotationCard({
           border: none;
           border-bottom: 1px solid #eeeeee;
           border-radius: 0px;
-        }
-
-        #typeahead-share-annotation-users-container .rbt-input.focus {
-          box-shadow: none !important;
-          border-bottom: 1px solid rgba(0,123,255,0.5);
         }
 
         .annotation-tag-token, .annotation-share-token {
@@ -980,24 +970,6 @@ function AnnotationCard({
             transition: background-color 0.5s;
         }
 
-        .annotation-card-container.new-annotation {
-            border: 1px solid rgba(0,123,255,0.5) !important;
-        }
-
-        .annotation-card-container.new-annotation .line1, .annotation-card-container.new-annotation .line2 {
-            background-color: rgba(0,123,255,0.5) !important;
-            z-index: 3;
-        }
-
-        .annotation-card-container.new-annotation .annotation-pointer-background-left {
-            border-left-color: rgba(0,123,255,0.5);
-        }
-
-        .annotation-card-container.new-annotation .annotation-pointer-background-right {
-            border-right-color: rgba(0,123,255,0.5);
-        }
-
-
         .annotation-card-container.active .line1, .annotation-card-container.active .line2 {
             background-color: rgba(255, 165, 10, 0.5);
             z-index: 3;
@@ -1049,7 +1021,6 @@ function AnnotationCard({
           height: 18px;
           padding-top: 2.3px;
           background-color: transparent;
-          color: #6c757d;
         }
 
         .annotation-more-options-dropdown-menu {
@@ -1180,11 +1151,6 @@ function AnnotationCard({
 
       .annotation-body .tox.tox-tinymce {
         border: none;
-      }
-
-      .annotation-body textarea:focus {
-        box-shadow: none;
-        border-bottom: 1px solid rgba(0,123,255,0.5);
       }
 
       .annotation-tags {

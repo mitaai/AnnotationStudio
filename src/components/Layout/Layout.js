@@ -10,8 +10,8 @@ function Layout({
   return (
     <>
       <Head>
-        <title>Annotation Studio</title>
-        <link rel="icon" href="/favicon-32x32.png" />
+        <title>{process.env.NEXT_PUBLIC_SITE_NAME || 'Annotation Studio'}</title>
+        <link rel="icon" href="/as-logo-32x32.png" />
       </Head>
       <Header
         type={type}

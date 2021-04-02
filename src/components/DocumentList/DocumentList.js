@@ -94,7 +94,7 @@ const DocumentList = ({
                     {(document.groups && document.groups.length > 0)
                       ? document.groups.map((group) => (
                         <Badge
-                          variant="info"
+                          variant="primary"
                           className="mr-1"
                           as={Button}
                           href={`/groups/${group._id}`}
