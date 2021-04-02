@@ -555,7 +555,7 @@ const DocumentPage = ({
 
   const documentContainerResized = () => {
     windowResize(setDocumentZoom);
-    if ($('#document-container').length !== 0) {
+    if ($('#document-container').get(0) !== undefined) {
       const {
         scrollHeight, offsetHeight, scrollTop,
       } = $('#document-container').get(0);
@@ -578,7 +578,7 @@ const DocumentPage = ({
           ((documentWidth - ww) / (2 * extraMarginGrowthFactor)),
         );
         setDocumentZoom(newInitDocumentZoom);
-      } else {
+      } else if ($('#document-container').get(0) !== undefined) {
         const {
           scrollHeight, offsetHeight, scrollTop,
         } = $('#document-container').get(0);
@@ -621,7 +621,7 @@ const DocumentPage = ({
   }, []);
 
   useEffect(() => {
-    if (session && !loading && document && !documentLoading && $('#document-container').length !== 0) {
+    if (session && !loading && document && !documentLoading && $('#document-container').get(0) !== undefined) {
       // if the footer height changes we want to make sure the scrollTop value of the document
       // container is at the complete buttom if the footer has a height other than 0 meaning
       // that it is showing
@@ -644,7 +644,7 @@ const DocumentPage = ({
     // eslint-disable-next-line no-undef
     const channelWidth = (window.innerWidth - documentWidth - (2 * extraMargin)) / 2;
     setExtraWidth(channelWidth < minChannelWidth ? (minChannelWidth - channelWidth) * 2 : 0);
-    if ($('#document-container').length !== 0) {
+    if ($('#document-container').get(0) !== undefined) {
       const {
         scrollHeight, offsetHeight, scrollTop,
       } = $('#document-container').get(0);
@@ -653,7 +653,7 @@ const DocumentPage = ({
   }, [documentZoom]);
 
   useEffect(() => {
-    if (!initializedXScollPosition && session && !loading && document && !documentLoading && $('#document-container').length !== 0) {
+    if (!initializedXScollPosition && session && !loading && document && !documentLoading && $('#document-container').get(0) !== undefined) {
       const { scrollWidth, offsetWidth } = $('#document-container').get(0);
       if (scrollWidth > offsetWidth) {
         $('#document-container').scrollLeft((scrollWidth - offsetWidth) / 2);
@@ -663,7 +663,7 @@ const DocumentPage = ({
   }, [extraWidth]);
 
   useEffect(() => {
-    if (session && !loading && document && !documentLoading && $('#document-container').length !== 0) {
+    if (session && !loading && document && !documentLoading && $('#document-container').get(0) !== undefined) {
       const {
         scrollWidth, offsetWidth,
       } = $('#document-container').get(0);

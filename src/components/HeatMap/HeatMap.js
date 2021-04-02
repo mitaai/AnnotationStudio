@@ -20,7 +20,7 @@ const HeatMap = ({
   const [documentHeight, setDocumentHeight] = useState(undefined);
   const [initDocumentScrollHeight, setInitDocumentScrollHeight] = useState(undefined);
   const lineHeight = 18;
-  const documentScrollHeight = initDocumentScrollHeight !== undefined ? $('#document-container').get(0).scrollHeight : undefined;
+  const documentScrollHeight = initDocumentScrollHeight !== undefined && $('#document-container').get(0) !== undefined ? $('#document-container').get(0).scrollHeight : undefined;
   const resizeHeatMap = (setDocumentH, setInitDocumentScrollH) => {
     const { scrollHeight, offsetHeight } = $('#document-container').get(0);
     const footerH = $('#document-container').hasClass('has-footer') ? $('.as-footer').get(0).offsetHeight : 0;
@@ -45,7 +45,7 @@ const HeatMap = ({
   }, []);
 
   useEffect(() => {
-    if (annotationsLoaded && $('#document-container').length !== 0 && documentHeight === undefined && documentScrollHeight === undefined) {
+    if (annotationsLoaded && $('#document-container').get(0) !== undefined && documentHeight === undefined && documentScrollHeight === undefined) {
       const { scrollHeight, offsetHeight } = $('#document-container').get(0);
       const footerH = $('#document-container').hasClass('has-footer') ? $('.as-footer').get(0).offsetHeight : 0;
       setDocumentHeight(offsetHeight + footerH + extraHeight);
@@ -63,7 +63,7 @@ const HeatMap = ({
     : 1;
   const minStrokeHeight = 1;
   const documentContainerPaddingTop = 25;
-  const offsetTop = -documentContainerPaddingTop + ($('#document-container').offset() === undefined
+  const offsetTop = -documentContainerPaddingTop + ($('#document-container').get(0) === undefined
     ? 0
     : $('#document-container').offset().top);
   const granularity = lineHeight * scaleFactor >= minStrokeHeight
