@@ -31,7 +31,7 @@ export default function UnsavedChangesToast({
               Scroll to
             </span>
             {' '}
-            and save the annotation before editing another annotation.
+            and save the annotation before editing or creating another annotation.
             {' '}
           </Toast.Body>
         </Toast>
@@ -39,6 +39,7 @@ export default function UnsavedChangesToast({
       <style jsx global>
         {`
           #unsaved-changes-toast {
+            top: 150px;
             position: absolute;
             z-index: 5;
             left: 50vw;
@@ -47,6 +48,7 @@ export default function UnsavedChangesToast({
 
           #unsaved-changes-toast > .toast {
             max-width: 645px;
+            border: 1px solid #015999;
           }
               
         `}

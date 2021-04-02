@@ -4,7 +4,9 @@
 /* eslint-disable no-restricted-syntax */
 import React, { useState, useEffect, useRef } from 'react';
 import $ from 'jquery';
-import { Overlay, Tooltip, Toast } from 'react-bootstrap';
+import {
+  Overlay, Tooltip, Toast, Card,
+} from 'react-bootstrap';
 import {
   ArchiveFill, Pen, PencilFill, ChatLeftTextFill,
 } from 'react-bootstrap-icons';
@@ -12,19 +14,7 @@ import {
   createTextQuoteSelector,
   highlightRange,
 } from 'apache-annotator/dom';
-
-const debounce = (func, wait, options) => {
-  let timeout;
-  return function executedFunction() {
-    const later = (opts) => {
-      clearTimeout(timeout);
-      func(opts);
-    };
-
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait, options);
-  };
-};
+import { debounce, RID } from '../../utils/docUIUtils';
 
 const highlightText = async (obj, domElement) => {
   const s = createTextQuoteSelector(obj.selector);
@@ -95,18 +85,9 @@ const customDescibeTextQuote = async (range, scope) => {
 };
 
 
-const RID = () => {
-  const c = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let rid = '';
-  for (let i = 0; i < 15; i += 1) {
-    const r = Math.random() * c.length;
-    rid += c.substring(r, r + 1);
-  }
-  return rid;
-};
-
-
 export default function Document({
+  setShowUnsavedChangesToast,
+  annotationIdBeingEdited,
   annotations,
   setChannelAnnotations,
   addActiveAnnotation,
@@ -114,6 +95,7 @@ export default function Document({
   user,
   addAnnotationToChannels,
   documentToAnnotate,
+  documentZoom,
   annotateDocument,
   displayAnnotationsInChannels,
   setAlerts,
@@ -298,6 +280,7 @@ export default function Document({
     annotationBeginningPosition.top += $('#document-container').scrollTop();
     annotationEndingPosition.top += $('#document-container').scrollTop();
     const annotateStartPositionSpan = $('#annotate-start-position-span').offset();
+    annotateStartPositionSpan.left += $('#document-container').scrollLeft();
     annotateStartPositionSpan.top += $('#document-container').scrollTop();
     // eslint-disable-next-line no-undef
     const side = (annotateStartPositionSpan.left < window.innerWidth / 2)
@@ -347,8 +330,16 @@ export default function Document({
     };
 
     addAnnotationToChannels(side, newAnnotation);
-    setSelectedTextToAnnotate(true);
+    setSelectedTextToAnnotate(side);
   };
+
+  useEffect(() => {
+    if (selectedTextToAnnotate === undefined) { return; }
+    const { scrollWidth } = $('#document-container').get(0);
+    $('#document-container').animate({
+      scrollLeft: selectedTextToAnnotate === 'left' ? '0px' : `${10 + scrollWidth - $('#document-container').width()}px`,
+    }, 750);
+  }, [selectedTextToAnnotate]);
 
   useEffect(() => {
     if (documentToAnnotate && documentToAnnotate.text) {
@@ -388,7 +379,7 @@ export default function Document({
         // to annotate then don't remove class active from a text that was selected
         // otherwise the selection change so any text that was selected by the user
         // is no longer needed so we need to remove styling
-          if (!selectedTextToAnnotate) {
+          if (selectedTextToAnnotate === undefined) {
           // if we are making a new selection we need to make sure all old selections are removed
             $('.text-currently-being-annotated').removeClass('active');
             $('#document-content-container').removeClass('unselectable');
@@ -425,7 +416,25 @@ export default function Document({
     }
   });
 
+  useEffect(() => {
+    // when the document is scrolled it updates the position of the Annotation Pen Tooltip so
+    // that it stays in the correct spot as we zoom in and out of the document
+    const st = $('#document-container').scrollTop();
+    $('#document-container').scrollTop(st + 1);
+    $('#document-container').scrollTop(st);
+  }, [documentZoom]);
 
+  const documentContentContainer = (
+    <Card
+      id="document-card-container"
+    >
+      <Card.Body>
+        <div id="document-content-container" ref={myRef}>
+          <div dangerouslySetInnerHTML={{ __html: documentToAnnotate ? documentToAnnotate.text : '' }} />
+        </div>
+      </Card.Body>
+    </Card>
+  );
   return (
     <>
       <div id="show-cannot-annotate-document-toast-container">
@@ -487,17 +496,15 @@ export default function Document({
           </Toast.Body>
         </Toast>
       </div>
-
-
-      <div id="document-content-container" ref={myRef}>
-        <div dangerouslySetInnerHTML={{ __html: documentToAnnotate ? documentToAnnotate.text : '' }} />
-      </div>
+      {documentContentContainer}
       <Overlay id="annotate-document-overlay" target={target} show={show} placement="top">
         {(props) => (
           <Tooltip
             id="annotate-document-tooltip"
             onMouseDown={async () => {
-              if (!['draft', 'archived'].includes(documentToAnnotate.state)) {
+              if (annotationIdBeingEdited !== undefined) {
+                setShowUnsavedChangesToast(true);
+              } else if (!['draft', 'archived'].includes(documentToAnnotate.state)) {
                 const rid = RID();
                 await annotateDocument(selector, rid);
 

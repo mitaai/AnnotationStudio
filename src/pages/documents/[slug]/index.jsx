@@ -2,14 +2,10 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-restricted-syntax */
-import { useState, useEffect } from 'react';
-import { isMobile } from 'react-device-detect';
+import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/client';
 import $ from 'jquery';
 import {
-  Row,
-  Col,
-  Card,
   Modal,
   ProgressBar,
 } from 'react-bootstrap';
@@ -18,6 +14,7 @@ import {
   highlightRange,
 } from 'apache-annotator/dom';
 import unfetch from 'unfetch';
+import debounce from 'lodash.debounce';
 import HeatMap from '../../../components/HeatMap';
 import Layout from '../../../components/Layout';
 import LoadingSpinner from '../../../components/LoadingSpinner';
@@ -35,52 +32,8 @@ import { getGroupById } from '../../../utils/groupUtil';
 import { FirstNameLastInitial } from '../../../utils/nameUtil';
 import AnnotationsOverlay from '../../../components/AnnotationsOverlay';
 import UnsavedChangesToast from '../../../components/UnsavedChangesToast/UnsavedChangesToast';
+import adjustLine from '../../../utils/docUIUtils';
 
-
-const adjustLine = (from, to, line) => {
-  if (from === undefined || to === undefined || line === undefined) { return; }
-  const fT = from.offsetTop + from.offsetHeight / 2;
-  const tT = to.offsetTop 	 + to.offsetHeight / 2;
-  const fL = from.offsetLeft + from.offsetWidth / 2;
-  const tL = to.offsetLeft 	 + to.offsetWidth / 2;
-
-  const CA = Math.abs(tT - fT);
-  const CO = Math.abs(tL - fL);
-  const H = Math.sqrt(CA * CA + CO * CO);
-  let ANG = (180 / Math.PI) * Math.acos(CA / H);
-  let top;
-  let left;
-
-  if (tT > fT) {
-    top = (tT - fT) / 2 + fT;
-  } else {
-    top = (fT - tT) / 2 + tT;
-  }
-  if (tL > fL) {
-    left = (tL - fL) / 2 + fL;
-  } else {
-    left = (fL - tL) / 2 + tL;
-  }
-
-  if (
-    (fT < tT && fL < tL)
-    || (tT < fT && tL < fL)
-    || (fT > tT && fL > tL)
-    || (tT > fT && tL > fL)
-  ) {
-    ANG *= -1;
-  }
-  top -= H / 2;
-
-  line.style['-webkit-transform'] = `rotate(${ANG}deg)`;
-  line.style['-moz-transform'] = `rotate(${ANG}deg)`;
-  line.style['-ms-transform'] = `rotate(${ANG}deg)`;
-  line.style['-o-transform'] = `rotate(${ANG}deg)`;
-  line.style['-transform'] = `rotate(${ANG}deg)`;
-  line.style.top = `${top}px`;
-  line.style.left = `${left}px`;
-  line.style.height = `${H}px`;
-};
 
 function DeepCopyObj(obj) {
   return JSON.parse(JSON.stringify(obj));
@@ -99,10 +52,43 @@ const DocumentPage = ({
     }
   }
 
+  const documentIsPDF = document && document.uploadContentType && document.uploadContentType.includes('pdf');
+
+  const focusedAnnotationsRef = useRef({ left: null, right: null }).current;
+  const debouncedRepositioning = useRef(
+    debounce((channelAnnotations, setChannelAnnotations) => {
+      if (channelAnnotations.left === null || channelAnnotations.right === null) { return; }
+      for (const s of ['left', 'right']) {
+        for (const anno of channelAnnotations[s]) {
+          const annotationBeginning = $(`#document-content-container span[annotation-id='${anno._id}'] .annotation-beginning-marker`);
+          const annotationBeginningPositionTop = annotationBeginning.offset().top + $('#document-container').scrollTop();
+          const annotationBeginningPositionLeft = annotationBeginning.offset().left + $('#document-container').scrollLeft();
+          anno.position.left = annotationBeginningPositionLeft;
+          anno.position.top = annotationBeginningPositionTop;
+        }
+      }
+
+      setChannelAnnotations(DeepCopyObj(channelAnnotations));
+      // for some reason the heat map is not updating the way it should
+      // on the first state change so I put this second state change
+      // to make sure the heat map looks correct
+      setTimeout((obj) => {
+        setChannelAnnotations(obj);
+      }, 1000, DeepCopyObj(channelAnnotations));
+    }, 750),
+  ).current;
+
+  const [documentLoading, setDocumentLoading] = useState(true);
+  const [
+    initializedDocumentScrollEventListener,
+    setInitializedDocumentScrollEventListener,
+  ] = useState(false);
+  const [initializedXScollPosition, setInitializedXScollPosition] = useState(false);
   const [alerts, setAlerts] = useState(initAlerts || []);
   const [documentHighlightedAndLoaded, setDocumentHighlightedAndLoaded] = useState(false);
   const [annotationIdBeingEdited, setAnnotationIdBeingEdited] = useState();
   const [showUnsavedChangesToast, setShowUnsavedChangesToast] = useState();
+  const [documentZoom, setDocumentZoom] = useState(100);
   const [activeAnnotations, setActiveAnnotations] = useState({ annotations: [], target: null });
   const [channelAnnotations, setChannelAnnotations] = useState({ left: null, right: null });
   const [expandedAnnotations, setExpandedAnnotations] = useState([]);
@@ -122,8 +108,8 @@ const DocumentPage = ({
   const [
     annotationChannel2Loaded, setAnnotationChannel2Loaded,
   ] = useState(annotations.length === 0);
-  const minDisplayWidth = 1150;
   // popovers for mobile
+  const isMobile = false; // placeholder for when we have a mobile version of site
   // eslint-disable-next-line no-unused-vars
   const [displayAnnotationsInChannels, setDisplayAnnotationsInChannels] = useState(!isMobile);
   const [
@@ -138,6 +124,24 @@ const DocumentPage = ({
   const [groupIntersection, setGroupIntersection] = useState();
   // other users this user can share annotations with, generated from groupIntersection
   const [membersIntersection, setMembersIntersection] = useState([]);
+
+  const [extraWidth, setExtraWidth] = useState(0);
+  const extraMarginGrowthFactor = 3.5;
+  const extraMargin = (documentZoom - 100) * extraMarginGrowthFactor;
+  const minDisplayWidth = 0;
+  const documentWidth = 750;
+  const minChannelWidth = (1400 - documentWidth) / 2;
+  const minHeaderHeight = 121;
+  const [headerHeight, setHeaderHeight] = useState(minHeaderHeight);
+  const [footerHeight, setFooterHeight] = useState(0);
+  const footerHeightRef = useRef(0);
+  const debounceSetFooterHeight = useRef(
+    debounce((setFooterH, footerH, footerHRef) => {
+      footerHRef.current = footerH;
+      setFooterH(footerH);
+    }, 250),
+  ).current;
+
 
   const expandAnnotation = (aid, expand) => {
     const aidExistInList = expandedAnnotations.includes(aid);
@@ -306,7 +310,7 @@ const DocumentPage = ({
 
 
     // updating annotation channel data with new annotation
-
+    setAnnotationIdBeingEdited(newAnnotation.editing ? newAnnotation._id : undefined);
     const newChannelAnnotations = DeepCopyObj(channelAnnotations);
     newChannelAnnotations[side].splice(indexForNewAnnotation, 0, newAnnotation);
     setChannelAnnotations(newChannelAnnotations);
@@ -314,11 +318,15 @@ const DocumentPage = ({
   };
 
   const deleteAnnotationFromChannels = (side, annotationID) => {
+    if (focusedAnnotationsRef[side] === annotationID) {
+      focusedAnnotationsRef[side] = null;
+    }
     const annotationIndex = channelAnnotations[side]
       .findIndex(
         (annotation) => annotation._id === annotationID,
       );
 
+    setAnnotationIdBeingEdited(); // set it to undefined because there is no annotation being edited
     const newChannelAnnotations = DeepCopyObj(channelAnnotations);
     newChannelAnnotations[side].splice(annotationIndex, 1);
     setChannelAnnotations(newChannelAnnotations);
@@ -334,20 +342,29 @@ const DocumentPage = ({
     // we want to focus on in the annotations array
     const focusIndex = annos.findIndex((annotation) => annotation._id === focusID);
 
-
+    if (focusIndex !== -1) {
+      focusedAnnotationsRef[side] = focusID;
+    } else {
+      return;
+    }
+    // these constants help control the first line and its depth into the document which then is
+    // replaced by a horitzontal line that from their goes to the exact position of the annotation
+    const smallestDistanceFromEdgeOfScreen = 27;
+    const annotationDistanceFromEdgeOfScreen = $(`#annotation-channel-${side}`).width() - $(`#document-container #${focusID}.annotation-card-container`).width() - smallestDistanceFromEdgeOfScreen;
     // first we need to focus the annotation and then place all other
     // annotations after it under it
-    const tempTopAdjustment = 0;
+    const documentZoomTopAdjustment = (documentZoom - 100) * 0.1;
     const documentContainerOffset = $('#document-container').offset();
     let lastHighestPoint = -1000;
     const marginBottom = 8;
     const adjustmentTopNumber = 6;
     let top;
     let trueTop;
-    const offsetLeftForLine1 = side === 'left'
-      ? $('#document-card-container').offset().left + 25
-      : -40;
+    const offsetLeftForLine1 = (side === 'left'
+      ? $('#document-card-container').offset().left + 40 - (1.1 * annotationDistanceFromEdgeOfScreen) + $('#document-container').scrollLeft()
+      : -70);
     for (let i = focusIndex; i < annos.length; i += 1) {
+      if (annos[i] === undefined) { continue; }
       if (documentFilters.annotationIds[side] === null
         || (!documentFilters.annotationIds[side].includes(annos[i]._id) && !annos[i].new)) {
         continue;
@@ -355,11 +372,11 @@ const DocumentPage = ({
 
 
       const offsetLeftForLine2 = side === 'left'
-        ? annos[i].position.left
-        : annos[i].position.left - $(`#document-container #${annos[i]._id}`).offset().left;
+        ? annos[i].position.left - annotationDistanceFromEdgeOfScreen - 10
+        : annos[i].position.left - $(`#document-container #${annos[i]._id}`).offset().left - $('#document-container').scrollLeft();
       trueTop = annos[i].position.top
         - documentContainerOffset.top
-        + tempTopAdjustment
+        + documentZoomTopAdjustment
         - adjustmentTopNumber;
       if (lastHighestPoint > trueTop) {
         top = lastHighestPoint + marginBottom;
@@ -407,31 +424,31 @@ const DocumentPage = ({
     // current top position of the focused index annotation
     let lastLowestPoint = annos[focusIndex].position.top
       - documentContainerOffset.top
-      + tempTopAdjustment
       - adjustmentTopNumber;
     for (let i = focusIndex - 1; i >= 0; i -= 1) {
+      if (annos[i] === undefined) { continue; }
       if (documentFilters.annotationIds[side] === null
         || (!documentFilters.annotationIds[side].includes(annos[i]._id) && !annos[i].new)) {
         continue;
       }
 
       const offsetLeftForLine2 = side === 'left'
-        ? annos[i].position.left
-        : annos[i].position.left - $(`#document-container #${annos[i]._id}`).offset().left;
+        ? annos[i].position.left - annotationDistanceFromEdgeOfScreen - 10
+        : annos[i].position.left - $(`#document-container #${annos[i]._id}`).offset().left - $('#document-container').scrollLeft();
       // this is where the annotation wants to be
       trueTop = annos[i].position.top
         - documentContainerOffset.top
-        + tempTopAdjustment
+        + documentZoomTopAdjustment
         - adjustmentTopNumber;
+      // if where you want to be is greater than where you can be then we will set you
+      // to where you can be
       // if where you are is greater than where you can be then we have to set your
       // position to where you can be. Otherwise just set your position to where you are
-      if (
-        lastLowestPoint - $(`#document-container #${annos[i]._id}`).height() - marginBottom
-        < $(`#document-container #${annos[i]._id}`).position().top
-      ) {
+      if (lastLowestPoint - $(`#document-container #${annos[i]._id}`).height() - marginBottom
+      < trueTop) {
         top = lastLowestPoint - $(`#document-container #${annos[i]._id}`).height() - marginBottom;
       } else {
-        top = $(`#document-container #${annos[i]._id}`).position().top;
+        top = trueTop;
       }
 
       lastLowestPoint = top;
@@ -494,14 +511,6 @@ const DocumentPage = ({
     }
   }, [annotationIdToScrollTo, documentFilters]);
 
-  useEffect(() => {
-    // eslint-disable-next-line no-undef
-    window.addEventListener('resize', () => {
-      // eslint-disable-next-line no-undef
-      setDisplayAnnotationsInChannels(window.innerWidth > minDisplayWidth && !isMobile);
-    });
-  });
-
   async function getIntersectionOfGroupsAndUsers() {
     // when session loaded, get intersection of groups and the users that applies to
     if (session && document && !groupIntersection) {
@@ -525,17 +534,60 @@ const DocumentPage = ({
     }
   }
 
+  const windowResize = useRef(
+    debounce((setDZ) => {
+      setDZ((prevDocumentZoom) => prevDocumentZoom + 1);
+      setDZ((prevDocumentZoom) => prevDocumentZoom - 1);
+    }, 750),
+  ).current;
+
   useEffect(() => {
     getIntersectionOfGroupsAndUsers();
   }, [session]);
 
+  const calculateHeaderAndFooterHeight = (displayFooter, onScroll) => {
+    const headerH = $('.as-header').get(0).offsetHeight;
+    const footerH = displayFooter ? $('.as-footer').get(0).offsetHeight : 0;
+    if (!onScroll) {
+      setHeaderHeight(headerH < minHeaderHeight ? minHeaderHeight : headerH);
+    }
+
+    debounceSetFooterHeight(setFooterHeight, footerH, footerHeightRef);
+  };
+
+  const documentContainerResized = () => {
+    windowResize(setDocumentZoom);
+    if ($('#document-container').get(0) !== undefined) {
+      const {
+        scrollHeight, offsetHeight, scrollTop,
+      } = $('#document-container').get(0);
+      calculateHeaderAndFooterHeight(scrollHeight <= offsetHeight + scrollTop);
+    }
+    // eslint-disable-next-line no-undef
+    setDisplayAnnotationsInChannels(window.innerWidth > minDisplayWidth && !isMobile);
+  };
+
   useEffect(() => {
     if (annotationChannel1Loaded && annotationChannel2Loaded) {
       setDocumentFilters({ ...documentFilters, annotationsLoaded: true });
+      // when we load the page for the first time we need to check what the width of the screen
+      // is and if it is smaller than the document width then the default value of
+      // documentZoom must be adjusted
+      // eslint-disable-next-line no-undef
+      const ww = window.innerWidth;
+      if (ww < documentWidth) {
+        const newInitDocumentZoom = 100 - Math.floor(
+          ((documentWidth - ww) / (2 * extraMarginGrowthFactor)),
+        );
+        setDocumentZoom(newInitDocumentZoom);
+      } else if ($('#document-container').get(0) !== undefined) {
+        const {
+          scrollHeight, offsetHeight, scrollTop,
+        } = $('#document-container').get(0);
+        calculateHeaderAndFooterHeight(scrollHeight <= offsetHeight + scrollTop);
+      }
     }
   }, [annotationChannel1Loaded, annotationChannel2Loaded]);
-
-  const [documentLoading, setDocumentLoading] = useState(true);
 
   const cloudfrontUrl = process.env.NEXT_PUBLIC_SIGNING_URL.split('/url')[0];
 
@@ -563,9 +615,67 @@ const DocumentPage = ({
     }
   }, [document]);
 
+  useEffect(() => {
+    // eslint-disable-next-line no-undef
+    window.addEventListener('resize', () => {
+      documentContainerResized();
+    });
+  }, []);
+
+  useEffect(() => {
+    debouncedRepositioning(
+      channelAnnotations,
+      setChannelAnnotations,
+    );
+    // eslint-disable-next-line no-undef
+    const channelWidth = (window.innerWidth - documentWidth - (2 * extraMargin)) / 2;
+    setExtraWidth(channelWidth < minChannelWidth ? (minChannelWidth - channelWidth) * 2 : 0);
+    if ($('#document-container').get(0) !== undefined) {
+      const {
+        scrollHeight, offsetHeight, scrollTop,
+      } = $('#document-container').get(0);
+      calculateHeaderAndFooterHeight(scrollHeight <= offsetHeight + scrollTop);
+    }
+  }, [documentZoom]);
+
+  useEffect(() => {
+    if (!initializedXScollPosition && session && !loading && document && !documentLoading && $('#document-container').get(0) !== undefined) {
+      const { scrollWidth, offsetWidth } = $('#document-container').get(0);
+      if (scrollWidth > offsetWidth) {
+        $('#document-container').scrollLeft((scrollWidth - offsetWidth) / 2);
+        setInitializedXScollPosition(true);
+      }
+    }
+  }, [extraWidth]);
+
+  useEffect(() => {
+    if (session && !loading && document && !documentLoading && $('#document-container').get(0) !== undefined) {
+      const {
+        scrollWidth, offsetWidth,
+      } = $('#document-container').get(0);
+      if (scrollWidth > offsetWidth) {
+        $('#document-container').scrollLeft((scrollWidth - offsetWidth) / 2);
+      }
+      if (!initializedDocumentScrollEventListener) {
+        // adding an event listener for when the document container is scrolled so we know
+        // when we reach the bottom of the document container scroll bar
+        $('#document-container').get(0).addEventListener('scroll', () => {
+          const { scrollHeight, offsetHeight, scrollTop } = $('#document-container').get(0);
+          // this scalefactor allows for the scroll bar not to be at the very bottom for the footer
+          // to persist if it already is showing but if it is not already showing the only way to
+          // make it show is to scroll to the very bottom
+          const scaleFactor = footerHeightRef.current > 0 ? 1.1 : 1;
+          const atTheBottomOfDocument = scrollHeight - scrollTop < (offsetHeight * scaleFactor);
+          calculateHeaderAndFooterHeight(atTheBottomOfDocument, true);
+        });
+        setInitializedDocumentScrollEventListener(true);
+      }
+    }
+  }, [session, loading, document, documentLoading]);
+
   return (
     <DocumentActiveAnnotationsContext.Provider value={[activeAnnotations, setActiveAnnotations]}>
-      <DocumentContext.Provider value={document}>
+      <DocumentContext.Provider value={[document, documentZoom, setDocumentZoom]}>
         <DocumentAnnotationsContext.Provider
           value={[
             channelAnnotations,
@@ -605,67 +715,87 @@ const DocumentPage = ({
                     onClose={() => { setShowUnsavedChangesToast(); }}
                     scrollToAnnotation={scrollToAnnotation}
                   />
-                  <HeatMap pdf={document.uploadContentType && document.uploadContentType.includes('pdf')} />
+                  <HeatMap
+                    annotationsLoaded={annotationChannel1Loaded && annotationChannel2Loaded}
+                    documentZoom={documentZoom}
+                    footerHeight={footerHeight}
+                  />
                   {!displayAnnotationsInChannels && <AnnotationsOverlay />}
-                  <Row id="document-container">
-                    <AnnotationChannel
-                      show={displayAnnotationsInChannels}
-                      deleteAnnotationFromChannels={deleteAnnotationFromChannels}
-                      setAnnotationChannelLoaded={setAnnotationChannel1Loaded}
-                      focusOnAnnotation={moveAnnotationsToCorrectSpotBasedOnFocus}
-                      side="left"
-                      annotations={channelAnnotations.left}
-                      user={session ? session.user : undefined}
-                      showMoreInfoShareModal={showMoreInfoShareModal}
-                      setShowMoreInfoShareModal={setShowMoreInfoShareModal}
-                      membersIntersection={membersIntersection}
-                      alerts={alerts}
-                      setAlerts={setAlerts}
-                    />
-                    <Col style={{ minWidth: 750, maxWidth: 750 }}>
-                      <Card id="document-card-container">
-                        <Card.Body>
-                          <Document
-                            addActiveAnnotation={addActiveAnnotation}
-                            removeActiveAnnotation={removeActiveAnnotation}
-                            displayAnnotationsInChannels={displayAnnotationsInChannels}
-                            setChannelAnnotations={
-                              (annos) => {
-                                setChannelAnnotations(annos);
-                                setDocumentHighlightedAndLoaded(true);
-                              }
+
+                  <div id="document-container" className={footerHeight > 0 && 'has-footer'}>
+                    <div id="document-inner-container">
+                      <AnnotationChannel
+                        show={displayAnnotationsInChannels}
+                        deleteAnnotationFromChannels={deleteAnnotationFromChannels}
+                        setAnnotationChannelLoaded={setAnnotationChannel1Loaded}
+                        focusOnAnnotation={moveAnnotationsToCorrectSpotBasedOnFocus}
+                        side="left"
+                        focusedAnnotation={focusedAnnotationsRef.left}
+                        annotations={channelAnnotations.left}
+                        user={session ? session.user : undefined}
+                        showMoreInfoShareModal={showMoreInfoShareModal}
+                        setShowMoreInfoShareModal={setShowMoreInfoShareModal}
+                        membersIntersection={membersIntersection}
+                        alerts={alerts}
+                        setAlerts={setAlerts}
+                      />
+                      <div
+                        id="document-container-col"
+                        style={{
+                          transform: `scale(${documentZoom / 100}) translateY(0px)`,
+                          transformOrigin: 'top center',
+                          minWidth: documentWidth,
+                          maxWidth: documentWidth,
+                          marginLeft: extraMargin,
+                          marginRight: extraMargin,
+                        }}
+                      >
+                        <Document
+                          setShowUnsavedChangesToast={setShowUnsavedChangesToast}
+                          annotationIdBeingEdited={annotationIdBeingEdited}
+                          addActiveAnnotation={addActiveAnnotation}
+                          removeActiveAnnotation={removeActiveAnnotation}
+                          displayAnnotationsInChannels={displayAnnotationsInChannels}
+                          setChannelAnnotations={
+                            (annos) => {
+                              setChannelAnnotations(annos);
+                              setDocumentHighlightedAndLoaded(true);
                             }
-                            annotations={annotations}
-                            documentHighlightedAndLoaded={documentHighlightedAndLoaded}
-                            addAnnotationToChannels={addAnnotationToChannels}
-                            annotateDocument={
-                              async (mySelector, annotationID) => {
-                                await highlightTextToAnnotate(mySelector, annotationID);
-                              }
+                          }
+                          annotations={annotations}
+                          documentHighlightedAndLoaded={documentHighlightedAndLoaded}
+                          addAnnotationToChannels={addAnnotationToChannels}
+                          annotateDocument={
+                            async (mySelector, annotationID) => {
+                              await highlightTextToAnnotate(mySelector, annotationID);
                             }
-                            documentToAnnotate={document}
-                            alerts={alerts}
-                            setAlerts={setAlerts}
-                            user={session ? session.user : undefined}
-                          />
-                        </Card.Body>
-                      </Card>
-                    </Col>
-                    <AnnotationChannel
-                      show={displayAnnotationsInChannels}
-                      deleteAnnotationFromChannels={deleteAnnotationFromChannels}
-                      setAnnotationChannelLoaded={setAnnotationChannel2Loaded}
-                      focusOnAnnotation={moveAnnotationsToCorrectSpotBasedOnFocus}
-                      side="right"
-                      annotations={channelAnnotations.right}
-                      user={session ? session.user : undefined}
-                      showMoreInfoShareModal={showMoreInfoShareModal}
-                      setShowMoreInfoShareModal={setShowMoreInfoShareModal}
-                      membersIntersection={membersIntersection}
-                      alerts={alerts}
-                      setAlerts={setAlerts}
-                    />
-                  </Row>
+                          }
+                          documentToAnnotate={document}
+                          documentZoom={documentZoom}
+                          alerts={alerts}
+                          setAlerts={setAlerts}
+                          user={session ? session.user : undefined}
+                        />
+                      </div>
+                      <AnnotationChannel
+                        show={displayAnnotationsInChannels}
+                        deleteAnnotationFromChannels={deleteAnnotationFromChannels}
+                        setAnnotationChannelLoaded={setAnnotationChannel2Loaded}
+                        focusOnAnnotation={moveAnnotationsToCorrectSpotBasedOnFocus}
+                        side="right"
+                        focusedAnnotation={focusedAnnotationsRef.right}
+                        annotations={channelAnnotations.right}
+                        user={session ? session.user : undefined}
+                        showMoreInfoShareModal={showMoreInfoShareModal}
+                        setShowMoreInfoShareModal={setShowMoreInfoShareModal}
+                        membersIntersection={membersIntersection}
+                        alerts={alerts}
+                        setAlerts={setAlerts}
+                      />
+                    </div>
+
+                  </div>
+
                   <Modal
                     show={!(annotationChannel1Loaded && annotationChannel2Loaded)}
                     backdrop="static"
@@ -717,31 +847,54 @@ const DocumentPage = ({
             </Layout>
             <style jsx global>
               {`
+
+              body {
+                overflow: hidden !important;
+              }
+
               #annotations-header-label {
                 padding: 12px 0px 0px 20px;
               }
 
               #document-container {
-                height: calc(100vh - 230px);
-                overflow-y: scroll;
-                padding: 
-                ${(document && document.uploadContentType && document.uploadContentType.includes('pdf')) ? '0' : '10px 0px'};
+                height: calc(100vh - ${headerHeight + footerHeight}px);
+                transition: height 0.5s;
+                overflow-y: scroll !important;
+                overflow-x: scroll !important;
+                padding: 25px 0px 15px 0px;
+                scrollbar-color: rgba(0,0,0,0.1) !important;
+              }
+
+              #document-inner-container {
+                display: flex;
+                flex-direction: row;
+                width: calc(100% + ${extraWidth}px);
+              }
+
+              #document-container::-webkit-scrollbar-corner {
+                background: rgba(0,0,0,0) !important;
               }
 
               #document-container::-webkit-scrollbar {
-                background: transparent;
-                width: 10px;
-                border-radius: 8px;
+                background: rgba(0,0,0,0.05) !important;
+                width: 10px !important;
+                height: 10px !important;
+                border-radius: 8px !important;
               }
 
               #document-container::-webkit-scrollbar-thumb {
-                background: rgba(0,0,0,0.1);
-                border: 1px solid rgba(0,0,0,0.6);
-                border-radius: 8px;
+                visibility: visible !important;
+                background: rgba(0,0,0,0.1) !important;
+                border: 1px solid rgba(0,0,0,0.6) !important;
+                border-radius: 8px !important;
               }
 
               #document-container .annotation-channel-container{
-                width: calc(50vw - 375px)
+                height: 0px;
+                flex: 1;
+                position: relative;
+                z-index: 2;
+                top: -25px;
               }
               
               #document-container #annotation-well-card-container {
@@ -753,13 +906,12 @@ const DocumentPage = ({
                 padding: 40px;
                 font-family: 'Times';
                 border-radius: 0px;
-                min-height: 100%;
                 border: none;
-                box-shadow: ${(document && document.uploadContentType && document.uploadContentType.includes('pdf'))
+                box-shadow: ${documentIsPDF
                 ? 'none'
                 : '3px 3px 9px 0px rgba(0,0,0,0.38)'
                 };
-                ${(document && document.uploadContentType && document.uploadContentType.includes('pdf')) ? 'background: none;' : ''}
+                ${documentIsPDF ? 'background: none;' : ''}
               }
 
               #document-container #annotation-well-card-container .card-body {

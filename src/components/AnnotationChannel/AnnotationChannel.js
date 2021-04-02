@@ -3,71 +3,35 @@
 import { useEffect, useContext } from 'react';
 import $ from 'jquery';
 import {
-  Col,
-} from 'react-bootstrap';
-import {
+  DocumentContext,
   DocumentAnnotationsContext,
   DocumentFiltersContext,
 } from '../../contexts/DocumentContext';
 import AnnotationCard from '../AnnotationCard';
+import adjustLine from '../../utils/docUIUtils';
 
-function adjustLine(from, to, line) {
-  if (from === undefined || to === undefined || line === undefined) { return; }
-  const fT = from.offsetTop + from.offsetHeight / 2;
-  const tT = to.offsetTop 	 + to.offsetHeight / 2;
-  const fL = from.offsetLeft + from.offsetWidth / 2;
-  const tL = to.offsetLeft 	 + to.offsetWidth / 2;
 
-  const CA = Math.abs(tT - fT);
-  const CO = Math.abs(tL - fL);
-  const H = Math.sqrt(CA * CA + CO * CO);
-  let ANG = (180 / Math.PI) * Math.acos(CA / H);
-  let top;
-  let left;
-
-  if (tT > fT) {
-    top = (tT - fT) / 2 + fT;
-  } else {
-    top = (fT - tT) / 2 + tT;
-  }
-  if (tL > fL) {
-    left = (tL - fL) / 2 + fL;
-  } else {
-    left = (fL - tL) / 2 + tL;
-  }
-
-  if ((fT < tT && fL < tL)
-  || (tT < fT && tL < fL)
-  || (fT > tT && fL > tL)
-  || (tT > fT && tL > fL)) {
-    ANG *= -1;
-  }
-  top -= H / 2;
-
-  line.style['-webkit-transform'] = `rotate(${ANG}deg)`;
-  line.style['-moz-transform'] = `rotate(${ANG}deg)`;
-  line.style['-ms-transform'] = `rotate(${ANG}deg)`;
-  line.style['-o-transform'] = `rotate(${ANG}deg)`;
-  line.style['-transform'] = `rotate(${ANG}deg)`;
-  line.style.top = `${top}px`;
-  line.style.left = `${left}px`;
-  line.style.height = `${H}px`;
-}
-
-function PlaceAnnotationsInCorrectSpot(annotations, side) {
-  const tempTopAdjustment = 0;
+function PlaceAnnotationsInCorrectSpot(annotations, side, documentZoom) {
+  if (annotations.length === 0) { return; }
+  const smallestDistanceFromEdgeOfScreen = 27;
+  const annotationDistanceFromEdgeOfScreen = $(`#annotation-channel-${side}`).width() - $(`#document-container #${annotations[0]._id}.annotation-card-container`).width() - smallestDistanceFromEdgeOfScreen;
+  const documentZoomTopAdjustment = (documentZoom - 100) * 0.1;
   const documentContainerOffset = $('#document-container').offset();
   let lastHighestPoint = -1000;
   const marginBottom = 8;
   const adjustmentTopNumber = 6;
   let top;
   let trueTop;
-  const offsetLeftForLine1 = side === 'left' ? $('#document-card-container').offset().left + 25 : -40;
+  const offsetLeftForLine1 = (side === 'left'
+    ? $('#document-card-container').offset().left + 40 - (1.1 * annotationDistanceFromEdgeOfScreen) + $('#document-container').scrollLeft()
+    : -70);
   for (let i = 0; i < annotations.length; i += 1) {
-    const offsetLeftForLine2 = side === 'left' ? annotations[i].position.left : annotations[i].position.left - $(`#document-container #${annotations[i]._id}`).offset().left;
+    const offsetLeftForLine2 = side === 'left'
+      ? annotations[i].position.left - annotationDistanceFromEdgeOfScreen - 10
+      : annotations[i].position.left - $(`#document-container #${annotations[i]._id}`).offset().left - $('#document-container').scrollLeft();
     trueTop = annotations[i].position.top
     - documentContainerOffset.top
-    + tempTopAdjustment
+    + documentZoomTopAdjustment
     - adjustmentTopNumber;
     if (lastHighestPoint > trueTop) {
       top = lastHighestPoint + marginBottom;
@@ -107,6 +71,7 @@ const AnnotationChannel = ({
   user,
   deleteAnnotationFromChannels,
   focusOnAnnotation,
+  focusedAnnotation,
   showMoreInfoShareModal,
   setShowMoreInfoShareModal,
   membersIntersection,
@@ -114,6 +79,7 @@ const AnnotationChannel = ({
   alerts,
   setAlerts,
 }) => {
+  const [, documentZoom] = useContext(DocumentContext);
   const [channelAnnotations, , expandedAnnotations] = useContext(DocumentAnnotationsContext);
   const [documentFilters] = useContext(DocumentFiltersContext);
   // first we filter annotations if there are any filters applied
@@ -134,11 +100,25 @@ const AnnotationChannel = ({
     return a.position.top - b.position.top;
   });
 
+  const focusOrPlaceAnnotations = () => {
+    if (show && channelAnnotations[side] !== null) {
+      if (focusedAnnotation !== null
+        && (
+          documentFilters.annotationIds[side] === null
+          || documentFilters.annotationIds[side].includes(focusedAnnotation)
+        )
+      ) {
+        focusOnAnnotation(side, focusedAnnotation);
+      } else {
+        PlaceAnnotationsInCorrectSpot(sortedAnnotations, side, documentZoom);
+      }
+    }
+  };
+
   useEffect(() => {
     if (channelAnnotations[side] !== null) {
-      if (show) {
-        PlaceAnnotationsInCorrectSpot(sortedAnnotations, side);
-      }
+      // this makes sure that the focus of annotation is preserved between rerenders
+      focusOrPlaceAnnotations();
 
       // once everything is placed in the correct spot we need to make sure the correct text has the
       // highlights it needs and remove highlights from text that doesn't need it
@@ -161,7 +141,7 @@ const AnnotationChannel = ({
   }, [channelAnnotations, documentFilters]);
 
   return show && (
-  <Col className="annotation-channel-container">
+  <div className="annotation-channel-container">
     <div id={`annotation-channel-${side}`}>
       <div>
         {sortedAnnotations.map((annotation) => (
@@ -187,7 +167,7 @@ const AnnotationChannel = ({
         `}
       </style>
     </div>
-  </Col>
+  </div>
   );
 };
 
