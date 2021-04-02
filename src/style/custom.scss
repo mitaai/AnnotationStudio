@@ -365,20 +365,20 @@ $breadcrumb-bg: transparent;
 }
 
 .annotation-card-container.new-annotation {
-  border: 1px solid theme-color("primary");
+  border: 1px solid theme-color("primary") !important;
 }
 
 .annotation-card-container.new-annotation .line1, .annotation-card-container.new-annotation .line2 {
-  background-color: theme-color("primary");
+  background-color: theme-color("primary") !important;
   z-index: 3;
 }
 
 .annotation-card-container.new-annotation .annotation-pointer-background-left {
-  border-left-color: theme-color("primary");
+  border-left-color: theme-color("primary") !important;
 }
 
 .annotation-card-container.new-annotation .annotation-pointer-background-right {
-  border-right-color: theme-color("primary");
+  border-right-color: theme-color("primary") !important;
 }
 
 .annotation-body textarea:focus {
@@ -388,4 +388,8 @@ $breadcrumb-bg: transparent;
 
 .token-badge {
   border: 1px solid theme-color("primary");
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  background-color: theme-color("primary") !important;
 }

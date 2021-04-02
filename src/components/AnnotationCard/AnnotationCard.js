@@ -975,10 +975,6 @@ function AnnotationCard({
             z-index: 3;
         }
 
-        .annotation-card-container.new-annotation .line1, .annotation-card-container.new-annotation .line2 {
-          background: rgba(0,123,255,0.5) !important;
-        }
-
         .annotation-card-container.active .annotation-pointer-background-left {
             border-left-color: rgba(255, 165, 10, 0.5);
         }
@@ -1004,10 +1000,6 @@ function AnnotationCard({
 
         .annotation-card-container.active {
           border-color: rgba(255, 165, 10, 0.5);
-        }
-
-        .annotation-card-container.new-annotation {
-          border-color: rgba(0,123,255,0.5) !important;
         }
 
         .btn-save-annotation-edits {
@@ -1082,10 +1074,6 @@ function AnnotationCard({
             transition: border-left-color 0.5s;
         }
 
-        .annotation-card-container.new-annotation .annotation-pointer-background-left {
-          border-left-color: rgba(0,123,255,0.5) !important;
-        }
-
         .annotation-pointer-left {
             position: absolute;
             right: -19px;
@@ -1106,10 +1094,6 @@ function AnnotationCard({
           border: 10px solid transparent;
           border-right-color: rgb(220,220,220);
           transition: border-right-color 0.5s;
-      }
-
-      .annotation-card-container.new-annotation .annotation-pointer-background-right {
-        border-right-color: rgba(0,123,255,0.5) !important;
       }
 
       .annotation-pointer-right {
