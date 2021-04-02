@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" id="Layer_1"
+	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 69.73 51.02"
+	 style="enable-background:new 0 0 69.73 51.02;" xml:space="preserve">
+<style type="text/css">
+	.as-logo-st0{fill:#FFFFFF;}
+	.as-logo-st1{fill:#FBCD11;}
+	.as-logo-st2{fill:#3F68B1;}
+	.as-logo-st3{fill:#ED1C24;}
+</style>
+<switch>
+	<g>
+		<g transform="translate(-139.889 -164.445)">
+			<g transform="translate(188.426 166.928)">
+				<circle class="as-logo-st0" cx="13.94" cy="41.39" r="7.04"/>
+			</g>
+			<g>
+				<path class="as-logo-st1" d="M188.76,165.59L188.76,165.59c3.37,1.94,4.52,6.25,2.58,9.62c0,0,0,0,0,0l-21.13,36.6
+					c-1.94,3.37-6.25,4.52-9.62,2.58c0,0,0,0,0,0l0,0c-3.37-1.94-4.52-6.25-2.58-9.62c0,0,0,0,0,0l21.13-36.6
+					C181.09,164.8,185.4,163.65,188.76,165.59C188.76,165.59,188.76,165.59,188.76,165.59z"/>
+			</g>
+		</g>
+		<g transform="translate(-139.889 -164.445)">
+			<path class="as-logo-st2" d="M171.71,165.58L171.71,165.58c3.37,1.94,4.52,6.25,2.58,9.62c0,0,0,0,0,0l-21.25,36.81
+				c-1.94,3.36-6.21,4.42-9.5,2.37l0,0l0,0c-3.37-1.94-4.52-6.25-2.58-9.62c0,0,0,0,0,0l21.25-36.81
+				C164.14,164.59,168.42,163.53,171.71,165.58L171.71,165.58z"/>
+		</g>
+		<g transform="translate(-27.11 -2.229)">
+			<g transform="translate(-139.889 -164.445)">
+				<path class="as-logo-st3" d="M233.09,167.7L233.09,167.7c3.37,1.94,4.52,6.25,2.58,9.62c0,0,0,0,0,0l-21.13,36.6
+					c-1.94,3.37-6.25,4.52-9.62,2.58c0,0,0,0,0,0l0,0c-3.37-1.94-4.52-6.25-2.58-9.62c0,0,0,0,0,0l21.13-36.6
+					C225.41,166.91,229.72,165.76,233.09,167.7C233.09,167.7,233.09,167.7,233.09,167.7z"/>
+			</g>
+		</g>
+	</g>
+</switch>
+</svg>

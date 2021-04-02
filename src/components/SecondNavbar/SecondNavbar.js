@@ -137,7 +137,6 @@ const SecondNavbar = ({
       <style jsx global>
         {`
         .second-navbar .breadcrumb {
-          background-color: #f8f9fa !important;
           margin-bottom: 0px;
         }
 
@@ -148,7 +147,6 @@ const SecondNavbar = ({
         .second-navbar #btn-document-more-info {
             float: right;
             margin-left: 5px;
-            color: #007bff;
             cursor: pointer;
         }
 

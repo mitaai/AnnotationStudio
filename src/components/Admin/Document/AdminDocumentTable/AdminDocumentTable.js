@@ -173,7 +173,7 @@ const AdminDocumentTable = ({ document, setAlerts }) => {
               {(document.groups && document.groups.length > 0)
                 ? document.groups.sort().map((group) => (
                   <Badge
-                    variant="info"
+                    variant="primary"
                     className="mr-1"
                     as={Button}
                     href={`/admin/group/${group._id}`}
