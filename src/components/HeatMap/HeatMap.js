@@ -11,19 +11,25 @@ import { DocumentFiltersContext, DocumentAnnotationsContext } from '../../contex
 import { RID } from '../../utils/docUIUtils';
 
 
-const HeatMap = ({ documentZoom }) => {
-  const extraHeight = 28;
-  const resizeHeatMap = useRef(
-    debounce((setDocumentHeight, setInitDocumentScrollHeight) => {
-      setDocumentHeight($('#document-container').height() + extraHeight);
-      setInitDocumentScrollHeight($('#document-container').get(0).scrollHeight);
-    }, 750),
-  ).current;
+const HeatMap = ({
+  annotationsLoaded, documentZoom, footerHeight,
+}) => {
+  // the height of the scroll bar is 10px less than the height of the
+  // document container because the overflow-x scroll bar takes the bottom 10pxs
+  const extraHeight = -10;
   const [documentHeight, setDocumentHeight] = useState(undefined);
   const [initDocumentScrollHeight, setInitDocumentScrollHeight] = useState(undefined);
   const lineHeight = 18;
-  const documentScrollHeight = initDocumentScrollHeight !== undefined ? $('#document-container').get(0).scrollHeight : undefined;
-
+  const documentScrollHeight = initDocumentScrollHeight !== undefined && $('#document-container').get(0) !== undefined ? $('#document-container').get(0).scrollHeight : undefined;
+  const resizeHeatMap = (setDocumentH, setInitDocumentScrollH) => {
+    const { scrollHeight, offsetHeight } = $('#document-container').get(0);
+    const footerH = $('#document-container').hasClass('has-footer') ? $('.as-footer').get(0).offsetHeight : 0;
+    setDocumentH(offsetHeight + footerH + extraHeight);
+    setInitDocumentScrollH(scrollHeight);
+  };
+  const resizeHeatMapDebounced = useRef(
+    debounce(resizeHeatMap, 750),
+  ).current;
   if (initDocumentScrollHeight !== undefined) {
     const h = documentZoom < 100
       ? initDocumentScrollHeight * (documentZoom / 100)
@@ -34,27 +40,30 @@ const HeatMap = ({ documentZoom }) => {
   useEffect(() => {
     // eslint-disable-next-line no-undef
     window.addEventListener('resize', () => {
-      resizeHeatMap(setDocumentHeight, setInitDocumentScrollHeight);
+      resizeHeatMapDebounced(setDocumentHeight, setInitDocumentScrollHeight);
     });
   }, []);
 
   useEffect(() => {
-    if ($('#document-container').length !== 0 && documentHeight === undefined && documentScrollHeight === undefined) {
-      setDocumentHeight($('#document-container').height() + extraHeight);
-      setInitDocumentScrollHeight($('#document-container').get(0).scrollHeight);
+    if (annotationsLoaded && $('#document-container').get(0) !== undefined && documentHeight === undefined && documentScrollHeight === undefined) {
+      const { scrollHeight, offsetHeight } = $('#document-container').get(0);
+      const footerH = $('#document-container').hasClass('has-footer') ? $('.as-footer').get(0).offsetHeight : 0;
+      setDocumentHeight(offsetHeight + footerH + extraHeight);
+      setInitDocumentScrollHeight(scrollHeight);
+      resizeHeatMapDebounced(setDocumentHeight, setInitDocumentScrollHeight);
     }
-  }, [documentZoom]);
+  }, [annotationsLoaded]);
 
   const scaleFactor = (
     documentHeight !== undefined
     && documentScrollHeight !== undefined
     && documentScrollHeight !== 0
   )
-    ? (documentHeight / documentScrollHeight)
+    ? ((documentHeight - footerHeight) / documentScrollHeight)
     : 1;
   const minStrokeHeight = 1;
   const documentContainerPaddingTop = 25;
-  const offsetTop = -documentContainerPaddingTop + ($('#document-container').offset() === undefined
+  const offsetTop = -documentContainerPaddingTop + ($('#document-container').get(0) === undefined
     ? 0
     : $('#document-container').offset().top);
   const granularity = lineHeight * scaleFactor >= minStrokeHeight
@@ -123,7 +132,7 @@ const HeatMap = ({ documentZoom }) => {
       <div
         id="heat-map"
         data-testid="heat-map"
-        style={{ height: (documentHeight === undefined ? 0 : documentHeight) }}
+        style={{ height: (documentHeight === undefined ? 0 : documentHeight - footerHeight) }}
       >
         {map.map((v, i) => (
           <div
@@ -148,6 +157,7 @@ const HeatMap = ({ documentZoom }) => {
           border-radius: 8px;
           z-index: -1;
           right: 1px;
+          transition: height 0.5s;
         }
 
         #heat-map .stroke {

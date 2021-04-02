@@ -12,9 +12,9 @@ function Footer() {
     // eslint-disable-next-line no-undef
     const w = window;
     w.addEventListener('resize', () => {
-      if (w.innerWidth < 875) {
+      if (w.innerWidth < 1000) {
         setMobileView(true);
-      } else if (w.innerWidth >= 875) {
+      } else if (w.innerWidth >= 1000) {
         setMobileView();
       }
     });

@@ -79,6 +79,10 @@ const DocumentPage = ({
   ).current;
 
   const [documentLoading, setDocumentLoading] = useState(true);
+  const [
+    initializedDocumentScrollEventListener,
+    setInitializedDocumentScrollEventListener,
+  ] = useState(false);
   const [initializedXScollPosition, setInitializedXScollPosition] = useState(false);
   const [alerts, setAlerts] = useState(initAlerts || []);
   const [documentHighlightedAndLoaded, setDocumentHighlightedAndLoaded] = useState(false);
@@ -127,8 +131,14 @@ const DocumentPage = ({
   const minDisplayWidth = 0;
   const documentWidth = 750;
   const minChannelWidth = (1400 - documentWidth) / 2;
-
-  const [headerAndFooterHeight, setHeaderAndFooterHeight] = useState(200);
+  const minHeaderHeight = 121;
+  const [headerHeight, setHeaderHeight] = useState(minHeaderHeight);
+  const [footerHeight, setFooterHeight] = useState(0);
+  const debounceSetFooterHeight = useRef(
+    debounce((setFooterH, footerH) => {
+      setFooterH(footerH);
+    }, 250),
+  ).current;
 
 
   const expandAnnotation = (aid, expand) => {
@@ -522,9 +532,38 @@ const DocumentPage = ({
     }
   }
 
+  const windowResize = useRef(
+    debounce((setDZ) => {
+      setDZ((prevDocumentZoom) => prevDocumentZoom + 1);
+      setDZ((prevDocumentZoom) => prevDocumentZoom - 1);
+    }, 750),
+  ).current;
+
   useEffect(() => {
     getIntersectionOfGroupsAndUsers();
   }, [session]);
+
+  const calculateHeaderAndFooterHeight = (displayFooter, onScroll) => {
+    const headerH = $('.as-header').get(0).offsetHeight;
+    const footerH = displayFooter ? $('.as-footer').get(0).offsetHeight : 0;
+    if (!onScroll) {
+      setHeaderHeight(headerH < minHeaderHeight ? minHeaderHeight : headerH);
+    }
+
+    debounceSetFooterHeight(setFooterHeight, footerH);
+  };
+
+  const documentContainerResized = () => {
+    windowResize(setDocumentZoom);
+    if ($('#document-container').get(0) !== undefined) {
+      const {
+        scrollHeight, offsetHeight, scrollTop,
+      } = $('#document-container').get(0);
+      calculateHeaderAndFooterHeight(scrollHeight <= offsetHeight + scrollTop);
+    }
+    // eslint-disable-next-line no-undef
+    setDisplayAnnotationsInChannels(window.innerWidth > minDisplayWidth && !isMobile);
+  };
 
   useEffect(() => {
     if (annotationChannel1Loaded && annotationChannel2Loaded) {
@@ -539,6 +578,11 @@ const DocumentPage = ({
           ((documentWidth - ww) / (2 * extraMarginGrowthFactor)),
         );
         setDocumentZoom(newInitDocumentZoom);
+      } else if ($('#document-container').get(0) !== undefined) {
+        const {
+          scrollHeight, offsetHeight, scrollTop,
+        } = $('#document-container').get(0);
+        calculateHeaderAndFooterHeight(scrollHeight <= offsetHeight + scrollTop);
       }
     }
   }, [annotationChannel1Loaded, annotationChannel2Loaded]);
@@ -569,23 +613,28 @@ const DocumentPage = ({
     }
   }, [document]);
 
-
-  const windowResize = useRef(
-    debounce((setDZ) => {
-      setDZ((prevDocumentZoom) => prevDocumentZoom + 1);
-      setDZ((prevDocumentZoom) => prevDocumentZoom - 1);
-    }, 750),
-  ).current;
-
   useEffect(() => {
     // eslint-disable-next-line no-undef
     window.addEventListener('resize', () => {
-      windowResize(setDocumentZoom);
-      setHeaderAndFooterHeight($('.as-header').height() + $('.as-footer').height() + 35);
-      // eslint-disable-next-line no-undef
-      setDisplayAnnotationsInChannels(window.innerWidth > minDisplayWidth && !isMobile);
+      documentContainerResized();
     });
   }, []);
+
+  useEffect(() => {
+    if (session && !loading && document && !documentLoading && $('#document-container').get(0) !== undefined) {
+      // if the footer height changes we want to make sure the scrollTop value of the document
+      // container is at the complete buttom if the footer has a height other than 0 meaning
+      // that it is showing
+      const {
+        scrollHeight,
+      } = $('#document-container').get(0);
+      if (footerHeight > 0) {
+        $('#document-container').scrollTop(scrollHeight);
+      } else {
+        // pass
+      }
+    }
+  }, [footerHeight]);
 
   useEffect(() => {
     debouncedRepositioning(
@@ -595,10 +644,16 @@ const DocumentPage = ({
     // eslint-disable-next-line no-undef
     const channelWidth = (window.innerWidth - documentWidth - (2 * extraMargin)) / 2;
     setExtraWidth(channelWidth < minChannelWidth ? (minChannelWidth - channelWidth) * 2 : 0);
+    if ($('#document-container').get(0) !== undefined) {
+      const {
+        scrollHeight, offsetHeight, scrollTop,
+      } = $('#document-container').get(0);
+      calculateHeaderAndFooterHeight(scrollHeight <= offsetHeight + scrollTop);
+    }
   }, [documentZoom]);
 
   useEffect(() => {
-    if (!initializedXScollPosition && session && !loading && document && !documentLoading && $('#document-container').length !== 0) {
+    if (!initializedXScollPosition && session && !loading && document && !documentLoading && $('#document-container').get(0) !== undefined) {
       const { scrollWidth, offsetWidth } = $('#document-container').get(0);
       if (scrollWidth > offsetWidth) {
         $('#document-container').scrollLeft((scrollWidth - offsetWidth) / 2);
@@ -608,10 +663,22 @@ const DocumentPage = ({
   }, [extraWidth]);
 
   useEffect(() => {
-    if (session && !loading && document && !documentLoading && $('#document-container').length !== 0) {
-      const { scrollWidth, offsetWidth } = $('#document-container').get(0);
+    if (session && !loading && document && !documentLoading && $('#document-container').get(0) !== undefined) {
+      const {
+        scrollWidth, offsetWidth,
+      } = $('#document-container').get(0);
       if (scrollWidth > offsetWidth) {
         $('#document-container').scrollLeft((scrollWidth - offsetWidth) / 2);
+      }
+      if (!initializedDocumentScrollEventListener) {
+        // adding an event listener for when the document container is scrolled so we know
+        // when we reach the bottom of the document container scroll bar
+        $('#document-container').get(0).addEventListener('scroll', () => {
+          const { scrollHeight, offsetHeight, scrollTop } = $('#document-container').get(0);
+          const atTheBottomOfDocument = scrollHeight - scrollTop < offsetHeight;
+          calculateHeaderAndFooterHeight(atTheBottomOfDocument, true);
+        });
+        setInitializedDocumentScrollEventListener(true);
       }
     }
   }, [session, loading, document, documentLoading]);
@@ -659,11 +726,13 @@ const DocumentPage = ({
                     scrollToAnnotation={scrollToAnnotation}
                   />
                   <HeatMap
+                    annotationsLoaded={annotationChannel1Loaded && annotationChannel2Loaded}
                     documentZoom={documentZoom}
+                    footerHeight={footerHeight}
                   />
                   {!displayAnnotationsInChannels && <AnnotationsOverlay />}
 
-                  <div id="document-container">
+                  <div id="document-container" className={footerHeight > 0 && 'has-footer'}>
                     <div id="document-inner-container">
                       <AnnotationChannel
                         show={displayAnnotationsInChannels}
@@ -788,12 +857,18 @@ const DocumentPage = ({
             </Layout>
             <style jsx global>
               {`
+
+              body {
+                overflow: hidden !important;
+              }
+
               #annotations-header-label {
                 padding: 12px 0px 0px 20px;
               }
 
               #document-container {
-                height: calc(100vh - ${headerAndFooterHeight}px);
+                height: calc(100vh - ${headerHeight + footerHeight}px);
+                transition: height 0.5s;
                 overflow-y: scroll !important;
                 overflow-x: scroll !important;
                 padding: 25px 0px 15px 0px;
