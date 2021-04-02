@@ -13,23 +13,35 @@ function DocumentZoomSlider() {
   const [, documentZoom, setDocumentZoom] = useContext(DocumentContext);
   const [hovered, setHovered] = useState();
   const widthOfSlider = 100;
+  const widthOfCollapsedZoomContainer = 92;
   const colorOfSliderText = hovered ? '#007bff' : '#616161';
   return (
     <>
       <Button
         className="btn-document-zoom"
+        style={{
+          width: hovered
+            ? widthOfCollapsedZoomContainer + widthOfSlider
+            : widthOfCollapsedZoomContainer,
+        }}
         variant="outline-light"
         onMouseOver={() => setHovered(true)}
         onMouseOut={() => setHovered()}
       >
-        <div style={{ display: 'flex', margin: 'auto' }}>
+        <div style={{
+          display: 'flex', margin: 'auto',
+        }}
+        >
           <ZoomIn style={{ marginRight: 5, fontSize: 16, color: colorOfSliderText }} />
         </div>
-        <div style={{ display: 'flex', margin: 'auto', color: colorOfSliderText }}>
+        <div style={{
+          display: 'flex', margin: 'auto', color: colorOfSliderText,
+        }}
+        >
           <span style={{ width: 30, textAlign: 'center' }}>{documentZoom}</span>
           <span>%</span>
         </div>
-        <div className="rangeSlider-container" style={{ width: hovered ? widthOfSlider : 0, overflow: 'hidden' }}>
+        <div className="rangeSlider-container" style={{ width: hovered ? widthOfSlider : 0 }}>
           <div style={{
             minWidth: widthOfSlider, paddingLeft: 7, paddingRight: 3, height: 60,
           }}
@@ -53,6 +65,7 @@ function DocumentZoomSlider() {
       <style jsx global>
         {`
           .btn-document-zoom {
+            transition: width 0.5s;
             border: 1px solid #eeeeee !important;
             padding-top: 0px !important;
             padding-bottom: 0px !important;
@@ -64,7 +77,7 @@ function DocumentZoomSlider() {
           .rangeSlider-container {
             transition: width 0.5s;
             display: flex;
-            overflow-x: hidden;
+            overflow: hidden !important;
           }
           `}
       </style>

@@ -134,8 +134,10 @@ const DocumentPage = ({
   const minHeaderHeight = 121;
   const [headerHeight, setHeaderHeight] = useState(minHeaderHeight);
   const [footerHeight, setFooterHeight] = useState(0);
+  const footerHeightRef = useRef(0);
   const debounceSetFooterHeight = useRef(
-    debounce((setFooterH, footerH) => {
+    debounce((setFooterH, footerH, footerHRef) => {
+      footerHRef.current = footerH;
       setFooterH(footerH);
     }, 250),
   ).current;
@@ -550,7 +552,7 @@ const DocumentPage = ({
       setHeaderHeight(headerH < minHeaderHeight ? minHeaderHeight : headerH);
     }
 
-    debounceSetFooterHeight(setFooterHeight, footerH);
+    debounceSetFooterHeight(setFooterHeight, footerH, footerHeightRef);
   };
 
   const documentContainerResized = () => {
@@ -621,22 +623,6 @@ const DocumentPage = ({
   }, []);
 
   useEffect(() => {
-    if (session && !loading && document && !documentLoading && $('#document-container').get(0) !== undefined) {
-      // if the footer height changes we want to make sure the scrollTop value of the document
-      // container is at the complete buttom if the footer has a height other than 0 meaning
-      // that it is showing
-      const {
-        scrollHeight,
-      } = $('#document-container').get(0);
-      if (footerHeight > 0) {
-        $('#document-container').scrollTop(scrollHeight);
-      } else {
-        // pass
-      }
-    }
-  }, [footerHeight]);
-
-  useEffect(() => {
     debouncedRepositioning(
       channelAnnotations,
       setChannelAnnotations,
@@ -675,7 +661,11 @@ const DocumentPage = ({
         // when we reach the bottom of the document container scroll bar
         $('#document-container').get(0).addEventListener('scroll', () => {
           const { scrollHeight, offsetHeight, scrollTop } = $('#document-container').get(0);
-          const atTheBottomOfDocument = scrollHeight - scrollTop < offsetHeight;
+          // this scalefactor allows for the scroll bar not to be at the very bottom for the footer
+          // to persist if it already is showing but if it is not already showing the only way to
+          // make it show is to scroll to the very bottom
+          const scaleFactor = footerHeightRef.current > 0 ? 1.1 : 1;
+          const atTheBottomOfDocument = scrollHeight - scrollTop < (offsetHeight * scaleFactor);
           calculateHeaderAndFooterHeight(atTheBottomOfDocument, true);
         });
         setInitializedDocumentScrollEventListener(true);
