@@ -362,7 +362,7 @@ export default function Document({
             setTimeout(() => {
               setTarget(null);
               setShow();
-            }, 500);
+            }, 100);
           }
         }
       });

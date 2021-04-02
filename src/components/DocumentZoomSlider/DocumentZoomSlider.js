@@ -14,7 +14,8 @@ function DocumentZoomSlider() {
   const [hovered, setHovered] = useState();
   const widthOfSlider = 100;
   const widthOfCollapsedZoomContainer = 92;
-  const colorOfSliderText = hovered ? '#007bff' : '#616161';
+  const textColor = hovered ? 'text-primary' : 'text-secondary';
+  // const colorOfSliderText = hovered ? '#007bff' : '#616161';
   return (
     <>
       <Button
@@ -32,11 +33,13 @@ function DocumentZoomSlider() {
           display: 'flex', margin: 'auto',
         }}
         >
-          <ZoomIn style={{ marginRight: 5, fontSize: 16, color: colorOfSliderText }} />
+          <ZoomIn style={{ marginRight: 5, fontSize: 16 }} className={textColor} />
         </div>
-        <div style={{
-          display: 'flex', margin: 'auto', color: colorOfSliderText,
-        }}
+        <div
+          style={{
+            display: 'flex', margin: 'auto',
+          }}
+          className={textColor}
         >
           <span style={{ width: 30, textAlign: 'center' }}>{documentZoom}</span>
           <span>%</span>
