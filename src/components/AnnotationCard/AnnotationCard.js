@@ -809,11 +809,6 @@ function AnnotationCard({
           padding-left: 5px;
         }
 
-        .annotation-tags .rbt-input.focus {
-          border-bottom: 1px solid $primary;
-          box-shadow: none;
-        }
-
         #typeahead-share-annotation-users {
           width: 100%;
         }
@@ -859,11 +854,6 @@ function AnnotationCard({
           border: none;
           border-bottom: 1px solid #eeeeee;
           border-radius: 0px;
-        }
-
-        #typeahead-share-annotation-users-container .rbt-input.focus {
-          box-shadow: none !important;
-          border-bottom: 1px solid $primary;
         }
 
         .annotation-tag-token, .annotation-share-token {
@@ -915,24 +905,6 @@ function AnnotationCard({
             z-index: 2;
             transition: background-color 0.5s;
         }
-
-        .annotation-card-container.new-annotation {
-            border: 1px solid $primary;
-        }
-
-        .annotation-card-container.new-annotation .line1, .annotation-card-container.new-annotation .line2 {
-            background-color: $primary;
-            z-index: 3;
-        }
-
-        .annotation-card-container.new-annotation .annotation-pointer-background-left {
-            border-left-color: $primary;
-        }
-
-        .annotation-card-container.new-annotation .annotation-pointer-background-right {
-            border-right-color: $primary;
-        }
-
 
         .annotation-card-container.active .line1, .annotation-card-container.active .line2 {
             background-color: rgba(255, 165, 10, 0.5);
@@ -1100,11 +1072,6 @@ function AnnotationCard({
 
       .annotation-body .tox.tox-tinymce {
         border: none;
-      }
-
-      .annotation-body textarea:focus {
-        box-shadow: none;
-        border-bottom: 1px solid $primary;
       }
 
       .annotation-tags {
