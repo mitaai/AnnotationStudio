@@ -78,7 +78,7 @@ const AdminGroupTable = ({ group, setAlerts }) => {
                       variant = 'warning';
                       break;
                     case 'owner':
-                      variant = 'primary';
+                      variant = 'info';
                       break;
                     default:
                       variant = 'secondary';

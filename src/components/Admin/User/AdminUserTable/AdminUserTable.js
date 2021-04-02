@@ -156,7 +156,7 @@ const AdminUserTable = ({
                       variant = 'warning';
                       break;
                     case 'owner':
-                      variant = 'primary';
+                      variant = 'info';
                       break;
                     default:
                       variant = 'secondary';
