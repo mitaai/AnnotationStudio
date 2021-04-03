@@ -3,6 +3,7 @@ $theme-colors: (
   "ans-color": #fcce02,
   "dark": #343434,
   "primary": #015999,
+  "primary-05": rgba(1, 89, 153, 0.5), 
   "info": #01998f,
 );
 
@@ -365,20 +366,20 @@ $breadcrumb-bg: transparent;
 }
 
 .annotation-card-container.new-annotation {
-  border: 1px solid theme-color("primary") !important;
+  border: 1px solid theme-color("primary-05") !important;
 }
 
 .annotation-card-container.new-annotation .line1, .annotation-card-container.new-annotation .line2 {
-  background-color: theme-color("primary") !important;
+  background-color: theme-color("primary-05") !important;
   z-index: 3;
 }
 
 .annotation-card-container.new-annotation .annotation-pointer-background-left {
-  border-left-color: theme-color("primary") !important;
+  border-left-color: theme-color("primary-05") !important;
 }
 
 .annotation-card-container.new-annotation .annotation-pointer-background-right {
-  border-right-color: theme-color("primary") !important;
+  border-right-color: theme-color("primary-05") !important;
 }
 
 .annotation-body textarea:focus {
