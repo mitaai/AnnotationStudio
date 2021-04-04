@@ -988,18 +988,18 @@ function AnnotationCard({
         }
 
         .annotation-card-container {
-            position: absolute;
-            cursor: pointer;
-            border: 1px solid rgb(220, 220, 220);
-            border-radius: 0px;
-            width: calc(100% - 25px);
-            transition: all 0.5s;
-            transition-property: border-color, top, left, right;
-            max-width: 375px;
+          position: absolute;
+          cursor: pointer;
+          border: 1px solid rgb(220, 220, 220);
+          border-radius: 0px;
+          width: calc(100% - 25px);
+          transition: all 0.5s;
+          transition-property: border-color, top, left, right;
+          max-width: 375px;
         }
 
         .annotation-card-container.active {
-            border: 1px solid rgba(255, 165, 10, 0.5);
+          border-color: rgba(255, 165, 10, 0.5);
         }
 
         .btn-save-annotation-edits {
@@ -1074,10 +1074,6 @@ function AnnotationCard({
             transition: border-left-color 0.5s;
         }
 
-        .annotation-card-container.new-annotation .annotation-pointer-background-left {
-          border-left-color: rgba(0,123,255,0.5) !important;
-        }
-
         .annotation-pointer-left {
             position: absolute;
             right: -19px;
@@ -1098,10 +1094,6 @@ function AnnotationCard({
           border: 10px solid transparent;
           border-right-color: rgb(220,220,220);
           transition: border-right-color 0.5s;
-      }
-
-      .annotation-card-container.new-annotation .annotation-pointer-background-right {
-        border-right-color: rgba(0,123,255,0.5) !important;
       }
 
       .annotation-pointer-right {
