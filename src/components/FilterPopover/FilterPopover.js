@@ -11,7 +11,6 @@ import {
   Col,
   Button,
   OverlayTrigger,
-  Overlay,
   Popover,
   Form,
   Card,
@@ -33,7 +32,7 @@ import { FirstNameLastInitial } from '../../utils/nameUtil';
 import { DocumentFiltersContext, DocumentAnnotationsContext } from '../../contexts/DocumentContext';
 
 
-function FilterPopover({ session, container }) {
+function FilterPopover({ session }) {
   const [
     channelAnnotations, , , , , ,
     annotationIdBeingEdited, , scrollToAnnotation,
@@ -45,8 +44,6 @@ function FilterPopover({ session, container }) {
   ] = useContext(DocumentFiltersContext);
   const [byTagsTypeheadMarginTop, setByTagsTypeheadMarginTop] = useState(0);
   const [byTagsTypeheadMarginBottom, setByTagsTypeheadMarginBottom] = useState(0);
-  const [show, setShow] = useState(false);
-  const [target, setTarget] = useState(null);
 
   const GetNumberOfMatchesForThisPermission = (permissions) => {
     const ids = FilterAnnotations(channelAnnotations, {
@@ -215,13 +212,8 @@ function FilterPopover({ session, container }) {
     setDocumentFilters({ ...documentFilters, annotationIds });
   };
 
-  const handlePermissionsClick = (ev, n) => {
-    if (annotationIdBeingEdited !== undefined) {
-      setShow(true);
-      setTarget(ev.target);
-    } else {
-      setShow(false);
-      setTarget(null);
+  const handlePermissionsClick = (n) => {
+    if (annotationIdBeingEdited === undefined) {
       updateFilters('permissions', n);
     }
   };
@@ -364,7 +356,6 @@ function FilterPopover({ session, container }) {
           id="scroll-to-annotation-text"
           onClick={() => {
             scrollToAnnotation();
-            setShow(false);
           }}
           onKeyDown={() => {}}
         >
@@ -377,58 +368,53 @@ function FilterPopover({ session, container }) {
     </Popover>
   );
 
-  const unsavedChangesOverlay = (
-    <Overlay
-      show={show}
-      target={target}
-      placement="bottom"
-      container={container.current}
-      containerPadding={20}
-      onHide={() => { setShow(false); }}
-      rootClose
-    >
-      {unsavedChangesPopoverComponent}
-    </Overlay>
-  );
 
   const filterActive = (documentFilters.filters.annotatedBy.length
   + documentFilters.filters.byTags.length > 0);
 
   return (
     <>
-      <ButtonGroup size="sm" aria-label="Permissions" className="permissions-buttons">
-        <Button
-          variant={documentFilters.filters.permissions === 0 ? 'primary' : 'outline-primary'}
-          onClick={(ev) => { handlePermissionsClick(ev, 0); }}
-        >
-          <PersonFill size="1.2em" />
-          <div className="mine">
-            <span className="text">Mine</span>
-            <Badge variant="light">{numberOfMatchesForPermissions[0]}</Badge>
-          </div>
-        </Button>
-        <Button
-          variant={documentFilters.filters.permissions === 1 ? 'primary' : 'outline-primary'}
-          onClick={(ev) => { handlePermissionsClick(ev, 1); }}
-        >
-          <PeopleFill size="1.2em" />
-          <div className="shared-with-groups">
-            <span className="text">Shared with group(s)</span>
-            <Badge variant="light">{numberOfMatchesForPermissions[1]}</Badge>
-          </div>
-        </Button>
-        <Button
-          variant={documentFilters.filters.permissions === 2 ? 'primary' : 'outline-primary'}
-          onClick={(ev) => { handlePermissionsClick(ev, 2); }}
-        >
-          <PersonPlusFill size="1.2em" />
-          <div className="shared-with-me">
-            <span className="text">Shared with me</span>
-            <Badge variant="light">{numberOfMatchesForPermissions[2]}</Badge>
-          </div>
-        </Button>
-      </ButtonGroup>
-      {unsavedChangesOverlay}
+      <OverlayTrigger
+        trigger="click"
+        key="unsaved-changes-popover"
+        placement="bottom"
+        rootClose
+        overlay={annotationIdBeingEdited === undefined ? <div /> : unsavedChangesPopoverComponent}
+      >
+        <ButtonGroup size="sm" aria-label="Permissions" className="permissions-buttons">
+          <Button
+            variant={documentFilters.filters.permissions === 0 ? 'primary' : 'outline-primary'}
+            onClick={() => { handlePermissionsClick(0); }}
+          >
+            <PersonFill size="1.2em" />
+            <div className="mine">
+              <span className="text">Mine</span>
+              <Badge variant="light">{numberOfMatchesForPermissions[0]}</Badge>
+            </div>
+          </Button>
+          <Button
+            variant={documentFilters.filters.permissions === 1 ? 'primary' : 'outline-primary'}
+            onClick={() => { handlePermissionsClick(1); }}
+          >
+            <PeopleFill size="1.2em" />
+            <div className="shared-with-groups">
+              <span className="text">Shared with group(s)</span>
+              <Badge variant="light">{numberOfMatchesForPermissions[1]}</Badge>
+            </div>
+          </Button>
+          <Button
+            variant={documentFilters.filters.permissions === 2 ? 'primary' : 'outline-primary'}
+            onClick={() => { handlePermissionsClick(2); }}
+          >
+            <PersonPlusFill size="1.2em" />
+            <div className="shared-with-me">
+              <span className="text">Shared with me</span>
+              <Badge variant="light">{numberOfMatchesForPermissions[2]}</Badge>
+            </div>
+          </Button>
+        </ButtonGroup>
+
+      </OverlayTrigger>
       <OverlayTrigger
         trigger="click"
         key="filter-popover"

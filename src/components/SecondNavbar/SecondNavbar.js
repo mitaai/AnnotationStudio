@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Nav, Navbar, Breadcrumb, Container, Modal, Table, Row, Col,
 } from 'react-bootstrap';
@@ -33,8 +33,6 @@ const SecondNavbar = ({
     notes: 'Notes',
     state: 'State',
   };
-
-  const ref = useRef(null);
 
   const [showMoreDocumentInfo, setShowMoreDocumentInfo] = useState();
   const [mobileView, setMobileView] = useState();
@@ -117,8 +115,8 @@ const SecondNavbar = ({
                 <div style={{ marginTop: 6, marginRight: 6 }}>
                   <DocumentZoomSlider />
                 </div>
-                <div ref={ref} style={{ display: 'flex', flexWrap: 'nowrap' }}>
-                  <FilterPopover session={session} container={ref} />
+                <div style={{ display: 'flex', flexWrap: 'nowrap' }}>
+                  <FilterPopover session={session} />
                 </div>
               </div>
             </Col>
