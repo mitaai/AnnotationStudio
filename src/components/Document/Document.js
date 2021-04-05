@@ -404,7 +404,9 @@ export default function Document({
         }
       }
     }, 500, myRef.current));
-    setTimeout(highlightTextForAllAnnotations, 100, annotations);
+
+    highlightTextForAllAnnotations(annotations);
+
     return () => {
       removeEventListener1();
       removeEventListener2();

@@ -295,18 +295,14 @@ function AnnotationCard({
 
     if (annotationData.new) {
       setCancelingAnnotation(true);
-      // simulating the time it takes to delete the annotation
-      // from the database and make sure the connection is secure and worked properly
-      setTimeout(() => {
-        // if it is a new annotation then cancel should delete the annotation
-        // after we remove the annotation we need to remove the classes from
-        // the text that was highlighted and then make the document selectable again
-        $('.text-currently-being-annotated.active').removeClass('text-currently-being-annotated active');
-        // we also need to make the document selectable again
-        $('#document-content-container').removeClass('unselectable');
-        // we need to delete this annotation from the channel it is in
-        deleteAnnotationFromChannels(side, annotationData._id);
-      }, 500);
+      // if it is a new annotation then cancel should delete the annotation
+      // after we remove the annotation we need to remove the classes from
+      // the text that was highlighted and then make the document selectable again
+      $('.text-currently-being-annotated.active').removeClass('text-currently-being-annotated active');
+      // we also need to make the document selectable again
+      $('#document-content-container').removeClass('unselectable');
+      // we need to delete this annotation from the channel it is in
+      deleteAnnotationFromChannels(side, annotationData._id);
     } else {
       setNewAnnotationTags(null);
       setNewAnnotationPermissions(null);

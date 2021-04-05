@@ -69,12 +69,6 @@ const DocumentPage = ({
       }
 
       setChannelAnnotations(DeepCopyObj(channelAnnotations));
-      // for some reason the heat map is not updating the way it should
-      // on the first state change so I put this second state change
-      // to make sure the heat map looks correct
-      setTimeout((obj) => {
-        setChannelAnnotations(obj);
-      }, 1000, DeepCopyObj(channelAnnotations));
     }, 750),
   ).current;
 
