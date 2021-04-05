@@ -106,7 +106,6 @@ export default function Document({
   const [selector, setSelector] = useState(null);
   const [selectedTextToAnnotate, setSelectedTextToAnnotate] = useState();
   const [showCannotAnnotateDocumentToast, setShowCannotAnnotateDocumentToast] = useState(false);
-  const [annotationsHighlighted, setAnnotationsHighlighted] = useState();
 
   const activateAnnotation = (e) => {
     const annoId = $(e.target).attr('annotation-id');
@@ -349,72 +348,70 @@ export default function Document({
   }, [documentToAnnotate]);
 
   useEffect(() => {
-    // eslint-disable-next-line no-undef
-    if (!annotationsHighlighted) {
-      document.addEventListener('selectionchange', () => { // eslint-disable-line no-undef
-        const selection = document.getSelection(); // eslint-disable-line no-undef
-        if (selection.rangeCount === 1) {
-          const range = selection.getRangeAt(0);
-          if (range.collapsed) {
-            // we need to wait 500ms because clicking the annotate button can
-            // trigger this event so we want the annotate button to be clicked
-            // before removing it from the dom
-            setTimeout(() => {
-              setTarget(null);
-              setShow();
-            }, 100);
-          }
-        }
-      });
-      document.addEventListener('selectionchange', debounce(async (documentContainer) => { // eslint-disable-line no-undef
-        // we need to make sure that the annotate button disappears
-        // while the document selection is being made
-        if (target !== null || show) {
+    const removeEventListener1 = document.addEventListener('selectionchange', () => { // eslint-disable-line no-undef
+      const selection = document.getSelection(); // eslint-disable-line no-undef
+      if (selection.rangeCount === 1) {
+        const range = selection.getRangeAt(0);
+        if (range.collapsed) {
+          // if the range collapse meaning that their is no text selected this could me that
+          // either the user deselected the text or they clicked the annotate button that deselected
+          // the text. Either way the annotate button needs to hide
           setTarget(null);
           setShow();
         }
+      }
+    });
+    const removeEventListener2 = document.addEventListener('selectionchange', debounce(async (documentContainer) => { // eslint-disable-line no-undef
+      // we need to make sure that the annotate button disappears
+      // while the document selection is being made
+      if (target !== null || show) {
+        setTarget(null);
+        setShow();
+      }
 
-        if (!$('#document-content-container').hasClass('unselectable')) {
+      if (!$('#document-content-container').hasClass('unselectable')) {
         // if the reason why the selection change is because you selected text
         // to annotate then don't remove class active from a text that was selected
         // otherwise the selection change so any text that was selected by the user
         // is no longer needed so we need to remove styling
-          if (selectedTextToAnnotate === undefined) {
+        if (selectedTextToAnnotate === undefined) {
           // if we are making a new selection we need to make sure all old selections are removed
-            $('.text-currently-being-annotated').removeClass('active');
-            $('#document-content-container').removeClass('unselectable');
-          } else {
-            setSelectedTextToAnnotate();
-          }
+          $('.text-currently-being-annotated').removeClass('active');
+          $('#document-content-container').removeClass('unselectable');
+        } else {
+          setSelectedTextToAnnotate();
+        }
 
-          // eslint-disable-next-line no-undef
-          const selection = document.getSelection();
-          if (selection.rangeCount === 1) {
-            const range = selection.getRangeAt(0);
-            if (!range.collapsed && range.toString().length > 0) {
+        // eslint-disable-next-line no-undef
+        const selection = document.getSelection();
+        if (selection.rangeCount === 1) {
+          const range = selection.getRangeAt(0);
+          if (!range.collapsed && range.toString().length > 0) {
             // we need to make sure this selection happened inside the
             // document card container and not some where outside of the document
-              if ($(range.commonAncestorContainer.parentElement).parents('#document-card-container').length !== 0) {
+            if ($(range.commonAncestorContainer.parentElement).parents('#document-card-container').length !== 0) {
               // make sure the range is something
               // eslint-disable-next-line no-undef
-                const scope = document.createRange();
-                scope.selectNodeContents(documentContainer);
-                // we need to make sure that the selection the user made is inside the
-                // scope, meaning that everything they selected is inside the document and
-                // not outside the document
-                const mySelector = await customDescibeTextQuote(range, scope);
-                positionAnnotateButton(selection, mySelector);
-              }
+              const scope = document.createRange();
+              scope.selectNodeContents(documentContainer);
+              // we need to make sure that the selection the user made is inside the
+              // scope, meaning that everything they selected is inside the document and
+              // not outside the document
+              const mySelector = await customDescibeTextQuote(range, scope);
+              positionAnnotateButton(selection, mySelector);
             }
           }
         }
+      }
+    }, 500, myRef.current));
 
-      //
-      }, 500, myRef.current));
-      setAnnotationsHighlighted(true);
-      setTimeout(highlightTextForAllAnnotations, 100, annotations);
-    }
-  });
+    highlightTextForAllAnnotations(annotations);
+
+    return () => {
+      removeEventListener1();
+      removeEventListener2();
+    };
+  }, []);
 
   useEffect(() => {
     // when the document is scrolled it updates the position of the Annotation Pen Tooltip so

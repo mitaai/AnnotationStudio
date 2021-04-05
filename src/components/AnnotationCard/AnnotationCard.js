@@ -112,9 +112,14 @@ function AnnotationCard({
   const [cancelingAnnotation, setCancelingAnnotation] = useState(false);
   const [savingAnnotation, setSavingAnnotation] = useState(false);
   const [deletingAnnotation, setDeletingAnnotation] = useState(false);
-  const [updateFocusOfAnnotation, setUpdateFocusOfAnnotation] = useState(annotation.editing);
+  const [
+    updateFocusOfAnnotation,
+    setUpdateFocusOfAnnotation,
+  ] = useState(annotation.editing);
   const [hovered, setHovered] = useState();
   const [newSelectedUsersToShare, setNewSelectedUsersToShare] = useState(null);
+
+  const leftRightPositionForAnnotation = annotationData.editing ? -10 : 15;
 
   let selectedUsersToShare = newSelectedUsersToShare;
   if (selectedUsersToShare === null) {
@@ -249,7 +254,7 @@ function AnnotationCard({
         // update the annotation data
         SetAndSaveAnnotationData(newAnnotationData);
         // focus annotation so that things get shifted to their correct spots
-        focusOnAnnotation();
+        setUpdateFocusOfAnnotation(true);
       }).catch((err) => {
         setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
         setSavingAnnotation(false);
@@ -275,7 +280,7 @@ function AnnotationCard({
         setNewSelectedUsersToShare(null);
         // then after everything is done we will focus
         // on the annotation so that things get shifted to their correct spots
-        focusOnAnnotation();
+        setUpdateFocusOfAnnotation(true);
       }).catch((err) => {
         setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
         setSavingAnnotation(false);
@@ -290,18 +295,14 @@ function AnnotationCard({
 
     if (annotationData.new) {
       setCancelingAnnotation(true);
-      // simulating the time it takes to delete the annotation
-      // from the database and make sure the connection is secure and worked properly
-      setTimeout(() => {
-        // if it is a new annotation then cancel should delete the annotation
-        // after we remove the annotation we need to remove the classes from
-        // the text that was highlighted and then make the document selectable again
-        $('.text-currently-being-annotated.active').removeClass('text-currently-being-annotated active');
-        // we also need to make the document selectable again
-        $('#document-content-container').removeClass('unselectable');
-        // we need to delete this annotation from the channel it is in
-        deleteAnnotationFromChannels(side, annotationData._id);
-      }, 500);
+      // if it is a new annotation then cancel should delete the annotation
+      // after we remove the annotation we need to remove the classes from
+      // the text that was highlighted and then make the document selectable again
+      $('.text-currently-being-annotated.active').removeClass('text-currently-being-annotated active');
+      // we also need to make the document selectable again
+      $('#document-content-container').removeClass('unselectable');
+      // we need to delete this annotation from the channel it is in
+      deleteAnnotationFromChannels(side, annotationData._id);
     } else {
       setNewAnnotationTags(null);
       setNewAnnotationPermissions(null);
@@ -526,7 +527,7 @@ function AnnotationCard({
   useEffect(() => {
     if (updateFocusOfAnnotation) {
       focusOnAnnotation();
-      setUpdateFocusOfAnnotation(false);
+      setUpdateFocusOfAnnotation();
     }
   }, [updateFocusOfAnnotation]);
 
@@ -537,8 +538,6 @@ function AnnotationCard({
       RemoveClassActive(annotationData._id);
     }
   }, [expanded, hovered]);
-
-  const leftRightPositionForAnnotation = annotationData.editing ? -10 : 15;
 
   return (
     <>
@@ -767,7 +766,6 @@ function AnnotationCard({
                               } else {
                                 annotationData.editing = true;
                                 SetAndSaveAnnotationData(annotationData);
-                                setUpdateFocusOfAnnotation(true);
                               }
                             }}
                           >

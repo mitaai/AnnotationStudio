@@ -69,12 +69,6 @@ const DocumentPage = ({
       }
 
       setChannelAnnotations(DeepCopyObj(channelAnnotations));
-      // for some reason the heat map is not updating the way it should
-      // on the first state change so I put this second state change
-      // to make sure the heat map looks correct
-      setTimeout((obj) => {
-        setChannelAnnotations(obj);
-      }, 1000, DeepCopyObj(channelAnnotations));
     }, 750),
   ).current;
 
@@ -351,6 +345,35 @@ const DocumentPage = ({
     // replaced by a horitzontal line that from their goes to the exact position of the annotation
     const smallestDistanceFromEdgeOfScreen = 27;
     const annotationDistanceFromEdgeOfScreen = $(`#annotation-channel-${side}`).width() - $(`#document-container #${focusID}.annotation-card-container`).width() - smallestDistanceFromEdgeOfScreen;
+    const calculateOffsetLeftForLine2 = (anno) => {
+      const annoBeingEdited = annotationIdBeingEdited === anno._id;
+      let offsetLeftForLine2;
+      let line2AdjustmentLeft = 0;
+      if (side === 'left') {
+        if (annoBeingEdited) {
+          line2AdjustmentLeft = -25;
+        }
+        offsetLeftForLine2 = anno.position.left
+        - annotationDistanceFromEdgeOfScreen
+        - 10 + line2AdjustmentLeft;
+      } else {
+        const currentLeftOfAnno = $(`#document-container #${anno._id}`).position().left;
+        if (annoBeingEdited) {
+          // we know that if this annotation is being edited its left position should be -10.
+          // If it is any other value we need to account for this difference in our calculation
+          // of offsetLeftForLine2
+          line2AdjustmentLeft = currentLeftOfAnno + 10;
+        } else {
+          // we know that if this annotation is being edited its left position should be 15.
+          // If it is any other value we need to account for this difference in our calculation
+          // of offsetLeftForLine2
+          line2AdjustmentLeft = currentLeftOfAnno - 15;
+        }
+        offsetLeftForLine2 = anno.position.left - $(`#document-container #${anno._id}`).offset().left - $('#document-container').scrollLeft() + line2AdjustmentLeft;
+      }
+
+      return offsetLeftForLine2;
+    };
     // first we need to focus the annotation and then place all other
     // annotations after it under it
     const documentZoomTopAdjustment = (documentZoom - 100) * 0.1;
@@ -370,14 +393,13 @@ const DocumentPage = ({
         continue;
       }
 
+      const offsetLeftForLine2 = calculateOffsetLeftForLine2(annos[i]);
 
-      const offsetLeftForLine2 = side === 'left'
-        ? annos[i].position.left - annotationDistanceFromEdgeOfScreen - 10
-        : annos[i].position.left - $(`#document-container #${annos[i]._id}`).offset().left - $('#document-container').scrollLeft();
       trueTop = annos[i].position.top
         - documentContainerOffset.top
         + documentZoomTopAdjustment
         - adjustmentTopNumber;
+
       if (lastHighestPoint > trueTop) {
         top = lastHighestPoint + marginBottom;
       } else {
@@ -432,9 +454,7 @@ const DocumentPage = ({
         continue;
       }
 
-      const offsetLeftForLine2 = side === 'left'
-        ? annos[i].position.left - annotationDistanceFromEdgeOfScreen - 10
-        : annos[i].position.left - $(`#document-container #${annos[i]._id}`).offset().left - $('#document-container').scrollLeft();
+      const offsetLeftForLine2 = calculateOffsetLeftForLine2(annos[i]);
       // this is where the annotation wants to be
       trueTop = annos[i].position.top
         - documentContainerOffset.top
