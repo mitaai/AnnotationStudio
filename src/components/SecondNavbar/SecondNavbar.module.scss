@@ -1,0 +1,42 @@
+@use "../../style/theme";
+
+.breadcontainer ol {
+  padding-left: 0px !important;
+  margin-bottom: 0px;
+}
+
+.row {
+  width: 100%;
+}
+
+.infobutton {
+  float: right;
+  margin-left: 5px;
+  cursor: pointer;
+  color: theme.$primary;
+}
+
+.meta-field-name {
+  width: 150px;
+}
+
+.modal-title {
+  height: auto !important;
+}
+
+.filter-container {
+  display: flex;
+  flex-wrap: nowrap;
+}
+
+.zoom-slider-container {
+  margin-top: 6px;
+  margin-right: 6px;
+}
+
+.rightpanel {
+  position: relative;
+  top: 4px;
+  display: flex;
+  flex-direction: row; 
+}

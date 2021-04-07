@@ -9,10 +9,6 @@ $theme-colors: (
   "info": theme.$info,
 );
 
-ol.breadcrumb {
-  padding-left: 0px !important;
-}
-
 .header-logo-svg {
   width: 26px;
   height: 26px;
@@ -331,10 +327,6 @@ $breadcrumb-bg: transparent;
 
 /* import bootstrap */
 @import "~bootstrap/scss/bootstrap";
-
-.second-navbar #btn-document-more-info {
-  color: theme-color("primary");
-}
 
 #scroll-to-annotation-text {
   cursor: pointer;
