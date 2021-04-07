@@ -28,10 +28,9 @@ const DocumentsIndex = ({
   const [alerts, setAlerts] = useState(alertArray);
   const perPage = 8;
 
-  const fetchData = async ({ effect }) => {
+  const fetchData = async () => {
     if (session) {
       setListLoading(true);
-      if (effect !== 'page') setPage(1);
       if (key === 'shared') {
         await getSharedDocumentsByGroup({ groups: session.user.groups, page, perPage })
           .then(async (data) => {
@@ -65,9 +64,10 @@ const DocumentsIndex = ({
   };
 
 
-  useEffect(() => { fetchData({ effect: 'key' }); }, [key, session]);
-  useEffect(() => { fetchData({ effect: 'page' }); }, [page]);
-
+  useEffect(() => {
+    if (page !== 1) { setPage(1); } else { fetchData(); }
+  }, [key, session]);
+  useEffect(() => { fetchData(); }, [page]);
   useEffect(() => {
     if (session && documents) {
       setListLoading(false);

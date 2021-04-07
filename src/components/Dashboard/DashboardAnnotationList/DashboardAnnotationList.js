@@ -26,10 +26,9 @@ const DashboardAnnotationList = ({
   const limit = mode === 'dashboard' ? 10 : undefined;
   const perPage = 10;
 
-  const fetchData = async ({ effect }) => {
+  const fetchData = async () => {
     if (session) {
       setListLoading(true);
-      if (effect !== 'page') setPage(1);
       if (session && (session.user.groups || session.user.id)) {
         if (key === 'shared') {
           if (session.user.groups && session.user.groups.length > 0) {
@@ -70,9 +69,10 @@ const DashboardAnnotationList = ({
     }
   };
 
-  useEffect(() => { fetchData({ effect: 'key' }); }, [key, session]);
-  useEffect(() => { fetchData({ effect: 'page' }); }, [page]);
-
+  useEffect(() => {
+    if (page !== 1) { setPage(1); } else { fetchData(); }
+  }, [key, session]);
+  useEffect(() => { fetchData(); }, [page]);
   useEffect(() => {
     if (session && annotations) {
       setListLoading(false);
