@@ -78,6 +78,10 @@ export default function AnnotateButton({
               z-index: 10;
           }
 
+          #annotate-document-button-container:focus {
+            outline: 0;
+          }
+
           #annotate-document-button-inner-container {
             width: 32px;
             height: 32px;

@@ -304,6 +304,10 @@ const DocumentPage = ({
 
 
     // updating annotation channel data with new annotation
+    // we need to make sure that this new annotation is focused if it is being edited
+    if (newAnnotation.editing) {
+      focusedAnnotationsRef[side] = newAnnotation._id;
+    }
     setAnnotationIdBeingEdited(newAnnotation.editing ? newAnnotation._id : undefined);
     const newChannelAnnotations = DeepCopyObj(channelAnnotations);
     newChannelAnnotations[side].splice(indexForNewAnnotation, 0, newAnnotation);
@@ -335,7 +339,6 @@ const DocumentPage = ({
     // first we need to find the index of the annotation
     // we want to focus on in the annotations array
     const focusIndex = annos.findIndex((annotation) => annotation._id === focusID);
-
     if (focusIndex !== -1) {
       focusedAnnotationsRef[side] = focusID;
     } else {
