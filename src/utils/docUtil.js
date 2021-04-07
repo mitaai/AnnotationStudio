@@ -1,9 +1,13 @@
 import unfetch from 'unfetch';
 import { appendProtocolIfMissing } from './fetchUtil';
 
-const getDocumentsByUser = async (id, limit) => {
+const getDocumentsByUser = async ({
+  id, limit, page, perPage,
+}) => {
   const url = '/api/documents';
-  const body = { userId: id, limit };
+  const body = {
+    userId: id, limit, page, perPage,
+  };
   const res = await unfetch(url, {
     method: 'POST',
     body: JSON.stringify(body),
@@ -13,8 +17,8 @@ const getDocumentsByUser = async (id, limit) => {
   });
   if (res.status === 200) {
     const response = await res.json();
-    const { documents } = response;
-    return Promise.resolve(documents);
+    const { documents, count } = response;
+    return Promise.resolve({ docs: documents, count });
   } return Promise.reject(Error(`Unable to retrieve documents: error ${res.status} received from server`));
 };
 
@@ -53,9 +57,19 @@ const getAllDocumentsByGroup = async (groups) => {
   } return Promise.reject(Error(`Unable to retrieve documents: error ${res.status} received from server`));
 };
 
-const getSharedDocumentsByGroup = async (groups, limit) => {
+const getSharedDocumentsByGroup = async ({
+  groups,
+  limit,
+  page,
+  perPage,
+}) => {
   const url = '/api/documents';
-  const body = { groupIds: groups.map((group) => group.id), limit };
+  const body = {
+    groupIds: groups.map((group) => group.id),
+    limit,
+    page,
+    perPage,
+  };
   const res = await unfetch(url, {
     method: 'POST',
     body: JSON.stringify(body),
@@ -65,8 +79,8 @@ const getSharedDocumentsByGroup = async (groups, limit) => {
   });
   if (res.status === 200) {
     const response = await res.json();
-    const { documents } = response;
-    return Promise.resolve(documents.filter((document) => document.state !== 'draft'));
+    const { documents, count } = response;
+    return Promise.resolve({ docs: documents.filter((document) => document.state !== 'draft'), count });
   } return Promise.reject(Error(`Unable to retrieve documents: error ${res.status} received from server`));
 };
 
