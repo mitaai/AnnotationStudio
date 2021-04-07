@@ -146,10 +146,11 @@ $theme-colors: (
   line-clamp: 3;
   display: -webkit-box;
   -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;  
+  -webkit-box-orient: vertical;
   overflow: hidden;
   max-height: 72px;
-  img, iframe {
+  img,
+  iframe {
     max-width: 100%;
   }
   p {
@@ -157,7 +158,8 @@ $theme-colors: (
   }
 }
 
-.ui.selection.dropdown,.ui.upward.selection.dropdown {
+.ui.selection.dropdown,
+.ui.upward.selection.dropdown {
   cursor: default;
   min-height: calc(1.5em + 0.75rem + 2px);
   padding: 0.375rem 0.75rem;
@@ -186,32 +188,33 @@ $theme-colors: (
   &:focus {
     color: #495057;
     background-color: #fff;
-    border-color: #80bdff;
+    border-color: theme.$primary;
     outline: 0;
     box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
   }
 }
-.ui.selection.active.dropdown, .ui.upward.selection.active.dropdown {
+.ui.selection.active.dropdown,
+.ui.upward.selection.active.dropdown {
   box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-  border-color: #80bdff;
+  border-color: theme.$primary;
   &:hover {
     box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-    border-color: #80bdff;
+    border-color: theme.$primary;
     .menu {
       box-shadow: none;
-      border-color: #80bdff;
+      border-color: theme.$primary;
       &:hover {
         box-shadow: none;
-        border-color: #80bdff;
+        border-color: theme.$primary;
       }
     }
   }
   .menu {
     box-shadow: none;
-    border-color: #80bdff;
+    border-color: theme.$primary;
     &:hover {
       box-shadow: none;
-      border-color: #80bdff;
+      border-color: theme.$primary;
     }
   }
 }
@@ -238,12 +241,12 @@ $breadcrumb-bg: transparent;
 
 #scroll-to-annotation-text {
   cursor: pointer;
-  color: theme-color("primary");
+  color: theme.$primary;
 }
 
 #question-circle-icon {
   font-size: 14;
-  color: theme-color("primary");
+  color: theme.$primary;
   margin-left: 4;
 }
 
@@ -252,42 +255,42 @@ $breadcrumb-bg: transparent;
 }
 
 .annotation-tags .rbt-input.focus {
-  border-bottom: 1px solid theme-color("primary");
+  border-bottom: 1px solid theme.$primary;
   box-shadow: none;
 }
 
 #typeahead-share-annotation-users-container .rbt-input.focus {
   box-shadow: none !important;
-  border-bottom: 1px solid theme-color("primary");
+  border-bottom: 1px solid theme.$primary;
 }
 
 .annotation-card-container.new-annotation {
-  border: 1px solid color.adjust(theme-color("primary"), $alpha: -0.5) !important;
+  border: 1px solid color.adjust(theme.$primary, $alpha: -0.5) !important;
 }
 
 .annotation-card-container.new-annotation .line1,
 .annotation-card-container.new-annotation .line2 {
-  background-color: color.adjust(theme-color("primary"), $alpha: -0.5) !important;
+  background-color: color.adjust(theme.$primary, $alpha: -0.5) !important;
   z-index: 3;
 }
 
 .annotation-card-container.new-annotation .annotation-pointer-background-left {
-  border-left-color: color.adjust(theme-color("primary"), $alpha: -0.5) !important;
+  border-left-color: color.adjust(theme.$primary, $alpha: -0.5) !important;
 }
 
 .annotation-card-container.new-annotation .annotation-pointer-background-right {
-  border-right-color: color.adjust(theme-color("primary"), $alpha: -0.5) !important;
+  border-right-color: color.adjust(theme.$primary, $alpha: -0.5) !important;
 }
 
 .annotation-body textarea:focus {
   box-shadow: none;
-  border-bottom: 1px solid theme-color("primary");
+  border-bottom: 1px solid theme.$primary;
 }
 
 .token-badge {
-  border: 1px solid theme-color("primary");
+  border: 1px solid theme.$primary;
 }
 
 input[type="range"]::-webkit-slider-thumb {
-  background-color: theme-color("primary") !important;
+  background-color: theme.$primary !important;
 }
