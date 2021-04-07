@@ -24,7 +24,7 @@ const DocumentsIndex = ({
   const [listLoading, setListLoading] = useState(true);
   const [documents, setDocuments] = useState([]);
   const [alerts, setAlerts] = initAlert ? useState([initAlert]) : useState([]);
-  const perPage = 10;
+  const perPage = 8;
 
   const fetchData = async ({ effect }) => {
     if (session) {
@@ -87,17 +87,11 @@ const DocumentsIndex = ({
       )}
       {!loading && session && !listLoading && (
       <Card>
-        <Card.Header>
-          <div className={styles['header-first-row']}>
-            <Card.Title>
-              Documents
-            </Card.Title>
-            <Button href="/documents/new">
-              <Plus className="mr-1 ml-n1 mt-n1" />
-              Create New Document
-            </Button>
-          </div>
-          <div className={styles['header-second-row']}>
+        <Card.Header className={styles.header}>
+          <Card.Title>
+            Documents
+          </Card.Title>
+          <div className={styles.tabs}>
             <Tabs
               transition={false}
               activeKey={key}
@@ -111,13 +105,14 @@ const DocumentsIndex = ({
           </div>
         </Card.Header>
         <Card.Body>
+          <div className={styles['button-container']}>
+            <Button href="/documents/new" className="mb-3" size="sm" variant="outline-primary">
+              <Plus className="mr-1 ml-n1 mt-n1" />
+              Create New Document
+            </Button>
+          </div>
           {Array.isArray(documents) && documents.length > 0 && (
             <>
-              <Paginator
-                page={page}
-                totalPages={totalPages}
-                setPage={setPage}
-              />
               <DocumentList
                 documents={documents}
                 setDocuments={setDocuments}
@@ -128,6 +123,11 @@ const DocumentsIndex = ({
                 userGroups={session.user.groups}
                 userId={session.user.id}
               />
+              <Paginator
+                page={page}
+                totalPages={totalPages}
+                setPage={setPage}
+              />
             </>
           )}
           {(!Array.isArray(documents) || documents.length === 0) && (
@@ -135,10 +135,6 @@ const DocumentsIndex = ({
               {`You have no ${key === 'shared' ? key : 'created'} documents.`}
             </Container>
           )}
-          <Button href="/documents/new">
-            <Plus className="mr-1 ml-n1 mt-n1" />
-            Create New Document
-          </Button>
         </Card.Body>
       </Card>
       )}

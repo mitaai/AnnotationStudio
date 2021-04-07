@@ -1,9 +1,14 @@
-.header-first-row {
+.header {
   display: flex;
   justify-content: space-between;
 }
 
-.header-second-row {
+.tabs {
   display: flex;
-  justify-content: center;
+}
+
+.button-container {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
 }
