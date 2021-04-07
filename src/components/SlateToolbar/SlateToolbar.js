@@ -41,12 +41,13 @@ import {
   videoURLtoEmbedURL,
   insertVideoEmbed,
 } from '../../utils/slateUtil';
+import styles from './SlateToolbar.module.scss';
 
 const SlateToolbar = ({ disabled }) => {
   const editor = useSlate();
   return (
     <div
-      className="slate-toolbar"
+      className={styles['slate-toolbar']}
       data-testid="slate-toolbar"
     >
       <Dropdown disabled={disabled}>
@@ -54,7 +55,7 @@ const SlateToolbar = ({ disabled }) => {
           <Dropdown.Toggle
             size="sm"
             variant="outline-secondary"
-            className="group-end"
+            className={styles['button-group-end']}
           >
             <Type />
           </Dropdown.Toggle>
@@ -180,21 +181,25 @@ const SlateToolbar = ({ disabled }) => {
           </Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>
-      <MarkButton format="bold" disabled={disabled}>
+      <MarkButton format="bold" disabled={disabled} className={styles['toolbar-button']}>
         <TypeBold />
       </MarkButton>
       <OverlayTrigger overlay={<Tooltip>Italic</Tooltip>}>
-        <MarkButton format="italic" disabled={disabled}>
+        <MarkButton format="italic" disabled={disabled} className={styles['toolbar-button']}>
           <TypeItalic />
         </MarkButton>
       </OverlayTrigger>
       <OverlayTrigger overlay={<Tooltip>Underline</Tooltip>}>
-        <MarkButton format="underline" disabled={disabled}>
+        <MarkButton format="underline" disabled={disabled} className={styles['toolbar-button']}>
           <TypeUnderline />
         </MarkButton>
       </OverlayTrigger>
       <OverlayTrigger overlay={<Tooltip>Strikethrough</Tooltip>}>
-        <MarkButton format="strikethrough" className="group-end" disabled={disabled}>
+        <MarkButton
+          format="strikethrough"
+          disabled={disabled}
+          className={`${styles['button-group-end']} ${styles['toolbar-button']}`}
+        >
           <TypeStrikethrough />
         </MarkButton>
       </OverlayTrigger>
@@ -202,41 +207,46 @@ const SlateToolbar = ({ disabled }) => {
         disabled={disabled}
         type={DEFAULTS_ALIGN.align_left.type}
         icon={<BlockButton format="align-left" disabled={disabled}><TextLeft /></BlockButton>}
+        className={styles['toolbar-button']}
       />
       <ToolbarAlign
         disabled={disabled}
         type={DEFAULTS_ALIGN.align_center.type}
         icon={<BlockButton format="align-center" disabled={disabled}><TextCenter /></BlockButton>}
+        className={styles['toolbar-button']}
       />
       <ToolbarAlign
         disabled={disabled}
         type={DEFAULTS_ALIGN.align_right.type}
-        className="group-end"
         icon={<BlockButton format="align-right" disabled={disabled}><TextRight /></BlockButton>}
+        className={`${styles['button-group-end']} ${styles['toolbar-button']}`}
       />
       <ToolbarList
         disabled={disabled}
         typeList={DEFAULTS_LIST.ul.type}
         icon={<BlockButton format="bulleted-list" disabled={disabled}><ListUl /></BlockButton>}
+        className={styles['toolbar-button']}
       />
       <ToolbarList
         disabled={disabled}
         typeList={DEFAULTS_LIST.ol.type}
-        className="group-end"
         icon={<BlockButton format="numbered-list" disabled={disabled}><ListOl /></BlockButton>}
+        className={`${styles['button-group-end']} ${styles['toolbar-button']}`}
       />
       <ToolbarLink
         options={DEFAULTS_LINK}
         icon={<BlockButton format="link" disabled={disabled}><Link45deg /></BlockButton>}
+        className={styles['toolbar-button']}
       />
       <ToolbarImage
         options={DEFAULTS_IMAGE}
         icon={<BlockButton format="image" disabled={disabled}><Image /></BlockButton>}
+        className={styles['toolbar-button']}
       />
       <ToolbarButton
         disabled={disabled}
         type={ELEMENT_MEDIA_EMBED}
-        className="group-end"
+        className={`${styles['button-group-end']} ${styles['toolbar-button']}`}
         icon={(
           <OverlayTrigger
             disabled={disabled}
