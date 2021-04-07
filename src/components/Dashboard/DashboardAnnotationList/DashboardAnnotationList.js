@@ -41,7 +41,6 @@ const DashboardAnnotationList = ({
                   .then((annosWithGroupNames) => {
                     setTotalPages(Math.ceil((data.count) / perPage));
                     setAnnotations(annosWithGroupNames);
-                    setListLoading(false);
                   });
               })
               .catch((err) => {
@@ -50,7 +49,6 @@ const DashboardAnnotationList = ({
               });
           } else {
             setAnnotations([]);
-            setListLoading(false);
           }
         } else if (key === 'mine') {
           await getOwnAnnotations({
@@ -61,7 +59,6 @@ const DashboardAnnotationList = ({
                 .then((annosWithGroupNames) => {
                   setTotalPages(Math.ceil((data.count) / perPage));
                   setAnnotations(annosWithGroupNames);
-                  setListLoading(false);
                 });
             })
             .catch((err) => {
@@ -75,6 +72,12 @@ const DashboardAnnotationList = ({
 
   useEffect(() => { fetchData({ effect: 'key' }); }, [key, session]);
   useEffect(() => { fetchData({ effect: 'page' }); }, [page]);
+
+  useEffect(() => {
+    if (session && annotations) {
+      setListLoading(false);
+    }
+  }, [annotations]);
 
   return (
     <Card data-testid="dash-annotation-list">

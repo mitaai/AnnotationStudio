@@ -18,12 +18,14 @@ const DocumentsIndex = ({
 }) => {
   const { tab, initAlert } = props;
   const [session, loading] = useSession();
-  const [key, setKey] = tab ? useState(tab) : useState('shared');
+  const tabToUse = tab || 'shared';
+  const [key, setKey] = useState(tabToUse);
   const [totalPages, setTotalPages] = useState(1);
   const [page, setPage] = useState(1);
   const [listLoading, setListLoading] = useState(true);
   const [documents, setDocuments] = useState([]);
-  const [alerts, setAlerts] = initAlert ? useState([initAlert]) : useState([]);
+  const alertArray = initAlert ? [initAlert] : [];
+  const [alerts, setAlerts] = useState(alertArray);
   const perPage = 8;
 
   const fetchData = async ({ effect }) => {
@@ -31,14 +33,13 @@ const DocumentsIndex = ({
       setListLoading(true);
       if (effect !== 'page') setPage(1);
       if (key === 'shared') {
-        getSharedDocumentsByGroup({ groups: session.user.groups, page, perPage })
+        await getSharedDocumentsByGroup({ groups: session.user.groups, page, perPage })
           .then(async (data) => {
             const { count, docs } = data;
+            setTotalPages(Math.ceil((count) / perPage));
             await addGroupNamesToDocuments(docs)
               .then((docsWithGroupNames) => {
-                setTotalPages(Math.ceil((count) / perPage));
                 setDocuments(docsWithGroupNames);
-                setListLoading(false);
               });
           })
           .catch((err) => {
@@ -49,11 +50,10 @@ const DocumentsIndex = ({
         await getDocumentsByUser({ id: session.user.id, page, perPage })
           .then(async (data) => {
             const { count, docs } = data;
+            setTotalPages(Math.ceil((count) / perPage));
             await addGroupNamesToDocuments(docs)
               .then((docsWithGroupNames) => {
-                setTotalPages(Math.ceil((count) / perPage));
                 setDocuments(docsWithGroupNames);
-                setListLoading(false);
               });
           })
           .catch((err) => {
@@ -67,6 +67,12 @@ const DocumentsIndex = ({
 
   useEffect(() => { fetchData({ effect: 'key' }); }, [key, session]);
   useEffect(() => { fetchData({ effect: 'page' }); }, [page]);
+
+  useEffect(() => {
+    if (session && documents) {
+      setListLoading(false);
+    }
+  }, [documents]);
 
   return (
     <Layout alerts={alerts} type="document" statefulSession={statefulSession}>

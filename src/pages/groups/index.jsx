@@ -41,7 +41,6 @@ const GroupList = ({ query, initAlerts, statefulSession }) => {
     const start = (page - 1) * perPage;
     const end = page * perPage;
     setGroups(groupsToShow.slice(start, end));
-    setPageLoading(false);
   }
 
   useEffect(() => {
@@ -55,9 +54,14 @@ const GroupList = ({ query, initAlerts, statefulSession }) => {
       const start = (page - 1) * perPage;
       const end = page * perPage;
       setGroups(groupsToShow.slice(start, end));
-      setPageLoading(false);
     }
   }, [session, page]);
+
+  useEffect(() => {
+    if (session && pageLoading) {
+      setPageLoading(false);
+    }
+  }, [groups]);
 
   return (
     <Layout alerts={alerts} type="group" statefulSession={statefulSession}>
