@@ -64,61 +64,60 @@ const SecondNavbar = ({
                 <Breadcrumb className={styles.breadcontainer}>
                   <Breadcrumb.Item active={type === 'dashboard'} href="/">Dashboard</Breadcrumb.Item>
                   {type === 'document' && (
-                  <Breadcrumb.Item href="/documents" active={!document}>
-                    Documents
-                  </Breadcrumb.Item>
+                    <Breadcrumb.Item href="/documents" active={!document}>
+                      Documents
+                    </Breadcrumb.Item>
                   )}
                   {type === 'group' && (
-                  <Breadcrumb.Item href="/groups" active={!document}>
-                    Groups
-                  </Breadcrumb.Item>
+                    <Breadcrumb.Item href="/groups" active={!document}>
+                      Groups
+                    </Breadcrumb.Item>
                   )}
                   {type === 'admin' && (
-                  <Breadcrumb.Item active={!document}>
-                    Administration
-                  </Breadcrumb.Item>
+                    <Breadcrumb.Item active={!document}>
+                      Administration
+                    </Breadcrumb.Item>
                   )}
                   {type === 'profile' && (
-                  <Breadcrumb.Item active>
-                    Edit Profile
-                  </Breadcrumb.Item>
+                    <Breadcrumb.Item active>
+                      Edit Profile
+                    </Breadcrumb.Item>
                   )}
                   {type === 'newuser' && (
-                  <Breadcrumb.Item active>
-                    Registration
-                  </Breadcrumb.Item>
+                    <Breadcrumb.Item active>
+                      Registration
+                    </Breadcrumb.Item>
                   )}
                   {type === 'annotations' && (
-                  <Breadcrumb.Item active>
-                    Annotations
-                  </Breadcrumb.Item>
+                    <Breadcrumb.Item active>
+                      Annotations
+                    </Breadcrumb.Item>
                   )}
                   {document && (
-                  <Breadcrumb.Item active>{document.title}</Breadcrumb.Item>
+                    <Breadcrumb.Item active>{document.title}</Breadcrumb.Item>
                   )}
                   {type === 'document' && document && docView && (
-                  <span className={styles.infobutton}>
-                    <InfoSquare size="1.4em" onClick={() => { setShowMoreDocumentInfo(true); }} />
-                  </span>
+                    <span className={styles.infobutton}>
+                      <InfoSquare size="1.4em" onClick={() => { setShowMoreDocumentInfo(true); }} />
+                    </span>
                   )}
                 </Breadcrumb>
               </Nav>
             </Col>
             {type === 'document' && document && docView && (
-            <Col
-              md={mobileView ? 12 : 5}
-              style={{ paddingLeft: (mobileView ? 15 : 0), paddingRight: 0 }}
-            >
-              <div className={styles.rightpanel} style={{ float: mobileView ? 'left' : 'right' }}>
-                <div className={styles['zoom-slider-container']}>
-                  <DocumentZoomSlider />
+              <Col
+                md={mobileView ? 12 : 5}
+                style={{ paddingLeft: (mobileView ? 15 : 0), paddingRight: 0 }}
+              >
+                <div className={styles.rightpanel} style={{ float: mobileView ? 'left' : 'right' }}>
+                  <div className={styles['zoom-slider-container']}>
+                    <DocumentZoomSlider />
+                  </div>
+                  <div className={styles['filter-container']}>
+                    <FilterPopover session={session} />
+                  </div>
                 </div>
-                <div className={styles['filter-container']}>
-                  <FilterPopover session={session} />
-                </div>
-              </div>
-            </Col>
-
+              </Col>
             )}
           </Row>
         </Container>
