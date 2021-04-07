@@ -22,7 +22,7 @@ const DashboardAnnotationList = ({
   const [totalPages, setTotalPages] = useState(1);
   const [page, setPage] = useState(1);
   const [listLoading, setListLoading] = useState(true);
-  const [annotations, setAnnotations] = useState([]);
+  const [annotations, setAnnotations] = useState(undefined);
   const limit = mode === 'dashboard' ? 10 : undefined;
   const perPage = 10;
 
