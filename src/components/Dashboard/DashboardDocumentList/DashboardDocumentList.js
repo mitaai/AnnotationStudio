@@ -23,8 +23,12 @@ const DashboardDocumentList = ({
       if (session && (session.user.groups || session.user.id)) {
         setListLoading(true);
         if (key === 'shared') {
-          await getSharedDocumentsByGroup(session.user.groups, 7)
-            .then(async (docs) => {
+          await getSharedDocumentsByGroup({
+            groups: session.user.groups,
+            limit: 7,
+          })
+            .then(async (data) => {
+              const { docs } = data;
               await addGroupNamesToDocuments(docs)
                 .then((docsWithGroupNames) => {
                   setDocuments(docsWithGroupNames);
@@ -36,8 +40,9 @@ const DashboardDocumentList = ({
               setListLoading(false);
             });
         } else if (key === 'mine') {
-          await getDocumentsByUser(session.user.id, 7)
-            .then(async (docs) => {
+          await getDocumentsByUser({ id: session.user.id, limit: 7 })
+            .then(async (data) => {
+              const { docs } = data;
               await addGroupNamesToDocuments(docs)
                 .then((docsWithGroupNames) => {
                   setDocuments(docsWithGroupNames);

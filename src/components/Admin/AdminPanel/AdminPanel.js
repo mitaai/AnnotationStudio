@@ -1,8 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import { useState, useEffect } from 'react';
-import {
-  Card, Pagination,
-} from 'react-bootstrap';
+import { Card } from 'react-bootstrap';
 import { ArrowDown, ArrowDownUp, ArrowUp } from 'react-bootstrap-icons';
 import AdminDashboard from '../AdminDashboard';
 import AdminUserList from '../User/AdminUserList';
@@ -11,6 +9,7 @@ import AdminGroupList from '../Group/AdminGroupList';
 import AdminHeader from '../AdminHeader';
 import { adminGetList } from '../../../utils/adminUtil';
 import LoadingSpinner from '../../LoadingSpinner';
+import Paginator from '../../Paginator';
 
 const AdminPanel = ({
   setAlerts, session, activeKey, setKey,
@@ -20,7 +19,7 @@ const AdminPanel = ({
   const [listLoading, setListLoading] = useState(true);
   const [data, setData] = useState([]);
   const [sortState, setSortState] = useState({ field: 'createdAt', direction: 'desc' });
-  const perPage = 20;
+  const perPage = 10;
 
   const SortIcon = ({ field }) => {
     if (field === sortState.field) {
@@ -70,49 +69,11 @@ const AdminPanel = ({
         )}
         {activeKey === 'dashboard' && (<AdminDashboard />)}
         {!listLoading && activeKey !== 'dashboard' && (
-          <Pagination style={{ justifyContent: 'center' }}>
-            <Pagination.First disabled={page === 1} onClick={() => setPage(1)} />
-            <Pagination.Prev disabled={page === 1} onClick={() => setPage(page - 1)} />
-            {page !== 1
-              && (
-                <>
-                  {[...Array(page).keys()].map((i) => (
-                    i + 1 < page && (
-                      <Pagination.Item
-                        key={`page${i + 1}`}
-                        onClick={() => setPage(i + 1)}
-                      >
-                        {i + 1}
-                      </Pagination.Item>
-                    )
-                  ))}
-                </>
-              )}
-            <Pagination.Item active>{page}</Pagination.Item>
-            {totalPages > 1
-              && (
-                <>
-                  {[...Array(totalPages).keys()].map((i) => (
-                    i + 1 > page && (
-                      <Pagination.Item
-                        key={`page${i + 1}`}
-                        onClick={() => setPage(i + 1)}
-                      >
-                        {i + 1}
-                      </Pagination.Item>
-                    )
-                  ))}
-                </>
-              )}
-            <Pagination.Next
-              disabled={page === totalPages || totalPages === 0}
-              onClick={() => setPage(page + 1)}
-            />
-            <Pagination.Last
-              disabled={page === totalPages || totalPages === 0}
-              onClick={() => setPage(totalPages)}
-            />
-          </Pagination>
+          <Paginator
+            page={page}
+            totalPages={totalPages}
+            setPage={setPage}
+          />
         )}
         {!listLoading && activeKey === 'users' && data.users && (
           <AdminUserList

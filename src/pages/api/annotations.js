@@ -10,7 +10,7 @@ const handler = async (req, res) => {
     const token = await jwt.getToken({ req, secret });
     if (token && token.exp > 0) {
       const {
-        slug, userId, limit,
+        slug, userId, limit, page, perPage,
       } = req.query;
       let groupIds = req.query['groupIds[]'];
       if (groupIds && !Array.isArray(groupIds)) {
@@ -28,54 +28,68 @@ const handler = async (req, res) => {
       } else if (userId) {
         if (userId === token.id) {
           const { db } = await connectToDatabase();
+          const condition = { 'creator.id': userId };
           if (limit) {
             const arr = await db
               .collection('annotations')
-              .find({
-                'creator.id': userId,
-              }, {
+              .find(condition, {
                 sort: [['_id', -1]],
               })
               .limit(parseInt(limit, 10))
               .toArray();
             res.status(200).json({ annotations: arr });
+          } else if (page && perPage) {
+            const arr = await db
+              .collection('annotations')
+              .find(condition, {
+                sort: [['_id', -1]],
+              })
+              .skip(page > 0 ? ((page - 1) * perPage) : 0)
+              .limit(parseInt(perPage, 10))
+              .toArray();
+            const count = await db.collection('annotations').countDocuments(condition);
+            res.status(200).json({ annotations: arr, count });
           } else {
             const arr = await db
               .collection('annotations')
-              .find({
-                'creator.id': userId,
-              })
+              .find(condition)
               .toArray();
             res.status(200).json({ annotations: arr });
           }
         } else res.status(403).end('Unauthorized');
       } else if (groupIds) {
         const { db } = await connectToDatabase();
+        const condition = {
+          'permissions.private': false,
+          $or: [
+            { 'permissions.sharedTo': { $in: [token.id] } },
+            { 'permissions.groups': { $in: groupIds } },
+          ],
+        };
         if (limit) {
           const arr = await db
             .collection('annotations')
-            .find({
-              'permissions.private': false,
-              $or: [
-                { 'permissions.sharedTo': { $in: [token.id] } },
-                { 'permissions.groups': { $in: groupIds } },
-              ],
-            }, {
+            .find(condition, {
               sort: [['_id', -1]],
             })
             .limit(parseInt(limit, 10))
             .toArray();
           res.status(200).json({ annotations: arr });
+        } else if (page && perPage) {
+          const arr = await db
+            .collection('annotations')
+            .find(condition, {
+              sort: [['_id', -1]],
+            })
+            .skip(page > 0 ? ((page - 1) * perPage) : 0)
+            .limit(parseInt(perPage, 10))
+            .toArray();
+          const count = await db.collection('annotations').countDocuments(condition);
+          res.status(200).json({ annotations: arr, count });
         } else {
           const arr = await db
             .collection('annotations')
-            .find({
-              'permissions.private': false,
-              $or: [
-                { 'permissions.sharedTo': { $in: [token.id] } },
-                { 'permissions.groups': { $in: groupIds } },
-              ],
-            })
+            .find(condition)
             .toArray();
           res.status(200).json({ annotations: arr });
         }

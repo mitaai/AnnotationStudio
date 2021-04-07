@@ -10,6 +10,7 @@ import LoadingSpinner from '../../LoadingSpinner';
 import { getSharedAnnotations, getOwnAnnotations, addGroupNamesToAnnotations } from '../../../utils/annotationUtil';
 import { FirstNameLastInitial } from '../../../utils/nameUtil';
 import { fixIframes } from '../../../utils/parseUtil';
+import Paginator from '../../Paginator';
 
 const DashboardAnnotationList = ({
   session,
@@ -18,19 +19,27 @@ const DashboardAnnotationList = ({
   mode,
 }) => {
   const [key, setKey] = useState(tab || 'mine');
+  const [totalPages, setTotalPages] = useState(1);
+  const [page, setPage] = useState(1);
   const [listLoading, setListLoading] = useState(true);
   const [annotations, setAnnotations] = useState([]);
   const limit = mode === 'dashboard' ? 10 : undefined;
+  const perPage = 10;
 
-  useEffect(() => {
-    async function fetchData() {
+  const fetchData = async ({ effect }) => {
+    if (session) {
+      setListLoading(true);
+      if (effect !== 'page') setPage(1);
       if (session && (session.user.groups || session.user.id)) {
         if (key === 'shared') {
           if (session.user.groups && session.user.groups.length > 0) {
-            await getSharedAnnotations(session.user.groups, limit)
-              .then(async (annos) => {
-                await addGroupNamesToAnnotations(annos)
+            await getSharedAnnotations({
+              groups: session.user.groups, limit, page, perPage,
+            })
+              .then(async (data) => {
+                await addGroupNamesToAnnotations(data.annotations)
                   .then((annosWithGroupNames) => {
+                    setTotalPages(Math.ceil((data.count) / perPage));
                     setAnnotations(annosWithGroupNames);
                     setListLoading(false);
                   });
@@ -44,10 +53,13 @@ const DashboardAnnotationList = ({
             setListLoading(false);
           }
         } else if (key === 'mine') {
-          await getOwnAnnotations(session.user.id, limit)
-            .then(async (annos) => {
-              await addGroupNamesToAnnotations(annos)
+          await getOwnAnnotations({
+            userId: session.user.id, limit, page, perPage,
+          })
+            .then(async (data) => {
+              await addGroupNamesToAnnotations(data.annotations)
                 .then((annosWithGroupNames) => {
+                  setTotalPages(Math.ceil((data.count) / perPage));
                   setAnnotations(annosWithGroupNames);
                   setListLoading(false);
                 });
@@ -59,8 +71,10 @@ const DashboardAnnotationList = ({
         }
       }
     }
-    fetchData();
-  }, [key]);
+  };
+
+  useEffect(() => { fetchData({ effect: 'key' }); }, [key, session]);
+  useEffect(() => { fetchData({ effect: 'page' }); }, [page]);
 
   return (
     <Card data-testid="dash-annotation-list">
@@ -78,9 +92,6 @@ const DashboardAnnotationList = ({
           style={{ justifyContent: 'flex-end', float: 'right', marginTop: '-2rem' }}
           activeKey={key}
           onSelect={(k) => {
-            if (k !== key) {
-              setListLoading(true);
-            }
             setKey(k);
           }}
         >
@@ -139,6 +150,15 @@ const DashboardAnnotationList = ({
             ),
           )}
         </ListGroup>
+        {mode === 'list' && (
+          <div className="mt-3">
+            <Paginator
+              page={page}
+              totalPages={totalPages}
+              setPage={setPage}
+            />
+          </div>
+        )}
         {mode === 'dashboard' && (
         <Card.Footer style={{ fontWeight: 'bold', borderTop: 0 }} key="all-annotations">
           <Link href={`/annotations?tab=${key}`} disabled>

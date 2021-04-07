@@ -156,8 +156,14 @@ const reassignAnnotationsToUser = async (sourceUser, destinationEmail) => {
   } return Promise.reject(Error(`Unable to find user with email ${destinationEmail}: error ${res.status} received from server`));
 };
 
-const getSharedAnnotations = async (groups, limit) => {
-  let url = `/api/annotations?limit=${limit}`;
+const getSharedAnnotations = async ({
+  groups, limit, page, perPage,
+}) => {
+  let url = '/api/annotations';
+  if (limit) { url = `${url}?limit=${limit}&`; } else { url = `${url}?`; }
+  if (page && perPage) {
+    url = `${url}page=${page}&perPage=${perPage}`;
+  }
   groups.map((group) => {
     url = `${url}&groupIds[]=${group.id}`;
     return null;
@@ -170,15 +176,19 @@ const getSharedAnnotations = async (groups, limit) => {
   });
   if (res.status === 200) {
     const response = await res.json();
-    const { annotations } = response;
-    return Promise.resolve(annotations);
+    const { annotations, count } = response;
+    return Promise.resolve({ annotations, count });
   } if (res.status === 404) {
     return Promise.resolve([]);
   } return Promise.reject(Error(`Unable to retrieve annotations: error ${res.status} received from server`));
 };
 
-const getOwnAnnotations = async (userId, limit) => {
-  const url = `/api/annotations?userId=${userId}&limit=${limit}`;
+const getOwnAnnotations = async ({
+  userId, limit, page, perPage,
+}) => {
+  let url = `/api/annotations?userId=${userId}`;
+  if (limit) { url = `${url}&limit=${limit}`; }
+  if (page && perPage) { url = `${url}&page=${page}&perPage=${perPage}`; }
   const res = await unfetch(url, {
     method: 'GET',
     headers: {
@@ -187,8 +197,8 @@ const getOwnAnnotations = async (userId, limit) => {
   });
   if (res.status === 200) {
     const response = await res.json();
-    const { annotations } = response;
-    return Promise.resolve(annotations);
+    const { annotations, count } = response;
+    return Promise.resolve({ annotations, count });
   } if (res.status === 404) {
     return Promise.resolve([]);
   } return Promise.reject(Error(`Unable to retrieve annotations: error ${res.status} received from server`));
