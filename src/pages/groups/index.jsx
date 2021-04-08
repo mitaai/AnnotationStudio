@@ -98,11 +98,11 @@ const GroupList = ({ query, initAlerts, statefulSession }) => {
                   <Table striped bordered hover variant="light">
                     <thead>
                       <tr>
-                        <th>Name</th>
+                        <th style={{ width: '39%' }}>Name</th>
                         <th>Role</th>
                         <th>Owner</th>
-                        <th>Members</th>
-                        <th>Actions</th>
+                        <th style={{ width: '10%' }}>Members</th>
+                        <th style={{ width: '21%' }}>Actions</th>
                       </tr>
                     </thead>
                     <tbody>

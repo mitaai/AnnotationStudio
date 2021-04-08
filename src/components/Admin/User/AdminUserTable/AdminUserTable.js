@@ -22,6 +22,7 @@ import { reassignAnnotationsToUser } from '../../../../utils/annotationUtil';
 import { adminGetList } from '../../../../utils/adminUtil';
 import ConfirmationDialog from '../../../ConfirmationDialog';
 import AdminAnnotation from './AdminAnnotation';
+import GroupNameBadge from '../../../GroupNameBadge';
 
 const AdminUserTable = ({
   user, setAlerts, isSelf,
@@ -163,16 +164,13 @@ const AdminUserTable = ({
                       break;
                   }
                   return (
-                    <Badge
+                    <GroupNameBadge
                       variant={variant}
-                      type="button"
                       className="mr-1"
-                      as={Button}
                       href={`/admin/group/${group.id}`}
                       key={group.id}
-                    >
-                      {group.name}
-                    </Badge>
+                      groupName={group.name}
+                    />
                   );
                 })
                 : (<Badge>[no groups]</Badge>)}

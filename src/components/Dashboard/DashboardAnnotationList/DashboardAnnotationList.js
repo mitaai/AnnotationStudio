@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
-  Badge, Card, Col, ListGroup, Row, Tab, Tabs,
+  Card, Col, ListGroup, Row, Tab, Tabs,
 } from 'react-bootstrap';
 import { format } from 'date-fns';
 import ReactHtmlParser from 'react-html-parser';
@@ -11,6 +11,7 @@ import { getSharedAnnotations, getOwnAnnotations, addGroupNamesToAnnotations } f
 import { FirstNameLastInitial } from '../../../utils/nameUtil';
 import { fixIframes } from '../../../utils/parseUtil';
 import Paginator from '../../Paginator';
+import GroupNameBadge from '../../GroupNameBadge';
 
 const DashboardAnnotationList = ({
   session,
@@ -138,13 +139,12 @@ const DashboardAnnotationList = ({
                       && annotation.permissions.private === false
                       && annotation.permissions.sharedTo === undefined
                       && (
-                      <Badge
+                      <GroupNameBadge
                         variant="primary"
                         key={annotation.permissions.groups.sort()[0]._id}
                         className="mL-2"
-                      >
-                        {annotation.permissions.groups.sort()[0].name}
-                      </Badge>
+                        groupName={annotation.permissions.groups.sort()[0].name}
+                      />
                       )}
                     </small>
                   </Col>
