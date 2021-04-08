@@ -21,7 +21,13 @@ const EditDocument = ({ document, alerts, statefulSession }) => {
   }, [loading]);
   const [errors, setErrors] = useState(alerts || []);
   return (
-    <Layout alerts={errors} type="document" title={document ? `Edit Document: ${document.title}` : 'error'} statefulSession={statefulSession}>
+    <Layout
+      alerts={errors}
+      type="document"
+      title={document ? `Edit Document: ${document.title}` : 'error'}
+      document={document}
+      statefulSession={statefulSession}
+    >
       <Col lg="12" className="mx-auto">
         <Card>
           {((!session && loading) || (session && pageLoading)) && (

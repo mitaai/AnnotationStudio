@@ -15,7 +15,12 @@ const AdminManageGroup = (props) => {
   const [session, loading] = useSession();
   const [alerts, setAlerts] = useState(initAlerts || []);
   return (
-    <Layout type="admin" alerts={alerts} statefulSession={statefulSession}>
+    <Layout
+      type="admin"
+      alerts={alerts}
+      statefulSession={statefulSession}
+      document={{ title: group.name }}
+    >
       {loading && (
         <Card>
           <Card.Body>

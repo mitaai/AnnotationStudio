@@ -89,7 +89,13 @@ const EditGroup = ({
   };
 
   return (
-    <Layout alerts={alerts} type="group" title={`Manage Group: ${group ? group.name : ''}`} statefulSession={statefulSession}>
+    <Layout
+      alerts={alerts}
+      type="group"
+      document={group ? { title: group.name } : undefined}
+      title={`Manage Group: ${group ? group.name : ''}`}
+      statefulSession={statefulSession}
+    >
       <Card>
         {((!session && loading) || (session && pageLoading)) && (
           <LoadingSpinner />

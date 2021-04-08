@@ -34,7 +34,13 @@ const ViewGroup = ({ group, statefulSession }) => {
   };
 
   return (
-    <Layout alerts={alerts} type="group" title={group ? group.name : ''} statefulSession={statefulSession}>
+    <Layout
+      alerts={alerts}
+      type="group"
+      title={group ? group.name : ''}
+      document={group ? { title: group.name } : undefined}
+      statefulSession={statefulSession}
+    >
       <Card>
         {!session && loading && (
           <LoadingSpinner />
