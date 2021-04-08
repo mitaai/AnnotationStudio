@@ -13,7 +13,12 @@ const AdminManageDocument = (props) => {
   const [session, loading] = useSession();
   const [alerts, setAlerts] = useState(initAlert || []);
   return (
-    <Layout type="admin" alerts={alerts} statefulSession={statefulSession}>
+    <Layout
+      type="admin"
+      alerts={alerts}
+      statefulSession={statefulSession}
+      document={document}
+    >
       {loading && (
         <Card>
           <Card.Body>

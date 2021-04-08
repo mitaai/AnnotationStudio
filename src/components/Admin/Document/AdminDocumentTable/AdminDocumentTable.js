@@ -3,12 +3,13 @@ import React, { useEffect, useState } from 'react';
 import Router from 'next/router';
 import Link from 'next/link';
 import {
-  Badge, Button, Dropdown, DropdownButton, Table,
+  Badge, Dropdown, DropdownButton, Table,
 } from 'react-bootstrap';
 import { format } from 'date-fns';
 import { getUserById } from '../../../../utils/userUtil';
 import { deleteDocumentById } from '../../../../utils/docUtil';
 import ConfirmationDialog from '../../../ConfirmationDialog';
+import GroupNameBadge from '../../../GroupNameBadge';
 
 const AdminDocumentTable = ({ document, setAlerts }) => {
   const [namesState, setNamesState] = useState({});
@@ -172,15 +173,13 @@ const AdminDocumentTable = ({ document, setAlerts }) => {
             <td>
               {(document.groups && document.groups.length > 0)
                 ? document.groups.sort().map((group) => (
-                  <Badge
+                  <GroupNameBadge
                     variant="primary"
                     className="mr-1"
-                    as={Button}
                     href={`/admin/group/${group._id}`}
                     key={group._id}
-                  >
-                    {group.name}
-                  </Badge>
+                    groupName={group.name}
+                  />
                 ))
                 : (<Badge>[no groups]</Badge>)}
             </td>

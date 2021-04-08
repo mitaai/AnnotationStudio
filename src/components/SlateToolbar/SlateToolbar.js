@@ -3,7 +3,6 @@ import {
 } from 'react-bootstrap';
 import {
   CameraVideoFill,
-  CodeSquare,
   Image,
   Link45deg,
   ListOl,
@@ -255,13 +254,6 @@ const SlateToolbar = ({ disabled }) => {
           insertVideoEmbed(editor, embedUrl);
         }}
       />
-      <OverlayTrigger disabled={disabled} overlay={<Tooltip>Code view (coming soon?)</Tooltip>}>
-        <span className="d-inline-block">
-          <Button disabled size="sm" variant="outline-secondary" style={{ pointerEvents: 'none' }}>
-            <CodeSquare />
-          </Button>
-        </span>
-      </OverlayTrigger>
     </div>
   );
 };

@@ -17,6 +17,7 @@ import LoadingSpinner from '../LoadingSpinner';
 import { deleteDocumentById } from '../../utils/docUtil';
 import ConfirmationDialog from '../ConfirmationDialog';
 import { ucFirst } from '../../utils/stringUtil';
+import GroupNameBadge from '../GroupNameBadge';
 
 const DocumentList = ({
   documents,
@@ -93,15 +94,13 @@ const DocumentList = ({
                   <td>
                     {(document.groups && document.groups.length > 0)
                       ? document.groups.map((group) => (
-                        <Badge
+                        <GroupNameBadge
                           variant="primary"
                           className="mr-1"
-                          as={Button}
                           href={`/groups/${group._id}`}
                           key={group._id}
-                        >
-                          {group.name}
-                        </Badge>
+                          groupName={group.name}
+                        />
                       )) : (<Badge>[no groups]</Badge>)}
                   </td>
                   <td>
