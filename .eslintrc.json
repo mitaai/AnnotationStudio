@@ -1,6 +1,6 @@
 {
   "extends": ["airbnb", "plugin:testing-library/react"],
-  "plugins": ["jest","testing-library"],
+  "plugins": ["jest","testing-library", "react-hooks"],
   "parserOptions": {
     "ecmaVersion": 2020,
     "sourceType": "module",
@@ -14,7 +14,9 @@
     "arrow-parens": ["error", "always"],
     "react/react-in-jsx-scope": "off",
     "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx"] }],
-    "react/prop-types": 0
+    "react/prop-types": 0,
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "warn"
   },
   "env": {
     "jest": true
