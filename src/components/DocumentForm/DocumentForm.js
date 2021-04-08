@@ -33,6 +33,7 @@ import {
   deserializeHTMLToDocument,
   pipe,
   serializeHTMLFromNodes,
+  withCodeBlock,
   withDeserializeHTML,
   withImageUpload,
   withInlineVoid,
@@ -155,6 +156,7 @@ const DocumentForm = ({
     withReact,
     withHistory,
     withImageUpload(),
+    withCodeBlock(),
     withInlineVoid({ plugins }),
     withList(DEFAULTS_LIST),
     withMarks(),
@@ -284,10 +286,13 @@ const DocumentForm = ({
       type: DEFAULTS_PARAGRAPH.p.type,
     },
   ];
-  const [slateValue, setSlateValue] = (mode === 'edit' && data && (!data.uploadContentType
+
+  const initSlateValue = (mode === 'edit' && data && (!data.uploadContentType
     || (!data.uploadContentType.includes('pdf') && !data.uploadContentType.includes('epub'))))
-    ? useState(deserializeHTMLToDocument({ plugins, element: txtHtml.body }))
-    : useState(slateInitialValue);
+    ? deserializeHTMLToDocument({ plugins, element: txtHtml.body })
+    : slateInitialValue;
+
+  const [slateValue, setSlateValue] = useState(initSlateValue);
 
   let initialValues = {};
 
