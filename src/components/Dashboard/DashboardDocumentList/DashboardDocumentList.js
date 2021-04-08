@@ -2,12 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
-  Badge, Button, Card, Col, ListGroup, OverlayTrigger, Row, Tab, Tabs, Tooltip,
+  Button, Card, Col, ListGroup, OverlayTrigger, Row, Tab, Tabs, Tooltip,
 } from 'react-bootstrap';
 import { Plus } from 'react-bootstrap-icons';
 import { format } from 'date-fns';
 import LoadingSpinner from '../../LoadingSpinner';
 import { getSharedDocumentsByGroup, getDocumentsByUser, addGroupNamesToDocuments } from '../../../utils/docUtil';
+import GroupNameBadge from '../../GroupNameBadge';
 
 const DashboardDocumentList = ({
   session,
@@ -89,13 +90,12 @@ const DashboardDocumentList = ({
                 </Col>
                 <Col className="text-right">
                   {!!document.groups && !!document.groups[0] && (
-                    <Badge
+                    <GroupNameBadge
                       variant="primary"
                       className="mr-2"
                       key={document.groups[0]._id}
-                    >
-                      {document.groups[0].name}
-                    </Badge>
+                      groupName={document.groups[0].name}
+                    />
                   )}
                   {!!document.groups && document.groups.length > 1 && (
                     <OverlayTrigger
