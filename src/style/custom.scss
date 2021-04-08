@@ -10,6 +10,8 @@ $theme-colors: (
   "gray-400": theme.$gray-400,
 );
 
+$breadcrumb-bg: transparent;
+
 .slate-h1,
 .slate-h2,
 .slate-h3,
@@ -234,7 +236,8 @@ $theme-colors: (
   }
 }
 
-$breadcrumb-bg: transparent;
+/* import react-bootstrap-range-slider */
+@import "~react-bootstrap-range-slider/dist/react-bootstrap-range-slider.scss";
 
 /* import bootstrap */
 @import "~bootstrap/scss/bootstrap";
@@ -289,8 +292,4 @@ $breadcrumb-bg: transparent;
 
 .token-badge {
   border: 1px solid theme.$primary;
-}
-
-input[type="range"]::-webkit-slider-thumb {
-  background-color: theme.$primary !important;
 }
