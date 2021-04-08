@@ -283,10 +283,13 @@ const DocumentForm = ({
       type: DEFAULTS_PARAGRAPH.p.type,
     },
   ];
-  const [slateValue, setSlateValue] = (mode === 'edit' && data && (!data.uploadContentType
+
+  const initSlateValue = (mode === 'edit' && data && (!data.uploadContentType
     || (!data.uploadContentType.includes('pdf') && !data.uploadContentType.includes('epub'))))
-    ? useState(deserializeHTMLToDocument({ plugins, element: txtHtml.body }))
-    : useState(slateInitialValue);
+    ? deserializeHTMLToDocument({ plugins, element: txtHtml.body })
+    : slateInitialValue;
+
+  const [slateValue, setSlateValue] = useState(initSlateValue);
 
   let initialValues = {};
 
