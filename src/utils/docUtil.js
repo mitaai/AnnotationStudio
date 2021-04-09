@@ -134,11 +134,19 @@ const getManyGroupNamesById = async (groupIds) => {
 
 const addGroupNamesToDocuments = async (docsToAlter) => {
   const allGroupIds = [];
-  docsToAlter.forEach((doc) => {
-    doc.groups.forEach((group) => {
-      if (!allGroupIds.includes(group)) { allGroupIds.push(group); }
+  if (docsToAlter
+    && Array.isArray(docsToAlter)
+    && docsToAlter.length > 0) {
+    docsToAlter.forEach((doc) => {
+      if (doc.groups
+        && Array.isArray(doc.groups)
+        && doc.groups.length > 0) {
+        doc.groups.forEach((group) => {
+          if (!allGroupIds.includes(group)) { allGroupIds.push(group); }
+        });
+      }
     });
-  });
+  }
   const groupObjects = await getManyGroupNamesById(allGroupIds)
     .then((res) => res.groups);
   const altered = Promise.all(docsToAlter.map(async (document) => {
