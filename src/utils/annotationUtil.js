@@ -206,11 +206,19 @@ const getOwnAnnotations = async ({
 
 const addGroupNamesToAnnotations = async (annosToAlter) => {
   const allGroupIds = [];
-  annosToAlter.forEach((annotation) => {
-    annotation.permissions.groups.forEach((group) => {
-      if (!allGroupIds.includes(group)) { allGroupIds.push(group); }
+  if (annosToAlter
+    && Array.isArray(annosToAlter)
+    && annosToAlter.length > 0) {
+    annosToAlter.forEach((annotation) => {
+      if (annotation.permissions
+          && Array.isArray(annotation.permissions.groups)
+          && annotation.permissions.groups.length > 0) {
+        annotation.permissions.groups.forEach((group) => {
+          if (!allGroupIds.includes(group)) { allGroupIds.push(group); }
+        });
+      }
     });
-  });
+  }
   const groupObjects = await getManyGroupNamesById(allGroupIds)
     .then((res) => res.groups);
   const altered = Promise.all(annosToAlter.map(async (annotation) => {
