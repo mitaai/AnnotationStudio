@@ -205,15 +205,25 @@ const getOwnAnnotations = async ({
 };
 
 const addGroupNamesToAnnotations = async (annosToAlter) => {
+  const allGroupIds = [];
+  annosToAlter.forEach((annotation) => {
+    annotation.permissions.groups.forEach((group) => {
+      if (!allGroupIds.includes(group)) { allGroupIds.push(group); }
+    });
+  });
+  const groupObjects = await getManyGroupNamesById(allGroupIds)
+    .then((res) => res.groups);
   const altered = Promise.all(annosToAlter.map(async (annotation) => {
     const anno = annotation;
-    if (annotation.permissions.groups && annotation.permissions.groups.length > 0) {
-      await getManyGroupNamesById(annotation.permissions.groups)
-        .then((res) => {
-          anno.permissions.groups = res.groups;
-        });
+    let alteredGroups = [];
+    if (annotation.permissions.groups) {
+      alteredGroups = annotation.permissions.groups.map(
+        // eslint-disable-next-line no-underscore-dangle
+        (group) => groupObjects.find((groupObject) => groupObject._id === group),
+      );
     }
-    return anno;
+    const alteredPermissions = { ...anno.permissions, groups: alteredGroups };
+    return { ...anno, permissions: alteredPermissions };
   }));
   return altered;
 };

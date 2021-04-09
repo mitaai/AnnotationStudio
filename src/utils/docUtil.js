@@ -133,15 +133,24 @@ const getManyGroupNamesById = async (groupIds) => {
 };
 
 const addGroupNamesToDocuments = async (docsToAlter) => {
+  const allGroupIds = [];
+  docsToAlter.forEach((doc) => {
+    doc.groups.forEach((group) => {
+      if (!allGroupIds.includes(group)) { allGroupIds.push(group); }
+    });
+  });
+  const groupObjects = await getManyGroupNamesById(allGroupIds)
+    .then((res) => res.groups);
   const altered = Promise.all(docsToAlter.map(async (document) => {
     const doc = document;
-    if (document.groups && document.groups.length > 0) {
-      await getManyGroupNamesById(document.groups)
-        .then((res) => {
-          doc.groups = res.groups;
-        });
+    let alteredGroups = [];
+    if (document.groups) {
+      alteredGroups = document.groups.map(
+        // eslint-disable-next-line no-underscore-dangle
+        (group) => groupObjects.find((groupObject) => groupObject._id === group),
+      );
     }
-    return doc;
+    return { ...doc, groups: alteredGroups };
   }));
   return altered;
 };
