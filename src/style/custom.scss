@@ -1,114 +1,16 @@
+@use "sass:color";
+@use "theme";
+
 /* custom colors */
 $theme-colors: (
-  "ans-color": #fcce02,
-  "dark": #343434,
-  "primary": #015999,
-  "primary-05": rgba(1, 89, 153, 0.5), 
-  "info": #01998f,
+  "ans-color": theme.$ans-color,
+  "dark": theme.$dark,
+  "primary": theme.$primary,
+  "info": theme.$info,
+  "gray-400": theme.$gray-400,
 );
 
-ol.breadcrumb {
-  padding-left: 0px !important;
-}
-
-.footer .logo {
-  height: 30px;
-  max-height: 30px;
-  min-height: 30px;
-}
-
-.header-logo-svg {
-  width: 26px;
-  height: 26px;
-  margin-right: 0.5rem;
-  margin-bottom: 0.3rem;
-}
-
-#slate-container {
-  width: 750px;
-}
-
-#slate-container-card {
-  display: flex;
-  justify-content: center;
-}
-
-.slate-editor {
-  padding: 2rem 54.5px;
-  resize: vertical;
-  height: 350px;
-  overflow-y: scroll;
-  border: 1px solid #ced4da;
-  border-top: none;
-  border-radius: 0.25rem;
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
-  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-  -webkit-transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-  &:focus {
-    border-color: #80bdff;
-    outline: 0;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-  }
-  img {
-    display: block;
-    max-width: 100%;
-    padding: 10px 0px;
-    max-height: none;
-    .imgSelected {
-      box-shadow: "0 0 0 2px blue;";
-    }
-    :not(.imgSelected) {
-      box-shadow: none;
-    }
-  }
-}
-
-.slate-toolbar {
-  svg {
-    width: 1.15rem;
-    height: 1.15rem;
-    &.type-caret {
-      margin-left: 3px;
-      width: 0.5rem;
-      height: 0.5rem;
-    }
-  }
-  display: flex;
-  justify-content: center;
-  padding: 0.5rem 10px 0.5rem;
-  border-top-left-radius: 0.25rem;
-  border-top-right-radius: 0.25rem;
-  background-color: rgba(0, 0, 0, 0.08);
-  border: 1px solid #ced4da;
-  & > * {
-    display: inline-block;
-  }
-  button {
-    margin-left: 0.125rem;
-    margin-right: 0.125rem;
-  }
-  .group-end {
-    margin-right: 1rem;
-  }
-}
-
-#slate-loader {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-evenly;
-  align-items: center;
-  position: absolute;
-  width: 750px;
-  height: 350px;
-  background-color:rgba(255, 255, 255, 0.75);
-}
-
-.slate-ToolbarButton {
-  width: 2.3rem;
-  margin-right: 0.25rem;
-  height: 2rem;
-}
+$breadcrumb-bg: transparent;
 
 .slate-h1,
 .slate-h2,
@@ -246,10 +148,11 @@ ol.breadcrumb {
   line-clamp: 3;
   display: -webkit-box;
   -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;  
+  -webkit-box-orient: vertical;
   overflow: hidden;
   max-height: 72px;
-  img, iframe {
+  img,
+  iframe {
     max-width: 100%;
   }
   p {
@@ -257,7 +160,8 @@ ol.breadcrumb {
   }
 }
 
-.ui.selection.dropdown,.ui.upward.selection.dropdown {
+.ui.selection.dropdown,
+.ui.upward.selection.dropdown {
   cursor: default;
   min-height: calc(1.5em + 0.75rem + 2px);
   padding: 0.375rem 0.75rem;
@@ -286,32 +190,33 @@ ol.breadcrumb {
   &:focus {
     color: #495057;
     background-color: #fff;
-    border-color: #80bdff;
+    border-color: theme.$primary;
     outline: 0;
     box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
   }
 }
-.ui.selection.active.dropdown, .ui.upward.selection.active.dropdown {
+.ui.selection.active.dropdown,
+.ui.upward.selection.active.dropdown {
   box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-  border-color: #80bdff;
+  border-color: theme.$primary;
   &:hover {
     box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-    border-color: #80bdff;
+    border-color: theme.$primary;
     .menu {
       box-shadow: none;
-      border-color: #80bdff;
+      border-color: theme.$primary;
       &:hover {
         box-shadow: none;
-        border-color: #80bdff;
+        border-color: theme.$primary;
       }
     }
   }
   .menu {
     box-shadow: none;
-    border-color: #80bdff;
+    border-color: theme.$primary;
     &:hover {
       box-shadow: none;
-      border-color: #80bdff;
+      border-color: theme.$primary;
     }
   }
 }
@@ -331,23 +236,20 @@ ol.breadcrumb {
   }
 }
 
-$breadcrumb-bg: transparent;
+/* import react-bootstrap-range-slider */
+@import "~react-bootstrap-range-slider/dist/react-bootstrap-range-slider.scss";
 
 /* import bootstrap */
 @import "~bootstrap/scss/bootstrap";
 
-.second-navbar #btn-document-more-info {
-  color: theme-color("primary");
-}
-
 #scroll-to-annotation-text {
   cursor: pointer;
-  color: theme-color("primary");
+  color: theme.$primary;
 }
 
 #question-circle-icon {
   font-size: 14;
-  color: theme-color("primary");
+  color: theme.$primary;
   margin-left: 4;
 }
 
@@ -356,41 +258,38 @@ $breadcrumb-bg: transparent;
 }
 
 .annotation-tags .rbt-input.focus {
-  border-bottom: 1px solid theme-color("primary");
+  border-bottom: 1px solid theme.$primary;
   box-shadow: none;
 }
 
 #typeahead-share-annotation-users-container .rbt-input.focus {
   box-shadow: none !important;
-  border-bottom: 1px solid theme-color("primary");
+  border-bottom: 1px solid theme.$primary;
 }
 
 .annotation-card-container.new-annotation {
-  border: 1px solid theme-color("primary-05") !important;
+  border: 1px solid color.adjust(theme.$primary, $alpha: -0.5) !important;
 }
 
-.annotation-card-container.new-annotation .line1, .annotation-card-container.new-annotation .line2 {
-  background-color: theme-color("primary-05") !important;
+.annotation-card-container.new-annotation .line1,
+.annotation-card-container.new-annotation .line2 {
+  background-color: color.adjust(theme.$primary, $alpha: -0.5) !important;
   z-index: 3;
 }
 
 .annotation-card-container.new-annotation .annotation-pointer-background-left {
-  border-left-color: theme-color("primary-05") !important;
+  border-left-color: color.adjust(theme.$primary, $alpha: -0.5) !important;
 }
 
 .annotation-card-container.new-annotation .annotation-pointer-background-right {
-  border-right-color: theme-color("primary-05") !important;
+  border-right-color: color.adjust(theme.$primary, $alpha: -0.5) !important;
 }
 
 .annotation-body textarea:focus {
   box-shadow: none;
-  border-bottom: 1px solid theme-color("primary");
+  border-bottom: 1px solid theme.$primary;
 }
 
 .token-badge {
-  border: 1px solid theme-color("primary");
-}
-
-input[type="range"]::-webkit-slider-thumb {
-  background-color: theme-color("primary") !important;
+  border: 1px solid theme.$primary;
 }

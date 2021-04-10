@@ -52,6 +52,7 @@ import ConfirmationDialog from '../ConfirmationDialog';
 import { updateAllAnnotationsOnDocument } from '../../utils/annotationUtil';
 import { plugins, withDivs } from '../../utils/slateUtil';
 import SlateToolbar from '../SlateToolbar';
+import styles from './DocumentForm.module.scss';
 
 const DocumentForm = ({
   session,
@@ -459,8 +460,8 @@ const DocumentForm = ({
                       </ContextAwareToggle>
                     </Card.Header>
                     <Accordion.Collapse eventKey="paste">
-                      <Card.Body id="slate-container-card">
-                        <div id="slate-container">
+                      <Card.Body className={styles['slate-container-card']}>
+                        <div className={styles['slate-container']}>
                           {!progress.started && progress.status !== 'Complete' && (
                             <Field name="textSlate">
                               {({ field }) => (
@@ -478,7 +479,7 @@ const DocumentForm = ({
                                     disabled={props.isSubmitting}
                                   />
                                   {slateLoading && (
-                                    <div id="slate-loader">
+                                    <div className={styles['slate-loader']}>
                                       <Spinner animation="border" role="status">
                                         <span className="sr-only">Loading...</span>
                                       </Spinner>
@@ -505,8 +506,7 @@ const DocumentForm = ({
                                     }]}
                                     placeholder="Paste or type here"
                                     id={field.name}
-                                    className="slate-editor"
-                                    style={{ minHeight: 300 }}
+                                    className={styles['slate-editor']}
                                   />
                                 </Slate>
                               )}
@@ -613,7 +613,7 @@ const DocumentForm = ({
               </Card>
               <Row className="mt-3">
                 <Col>
-                  <Container style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Container className={styles.buttonpanel}>
                     <Button
                       type="button"
                       onClick={() => router.back()}

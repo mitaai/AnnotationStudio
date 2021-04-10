@@ -6,6 +6,7 @@ import { InfoSquare } from 'react-bootstrap-icons';
 import FilterPopover from '../FilterPopover';
 import { publicationFieldName } from '../../utils/metadataUtil';
 import DocumentZoomSlider from '../DocumentZoomSlider/DocumentZoomSlider';
+import styles from './SecondNavbar.module.scss';
 
 const SecondNavbar = ({
   session,
@@ -55,72 +56,68 @@ const SecondNavbar = ({
 
   return (
     <>
-      <Navbar bg="light" variant="light" className="second-navbar px-0" data-testid="second-navbar">
+      <Navbar bg="light" variant="light" className={`px-0 ${styles.secondnav}`} data-testid="second-navbar">
         <Container fluid className="px-5">
-          <Row style={{ width: '100%' }}>
+          <Row className={styles.row}>
             <Col md={type === 'document' ? documentColumnSize : 12}>
               <Nav>
-                <Breadcrumb>
+                <Breadcrumb className={styles.breadcontainer}>
                   <Breadcrumb.Item active={type === 'dashboard'} href="/">Dashboard</Breadcrumb.Item>
                   {type === 'document' && (
-                  <Breadcrumb.Item href="/documents" active={!document}>
-                    Documents
-                  </Breadcrumb.Item>
+                    <Breadcrumb.Item href="/documents" active={!document}>
+                      Documents
+                    </Breadcrumb.Item>
                   )}
                   {type === 'group' && (
-                  <Breadcrumb.Item href="/groups" active={!document}>
-                    Groups
-                  </Breadcrumb.Item>
+                    <Breadcrumb.Item href="/groups" active={!document}>
+                      Groups
+                    </Breadcrumb.Item>
                   )}
                   {type === 'admin' && (
-                  <Breadcrumb.Item active={!document}>
-                    Administration
-                  </Breadcrumb.Item>
+                    <Breadcrumb.Item active={!document}>
+                      Administration
+                    </Breadcrumb.Item>
                   )}
                   {type === 'profile' && (
-                  <Breadcrumb.Item active>
-                    Edit Profile
-                  </Breadcrumb.Item>
+                    <Breadcrumb.Item active>
+                      Edit Profile
+                    </Breadcrumb.Item>
                   )}
                   {type === 'newuser' && (
-                  <Breadcrumb.Item active>
-                    Registration
-                  </Breadcrumb.Item>
+                    <Breadcrumb.Item active>
+                      Registration
+                    </Breadcrumb.Item>
                   )}
                   {type === 'annotations' && (
-                  <Breadcrumb.Item active>
-                    Annotations
-                  </Breadcrumb.Item>
+                    <Breadcrumb.Item active>
+                      Annotations
+                    </Breadcrumb.Item>
                   )}
                   {document && (
-                  <Breadcrumb.Item active>{document.title}</Breadcrumb.Item>
+                    <Breadcrumb.Item active>{document.title}</Breadcrumb.Item>
                   )}
                   {type === 'document' && document && docView && (
-                  <span id="btn-document-more-info">
-                    <InfoSquare size="1.4em" onClick={() => { setShowMoreDocumentInfo(true); }} />
-                  </span>
+                    <span className={styles.infobutton}>
+                      <InfoSquare size="1.4em" onClick={() => { setShowMoreDocumentInfo(true); }} />
+                    </span>
                   )}
                 </Breadcrumb>
               </Nav>
             </Col>
             {type === 'document' && document && docView && (
-            <Col
-              md={mobileView ? 12 : 5}
-              style={{ paddingLeft: (mobileView ? 15 : 0), paddingRight: 0 }}
-            >
-              <div style={{
-                display: 'flex', flexDirection: 'row', float: mobileView ? 'left' : 'right', top: 4, position: 'relative',
-              }}
+              <Col
+                md={mobileView ? 12 : 5}
+                style={{ paddingLeft: (mobileView ? 15 : 0), paddingRight: 0 }}
               >
-                <div style={{ marginTop: 6, marginRight: 6 }}>
-                  <DocumentZoomSlider />
+                <div className={styles.rightpanel} style={{ float: mobileView ? 'left' : 'right' }}>
+                  <div className={styles['zoom-slider-container']}>
+                    <DocumentZoomSlider />
+                  </div>
+                  <div className={styles['filter-container']}>
+                    <FilterPopover session={session} />
+                  </div>
                 </div>
-                <div style={{ display: 'flex', flexWrap: 'nowrap' }}>
-                  <FilterPopover session={session} />
-                </div>
-              </div>
-            </Col>
-
+              </Col>
             )}
           </Row>
         </Container>
@@ -133,7 +130,7 @@ const SecondNavbar = ({
           aria-labelledby="document-metadata-modal"
         >
           <Modal.Header closeButton>
-            <Modal.Title id="document-metadata-modal">
+            <Modal.Title id="document-metadata-modal" className={styles['modal-title']}>
               Metadata
             </Modal.Title>
           </Modal.Header>
@@ -156,7 +153,7 @@ const SecondNavbar = ({
                     }
                     return (
                       <tr key={key}>
-                        <td className="table-meta-data-name">
+                        <td className={styles['meta-field-name']}>
                           <strong>{metadataFields[key]}</strong>
                         </td>
                         <td>{str}</td>
@@ -169,28 +166,6 @@ const SecondNavbar = ({
           </Modal.Body>
         </Modal>
       )}
-      <style jsx global>
-        {`
-        .second-navbar .breadcrumb {
-          margin-bottom: 0px;
-        }
-
-        .table-meta-data-name {
-          width: 150px;
-        }
-    
-        .second-navbar #btn-document-more-info {
-            float: right;
-            margin-left: 5px;
-            cursor: pointer;
-        }
-
-        .modal-title.h4 {
-          height: auto !important;
-        }
-
-      `}
-      </style>
     </>
   );
 };

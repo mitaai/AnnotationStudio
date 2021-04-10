@@ -10,6 +10,7 @@ import {
 import SecondNavbar from '../SecondNavbar';
 import FeedbackButton from '../FeedbackButton';
 import { appendProtocolIfMissing } from '../../utils/fetchUtil';
+import styles from './Header.module.scss';
 
 const getEditProfileUrl = (email) => {
   const slug = email.replace(/[*+~.()'"!:@]/g, '-');
@@ -28,13 +29,13 @@ const Header = ({
   const [session, loading] = useSession();
   const router = useRouter();
   return (
-    <header className="as-header" sticky="top" style={{ zIndex: 2 }}>
+    <header className={`as-header ${styles.header}`} sticky="top">
       <Navbar bg="dark" variant="dark" className="px-0">
         <Container fluid className="px-5">
           <Navbar.Brand href="/">
             {process.env.NEXT_PUBLIC_LOGO_SVG && (
               <img
-                className="header-logo-svg"
+                className={styles.headerlogo}
                 src={`/${process.env.NEXT_PUBLIC_LOGO_SVG}`}
                 alt="logo"
               />

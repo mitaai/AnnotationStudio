@@ -9,7 +9,6 @@ import 'semantic-ui-css/components/transition.min.css';
 import 'semantic-ui-css/components/label.min.css';
 import 'semantic-ui-css/components/icon.min.css';
 import 'react-bootstrap-typeahead/css/Typeahead.css';
-import 'react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css';
 import '../style/custom.scss';
 
 Router.events.on('routeChangeStart', () => NProgress.start());
