@@ -478,9 +478,16 @@ function FilterPopover({ session }) {
         #btn-filter-annotation-well .badge {
           opacity: 0.0;
           transition: opacity 0.25s;
+          position: relative;
+          top: -2px !important;
         }
         #btn-filter-annotation-well .badge.active {
           opacity: 1.0;
+        }
+
+        .permissions-buttons .badge {
+          position: relative;
+          top: -2px !important;
         }
 
         .permissions-buttons .btn.btn-primary div > .text {
