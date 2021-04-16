@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import moment from 'moment';
 import {
   LockFill,
@@ -16,9 +16,9 @@ function NewButton() {
 }
 
 function GroupTile({
-  name, numberOfMembers = 0, position = 'Member', selected, onClick, private: privateGroup,
+  name, memberCount = 0, position = 'Member', selected, onClick, privateGroup,
 }) {
-  const memberText = `${numberOfMembers} member${(numberOfMembers === 1 ? '' : 's')}`;
+  const memberText = `${memberCount} member${(memberCount === 1 ? '' : 's')}`;
   const positionColors = {
     Member: 'grey',
     Manager: 'grey',
@@ -171,36 +171,37 @@ function AnnotationsTile({
 }
 
 
-export function GroupsChannel() {
+export function GroupsChannel({ session }) {
   const [selectedGroup, setSelectedGroup] = useState();
-  const groups = [
-    {
-      id: 'private', name: 'Private', private: true, position: 'Owner',
-    },
-    {
-      id: '1', name: 'AS 4 Group', numberOfMembers: 8, position: 'Member',
-    },
-    {
-      id: '2', name: 'CMS.356', numberOfMembers: 10, position: 'Member',
-    },
-    {
-      id: '3', name: 'CMS.356', numberOfMembers: 10, position: 'Member',
-    },
-  ];
+  const [groups, setGroups] = useState([]);
 
-  const groupTiles = groups.map(({
-    id, name, private: privateGroup, numberOfMembers, position,
+  const groupTiles = [
+    <GroupTile
+      key="privateGroup"
+      name="Private"
+      privateGroup
+      position="Owner"
+      selected={selectedGroup === 'privateGroup'}
+      onClick={() => setSelectedGroup('privateGroup')}
+    />,
+  ].concat(groups.map(({
+    id, name, memberCount, role,
   }) => (
     <GroupTile
       key={id}
       name={name}
-      numberOfMembers={numberOfMembers}
-      private={privateGroup}
-      position={position}
+      memberCount={memberCount}
+      position={role.charAt(0).toUpperCase() + role.slice(1)}
       selected={id === selectedGroup}
       onClick={() => setSelectedGroup(id)}
     />
-  ));
+  )));
+
+  useEffect(() => {
+    if (session !== undefined) {
+      setGroups(session.user.groups);
+    }
+  }, [session]);
 
   return (
     <>

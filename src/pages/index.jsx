@@ -86,19 +86,19 @@ export default function Home({
             display: 'flex', flexDirection: 'column', flex: 1, borderRight: '1px solid #DADCE1', marginLeft: 15,
           }}
           >
-            <GroupsChannel />
+            <GroupsChannel session={statefulSession || session} />
           </div>
           <div style={{
             display: 'flex', flexDirection: 'column', flex: 2, borderRight: '1px solid #DADCE1', marginLeft: 15,
           }}
           >
-            <DocumentsChannel />
+            <DocumentsChannel session={statefulSession || session} />
           </div>
           <div style={{
             display: 'flex', flexDirection: 'column', flex: 2, marginLeft: 15,
           }}
           >
-            <AnnotationsChannel />
+            <AnnotationsChannel session={statefulSession || session} />
           </div>
         </div>
       )}
