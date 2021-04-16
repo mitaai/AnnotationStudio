@@ -7,6 +7,20 @@ import Alerts from '../Alerts';
 function Layout({
   children, type, document, alerts, docView, annotations, newReg, statefulSession,
 }) {
+  const content = (
+    <>
+      {alerts && (<Alerts alerts={alerts} />)}
+      {children}
+    </>
+  );
+  let innerContent;
+  if (docView) {
+    innerContent = content;
+  } else if (type === 'dashboard') {
+    innerContent = content;
+  } else {
+    innerContent = <Container>{content}</Container>;
+  }
   return (
     <>
       <Head>
@@ -22,18 +36,7 @@ function Layout({
         statefulSession={statefulSession}
       />
       <main role="main" className={docView ? 'flex-shrink-0' : 'flex-shrink-0 p-3'}>
-        {!docView && (
-          <Container>
-            {alerts && (<Alerts alerts={alerts} />)}
-            {children}
-          </Container>
-        )}
-        {docView && (
-          <>
-            {alerts && (<Alerts alerts={alerts} />)}
-            {children}
-          </>
-        )}
+        {innerContent}
       </main>
       <Footer />
       <style jsx global>
@@ -44,7 +47,7 @@ function Layout({
             height: 100% !important
           }
           body {
-            background-color: #eee;
+            background-color: #f5f5f5;
           }
           #__next {
             flex-direction: column !important;

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { parseCookies, destroyCookie } from 'nookies';
 import {
-  Button, Card, CardColumns, Col, Row,
+  Button, Card,
 } from 'react-bootstrap';
 import { useSession } from 'next-auth/client';
 import Link from 'next/link';
@@ -9,10 +9,8 @@ import { useRouter } from 'next/router';
 import Layout from '../components/Layout';
 import LoadingSpinner from '../components/LoadingSpinner';
 import GroupJoinCard from '../components/GroupJoinCard';
-import DashboardAnnotationList from '../components/Dashboard/DashboardAnnotationList';
-import DashboardDocumentList from '../components/Dashboard/DashboardDocumentList';
-import DashboardGroupList from '../components/Dashboard/DashboardGroupList';
 import { appendProtocolIfMissing } from '../utils/fetchUtil';
+import { GroupsChannel, DocumentsChannel, AnnotationsChannel } from '../components/DashboardChannels';
 
 export default function Home({
   query,
@@ -80,29 +78,29 @@ export default function Home({
         />
       )}
       {session && ((session.user && session.user.firstName) || statefulSession) && !loading && (
-        <Row>
-          <Col>
-            <CardColumns style={{ columnCount: 1 }}>
-              <DashboardDocumentList
-                session={statefulSession || session}
-                forceUpdate={!!statefulSession}
-                alerts={alerts}
-                setAlerts={setAlerts}
-              />
-              <DashboardGroupList
-                session={statefulSession || session}
-              />
-            </CardColumns>
-          </Col>
-          <Col>
-            <DashboardAnnotationList
-              session={statefulSession || session}
-              alerts={alerts}
-              setAlerts={setAlerts}
-              mode="dashboard"
-            />
-          </Col>
-        </Row>
+        <div style={{
+          display: 'flex', height: 'calc(100vh - 230px)', marginLeft: 15, marginRight: 30,
+        }}
+        >
+          <div style={{
+            display: 'flex', flexDirection: 'column', flex: 1, borderRight: '1px solid #DADCE1', marginLeft: 15,
+          }}
+          >
+            <GroupsChannel />
+          </div>
+          <div style={{
+            display: 'flex', flexDirection: 'column', flex: 2, borderRight: '1px solid #DADCE1', marginLeft: 15,
+          }}
+          >
+            <DocumentsChannel />
+          </div>
+          <div style={{
+            display: 'flex', flexDirection: 'column', flex: 2, marginLeft: 15,
+          }}
+          >
+            <AnnotationsChannel />
+          </div>
+        </div>
       )}
     </Layout>
   );

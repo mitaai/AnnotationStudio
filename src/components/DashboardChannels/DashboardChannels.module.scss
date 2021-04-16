@@ -1,0 +1,144 @@
+//@use "sass:color";
+//@use "../../style/theme";
+
+.newButton {
+  padding: 5px;
+  background: #EFC957;
+  color: #575757;
+  font-size: 10px;
+  font-weight: bold;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.tile {
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  border-radius: 6px;
+  border: 1px solid #DCDCDC;
+  background: white;
+  padding: 5px 10px 10px 10px;
+  margin-bottom: 6px;
+  position: relative;
+  transition: all 0.5s;
+  left: 0px;
+  &:hover {
+    background: #EFF5FF;
+
+    .moreTileOptions {
+      opacity: 1.0;
+    }
+  }
+}
+
+.selectedTile {
+  left: 10px;
+  background: #4568AC !important;
+
+  .name {
+    color: white;
+  }
+
+  .privateGroupName {
+    color: white !important;
+  }
+
+  .memberText {
+    color: #EBF2FF;
+  }
+
+  .moreTileOptions {
+    color: white;
+    opacity: 1.0;
+  }
+
+  .dotSeperator {
+    background: white;
+  }
+
+  .privateGroupLock {
+    color: white;
+  }
+
+}
+
+.dotSeperator {
+  width: 3px;
+  height: 3px;
+  border-radius: 1.5px;
+  background: #838383;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+.name {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 3px;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.privateGroupName {
+  color: #4568AC !important;
+}
+
+.privateGroupLock {
+  color: #4568AC;
+  height: 14px;
+}
+
+.moreTileOptions {
+  opacity: 0.0;
+  transition: opacity 0.5s;
+  color: #838383;
+  position: relative;
+  top: 2px;
+  left: 5px;
+}
+
+.memberText {
+  display: flex;
+  flex: 1;
+  color: #838383;
+  font-size: 12px;
+  align-items: center;
+}
+
+.headerContainer {
+  flex-direction: row;
+  display: flex;
+  margin-bottom: 10px;
+}
+
+.headerText {
+  color: '#424242';
+  font-size: 16px;
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.tileContainer {
+  flex: 1;
+  flex-direction: column;
+  padding-right: 20px;
+  overflow-y: scroll;
+}
+
+.annotatedText {
+  font-size: 14px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.annotation {
+  padding-left: 5px;
+  color: #838383;
+  font-size: 14px;
+  margin-top: 3px;
+  margin-bottom: 5px;
+}
