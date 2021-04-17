@@ -72,7 +72,7 @@ function GroupTile({
 }
 
 function DocumentTile({
-  name, groups = [], author, selected, activityDate, maxNumberOfDocumentGroups, onClick,
+  name, groups = [], author, slug, selected, activityDate, maxNumberOfDocumentGroups, onClick,
 }) {
   const [hovered, setHovered] = useState();
   let tileBadges = [];
@@ -119,7 +119,7 @@ function DocumentTile({
           overflow: 'hidden',
         }}
         >
-          <TileBadge color="yellow" text="Open" marginRight={5} />
+          <TileBadge href={`/documents/${slug}`} color="yellow" text="Open" marginRight={5} />
         </div>
         <div className={styles.memberText}>
           <span>{author}</span>
@@ -299,7 +299,7 @@ export function DocumentsChannel({
   const documentTiles = documents[selectedGroupId] === undefined
     ? []
     : documents[selectedGroupId].map(({
-      _id, title, groups, contributors, updatedAt,
+      _id, title, groups, contributors, updatedAt, slug,
     }) => {
       const contributor = contributors.find(({ type }) => type.toLowerCase() === 'author');
       const author = contributor === undefined ? 'Author' : contributor.name;
@@ -308,6 +308,7 @@ export function DocumentsChannel({
           key={_id}
           name={title}
           author={author}
+          slug={slug}
           activityDate={updatedAt}
           selected={_id === selectedDocumentId}
           groups={groups}
