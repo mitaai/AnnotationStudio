@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import moment from 'moment';
+import ReactHtmlParser from 'react-html-parser';
 import {
   LockFill,
   ThreeDotsVertical,
 } from 'react-bootstrap-icons';
 import TileBadge from '../TileBadge';
 import { getSharedDocumentsByGroup, getDocumentsByUser, addGroupNamesToDocuments } from '../../utils/docUtil';
+import { getSharedAnnotations, getOwnAnnotations, addGroupNamesToAnnotations } from '../../utils/annotationUtil';
+import { fixIframes } from '../../utils/parseUtil';
 import styles from './DashboardChannels.module.scss';
 
 function NewButton() {
@@ -330,35 +333,79 @@ export function DocumentsChannel({
   );
 }
 
-export function AnnotationsChannel({ maxNumberOfAnnotationTags = 3 }) {
-  const annotations = [
-    {
-      id: '1',
-      text: 'a very interesting way to look at these things is to first no think about them',
-      author: 'Joshua Mbogo',
-      annotation: 'I think it is intrguing the approach that the teacher is making here',
-      activityDate: new Date(2018, 11, 24, 10, 33, 30, 0),
-      tags: ['interesting', 'as4'],
-    },
-    {
-      id: '2',
-      text: 'a very interesting way to look at these things is to first no think about them, a very interesting way to look at these things is to first no think about them, a very interesting way to look at these things is to first no think about them',
-      author: 'Joshua Mbogo',
-      annotation: 'I think it is intrguing the approach that the teacher is making here',
-      activityDate: new Date(2018, 11, 24, 10, 33, 30, 0),
-      tags: ['interesting', 'as4'],
-    },
-  ];
+export function AnnotationsChannel({ session, setAlerts, maxNumberOfAnnotationTags = 3 }) {
+  const [key] = useState('mine');
+  const [, setTotalPages] = useState(1);
+  const [page, setPage] = useState(1);
+  const [, setListLoading] = useState(true);
+  const [annotations, setAnnotations] = useState([]);
+  const perPage = 10;
+  const limit = perPage;
+
+  const fetchData = async () => {
+    if (session) {
+      setListLoading(true);
+      if (session && (session.user.groups || session.user.id)) {
+        if (key === 'shared') {
+          if (session.user.groups && session.user.groups.length > 0) {
+            await getSharedAnnotations({
+              groups: session.user.groups, limit, page, perPage,
+            })
+              .then(async (data) => {
+                await addGroupNamesToAnnotations(data.annotations)
+                  .then((annosWithGroupNames) => {
+                    setTotalPages(Math.ceil((data.count) / perPage));
+                    setAnnotations(annosWithGroupNames);
+                  });
+              })
+              .catch((err) => {
+                setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
+                setListLoading(false);
+              });
+          } else {
+            setAnnotations([]);
+          }
+        } else if (key === 'mine') {
+          await getOwnAnnotations({
+            userId: session.user.id, limit, page, perPage,
+          })
+            .then(async (data) => {
+              await addGroupNamesToAnnotations(data.annotations)
+                .then((annosWithGroupNames) => {
+                  setTotalPages(Math.ceil((data.count) / perPage));
+                  setAnnotations(annosWithGroupNames);
+                });
+            })
+            .catch((err) => {
+              setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
+              setListLoading(false);
+            });
+        }
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (page !== 1) { setPage(1); } else { fetchData(); }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key, session]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchData(); }, [page]);
+  useEffect(() => {
+    if (session && annotations) {
+      setListLoading(false);
+    }
+  }, [annotations, session]);
 
   const annotationTiles = annotations.map(({
-    id, text, author, annotation, activityDate, tags,
+    _id, target, creator: { name }, modified, body: { value, tags },
   }) => (
     <AnnotationsTile
-      key={id}
-      text={text}
-      author={author}
-      annotation={annotation}
-      activityDate={activityDate}
+      key={_id}
+      text={target.selector.exact}
+      author={name}
+      annotation={value.length > 0 ? ReactHtmlParser(value, { transform: fixIframes }) : ''}
+      activityDate={modified}
       tags={tags}
       maxNumberOfAnnotationTags={maxNumberOfAnnotationTags}
     />
@@ -371,7 +418,9 @@ export function AnnotationsChannel({ maxNumberOfAnnotationTags = 3 }) {
           Annotations
         </div>
       </div>
-      {annotationTiles}
+      <div className={styles.tileContainer}>
+        {annotationTiles}
+      </div>
     </>
   );
 }

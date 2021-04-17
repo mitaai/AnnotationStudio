@@ -114,6 +114,7 @@ export default function Home({
           >
             <AnnotationsChannel
               session={statefulSession || session}
+              setAlerts={setAlerts}
               selectedDocumentId={selectedDocumentId}
             />
           </div>
