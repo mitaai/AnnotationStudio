@@ -82,7 +82,7 @@ export default function Home({
       )}
       {session && ((session.user && session.user.firstName) || statefulSession) && !loading && (
         <div style={{
-          display: 'flex', height: 'calc(100vh - 230px)', marginLeft: 15, marginRight: 30,
+          display: 'flex', height: 'calc(100vh - 213px)', marginLeft: 15, marginRight: 30,
         }}
         >
           <div style={{

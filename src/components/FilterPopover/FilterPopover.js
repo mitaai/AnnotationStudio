@@ -14,7 +14,6 @@ import {
   Popover,
   Form,
   Card,
-  ButtonGroup,
   Badge,
 } from 'react-bootstrap';
 
@@ -30,6 +29,7 @@ import {
 } from 'react-bootstrap-typeahead';
 import { FirstNameLastInitial } from '../../utils/nameUtil';
 import { DocumentFiltersContext, DocumentAnnotationsContext } from '../../contexts/DocumentContext';
+import PermissionsButtonGroup from '../PermissionsButtonGroup';
 
 
 function FilterPopover({ session }) {
@@ -69,17 +69,6 @@ function FilterPopover({ session }) {
   const permissionTextMargin = 3;
   const badgeNumWidth = 7.25;
   const badgeInitWidth = 8.25 + permissionTextMargin;
-  const widthOfPermissionsBtns = [
-    40 + badgeInitWidth + badgeNumWidth * (numberOfMatchesForPermissions[0] > 0
-      ? Math.floor(Math.log10(numberOfMatchesForPermissions[0]) + 1)
-      : 1),
-    145 + badgeInitWidth + badgeNumWidth * (numberOfMatchesForPermissions[1] > 0
-      ? Math.floor(Math.log10(numberOfMatchesForPermissions[1]) + 1)
-      : 1),
-    115 + badgeInitWidth + badgeNumWidth * (numberOfMatchesForPermissions[2] > 0
-      ? Math.floor(Math.log10(numberOfMatchesForPermissions[2]) + 1)
-      : 1),
-  ];
   const widthOfInactiveFilter = 70;
   const widthOfActiveFilter = widthOfInactiveFilter + permissionTextMargin + badgeInitWidth
   + badgeNumWidth * (
@@ -181,23 +170,23 @@ function FilterPopover({ session }) {
     return Object.assign(s, { matches: obj === undefined ? 0 : obj.matches });
   });
 
-  const FilterOnInit = () => {
-    const annotationIds = FilterAnnotations(channelAnnotations, {
-      annotatedBy: documentFilters.filters.annotatedBy.map((opt) => opt.email),
-      byTags: documentFilters.filters.byTags.map((opt) => opt.name),
-      permissions: documentFilters.filters.permissions,
-    });
-    setDocumentFilters({
-      ...documentFilters,
-      annotationIds,
-      filterOnInit: false,
-    });
-  };
-
   useEffect(() => {
     if (documentFilters.filterOnInit && documentFilters.annotationsLoaded) {
+      const FilterOnInit = () => {
+        const annotationIds = FilterAnnotations(channelAnnotations, {
+          annotatedBy: documentFilters.filters.annotatedBy.map((opt) => opt.email),
+          byTags: documentFilters.filters.byTags.map((opt) => opt.name),
+          permissions: documentFilters.filters.permissions,
+        });
+        setDocumentFilters({
+          ...documentFilters,
+          annotationIds,
+          filterOnInit: false,
+        });
+      };
       FilterOnInit();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [documentFilters]);
 
   const updateFilters = (type, selected) => {
@@ -372,6 +361,33 @@ function FilterPopover({ session }) {
   const filterActive = (documentFilters.filters.annotatedBy.length
   + documentFilters.filters.byTags.length > 0);
 
+  const buttons = [
+    {
+      text: 'Mine',
+      textWidth: 40,
+      count: numberOfMatchesForPermissions[0],
+      selected: documentFilters.filters.permissions === 0,
+      onClick: () => { handlePermissionsClick(0); },
+      icon: <PersonFill size="1.2em" />,
+    },
+    {
+      text: 'Shared with group(s)',
+      textWidth: 145,
+      count: numberOfMatchesForPermissions[1],
+      selected: documentFilters.filters.permissions === 1,
+      onClick: () => { handlePermissionsClick(1); },
+      icon: <PeopleFill size="1.2em" />,
+    },
+    {
+      text: 'Shared with me',
+      textWidth: 115,
+      count: numberOfMatchesForPermissions[2],
+      selected: documentFilters.filters.permissions === 2,
+      onClick: () => { handlePermissionsClick(2); },
+      icon: <PersonPlusFill size="1.2em" />,
+    },
+  ];
+
   return (
     <>
       <OverlayTrigger
@@ -381,39 +397,9 @@ function FilterPopover({ session }) {
         rootClose
         overlay={annotationIdBeingEdited === undefined ? <div /> : unsavedChangesPopoverComponent}
       >
-        <ButtonGroup size="sm" aria-label="Permissions" className="permissions-buttons">
-          <Button
-            variant={documentFilters.filters.permissions === 0 ? 'primary' : 'outline-primary'}
-            onClick={() => { handlePermissionsClick(0); }}
-          >
-            <PersonFill size="1.2em" />
-            <div className="mine">
-              <span className="text">Mine</span>
-              <Badge variant="light">{numberOfMatchesForPermissions[0]}</Badge>
-            </div>
-          </Button>
-          <Button
-            variant={documentFilters.filters.permissions === 1 ? 'primary' : 'outline-primary'}
-            onClick={() => { handlePermissionsClick(1); }}
-          >
-            <PeopleFill size="1.2em" />
-            <div className="shared-with-groups">
-              <span className="text">Shared with group(s)</span>
-              <Badge variant="light">{numberOfMatchesForPermissions[1]}</Badge>
-            </div>
-          </Button>
-          <Button
-            variant={documentFilters.filters.permissions === 2 ? 'primary' : 'outline-primary'}
-            onClick={() => { handlePermissionsClick(2); }}
-          >
-            <PersonPlusFill size="1.2em" />
-            <div className="shared-with-me">
-              <span className="text">Shared with me</span>
-              <Badge variant="light">{numberOfMatchesForPermissions[2]}</Badge>
-            </div>
-          </Button>
-        </ButtonGroup>
-
+        <div style={{ marginTop: 7, marginRight: 7 }}>
+          <PermissionsButtonGroup buttons={buttons} />
+        </div>
       </OverlayTrigger>
       <OverlayTrigger
         trigger="click"
@@ -444,33 +430,6 @@ function FilterPopover({ session }) {
       <style jsx global>
         {`
 
-        .permissions-buttons {
-          margin-top: 7px;
-          margin-right: 7px;
-        }
-
-        .permissions-buttons .btn div {
-          transition: width 0.5s, opacity 1s;
-          overflow: hidden;
-          padding-left: 9px;
-          white-space: nowrap;
-          opacity: 0;
-        }
-
-        .permissions-buttons .btn svg {
-          position: absolute;
-          top: 6px;
-          left: 5px;
-        }
-
-        .permissions-buttons .btn {
-          height: 31px;
-        }
-
-        .permissions-buttons .btn.btn-outline-primary div {
-          width: 0px;
-        }
-
         #btn-filter-annotation-well .text {
           margin-right: ${permissionTextMargin}px;
         }
@@ -483,33 +442,6 @@ function FilterPopover({ session }) {
         }
         #btn-filter-annotation-well .badge.active {
           opacity: 1.0;
-        }
-
-        .permissions-buttons .badge {
-          position: relative;
-          top: -2px !important;
-        }
-
-        .permissions-buttons .btn.btn-primary div > .text {
-          margin-right: ${permissionTextMargin}px;
-        }
-
-        .permissions-buttons .btn.btn-primary div.mine {
-          margin-left: 10px;
-          width: ${widthOfPermissionsBtns[0]}px;
-          opacity: 1;
-        }
-
-        .permissions-buttons .btn.btn-primary div.shared-with-groups {
-          width: ${widthOfPermissionsBtns[1]}px;
-          margin-left:10px;
-          opacity: 1;
-        }
-
-        .permissions-buttons .btn.btn-primary div.shared-with-me {
-          width: ${widthOfPermissionsBtns[2]}px;
-          margin-left: 10px;
-          opacity: 1;
         }
         
         #btn-filter-annotation-well {

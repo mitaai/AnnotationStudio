@@ -1,23 +1,46 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import moment from 'moment';
+import Link from 'next/link';
 import ReactHtmlParser from 'react-html-parser';
 import {
   LockFill,
   ThreeDotsVertical,
+  PeopleFill,
+  PersonFill,
+  PersonPlusFill,
 } from 'react-bootstrap-icons';
+import { Dropdown } from 'react-bootstrap';
 import TileBadge from '../TileBadge';
 import { getSharedDocumentsByGroup, getDocumentsByUser, addGroupNamesToDocuments } from '../../utils/docUtil';
 import { getSharedAnnotations, getOwnAnnotations, addGroupNamesToAnnotations } from '../../utils/annotationUtil';
 import { fixIframes } from '../../utils/parseUtil';
+
+import PermissionsButtonGroup from '../PermissionsButtonGroup';
+
 import styles from './DashboardChannels.module.scss';
 
-function NewButton() {
+function NewButton({ href }) {
   return (
-    <span className={styles.newButton}>
-      New +
-    </span>
+    <Link href={href}>
+      <span className={styles.newButton}>
+        New +
+      </span>
+    </Link>
+
   );
 }
+
+const ThreeDotDropdown = React.forwardRef(({ onClick }, ref) => (
+  <ThreeDotsVertical
+    className={styles.moreTileOptions}
+    size={20}
+    ref={ref}
+    onClick={(e) => {
+      e.preventDefault();
+      onClick(e);
+    }}
+  />
+));
 
 function GroupTile({
   name, memberCount = 0, position = 'Member', selected, onClick, privateGroup,
@@ -52,7 +75,14 @@ function GroupTile({
         </div>
         {privateGroup
           ? <span style={{ marginTop: 5, marginBottom: 3 }}>{tileBadge}</span>
-          : <ThreeDotsVertical className={styles.moreTileOptions} size={20} />}
+          : (
+            <Dropdown>
+              <Dropdown.Toggle as={ThreeDotDropdown} id="dropdown-custom-components" />
+              <Dropdown.Menu>
+                <Dropdown.Item eventKey="1">Manage</Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown>
+          )}
 
       </div>
       {!privateGroup && (
@@ -106,7 +136,12 @@ function DocumentTile({
       }}
       >
         <div className={styles.name}>{name}</div>
-        <ThreeDotsVertical className={styles.moreTileOptions} size={20} />
+        <Dropdown>
+          <Dropdown.Toggle as={ThreeDotDropdown} id="dropdown-custom-components" />
+          <Dropdown.Menu>
+            <Dropdown.Item eventKey="1">Manage</Dropdown.Item>
+          </Dropdown.Menu>
+        </Dropdown>
       </div>
       <div style={{
         display: 'flex',
@@ -209,10 +244,12 @@ export function GroupsChannel({ session, selectedGroupId, setSelectedGroupId }) 
   return (
     <>
       <div className={styles.headerContainer}>
-        <div className={styles.headerText}>
-          Groups
-        </div>
-        <NewButton />
+        <Link href="/groups">
+          <span className={`${styles.headerText} ${styles.headerLink}`}>
+            Groups
+          </span>
+        </Link>
+        <NewButton href="/groups/new" />
       </div>
       <div className={styles.tileContainer}>
         {groupTiles}
@@ -225,9 +262,30 @@ export function GroupsChannel({ session, selectedGroupId, setSelectedGroupId }) 
 export function DocumentsChannel({
   session, setAlerts, forceUpdate, selectedGroupId = 'privateGroup', selectedDocumentId, setSelectedDocumentId, maxNumberOfDocumentGroups = 3,
 }) {
-  const [key] = useState('shared');
+  const [key, setKey] = useState('shared');
   const [, setListLoading] = useState(true);
   const [documents, setDocuments] = useState({});
+  const numberOfDocuments = documents[selectedGroupId] === undefined
+    ? 0
+    : documents[selectedGroupId].length;
+  const buttons = [
+    {
+      text: 'Mine',
+      textWidth: 40,
+      count: key === 'mine' ? numberOfDocuments : 0,
+      selected: key === 'mine',
+      onClick: () => { setKey('mine'); },
+      icon: <PersonFill size="1.2em" />,
+    },
+    {
+      text: 'Shared',
+      textWidth: 60,
+      count: key === 'shared' ? numberOfDocuments : 0,
+      selected: key === 'shared',
+      onClick: () => { setKey('shared'); },
+      icon: <PeopleFill size="1.2em" />,
+    },
+  ];
 
   const organizeDocumentsByGroup = (docs) => {
     const organizedDocs = {
@@ -296,6 +354,12 @@ export function DocumentsChannel({
     fetchData();
   }, [key, forceUpdate, session, setAlerts]);
 
+  useEffect(() => {
+    if (selectedGroupId === 'privateGroup' && key === 'shared') {
+      setKey('mine');
+    }
+  }, [selectedGroupId, key]);
+
   const documentTiles = documents[selectedGroupId] === undefined
     ? []
     : documents[selectedGroupId].map(({
@@ -321,10 +385,15 @@ export function DocumentsChannel({
   return (
     <>
       <div className={styles.headerContainer}>
-        <div className={styles.headerText}>
-          Documents
+        <div style={{ display: 'flex', flex: 1 }}>
+          <Link href="/documents">
+            <span className={`${styles.headerText} ${styles.headerLink}`}>
+              Documents
+            </span>
+          </Link>
+          <NewButton href="/documents/new" />
         </div>
-        <NewButton />
+        <PermissionsButtonGroup buttons={selectedGroupId === 'privateGroup' ? buttons.slice(0, 1) : buttons} />
       </div>
       <div className={styles.tileContainer}>
         {documentTiles}
@@ -336,12 +405,40 @@ export function DocumentsChannel({
 
 export function AnnotationsChannel({ session, setAlerts, maxNumberOfAnnotationTags = 3 }) {
   const [key] = useState('mine');
+  const [selectedPermissions, setSelectedPermissions] = useState('shared');
   const [, setTotalPages] = useState(1);
   const [page, setPage] = useState(1);
   const [, setListLoading] = useState(true);
   const [annotations, setAnnotations] = useState([]);
   const perPage = 10;
   const limit = perPage;
+
+  const buttons = [
+    {
+      text: 'Mine',
+      textWidth: 40,
+      count: annotations.length,
+      selected: selectedPermissions === 'mine',
+      onClick: () => { setSelectedPermissions('mine'); },
+      icon: <PersonFill size="1.2em" />,
+    },
+    {
+      text: 'Shared with group(s)',
+      textWidth: 145,
+      count: annotations.length,
+      selected: selectedPermissions === 'shared',
+      onClick: () => { setSelectedPermissions('shared'); },
+      icon: <PeopleFill size="1.2em" />,
+    },
+    {
+      text: 'Shared with me',
+      textWidth: 115,
+      count: annotations.length,
+      selected: selectedPermissions === 'shared-with-me',
+      onClick: () => { setSelectedPermissions('shared-with-me'); },
+      icon: <PersonPlusFill size="1.2em" />,
+    },
+  ];
 
   const fetchData = async () => {
     if (session) {
@@ -415,9 +512,12 @@ export function AnnotationsChannel({ session, setAlerts, maxNumberOfAnnotationTa
   return (
     <>
       <div className={styles.headerContainer}>
-        <div className={styles.headerText}>
-          Annotations
+        <div style={{ display: 'flex', flex: 1 }}>
+          <span className={styles.headerText}>
+            Annotations
+          </span>
         </div>
+        <PermissionsButtonGroup buttons={buttons} />
       </div>
       <div className={styles.tileContainer}>
         {annotationTiles}

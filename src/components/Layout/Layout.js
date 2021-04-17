@@ -35,7 +35,11 @@ function Layout({
         newReg={newReg}
         statefulSession={statefulSession}
       />
-      <main role="main" className={docView ? 'flex-shrink-0' : 'flex-shrink-0 p-3'}>
+      <main
+        role="main"
+        className={docView ? 'flex-shrink-0' : 'flex-shrink-0 p-3'}
+        style={type === 'dashboard' ? { paddingBottom: '0px !important' } : {}}
+      >
         {innerContent}
       </main>
       <Footer />
