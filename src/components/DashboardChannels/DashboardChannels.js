@@ -9,7 +9,7 @@ import {
   PersonFill,
   PersonPlusFill,
 } from 'react-bootstrap-icons';
-import { Dropdown } from 'react-bootstrap';
+import { Dropdown, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import TileBadge from '../TileBadge';
 import { getSharedDocumentsByGroup, getDocumentsByUser, addGroupNamesToDocuments } from '../../utils/docUtil';
 import { getSharedAnnotations, getOwnAnnotations, addGroupNamesToAnnotations } from '../../utils/annotationUtil';
@@ -159,7 +159,17 @@ function DocumentTile({
         <div className={styles.memberText}>
           <span>{author}</span>
           <span className={styles.dotSeperator} />
-          <span>{moment(activityDate).fromNow()}</span>
+          <OverlayTrigger
+            key="document-activity-date-tooltip"
+            placement="bottom"
+            overlay={(
+              <Tooltip>
+                {moment(activityDate).format('LLLL')}
+              </Tooltip>
+            )}
+          >
+            <span>{moment(activityDate).fromNow()}</span>
+          </OverlayTrigger>
         </div>
         {tileBadges}
       </div>
@@ -201,7 +211,17 @@ function AnnotationsTile({
             width: 3, height: 3, borderRadius: 1.5, background: '#838383', marginLeft: 10, marginRight: 10,
           }}
           />
-          <span>{moment(activityDate).fromNow()}</span>
+          <OverlayTrigger
+            key="document-activity-date-tooltip"
+            placement="bottom"
+            overlay={(
+              <Tooltip>
+                {moment(activityDate).format('LLLL')}
+              </Tooltip>
+            )}
+          >
+            <span>{moment(activityDate).fromNow()}</span>
+          </OverlayTrigger>
         </div>
         {tileBadges}
       </div>
