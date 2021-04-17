@@ -5,6 +5,7 @@ import {
   ThreeDotsVertical,
 } from 'react-bootstrap-icons';
 import TileBadge from '../TileBadge';
+import { getSharedDocumentsByGroup, getDocumentsByUser, addGroupNamesToDocuments } from '../../utils/docUtil';
 import styles from './DashboardChannels.module.scss';
 
 function NewButton() {
@@ -171,8 +172,7 @@ function AnnotationsTile({
 }
 
 
-export function GroupsChannel({ session }) {
-  const [selectedGroup, setSelectedGroup] = useState();
+export function GroupsChannel({ session, selectedGroupId, setSelectedGroupId }) {
   const [groups, setGroups] = useState([]);
 
   const groupTiles = [
@@ -181,8 +181,8 @@ export function GroupsChannel({ session }) {
       name="Private"
       privateGroup
       position="Owner"
-      selected={selectedGroup === 'privateGroup'}
-      onClick={() => setSelectedGroup('privateGroup')}
+      selected={selectedGroupId === 'privateGroup'}
+      onClick={() => setSelectedGroupId('privateGroup')}
     />,
   ].concat(groups.map(({
     id, name, memberCount, role,
@@ -192,8 +192,8 @@ export function GroupsChannel({ session }) {
       name={name}
       memberCount={memberCount}
       position={role.charAt(0).toUpperCase() + role.slice(1)}
-      selected={id === selectedGroup}
-      onClick={() => setSelectedGroup(id)}
+      selected={id === selectedGroupId}
+      onClick={() => setSelectedGroupId(id)}
     />
   )));
 
@@ -219,53 +219,100 @@ export function GroupsChannel({ session }) {
   );
 }
 
-export function DocumentsChannel({ maxNumberOfDocumentGroups = 3 }) {
-  const [selectedDocument, setSelectedDocument] = useState();
-  const documents = [
-    {
-      id: '1',
-      name: 'International Covenant on Economic',
-      author: 'Charles Dickens',
-      activityDate: new Date(2018, 11, 24, 10, 33, 30, 0),
-      groups: [{ id: '1', name: 'CMS.356', selected: true }, { id: '2', name: '21L.015' }, { id: '3', name: '21L.015' }, { id: '4', name: '21L.015' }],
-    },
-    {
-      id: '2',
-      name: 'International Covenant on Economic, Social and Cultural Rights ional Covenant on Economiial and Cultural Rights',
-      author: 'Charles Dickens',
-      activityDate: new Date(2018, 11, 24, 10, 33, 30, 0),
-      groups: [{ id: '1', name: 'CMS.356', selected: true }, { id: '2', name: '21L.015' }, { id: '3', name: '21L.015' }, { id: '4', name: '21L.015' }],
-    },
-    {
-      id: '3',
-      name: 'International Covenant on Economic, Social and Cultural Rights ional Covenant on Economiial and Cultural Rights',
-      author: 'Charles Dickens',
-      activityDate: new Date(2018, 11, 24, 10, 33, 30, 0),
-      groups: [{ id: '1', name: 'CMS.356', selected: true }, { id: '2', name: '21L.015' }, { id: '3', name: '21L.015' }, { id: '4', name: '21L.015' }],
-    },
-    {
-      id: '4',
-      name: 'International Covenant on Economic, Social and Cultural Rights ional Covenant on Economiial and Cultural Rights',
-      author: 'Charles Dickens',
-      activityDate: new Date(2018, 11, 24, 10, 33, 30, 0),
-      groups: [{ id: '1', name: 'CMS.356', selected: true }, { id: '2', name: '21L.015' }, { id: '3', name: '21L.015' }, { id: '4', name: '21L.015' }],
-    },
-  ];
+export function DocumentsChannel({
+  session, setAlerts, forceUpdate, selectedGroupId = 'privateGroup', selectedDocumentId, setSelectedDocumentId, maxNumberOfDocumentGroups = 3,
+}) {
+  const [key] = useState('shared');
+  const [, setListLoading] = useState(true);
+  const [documents, setDocuments] = useState({});
 
-  const documentTiles = documents.map(({
-    id, name, author, activityDate, groups,
-  }) => (
-    <DocumentTile
-      key={id}
-      name={name}
-      author={author}
-      activityDate={activityDate}
-      selected={id === selectedDocument}
-      groups={groups}
-      maxNumberOfDocumentGroups={maxNumberOfDocumentGroups}
-      onClick={() => setSelectedDocument(id)}
-    />
-  ));
+  const organizeDocumentsByGroup = (docs) => {
+    const organizedDocs = {
+      privateGroup: [],
+    };
+    for (let i = 0; i < docs.length; i += 1) {
+      const docGroups = docs[i].groups;
+      if (docGroups.length > 0) {
+        for (let j = 0; j < docGroups.length; j += 1) {
+          // eslint-disable-next-line no-underscore-dangle
+          const groupId = docGroups[j]._id;
+          // make sure that this id has an array that represents it
+          if (organizedDocs[groupId] === undefined) {
+            organizedDocs[groupId] = [];
+          }
+          // adding document to a group that it is in
+          organizedDocs[groupId].push(docs[i]);
+        }
+      } else {
+        // if the document has no groups it is attached to then it will go to the privateGroup
+        organizedDocs.privateGroup.push(docs[i]);
+      }
+    }
+
+    return organizedDocs;
+  };
+
+  useEffect(() => {
+    async function fetchData() {
+      if (session && (session.user.groups || session.user.id)) {
+        setListLoading(true);
+        if (key === 'shared') {
+          await getSharedDocumentsByGroup({
+            groups: session.user.groups,
+            limit: 7,
+          })
+            .then(async (data) => {
+              const { docs } = data;
+              await addGroupNamesToDocuments(docs)
+                .then((docsWithGroupNames) => {
+                  setDocuments(organizeDocumentsByGroup(docsWithGroupNames));
+                  setListLoading(false);
+                });
+            })
+            .catch((err) => {
+              setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
+              setListLoading(false);
+            });
+        } else if (key === 'mine') {
+          await getDocumentsByUser({ id: session.user.id, limit: 7 })
+            .then(async (data) => {
+              const { docs } = data;
+              await addGroupNamesToDocuments(docs)
+                .then((docsWithGroupNames) => {
+                  setDocuments(organizeDocumentsByGroup(docsWithGroupNames));
+                  setListLoading(false);
+                });
+            })
+            .catch((err) => {
+              setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
+              setListLoading(false);
+            });
+        }
+      }
+    }
+    fetchData();
+  }, [key, forceUpdate, session, setAlerts]);
+
+  const documentTiles = documents[selectedGroupId] === undefined
+    ? []
+    : documents[selectedGroupId].map(({
+      _id, title, groups, contributors, updatedAt,
+    }) => {
+      const contributor = contributors.find(({ type }) => type.toLowerCase() === 'author');
+      const author = contributor === undefined ? 'Author' : contributor.name;
+      return (
+        <DocumentTile
+          key={_id}
+          name={title}
+          author={author}
+          activityDate={updatedAt}
+          selected={_id === selectedDocumentId}
+          groups={groups}
+          maxNumberOfDocumentGroups={maxNumberOfDocumentGroups}
+          onClick={() => setSelectedDocumentId(_id)}
+        />
+      );
+    });
 
   return (
     <>

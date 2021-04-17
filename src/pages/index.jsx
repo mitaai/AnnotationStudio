@@ -25,6 +25,9 @@ export default function Home({
   const router = useRouter();
   const newReg = query && query.alert && query.alert === 'completeRegistration';
 
+  const [selectedGroupId, setSelectedGroupId] = useState('privateGroup');
+  const [selectedDocumentId, setSelectedDocumentId] = useState();
+
   return (
     <Layout alerts={alerts} type="dashboard" newReg={newReg} statefulSession={statefulSession}>
       {loading && (
@@ -86,19 +89,33 @@ export default function Home({
             display: 'flex', flexDirection: 'column', flex: 1, borderRight: '1px solid #DADCE1', marginLeft: 15,
           }}
           >
-            <GroupsChannel session={statefulSession || session} />
+            <GroupsChannel
+              session={statefulSession || session}
+              selectedGroupId={selectedGroupId}
+              setSelectedGroupId={setSelectedGroupId}
+            />
           </div>
           <div style={{
             display: 'flex', flexDirection: 'column', flex: 2, borderRight: '1px solid #DADCE1', marginLeft: 15,
           }}
           >
-            <DocumentsChannel session={statefulSession || session} />
+            <DocumentsChannel
+              session={statefulSession || session}
+              selectedGroupId={selectedGroupId}
+              selectedDocumentId={selectedDocumentId}
+              setSelectedDocumentId={setSelectedDocumentId}
+              setAlerts={setAlerts}
+              forceUpdate={!!statefulSession}
+            />
           </div>
           <div style={{
             display: 'flex', flexDirection: 'column', flex: 2, marginLeft: 15,
           }}
           >
-            <AnnotationsChannel session={statefulSession || session} />
+            <AnnotationsChannel
+              session={statefulSession || session}
+              selectedDocumentId={selectedDocumentId}
+            />
           </div>
         </div>
       )}
