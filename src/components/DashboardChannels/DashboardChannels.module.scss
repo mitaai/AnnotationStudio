@@ -19,6 +19,50 @@
   }
 }
 
+.channelContainer {
+  display: flex;
+  flex-direction: column;
+  margin-left: 15px;
+  position: relative;
+}
+
+.dividingLine {
+  position: absolute;
+  right: 0px;
+  width: 1px;
+  background: #DADCE1;
+  height: 100%;
+}
+
+.tilePointerBackground {
+  position: absolute;
+  right: -28px;
+  top: calc(50% - 8px);
+  width: 0px;
+  height: 0px;
+  border: 8px solid transparent;
+  border-right-color: rgb(220,220,220);
+  transition: right 0.25s;
+}
+
+.tilePointer {
+  position: absolute;
+  right: -29px;
+  top: calc(50% - 8px);
+  width: 0px;
+  height: 0px;
+  border: 8px solid transparent;
+  border-right-color: #F5F5F5;
+  transition: right 0.25s;
+}
+
+.tilePointerSelectedBackground {
+  right: -12px;
+}
+.tilePointerSelected {
+  right: -13px;
+}
+
 .tile {
   cursor: pointer;
   display: flex;
@@ -29,7 +73,7 @@
   padding: 5px 10px 10px 10px;
   margin-bottom: 6px;
   position: relative;
-  transition: all 0.5s;
+  transition: all 0.25s;
   left: 0px;
   &:hover {
     background: #EFF5FF;

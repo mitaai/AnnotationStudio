@@ -27,6 +27,7 @@ export default function Home({
 
   const [selectedGroupId, setSelectedGroupId] = useState('privateGroup');
   const [selectedDocumentId, setSelectedDocumentId] = useState();
+  const [selectedDocumentSlug, setSelectedDocumentSlug] = useState();
 
   return (
     <Layout alerts={alerts} type="dashboard" newReg={newReg} statefulSession={statefulSession}>
@@ -85,39 +86,39 @@ export default function Home({
           display: 'flex', height: 'calc(100vh - 213px)', marginLeft: 15, marginRight: 30,
         }}
         >
-          <div style={{
-            display: 'flex', flexDirection: 'column', flex: 1, borderRight: '1px solid #DADCE1', marginLeft: 15,
-          }}
-          >
-            <GroupsChannel
-              session={statefulSession || session}
-              selectedGroupId={selectedGroupId}
-              setSelectedGroupId={setSelectedGroupId}
-            />
-          </div>
-          <div style={{
-            display: 'flex', flexDirection: 'column', flex: 2, borderRight: '1px solid #DADCE1', marginLeft: 15,
-          }}
-          >
-            <DocumentsChannel
-              session={statefulSession || session}
-              selectedGroupId={selectedGroupId}
-              selectedDocumentId={selectedDocumentId}
-              setSelectedDocumentId={setSelectedDocumentId}
-              setAlerts={setAlerts}
-              forceUpdate={!!statefulSession}
-            />
-          </div>
-          <div style={{
-            display: 'flex', flexDirection: 'column', flex: 2, marginLeft: 15,
-          }}
-          >
-            <AnnotationsChannel
-              session={statefulSession || session}
-              setAlerts={setAlerts}
-              selectedDocumentId={selectedDocumentId}
-            />
-          </div>
+          <GroupsChannel
+            flex={1}
+            session={statefulSession || session}
+            selectedGroupId={selectedGroupId}
+            setSelectedGroupId={(id) => {
+              if (id !== selectedGroupId) {
+                // if a new group is selected the selected document id and
+                // slug should be cleared and set to undefined
+                setSelectedGroupId(id);
+                setSelectedDocumentId();
+                setSelectedDocumentSlug();
+              }
+            }}
+          />
+          <DocumentsChannel
+            flex={2}
+            session={statefulSession || session}
+            selectedGroupId={selectedGroupId}
+            setSelectedGroupId={setSelectedGroupId}
+            selectedDocumentId={selectedDocumentId}
+            setSelectedDocumentId={setSelectedDocumentId}
+            setSelectedDocumentSlug={setSelectedDocumentSlug}
+            setAlerts={setAlerts}
+            forceUpdate={!!statefulSession}
+          />
+          <AnnotationsChannel
+            flex={2}
+            session={statefulSession || session}
+            setAlerts={setAlerts}
+            slug={selectedDocumentSlug}
+            selectedDocumentId={selectedDocumentId}
+            selectedDocumentSlug={selectedDocumentSlug}
+          />
         </div>
       )}
     </Layout>

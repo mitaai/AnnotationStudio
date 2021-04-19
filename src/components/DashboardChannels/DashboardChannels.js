@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import moment from 'moment';
 import Link from 'next/link';
+import Router from 'next/router';
 import ReactHtmlParser from 'react-html-parser';
 import {
   LockFill,
@@ -9,10 +10,12 @@ import {
   PersonFill,
   PersonPlusFill,
 } from 'react-bootstrap-icons';
-import { Dropdown, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import {
+  Dropdown, OverlayTrigger, Tooltip, Spinner,
+} from 'react-bootstrap';
 import TileBadge from '../TileBadge';
 import { getSharedDocumentsByGroup, getDocumentsByUser, addGroupNamesToDocuments } from '../../utils/docUtil';
-import { getSharedAnnotations, getOwnAnnotations, addGroupNamesToAnnotations } from '../../utils/annotationUtil';
+import { fetchSharedAnnotationsOnDocument } from '../../utils/annotationUtil';
 import { fixIframes } from '../../utils/parseUtil';
 
 import PermissionsButtonGroup from '../PermissionsButtonGroup';
@@ -27,6 +30,34 @@ function NewButton({ href }) {
       </span>
     </Link>
 
+  );
+}
+
+function ListLoadingSpinner() {
+  return (
+    <div style={{ textAlign: 'center', marginTop: 10 }}>
+      <Spinner animation="border" />
+    </div>
+  );
+}
+
+function EmptyListMessage({ text = '0 items found' }) {
+  return (
+    <div style={{
+      color: '#424242', fontSize: 14, textAlign: 'center', marginTop: 10,
+    }}
+    >
+      {text}
+    </div>
+  );
+}
+
+function TilePointer({ selected }) {
+  return (
+    <>
+      <span className={`${styles.tilePointerBackground} ${selected ? styles.tilePointerSelectedBackground : ''}`} />
+      <span className={`${styles.tilePointer} ${selected ? styles.tilePointerSelected : ''}`} />
+    </>
   );
 }
 
@@ -61,6 +92,7 @@ function GroupTile({
       role="button"
       tabIndex={0}
     >
+      <TilePointer selected={selected} />
       <div style={{
         display: 'flex',
         flexDirection: 'row',
@@ -76,10 +108,16 @@ function GroupTile({
         {privateGroup
           ? <span style={{ marginTop: 5, marginBottom: 3 }}>{tileBadge}</span>
           : (
-            <Dropdown>
-              <Dropdown.Toggle as={ThreeDotDropdown} id="dropdown-custom-components" />
+            <Dropdown
+              onSelect={(eventKey) => {
+                if (eventKey === 'manage') {
+                  Router.push('/groups');
+                }
+              }}
+            >
+              <Dropdown.Toggle as={ThreeDotDropdown} id="dropdown-group-tile" />
               <Dropdown.Menu>
-                <Dropdown.Item eventKey="1">Manage</Dropdown.Item>
+                <Dropdown.Item eventKey="manage">Manage</Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>
           )}
@@ -102,20 +140,41 @@ function GroupTile({
 }
 
 function DocumentTile({
-  name, groups = [], author, slug, selected, activityDate, maxNumberOfDocumentGroups, onClick,
+  name,
+  groups = [],
+  author,
+  slug,
+  selected,
+  selectedGroupId,
+  setSelectedGroupId,
+  activityDate,
+  maxNumberOfDocumentGroups,
+  onClick,
 }) {
   const [hovered, setHovered] = useState();
   let tileBadges = [];
-  if (groups.length > maxNumberOfDocumentGroups) {
-    const g = groups.slice();
-    const indexOfSelectedGroup = groups.findIndex(({ selected: s }) => s);
+  const g = groups.slice();
+
+  if (g.length > 0) {
+    const indexOfSelectedGroup = groups.findIndex(({ _id }) => _id === selectedGroupId);
     const selectedGroup = g.splice(indexOfSelectedGroup, 1)[0];
     tileBadges = [
       <TileBadge key="selectedGroup" color="blue" text={selectedGroup.name} />,
-      <TileBadge key="moreGroups" color="grey" text={`+${g.length} more`} marginLeft={5} />,
     ];
+  }
+
+  if (g.length >= maxNumberOfDocumentGroups) {
+    tileBadges.push(<TileBadge key="moreGroups" color="grey" text={`+${g.length} more`} marginLeft={5} />);
   } else {
-    tileBadges = groups.map(({ id, name: n, selected: s }, i) => <TileBadge key={id} color={s ? 'blue' : 'grey'} text={n} marginLeft={i > 0 ? 5 : 0} />);
+    tileBadges = tileBadges.concat(g.map(({ _id, name: n }) => (
+      <TileBadge
+        key={_id}
+        onClick={() => setSelectedGroupId(_id)}
+        color="grey"
+        text={n}
+        marginLeft={5}
+      />
+    )));
   }
 
   return (
@@ -130,16 +189,26 @@ function DocumentTile({
       role="button"
       tabIndex={0}
     >
+      <TilePointer selected={selected} />
       <div style={{
         display: 'flex',
         flexDirection: 'row',
       }}
       >
         <div className={styles.name}>{name}</div>
-        <Dropdown>
-          <Dropdown.Toggle as={ThreeDotDropdown} id="dropdown-custom-components" />
+        <Dropdown
+          onSelect={(eventKey) => {
+            if (eventKey === 'edit') {
+              Router.push(`/documents/${slug}/edit`);
+            } else if (eventKey === 'manage') {
+              Router.push('/documents');
+            }
+          }}
+        >
+          <Dropdown.Toggle as={ThreeDotDropdown} id="dropdown-document-tile" />
           <Dropdown.Menu>
-            <Dropdown.Item eventKey="1">Manage</Dropdown.Item>
+            <Dropdown.Item eventKey="edit">Edit</Dropdown.Item>
+            <Dropdown.Item eventKey="manage">Manage</Dropdown.Item>
           </Dropdown.Menu>
         </Dropdown>
       </div>
@@ -149,12 +218,14 @@ function DocumentTile({
       }}
       >
         <div style={{
-          width: (selected || hovered) ? 42.5 : 0,
+          width: (selected || hovered) ? 45 : 0,
           transition: 'width 0.25s',
           overflow: 'hidden',
+          paddingBottom: 3,
+          paddingLeft: 3,
         }}
         >
-          <TileBadge href={`/documents/${slug}`} color="yellow" text="Open" marginRight={5} />
+          <TileBadge href={`/documents/${slug}`} color="yellow" text="Open" />
         </div>
         <div className={styles.memberText}>
           <span>{author}</span>
@@ -188,7 +259,7 @@ function AnnotationsTile({
       <TileBadge key="moreTags" color="grey" text={`+${tags.length - 2} more`} marginLeft={5} />,
     ];
   } else {
-    tileBadges = tags.map((t, i) => <TileBadge color="grey" text={t} marginLeft={i > 0 ? 5 : 0} />);
+    tileBadges = tags.map((t, i) => <TileBadge key={t} color="grey" text={t} marginLeft={i > 0 ? 5 : 0} />);
   }
   return (
     <div
@@ -230,7 +301,9 @@ function AnnotationsTile({
 }
 
 
-export function GroupsChannel({ session, selectedGroupId, setSelectedGroupId }) {
+export function GroupsChannel({
+  flex, session, selectedGroupId, setSelectedGroupId,
+}) {
   const [groups, setGroups] = useState([]);
 
   const groupTiles = [
@@ -262,7 +335,8 @@ export function GroupsChannel({ session, selectedGroupId, setSelectedGroupId }) 
   }, [session]);
 
   return (
-    <>
+    <div className={styles.channelContainer} style={{ flex }}>
+      <div className={styles.dividingLine} />
       <div className={styles.headerContainer}>
         <Link href="/groups">
           <span className={`${styles.headerText} ${styles.headerLink}`}>
@@ -275,15 +349,24 @@ export function GroupsChannel({ session, selectedGroupId, setSelectedGroupId }) 
         {groupTiles}
       </div>
 
-    </>
+    </div>
   );
 }
 
 export function DocumentsChannel({
-  session, setAlerts, forceUpdate, selectedGroupId = 'privateGroup', selectedDocumentId, setSelectedDocumentId, maxNumberOfDocumentGroups = 3,
+  flex,
+  session,
+  setAlerts,
+  forceUpdate,
+  selectedGroupId = 'privateGroup',
+  setSelectedGroupId,
+  selectedDocumentId,
+  setSelectedDocumentId,
+  setSelectedDocumentSlug,
+  maxNumberOfDocumentGroups = 3,
 }) {
   const [key, setKey] = useState('shared');
-  const [, setListLoading] = useState(true);
+  const [listLoading, setListLoading] = useState(true);
   const [documents, setDocuments] = useState({});
   const numberOfDocuments = documents[selectedGroupId] === undefined
     ? 0
@@ -308,11 +391,12 @@ export function DocumentsChannel({
   ];
 
   const organizeDocumentsByGroup = (docs) => {
+    const sortedDocs = docs.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
     const organizedDocs = {
       privateGroup: [],
     };
-    for (let i = 0; i < docs.length; i += 1) {
-      const docGroups = docs[i].groups;
+    for (let i = 0; i < sortedDocs.length; i += 1) {
+      const docGroups = sortedDocs[i].groups;
       if (docGroups.length > 0) {
         for (let j = 0; j < docGroups.length; j += 1) {
           // eslint-disable-next-line no-underscore-dangle
@@ -322,11 +406,11 @@ export function DocumentsChannel({
             organizedDocs[groupId] = [];
           }
           // adding document to a group that it is in
-          organizedDocs[groupId].push(docs[i]);
+          organizedDocs[groupId].push(sortedDocs[i]);
         }
       } else {
         // if the document has no groups it is attached to then it will go to the privateGroup
-        organizedDocs.privateGroup.push(docs[i]);
+        organizedDocs.privateGroup.push(sortedDocs[i]);
       }
     }
 
@@ -345,8 +429,8 @@ export function DocumentsChannel({
             .then(async (data) => {
               const { docs } = data;
               await addGroupNamesToDocuments(docs)
-                .then((docsWithGroupNames) => {
-                  setDocuments(organizeDocumentsByGroup(docsWithGroupNames));
+                .then((allDocs) => {
+                  setDocuments(organizeDocumentsByGroup(allDocs));
                   setListLoading(false);
                 });
             })
@@ -380,7 +464,7 @@ export function DocumentsChannel({
     }
   }, [selectedGroupId, key]);
 
-  const documentTiles = documents[selectedGroupId] === undefined
+  let documentTiles = documents[selectedGroupId] === undefined
     ? []
     : documents[selectedGroupId].map(({
       _id, title, groups, contributors, updatedAt, slug,
@@ -396,14 +480,21 @@ export function DocumentsChannel({
           activityDate={updatedAt}
           selected={_id === selectedDocumentId}
           groups={groups}
+          selectedGroupId={selectedGroupId}
+          setSelectedGroupId={setSelectedGroupId}
           maxNumberOfDocumentGroups={maxNumberOfDocumentGroups}
-          onClick={() => setSelectedDocumentId(_id)}
+          onClick={() => { setSelectedDocumentId(_id); setSelectedDocumentSlug(slug); }}
         />
       );
     });
 
+  if (documentTiles.length === 0) {
+    documentTiles = <EmptyListMessage />;
+  }
+
   return (
-    <>
+    <div className={styles.channelContainer} style={{ flex }}>
+      <div className={styles.dividingLine} />
       <div className={styles.headerContainer}>
         <div style={{ display: 'flex', flex: 1 }}>
           <Link href="/documents">
@@ -416,28 +507,40 @@ export function DocumentsChannel({
         <PermissionsButtonGroup buttons={selectedGroupId === 'privateGroup' ? buttons.slice(0, 1) : buttons} />
       </div>
       <div className={styles.tileContainer}>
-        {documentTiles}
+        {listLoading ? <ListLoadingSpinner /> : documentTiles}
       </div>
 
-    </>
+    </div>
   );
 }
 
-export function AnnotationsChannel({ session, setAlerts, maxNumberOfAnnotationTags = 3 }) {
-  const [key] = useState('mine');
+export function AnnotationsChannel({
+  session, slug, setAlerts, maxNumberOfAnnotationTags = 3, flex,
+}) {
   const [selectedPermissions, setSelectedPermissions] = useState('shared');
-  const [, setTotalPages] = useState(1);
-  const [page, setPage] = useState(1);
-  const [, setListLoading] = useState(true);
-  const [annotations, setAnnotations] = useState([]);
-  const perPage = 10;
-  const limit = perPage;
+  const [listLoading, setListLoading] = useState();
+  const [annotations, setAnnotations] = useState();
+
+  const byPermissionFilter = ({ email, permissions, filter }) => {
+    if (filter === 'mine') { // mine
+      return session.user.email === email;
+    }
+
+    if (filter === 'shared') { // shared
+      return !permissions.private && !permissions.sharedTo;
+    }
+
+    if (filter === 'shared-with-me' && permissions.sharedTo !== undefined) { // shared with specific people
+      return permissions.sharedTo.includes(session.user.id);
+    }
+    return false;
+  };
 
   const buttons = [
     {
       text: 'Mine',
       textWidth: 40,
-      count: annotations.length,
+      count: annotations === undefined ? 0 : annotations.mine.length,
       selected: selectedPermissions === 'mine',
       onClick: () => { setSelectedPermissions('mine'); },
       icon: <PersonFill size="1.2em" />,
@@ -445,7 +548,7 @@ export function AnnotationsChannel({ session, setAlerts, maxNumberOfAnnotationTa
     {
       text: 'Shared with group(s)',
       textWidth: 145,
-      count: annotations.length,
+      count: annotations === undefined ? 0 : annotations.shared.length,
       selected: selectedPermissions === 'shared',
       onClick: () => { setSelectedPermissions('shared'); },
       icon: <PeopleFill size="1.2em" />,
@@ -453,69 +556,14 @@ export function AnnotationsChannel({ session, setAlerts, maxNumberOfAnnotationTa
     {
       text: 'Shared with me',
       textWidth: 115,
-      count: annotations.length,
+      count: annotations === undefined ? 0 : annotations['shared-with-me'].length,
       selected: selectedPermissions === 'shared-with-me',
       onClick: () => { setSelectedPermissions('shared-with-me'); },
       icon: <PersonPlusFill size="1.2em" />,
     },
   ];
 
-  const fetchData = async () => {
-    if (session) {
-      setListLoading(true);
-      if (session && (session.user.groups || session.user.id)) {
-        if (key === 'shared') {
-          if (session.user.groups && session.user.groups.length > 0) {
-            await getSharedAnnotations({
-              groups: session.user.groups, limit, page, perPage,
-            })
-              .then(async (data) => {
-                await addGroupNamesToAnnotations(data.annotations)
-                  .then((annosWithGroupNames) => {
-                    setTotalPages(Math.ceil((data.count) / perPage));
-                    setAnnotations(annosWithGroupNames);
-                  });
-              })
-              .catch((err) => {
-                setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
-                setListLoading(false);
-              });
-          } else {
-            setAnnotations([]);
-          }
-        } else if (key === 'mine') {
-          await getOwnAnnotations({
-            userId: session.user.id, limit, page, perPage,
-          })
-            .then(async (data) => {
-              await addGroupNamesToAnnotations(data.annotations)
-                .then((annosWithGroupNames) => {
-                  setTotalPages(Math.ceil((data.count) / perPage));
-                  setAnnotations(annosWithGroupNames);
-                });
-            })
-            .catch((err) => {
-              setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
-              setListLoading(false);
-            });
-        }
-      }
-    }
-  };
-
-  useEffect(() => {
-    if (page !== 1) { setPage(1); } else { fetchData(); }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key, session]);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { fetchData(); }, [page]);
-  useEffect(() => {
-    if (session && annotations) {
-      setListLoading(false);
-    }
-  }, [annotations, session]);
-
-  const annotationTiles = annotations.map(({
+  const toAnnotationsTile = ({
     _id, target, creator: { name }, modified, body: { value, tags },
   }) => (
     <AnnotationsTile
@@ -527,10 +575,45 @@ export function AnnotationsChannel({ session, setAlerts, maxNumberOfAnnotationTa
       tags={tags}
       maxNumberOfAnnotationTags={maxNumberOfAnnotationTags}
     />
-  ));
+  );
+
+  useEffect(() => {
+    if (slug === undefined) {
+      setAnnotations();
+      setSelectedPermissions('shared');
+      return;
+    }
+    setListLoading(true);
+    fetchSharedAnnotationsOnDocument({ slug, prefetch: false })
+      .then((annos) => {
+        const sortedAnnos = annos.sort((a, b) => new Date(b.modified) - new Date(a.modified));
+        const a = {
+          mine: sortedAnnos.filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'mine' })).map(toAnnotationsTile),
+          shared: sortedAnnos.filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'shared' })).map(toAnnotationsTile),
+          'shared-with-me': sortedAnnos.filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'shared-with-me' })).map(toAnnotationsTile),
+        };
+        setAnnotations(a);
+        setListLoading();
+      }).catch((err) => {
+        setAlerts([{ text: err.message, variant: 'danger' }]);
+        setListLoading();
+      });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slug]);
+
+
+  let annotationTiles;
+
+  if (annotations === undefined) {
+    annotationTiles = <EmptyListMessage text="No document selected" />;
+  } else if (annotations[selectedPermissions].length === 0) {
+    annotationTiles = <EmptyListMessage />;
+  } else {
+    annotationTiles = annotations[selectedPermissions];
+  }
 
   return (
-    <>
+    <div className={styles.channelContainer} style={{ flex }}>
       <div className={styles.headerContainer}>
         <div style={{ display: 'flex', flex: 1 }}>
           <span className={styles.headerText}>
@@ -540,8 +623,8 @@ export function AnnotationsChannel({ session, setAlerts, maxNumberOfAnnotationTa
         <PermissionsButtonGroup buttons={buttons} />
       </div>
       <div className={styles.tileContainer}>
-        {annotationTiles}
+        {listLoading ? <ListLoadingSpinner /> : annotationTiles}
       </div>
-    </>
+    </div>
   );
 }

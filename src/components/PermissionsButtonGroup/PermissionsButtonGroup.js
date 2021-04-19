@@ -22,6 +22,7 @@ export default function PermissionsButtonGroup({ buttons }) {
       : 1) : 0;
     return (
       <Button
+        key={text}
         variant={selected ? 'primary' : 'outline-primary'}
         onClick={onClick}
       >
@@ -40,7 +41,7 @@ export default function PermissionsButtonGroup({ buttons }) {
       </ButtonGroup>
       <style jsx global>
         {`
-        
+
         .permissions-buttons .btn div {
           transition: width 0.5s, opacity 1s;
           overflow: hidden;

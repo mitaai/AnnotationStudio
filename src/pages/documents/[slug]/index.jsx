@@ -21,7 +21,7 @@ import LoadingSpinner from '../../../components/LoadingSpinner';
 import AnnotationChannel from '../../../components/AnnotationChannel';
 import Document from '../../../components/Document';
 import { prefetchDocumentBySlug } from '../../../utils/docUtil';
-import { prefetchSharedAnnotationsOnDocument } from '../../../utils/annotationUtil';
+import { fetchSharedAnnotationsOnDocument } from '../../../utils/annotationUtil';
 import {
   DocumentAnnotationsContext,
   DocumentFiltersContext,
@@ -990,7 +990,9 @@ export async function getServerSideProps(context) {
   });
 
   // after we get the document data we need to get the annotations on this document data
-  await prefetchSharedAnnotationsOnDocument(slug, context.req.headers.cookie)
+  await fetchSharedAnnotationsOnDocument({
+    slug, cookie: context.req.headers.cookie, prefetch: true,
+  })
     .then((annotations) => {
       props.annotations = annotations;
     }).catch((err) => {
