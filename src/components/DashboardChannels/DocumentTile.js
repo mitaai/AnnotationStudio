@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import Router from 'next/router';
 import moment from 'moment';
-import { Dropdown, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import {
+  Dropdown, OverlayTrigger, Tooltip, Popover,
+} from 'react-bootstrap';
 import TileBadge from '../TileBadge';
 import {
   TilePointer, ThreeDotDropdown,
@@ -21,6 +23,7 @@ export default function DocumentTile({
   onClick,
 }) {
   const [hovered, setHovered] = useState();
+  const [showPopover, setShowPopover] = useState();
   let tileBadges = [];
   const g = groups.slice();
 
@@ -33,7 +36,32 @@ export default function DocumentTile({
   }
 
   if (g.length >= maxNumberOfDocumentGroups) {
-    tileBadges.push(<TileBadge key="moreGroups" color="grey" text={`+${g.length} more`} marginLeft={5} />);
+    tileBadges.push(<TileBadge
+      key="moreGroups"
+      showPopover={showPopover}
+      setShowPopover={setShowPopover}
+      popover={(
+        <Popover id="more-groups-badge-popover">
+          <Popover.Content>
+            {g.map(({ _id, name: n }) => (
+              <div
+                key={_id}
+                className={styles.moreGroupsOption}
+                onClick={() => { setSelectedGroupId(_id); setShowPopover(); }}
+                onKeyDown={() => {}}
+                role="button"
+                tabIndex={0}
+              >
+                {n}
+              </div>
+            ))}
+          </Popover.Content>
+        </Popover>
+      )}
+      color="grey"
+      text={`+${g.length} more`}
+      marginLeft={5}
+    />);
   } else {
     tileBadges = tileBadges.concat(g.map(({ _id, name: n }) => (
       <TileBadge

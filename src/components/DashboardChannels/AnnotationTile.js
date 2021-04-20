@@ -4,7 +4,7 @@ import TileBadge from '../TileBadge';
 import styles from './DashboardChannels.module.scss';
 
 export default function AnnotationTile({
-  text = '', annotation = '', author = '', activityDate, tags, maxNumberOfAnnotationTags = 3,
+  text = '', annotation = '', author = '', activityDate, tags, maxNumberOfAnnotationTags = 3, onClick,
 }) {
   let tileBadges = [];
   if (tags.length > maxNumberOfAnnotationTags) {
@@ -19,6 +19,10 @@ export default function AnnotationTile({
   return (
     <div
       className={styles.tile}
+      onClick={onClick}
+      onKeyDown={() => {}}
+      role="button"
+      tabIndex={0}
     >
       <div className={styles.annotatedText}>
         {`"${text}"`}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Router from 'next/router';
 import ReactHtmlParser from 'react-html-parser';
 import {
   PeopleFill,
@@ -69,9 +70,10 @@ export default function AnnotationsChannel({
 
   const toAnnotationsTile = ({
     _id, target, creator: { name }, modified, body: { value, tags },
-  }) => (
+  }, mine) => (
     <AnnotationTile
       key={_id}
+      onClick={() => Router.push(`/documents/${slug}?mine=${mine ? 'true' : 'false'}&aid=${_id}`)}
       text={target.selector.exact}
       author={name}
       annotation={value.length > 0 ? ReactHtmlParser(value, { transform: fixIframes }) : ''}
@@ -92,9 +94,9 @@ export default function AnnotationsChannel({
       .then((annos) => {
         const sortedAnnos = annos.sort((a, b) => new Date(b.modified) - new Date(a.modified));
         const a = {
-          mine: sortedAnnos.filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'mine' })).map(toAnnotationsTile),
-          shared: sortedAnnos.filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'shared' })).map(toAnnotationsTile),
-          'shared-with-me': sortedAnnos.filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'shared-with-me' })).map(toAnnotationsTile),
+          mine: sortedAnnos.filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'mine' })).map((anno) => toAnnotationsTile(anno, true)),
+          shared: sortedAnnos.filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'shared' })).map((anno) => toAnnotationsTile(anno, false)),
+          'shared-with-me': sortedAnnos.filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'shared-with-me' })).map((anno) => toAnnotationsTile(anno, false)),
         };
         setAnnotations(a);
         setListLoading();

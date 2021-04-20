@@ -1,14 +1,24 @@
 import Router from 'next/router';
+import {
+  OverlayTrigger,
+} from 'react-bootstrap';
 import styles from './TileBadge.module.scss';
 
 export default function TileBadge({
-  onClick = () => {}, color = 'grey', text = '', marginLeft = 0, marginRight = 0, href,
+  onClick = () => {},
+  popover,
+  showPopover,
+  setShowPopover,
+  color = 'grey',
+  text = '',
+  marginLeft = 0,
+  marginRight = 0,
+  href,
 }) {
   const colors = ['grey', 'blue', 'green', 'yellow'];
   const c = colors.includes(color) ? color : 'grey';
   const className = `${styles.tileBadge} ${styles[c]}`;
-
-  return (
+  const badge = (
     <span
       onClick={href === undefined ? onClick : () => {
         Router.push(href);
@@ -24,4 +34,15 @@ export default function TileBadge({
       {text}
     </span>
   );
+  return popover !== undefined ? (
+    <OverlayTrigger
+      onToggle={() => setShowPopover(!showPopover)}
+      show={showPopover}
+      trigger="click"
+      placement="bottom"
+      overlay={popover}
+    >
+      {badge}
+    </OverlayTrigger>
+  ) : badge;
 }

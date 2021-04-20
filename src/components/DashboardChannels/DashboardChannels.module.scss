@@ -133,6 +133,13 @@
   align-items: center;
 }
 
+.moreGroupsOption {
+  padding: 2px 5px;
+  &:hover {
+    color: #4568AC;
+  }
+}
+
 .privateGroupName {
   color: #4568AC !important;
 }
