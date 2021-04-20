@@ -192,7 +192,8 @@
   flex: 1;
   flex-direction: column;
   padding-right: 20px;
-  overflow-y: scroll;
+  overflow-y: overlay;
+  overflow-x: hidden !important;
 }
 
 .annotatedText {

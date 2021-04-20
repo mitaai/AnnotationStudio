@@ -37,6 +37,8 @@ export default function TileBadge({
   return popover !== undefined ? (
     <OverlayTrigger
       onToggle={() => setShowPopover(!showPopover)}
+      onHide={() => setShowPopover()}
+      rootClose
       show={showPopover}
       trigger="click"
       placement="bottom"

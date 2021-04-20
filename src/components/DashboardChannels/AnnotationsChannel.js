@@ -98,8 +98,15 @@ export default function AnnotationsChannel({
           shared: sortedAnnos.filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'shared' })).map((anno) => toAnnotationsTile(anno, false)),
           'shared-with-me': sortedAnnos.filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'shared-with-me' })).map((anno) => toAnnotationsTile(anno, false)),
         };
+
         setAnnotations(a);
         setListLoading();
+
+        if (a.shared.length === 0 && a.mine.length > 0) {
+          setSelectedPermissions('mine');
+        } else {
+          setSelectedPermissions('shared');
+        }
       }).catch((err) => {
         setAlerts([{ text: err.message, variant: 'danger' }]);
         setListLoading();
