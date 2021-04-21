@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { OverlayTrigger, Popover } from 'react-bootstrap';
 import TileBadge from '../TileBadge';
 import styles from './DashboardChannels.module.scss';
 
@@ -45,9 +45,9 @@ export default function AnnotationTile({
             key="document-activity-date-tooltip"
             placement="bottom"
             overlay={(
-              <Tooltip>
-                {moment(activityDate).format('LLLL')}
-              </Tooltip>
+              <Popover id="popover-basic">
+                <Popover.Content style={{ color: '#636363' }}>{moment(activityDate).format('LLLL')}</Popover.Content>
+              </Popover>
             )}
           >
             <span>{moment(activityDate).fromNow()}</span>

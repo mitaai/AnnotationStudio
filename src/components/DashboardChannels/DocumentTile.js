@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Router from 'next/router';
 import moment from 'moment';
 import {
-  Dropdown, OverlayTrigger, Tooltip, Popover,
+  Dropdown, OverlayTrigger, Popover,
 } from 'react-bootstrap';
 import TileBadge from '../TileBadge';
 import {
@@ -131,9 +131,9 @@ export default function DocumentTile({
             key="document-activity-date-tooltip"
             placement="bottom"
             overlay={(
-              <Tooltip>
-                {moment(activityDate).format('LLLL')}
-              </Tooltip>
+              <Popover id="popover-basic">
+                <Popover.Content style={{ color: '#636363' }}>{moment(activityDate).format('LLLL')}</Popover.Content>
+              </Popover>
             )}
           >
             <span>{moment(activityDate).fromNow()}</span>
