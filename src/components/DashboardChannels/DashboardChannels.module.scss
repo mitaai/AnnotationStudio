@@ -64,6 +64,7 @@
 }
 
 .tile {
+  outline: none;
   cursor: pointer;
   display: flex;
   flex-direction: column;
@@ -75,13 +76,18 @@
   position: relative;
   transition: all 0.25s;
   left: 0px;
-  &:hover {
-    background: #EFF5FF;
+}
 
-    .moreTileOptions {
-      opacity: 1.0;
-    }
+.tileHovered {
+  background: #EFF5FF !important;
+
+  .moreTileOptions {
+    opacity: 1.0;
   }
+}
+
+.tileFocused {
+  border: 1px solid #4568AC !important
 }
 
 .selectedTile {

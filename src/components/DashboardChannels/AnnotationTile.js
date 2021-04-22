@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import moment from 'moment';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import TileBadge from '../TileBadge';
@@ -6,6 +7,14 @@ import styles from './DashboardChannels.module.scss';
 export default function AnnotationTile({
   text = '', annotation = '', author = '', activityDate, tags, maxNumberOfAnnotationTags = 3, onClick,
 }) {
+  const [hovered, setHovered] = useState();
+  const [focused, setFoucsed] = useState();
+  const classNames = [
+    styles.tile,
+    hovered ? styles.tileHovered : '',
+    focused ? styles.tileFocused : '',
+  ].join(' ');
+
   let tileBadges = [];
   if (tags.length > maxNumberOfAnnotationTags) {
     tileBadges = [
@@ -18,9 +27,17 @@ export default function AnnotationTile({
   }
   return (
     <div
-      className={styles.tile}
+      className={classNames}
       onClick={onClick}
-      onKeyDown={() => {}}
+      onMouseOver={() => setHovered(true)}
+      onMouseOut={() => setHovered()}
+      onFocus={() => { setHovered(true); setFoucsed(true); }}
+      onBlur={() => { setHovered(); setFoucsed(); }}
+      onKeyDown={(e) => {
+        if (e.code === 'Space' || e.code === 'Enter') {
+          onClick();
+        }
+      }}
       role="button"
       tabIndex={0}
     >

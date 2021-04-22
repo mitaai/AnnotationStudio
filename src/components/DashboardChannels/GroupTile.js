@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import Router from 'next/router';
 import {
   LockFill,
@@ -12,6 +13,14 @@ import styles from './DashboardChannels.module.scss';
 export default function GroupTile({
   name, memberCount = 0, position = 'Member', selected, onClick, privateGroup,
 }) {
+  const [hovered, setHovered] = useState();
+  const [focused, setFocused] = useState();
+  const classNames = [
+    styles.tile,
+    selected ? styles.selectedTile : '',
+    hovered ? styles.tileHovered : '',
+    focused ? styles.tileFocused : '',
+  ].join(' ');
   const memberText = `${memberCount} member${(memberCount === 1 ? '' : 's')}`;
   const positionColors = {
     Member: 'grey',
@@ -22,9 +31,17 @@ export default function GroupTile({
   const tileBadge = <TileBadge color={color} text={position} />;
   return (
     <div
-      className={`${styles.tile} ${selected ? styles.selectedTile : ''}`}
+      className={classNames}
       onClick={onClick}
-      onKeyDown={() => {}}
+      onMouseOver={() => setHovered(true)}
+      onMouseOut={() => setHovered()}
+      onFocus={() => { setHovered(true); setFocused(true); }}
+      onBlur={() => { setHovered(); setFocused(); }}
+      onKeyDown={(e) => {
+        if (e.code === 'Space' || e.code === 'Enter') {
+          onClick();
+        }
+      }}
       role="button"
       tabIndex={0}
     >

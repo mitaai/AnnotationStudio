@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import Router from 'next/router';
 import {
   OverlayTrigger,
@@ -5,7 +6,7 @@ import {
 import styles from './TileBadge.module.scss';
 
 export default function TileBadge({
-  onClick = () => {},
+  onClick,
   popover,
   showPopover,
   setShowPopover,
@@ -15,25 +16,52 @@ export default function TileBadge({
   marginRight = 0,
   href,
 }) {
+  const [focused, setFocused] = useState();
   const colors = ['grey', 'blue', 'green', 'yellow'];
   const c = colors.includes(color) ? color : 'grey';
-  const className = `${styles.tileBadge} ${styles[c]}`;
-  const badge = (
-    <span
-      onClick={href === undefined ? onClick : () => {
-        Router.push(href);
-      }}
-      role="link"
-      tabIndex={0}
-      onKeyDown={() => {}}
-      className={className}
-      style={{
-        marginLeft, marginRight,
-      }}
-    >
-      {text}
-    </span>
-  );
+  const classNames = [
+    styles.tileBadge,
+    styles[c],
+    focused ? styles.tileBadgeFoucsed : '',
+  ].join(' ');
+  const tileBadgeOnClick = href === undefined ? onClick : () => {
+    Router.push(href);
+  };
+  const badge = tileBadgeOnClick === undefined && popover === undefined
+    ? (
+      <span
+        className={classNames}
+        style={{
+          marginLeft, marginRight,
+        }}
+      >
+        {text}
+      </span>
+    )
+    : (
+      <span
+        onClick={tileBadgeOnClick}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused()}
+        role="link"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.code === 'Space' || e.code === 'Enter') {
+            if (setShowPopover !== undefined) {
+              setShowPopover(!showPopover);
+            } else if (tileBadgeOnClick !== undefined) {
+              tileBadgeOnClick();
+            }
+          }
+        }}
+        className={classNames}
+        style={{
+          marginLeft, marginRight,
+        }}
+      >
+        {text}
+      </span>
+    );
   return popover !== undefined ? (
     <OverlayTrigger
       onToggle={() => setShowPopover(!showPopover)}

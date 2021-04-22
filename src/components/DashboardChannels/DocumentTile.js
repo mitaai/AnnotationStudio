@@ -23,7 +23,15 @@ export default function DocumentTile({
   onClick,
 }) {
   const [hovered, setHovered] = useState();
+  const [focused, setFocused] = useState();
   const [showPopover, setShowPopover] = useState();
+
+  const classNames = [styles.tile,
+    selected ? styles.selectedTile : '',
+    hovered ? styles.tileHovered : '',
+    focused ? styles.tileFocused : '',
+  ].join(' ');
+
   let tileBadges = [];
   const g = groups.slice();
 
@@ -43,18 +51,25 @@ export default function DocumentTile({
       popover={(
         <Popover id="more-groups-badge-popover">
           <Popover.Content>
-            {g.map(({ _id, name: n }) => (
-              <div
-                key={_id}
-                className={styles.moreGroupsOption}
-                onClick={() => { setSelectedGroupId(_id); setShowPopover(); }}
-                onKeyDown={() => {}}
-                role="button"
-                tabIndex={0}
-              >
-                {n}
-              </div>
-            ))}
+            {g.map(({ _id, name: n }) => {
+              const popoverOnClick = () => { setSelectedGroupId(_id); setShowPopover(); };
+              return (
+                <div
+                  key={_id}
+                  className={styles.moreGroupsOption}
+                  onClick={popoverOnClick}
+                  onKeyDown={(e) => {
+                    if (e.code === 'Space' || e.code === 'Enter') {
+                      popoverOnClick();
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                >
+                  {n}
+                </div>
+              );
+            })}
           </Popover.Content>
         </Popover>
       )}
@@ -76,13 +91,17 @@ export default function DocumentTile({
 
   return (
     <div
-      className={`${styles.tile} ${selected ? styles.selectedTile : ''}`}
+      className={classNames}
       onClick={onClick}
       onMouseOver={() => setHovered(true)}
       onMouseOut={() => setHovered()}
-      onFocus={() => setHovered(true)}
-      onBlur={() => setHovered()}
-      onKeyDown={() => {}}
+      onFocus={() => { setHovered(true); setFocused(true); }}
+      onBlur={() => { setHovered(); setFocused(); }}
+      onKeyDown={(e) => {
+        if (e.code === 'Space' || e.code === 'Enter') {
+          onClick();
+        }
+      }}
       role="button"
       tabIndex={0}
     >
