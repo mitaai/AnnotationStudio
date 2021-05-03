@@ -7,11 +7,8 @@ import React, {
 } from 'react';
 import $ from 'jquery';
 import {
-  Toast, Card,
+  Card,
 } from 'react-bootstrap';
-import {
-  ArchiveFill, PencilFill, ChatLeftTextFill,
-} from 'react-bootstrap-icons';
 import {
   createTextQuoteSelector,
   highlightRange,
@@ -102,6 +99,7 @@ export default function Document({
   annotateDocument,
   displayAnnotationsInChannels,
   setAlerts,
+  setShowCannotAnnotateDocumentToast,
 }) {
   const myRef = useRef();
   const documentZoomRef = useRef(documentZoom);
@@ -109,7 +107,6 @@ export default function Document({
   const [position, setPosition] = useState();
   const [selector, setSelector] = useState(null);
   const [selectedTextToAnnotate, setSelectedTextToAnnotate] = useState();
-  const [showCannotAnnotateDocumentToast, setShowCannotAnnotateDocumentToast] = useState(false);
 
   const activateAnnotation = (e) => {
     const annoId = $(e.target).attr('annotation-id');
@@ -414,71 +411,8 @@ export default function Document({
     </Card>
   );
 
-  const cannotAnnotateDocumentToast = (
-    <div id="show-cannot-annotate-document-toast-container">
-      <Toast
-        onClose={() => setShowCannotAnnotateDocumentToast(false)}
-        show={showCannotAnnotateDocumentToast}
-      >
-        <Toast.Header>
-          <strong className="mr-auto">Cannot Annotate Document</strong>
-        </Toast.Header>
-        <Toast.Body>
-          <p>
-            This document is currently
-            {' '}
-            {documentToAnnotate.state === 'draft' && (
-            <>
-              a
-              {' '}
-              <PencilFill alt="draft" />
-              {' '}
-              <strong>Draft</strong>
-            </>
-            )}
-            {documentToAnnotate.state === 'archived' && (
-            <>
-              <ArchiveFill alt="archived" />
-              {' '}
-              <strong>Archived</strong>
-            </>
-            )}
-            . Documents in
-            {' '}
-            {documentToAnnotate.state === 'draft' && (
-            <>
-              <PencilFill alt="draft" />
-              {' '}
-              <strong>Draft</strong>
-            </>
-            )}
-            {documentToAnnotate.state === 'archived' && (
-            <>
-              <ArchiveFill alt="archived" />
-              {' '}
-              <strong>Archived</strong>
-            </>
-            )}
-            {' '}
-            mode cannot be annotated.
-          </p>
-          <p>
-            If you are the document owner, please edit the document and change its state to
-            {' '}
-            <ChatLeftTextFill />
-            {' '}
-            <strong>Published</strong>
-            {' '}
-            to enable annotation.
-          </p>
-        </Toast.Body>
-      </Toast>
-    </div>
-  );
-
   return (
     <>
-      {cannotAnnotateDocumentToast}
       {documentContentContainer}
       <AnnotateButton
         annotationIdBeingEdited={annotationIdBeingEdited}
@@ -492,27 +426,6 @@ export default function Document({
       />
       <style jsx global>
         {`
-
-          #show-cannot-annotate-document-toast-container {
-            position: fixed;
-            height: 0px;
-            left: 10px;
-            top: 130px;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-          }
-
-          #show-cannot-annotate-document-toast-container .toast {
-            border-color: rgb(220, 53, 70) !important;
-          }
-
-          #show-cannot-annotate-document-toast-container .toast-header {
-            background-color: rgba(220, 53, 70, 0.85) !important;
-            color: white !important; 
-          }
-
-          #show-cannot-annotate-document-toast-container .toast-header button {
-            color: white !important;
-          }
 
           .annotation-highlighted-text.filtered {
             background-color: rgba(255,255,10, 0.5);
