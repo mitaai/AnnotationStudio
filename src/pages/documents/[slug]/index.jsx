@@ -8,7 +8,11 @@ import $ from 'jquery';
 import {
   Modal,
   ProgressBar,
+  Toast,
 } from 'react-bootstrap';
+import {
+  ArchiveFill, PencilFill, ChatLeftTextFill,
+} from 'react-bootstrap-icons';
 import {
   createTextQuoteSelector,
   highlightRange,
@@ -112,6 +116,7 @@ const DocumentPage = ({
   ] = useState(validQuery ? query.aid : undefined);
 
   const [showMoreInfoShareModal, setShowMoreInfoShareModal] = useState();
+  const [showCannotAnnotateDocumentToast, setShowCannotAnnotateDocumentToast] = useState(false);
 
   const [session, loading] = useSession();
   // interesection between user's groups and groups the document is shared to
@@ -696,6 +701,68 @@ const DocumentPage = ({
     }
   }, [session, loading, document, documentLoading]);
 
+  const cannotAnnotateDocumentToast = (
+    <div id="show-cannot-annotate-document-toast-container">
+      <Toast
+        onClose={() => setShowCannotAnnotateDocumentToast(false)}
+        show={showCannotAnnotateDocumentToast}
+      >
+        <Toast.Header>
+          <strong className="mr-auto">Cannot Annotate Document</strong>
+        </Toast.Header>
+        <Toast.Body>
+          <p>
+            This document is currently
+            {' '}
+            {document.state === 'draft' && (
+            <>
+              a
+              {' '}
+              <PencilFill alt="draft" />
+              {' '}
+              <strong>Draft</strong>
+            </>
+            )}
+            {document.state === 'archived' && (
+            <>
+              <ArchiveFill alt="archived" />
+              {' '}
+              <strong>Archived</strong>
+            </>
+            )}
+            . Documents in
+            {' '}
+            {document.state === 'draft' && (
+            <>
+              <PencilFill alt="draft" />
+              {' '}
+              <strong>Draft</strong>
+            </>
+            )}
+            {document.state === 'archived' && (
+            <>
+              <ArchiveFill alt="archived" />
+              {' '}
+              <strong>Archived</strong>
+            </>
+            )}
+            {' '}
+            mode cannot be annotated.
+          </p>
+          <p>
+            If you are the document owner, please edit the document and change its state to
+            {' '}
+            <ChatLeftTextFill />
+            {' '}
+            <strong>Published</strong>
+            {' '}
+            to enable annotation.
+          </p>
+        </Toast.Body>
+      </Toast>
+    </div>
+  );
+
   return (
     <DocumentActiveAnnotationsContext.Provider value={[activeAnnotations, setActiveAnnotations]}>
       <DocumentContext.Provider value={[document, documentZoom, setDocumentZoom]}>
@@ -744,7 +811,7 @@ const DocumentPage = ({
                     footerHeight={footerHeight}
                   />
                   {!displayAnnotationsInChannels && <AnnotationsOverlay />}
-
+                  {cannotAnnotateDocumentToast}
                   <div id="document-container" className={footerHeight > 0 && 'has-footer'}>
                     <div id="document-inner-container">
                       <AnnotationChannel
@@ -798,6 +865,8 @@ const DocumentPage = ({
                           alerts={alerts}
                           setAlerts={setAlerts}
                           user={session ? session.user : undefined}
+                          showCannotAnnotateDocumentToast={showCannotAnnotateDocumentToast}
+                          setShowCannotAnnotateDocumentToast={setShowCannotAnnotateDocumentToast}
                         />
                       </div>
                       <AnnotationChannel
@@ -964,6 +1033,28 @@ const DocumentPage = ({
 
               .text-currently-being-annotated.active {
                 background-color: rgba(0, 123, 255, 0.5);
+              }
+
+              #show-cannot-annotate-document-toast-container {
+                z-index: 1;
+                position: relative;
+                left: 10px;
+                top: 10px;
+                height: 0px;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+              }
+    
+              #show-cannot-annotate-document-toast-container .toast {
+                border-color: rgb(220, 53, 70) !important;
+              }
+    
+              #show-cannot-annotate-document-toast-container .toast-header {
+                background-color: rgba(220, 53, 70, 0.85) !important;
+                color: white !important; 
+              }
+    
+              #show-cannot-annotate-document-toast-container .toast-header button {
+                color: white !important;
               }
               
             `}
