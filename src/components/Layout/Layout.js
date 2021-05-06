@@ -27,22 +27,20 @@ function Layout({
         <title>{process.env.NEXT_PUBLIC_SITE_NAME || 'Annotation Studio'}</title>
         <link rel="icon" href="/as-logo-32x32.png" />
       </Head>
-      <Header
-        type={type}
-        document={document}
-        docView={docView}
-        annotations={annotations}
-        newReg={newReg}
-        statefulSession={statefulSession}
-      />
-      <main
-        role="main"
-        className={docView ? 'flex-shrink-0' : 'flex-shrink-0 p-3'}
-        style={type === 'dashboard' ? { paddingBottom: '0px !important' } : {}}
-      >
-        {innerContent}
-      </main>
-      <Footer />
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <Header
+          type={type}
+          document={document}
+          docView={docView}
+          annotations={annotations}
+          newReg={newReg}
+          statefulSession={statefulSession}
+        />
+        <div style={{ flex: 1, overflowY: 'overlay', paddingTop: docView ? 0 : 15 }}>
+          {innerContent}
+        </div>
+        {!docView && <Footer />}
+      </div>
       <style jsx global>
         {`
           html,

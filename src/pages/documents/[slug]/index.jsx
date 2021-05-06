@@ -33,6 +33,7 @@ import { FirstNameLastInitial } from '../../../utils/nameUtil';
 import AnnotationsOverlay from '../../../components/AnnotationsOverlay';
 import UnsavedChangesToast from '../../../components/UnsavedChangesToast/UnsavedChangesToast';
 import adjustLine from '../../../utils/docUIUtils';
+import Footer from '../../../components/Footer';
 
 
 function DeepCopyObj(obj) {
@@ -816,9 +817,8 @@ const DocumentPage = ({
                         setAlerts={setAlerts}
                       />
                     </div>
-
                   </div>
-
+                  <Footer />
                   <Modal
                     show={!(annotationChannel1Loaded && annotationChannel2Loaded)}
                     backdrop="static"
