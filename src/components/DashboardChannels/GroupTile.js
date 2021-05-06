@@ -11,7 +11,7 @@ import {
 import styles from './DashboardChannels.module.scss';
 
 export default function GroupTile({
-  name, memberCount = 0, position = 'Member', selected, onClick, privateGroup,
+  id, name, memberCount = 0, position = 'Member', selected, onClick, privateGroup,
 }) {
   const [hovered, setHovered] = useState();
   const [focused, setFocused] = useState();
@@ -64,7 +64,7 @@ export default function GroupTile({
             <Dropdown
               onSelect={(eventKey) => {
                 if (eventKey === 'manage') {
-                  Router.push('/groups');
+                  Router.push(`/groups/${id}`);
                 }
               }}
             >

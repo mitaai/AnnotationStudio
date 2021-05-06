@@ -15,6 +15,7 @@ export default function DocumentTile({
   groups = [],
   author,
   slug,
+  isOwner,
   selected,
   selectedGroupId,
   setSelectedGroupId,
@@ -112,6 +113,7 @@ export default function DocumentTile({
       }}
       >
         <div className={styles.name}>{name}</div>
+        {isOwner && (
         <Dropdown
           onSelect={(eventKey) => {
             if (eventKey === 'edit') {
@@ -127,6 +129,8 @@ export default function DocumentTile({
             <Dropdown.Item eventKey="manage">Manage</Dropdown.Item>
           </Dropdown.Menu>
         </Dropdown>
+        )}
+
       </div>
       <div style={{
         display: 'flex',

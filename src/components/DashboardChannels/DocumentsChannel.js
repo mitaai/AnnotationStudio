@@ -130,7 +130,7 @@ export default function DocumentsChannel({
   let documentTiles = documents[selectedGroupId] === undefined
     ? []
     : documents[selectedGroupId].map(({
-      _id, title, groups, contributors, updatedAt, slug,
+      _id, title, groups, contributors, updatedAt, slug, owner,
     }) => {
       const contributor = contributors.find(({ type }) => type.toLowerCase() === 'author');
       const author = contributor === undefined ? 'Author' : contributor.name;
@@ -140,6 +140,7 @@ export default function DocumentsChannel({
           name={title}
           author={author}
           slug={slug}
+          isOwner={owner === session.user.id}
           activityDate={updatedAt}
           selected={_id === selectedDocumentId}
           groups={groups}

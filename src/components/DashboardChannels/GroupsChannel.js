@@ -24,6 +24,7 @@ export default function GroupsChannel({
   }) => (
     <GroupTile
       key={id}
+      id={id}
       name={name}
       memberCount={memberCount}
       position={role.charAt(0).toUpperCase() + role.slice(1)}
