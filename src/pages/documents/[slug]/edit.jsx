@@ -38,17 +38,24 @@ const EditDocument = ({ document, alerts, statefulSession }) => {
           )}
           {session && document && !loading && !pageLoading && (
             <>
-              <Card.Header><Card.Title>Edit document</Card.Title></Card.Header>
-              <Card.Body>
-                <DocumentForm
-                  mode="edit"
-                  session={session}
-                  data={document}
-                  setErrors={setErrors}
-                  errors={errors}
-                  setPageLoading={setPageLoading}
-                />
-              </Card.Body>
+              {(document.owner === session.user.id || session.user.role === 'admin') && (
+              <>
+                <Card.Header><Card.Title>Edit document</Card.Title></Card.Header>
+                <Card.Body>
+                  <DocumentForm
+                    mode="edit"
+                    session={session}
+                    data={document}
+                    setErrors={setErrors}
+                    errors={errors}
+                    setPageLoading={setPageLoading}
+                  />
+                </Card.Body>
+              </>
+              )}
+              {document.owner !== session.user.id && session.user.role !== 'admin' && (
+                <UnauthorizedCard />
+              )}
             </>
           )}
           {session && !document && !loading && !pageLoading && (
