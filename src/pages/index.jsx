@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { parseCookies, destroyCookie } from 'nookies';
 import {
   Button, Card,
@@ -28,9 +28,40 @@ export default function Home({
   const [selectedGroupId, setSelectedGroupId] = useState('privateGroup');
   const [selectedDocumentId, setSelectedDocumentId] = useState();
   const [selectedDocumentSlug, setSelectedDocumentSlug] = useState();
+  const [documentPermissions, setDocumentPermissions] = useState('shared');
+  const dashboardState = `${selectedDocumentId !== undefined && selectedDocumentSlug !== undefined ? `did=${selectedDocumentId}&slug=${selectedDocumentSlug}&dp=${documentPermissions}&` : ''}gid=${selectedGroupId}`;
+  const breadcrumbs = [
+    { name: selectedGroupId === 'privateGroup' ? 'Private' : session.user.groups.find(({ id }) => id === selectedGroupId).name },
+  ];
+
+  useEffect(() => {
+    if (session && query) {
+      if (query.gid !== undefined && (session.user.groups.some(({ id }) => query.gid === id) || query.gid === 'privateGroup')) {
+        setSelectedGroupId(query.gid);
+        if (query.did !== undefined && query.slug !== undefined) {
+          setSelectedDocumentId(query.did);
+          setSelectedDocumentSlug(query.slug);
+        }
+        setDocumentPermissions(['mine', 'shared'].includes(query.dp) ? query.dp : 'shared');
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, session]);
+
+  const showDashboard = session
+  && ((session.user && session.user.firstName)
+  || statefulSession)
+  && !loading;
 
   return (
-    <Layout alerts={alerts} type="dashboard" newReg={newReg} statefulSession={statefulSession}>
+    <Layout
+      alerts={alerts}
+      type="dashboard"
+      breadcrumbs={showDashboard ? breadcrumbs : undefined}
+      dashboardState={dashboardState}
+      newReg={newReg}
+      statefulSession={statefulSession}
+    >
       {loading && (
         <Card>
           <Card.Body>
@@ -99,6 +130,11 @@ export default function Home({
                 setSelectedDocumentSlug();
               }
             }}
+            selectedDocumentId={selectedDocumentId}
+            setSelectedDocumentId={setSelectedDocumentId}
+            selectedDocumentSlug={selectedDocumentSlug}
+            setSelectedDocumentSlug={setSelectedDocumentSlug}
+            documentPermissions={documentPermissions}
           />
           <DocumentsChannel
             flex={2}
@@ -107,7 +143,10 @@ export default function Home({
             setSelectedGroupId={setSelectedGroupId}
             selectedDocumentId={selectedDocumentId}
             setSelectedDocumentId={setSelectedDocumentId}
+            selectedDocumentSlug={selectedDocumentSlug}
             setSelectedDocumentSlug={setSelectedDocumentSlug}
+            documentPermissions={documentPermissions}
+            setDocumentPermissions={setDocumentPermissions}
             setAlerts={setAlerts}
             forceUpdate={!!statefulSession}
           />
@@ -116,8 +155,10 @@ export default function Home({
             session={statefulSession || session}
             setAlerts={setAlerts}
             slug={selectedDocumentSlug}
+            selectedGroupId={selectedGroupId}
             selectedDocumentId={selectedDocumentId}
             selectedDocumentSlug={selectedDocumentSlug}
+            documentPermissions={documentPermissions}
           />
         </div>
       )}

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
@@ -25,10 +26,13 @@ export default function DocumentsChannel({
   setSelectedGroupId,
   selectedDocumentId,
   setSelectedDocumentId,
+  selectedDocumentSlug,
   setSelectedDocumentSlug,
+  documentPermissions,
+  setDocumentPermissions,
   maxNumberOfDocumentGroups = 3,
 }) {
-  const [key, setKey] = useState('shared');
+  const dashboardState = `${selectedDocumentId !== undefined && selectedDocumentSlug !== undefined ? `did=${selectedDocumentId}&slug=${selectedDocumentSlug}&dp=${documentPermissions}&` : ''}gid=${selectedGroupId}`;
   const [listLoading, setListLoading] = useState(true);
   const [documents, setDocuments] = useState({});
   const numberOfDocuments = documents[selectedGroupId] === undefined
@@ -38,17 +42,17 @@ export default function DocumentsChannel({
     {
       text: 'Mine',
       textWidth: 40,
-      count: key === 'mine' ? numberOfDocuments : 0,
-      selected: key === 'mine',
-      onClick: () => { setKey('mine'); },
+      count: documentPermissions === 'mine' ? numberOfDocuments : 0,
+      selected: documentPermissions === 'mine',
+      onClick: () => { setDocumentPermissions('mine'); },
       icon: <PersonFill size="1.2em" />,
     },
     {
       text: 'Shared',
       textWidth: 60,
-      count: key === 'shared' ? numberOfDocuments : 0,
-      selected: key === 'shared',
-      onClick: () => { setKey('shared'); },
+      count: documentPermissions === 'shared' ? numberOfDocuments : 0,
+      selected: documentPermissions === 'shared',
+      onClick: () => { setDocumentPermissions('shared'); },
       icon: <PeopleFill size="1.2em" />,
     },
   ];
@@ -84,7 +88,7 @@ export default function DocumentsChannel({
     async function fetchData() {
       if (session && (session.user.groups || session.user.id)) {
         setListLoading(true);
-        if (key === 'shared') {
+        if (documentPermissions === 'shared') {
           await getSharedDocumentsByGroup({
             groups: session.user.groups,
             limit: 7,
@@ -101,7 +105,7 @@ export default function DocumentsChannel({
               setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
               setListLoading(false);
             });
-        } else if (key === 'mine') {
+        } else if (documentPermissions === 'mine') {
           await getDocumentsByUser({ id: session.user.id, limit: 7 })
             .then(async (data) => {
               const { docs } = data;
@@ -119,13 +123,13 @@ export default function DocumentsChannel({
       }
     }
     fetchData();
-  }, [key, forceUpdate, session, setAlerts]);
+  }, [documentPermissions, forceUpdate, session, setAlerts]);
 
   useEffect(() => {
-    if (selectedGroupId === 'privateGroup' && key === 'shared') {
-      setKey('mine');
+    if (selectedGroupId === 'privateGroup' && documentPermissions === 'shared') {
+      setDocumentPermissions('mine');
     }
-  }, [selectedGroupId, key]);
+  }, [selectedGroupId, documentPermissions]);
 
   let documentTiles = documents[selectedGroupId] === undefined
     ? []
@@ -137,6 +141,7 @@ export default function DocumentsChannel({
       return (
         <DocumentTile
           key={_id}
+          id={_id}
           name={title}
           author={author}
           slug={slug}
@@ -147,6 +152,7 @@ export default function DocumentsChannel({
           selectedGroupId={selectedGroupId}
           setSelectedGroupId={setSelectedGroupId}
           maxNumberOfDocumentGroups={maxNumberOfDocumentGroups}
+          dashboardState={`${_id !== undefined && slug !== undefined ? `did=${_id}&slug=${slug}&dp=${documentPermissions}&` : ''}gid=${selectedGroupId}`}
           onClick={() => { setSelectedDocumentId(_id); setSelectedDocumentSlug(slug); }}
         />
       );
@@ -161,7 +167,7 @@ export default function DocumentsChannel({
       <div className={styles.dividingLine} />
       <div className={styles.headerContainer}>
         <div style={{ display: 'flex', flex: 1 }}>
-          <Link href="/documents">
+          <Link href={`/documents?${dashboardState}`}>
             <span className={`${styles.headerText} ${styles.headerLink}`}>
               Documents
             </span>

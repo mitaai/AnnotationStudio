@@ -20,11 +20,13 @@ const getEditProfileUrl = (email) => {
 
 const Header = ({
   type,
+  breadcrumbs,
   document,
   docView,
   annotations,
   newReg,
   statefulSession,
+  dashboardState,
 }) => {
   const [session, loading] = useSession();
   const router = useRouter();
@@ -105,7 +107,15 @@ const Header = ({
         </Container>
       </Navbar>
       {session && !loading && (
-        <SecondNavbar session={session} type={type} document={document} docView={docView} annotations={annotations} />
+        <SecondNavbar
+          session={session}
+          type={type}
+          breadcrumbs={breadcrumbs}
+          document={document}
+          docView={docView}
+          annotations={annotations}
+          dashboardState={dashboardState}
+        />
       )}
     </header>
   );

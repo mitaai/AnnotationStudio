@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-continue */
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-underscore-dangle */
@@ -44,6 +45,7 @@ function DeepCopyObj(obj) {
 const DocumentPage = ({
   document, annotations, initAlerts, query, statefulSession,
 }) => {
+  const dashboardState = `${query.did !== undefined && query.slug !== undefined ? `did=${query.did}&slug=${query.slug}&dp=${query.dp}&` : ''}gid=${query.gid}`;
   let validQuery = false;
   let defaultPermissions = 0;
   if ((query && (query.mine === 'true' || query.mine === 'false')) && query.aid !== undefined) {
@@ -533,6 +535,7 @@ const DocumentPage = ({
         }
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [annotationIdToScrollTo, documentFilters]);
 
   async function getIntersectionOfGroupsAndUsers() {
@@ -722,6 +725,7 @@ const DocumentPage = ({
               alerts={alerts}
               docView
               statefulSession={statefulSession}
+              dashboardState={dashboardState}
             >
               {!session && loading && (
               <LoadingSpinner />

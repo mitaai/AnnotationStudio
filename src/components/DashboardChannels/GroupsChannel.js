@@ -6,9 +6,16 @@ import GroupTile from './GroupTile';
 import styles from './DashboardChannels.module.scss';
 
 export default function GroupsChannel({
-  flex, session, selectedGroupId, setSelectedGroupId,
+  flex,
+  session,
+  selectedGroupId,
+  setSelectedGroupId,
+  selectedDocumentId,
+  selectedDocumentSlug,
+  documentPermissions,
 }) {
   const [groups, setGroups] = useState([]);
+  const dashboardState = `${selectedDocumentId !== undefined && selectedDocumentSlug !== undefined ? `did=${selectedDocumentId}&slug=${selectedDocumentSlug}&dp=${documentPermissions}&` : ''}gid=${selectedGroupId}`;
 
   const groupTiles = [
     <GroupTile
@@ -43,7 +50,7 @@ export default function GroupsChannel({
     <div className={styles.channelContainer} style={{ flex }}>
       <div className={styles.dividingLine} />
       <div className={styles.headerContainer}>
-        <Link href="/groups">
+        <Link href={`/groups?${dashboardState}`}>
           <span className={`${styles.headerText} ${styles.headerLink}`}>
             Groups
           </span>

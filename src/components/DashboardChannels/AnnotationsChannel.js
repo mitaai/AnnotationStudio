@@ -20,11 +20,20 @@ import AnnotationTile from './AnnotationTile';
 import styles from './DashboardChannels.module.scss';
 
 export default function AnnotationsChannel({
-  session, slug, setAlerts, maxNumberOfAnnotationTags = 3, flex,
+  session,
+  slug,
+  setAlerts,
+  maxNumberOfAnnotationTags = 3,
+  flex,
+  selectedDocumentId,
+  selectedGroupId,
+  selectedDocumentSlug,
+  documentPermissions,
 }) {
   const [selectedPermissions, setSelectedPermissions] = useState('shared');
   const [listLoading, setListLoading] = useState();
   const [annotations, setAnnotations] = useState();
+  const dashboardState = `${selectedDocumentId !== undefined && selectedDocumentSlug !== undefined ? `did=${selectedDocumentId}&slug=${selectedDocumentSlug}&dp=${documentPermissions}&` : ''}gid=${selectedGroupId}`;
 
   const byPermissionFilter = ({ email, permissions, filter }) => {
     if (filter === 'mine') { // mine
@@ -73,7 +82,7 @@ export default function AnnotationsChannel({
   }, mine) => (
     <AnnotationTile
       key={_id}
-      onClick={() => Router.push(`/documents/${slug}?mine=${mine ? 'true' : 'false'}&aid=${_id}`)}
+      onClick={() => Router.push(`/documents/${slug}?mine=${mine ? 'true' : 'false'}&aid=${_id}&${dashboardState}`)}
       text={target.selector.exact}
       author={name}
       annotation={value.length > 0 ? ReactHtmlParser(value, { transform: fixIframes }) : ''}

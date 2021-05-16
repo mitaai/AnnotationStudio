@@ -5,7 +5,16 @@ import Footer from '../Footer';
 import Alerts from '../Alerts';
 
 function Layout({
-  children, type, document, alerts, docView, annotations, newReg, statefulSession,
+  children,
+  type,
+  document,
+  breadcrumbs,
+  alerts,
+  docView,
+  annotations,
+  newReg,
+  statefulSession,
+  dashboardState = '',
 }) {
   const content = (
     <>
@@ -31,10 +40,12 @@ function Layout({
         <Header
           type={type}
           document={document}
+          breadcrumbs={breadcrumbs}
           docView={docView}
           annotations={annotations}
           newReg={newReg}
           statefulSession={statefulSession}
+          dashboardState={dashboardState}
         />
         <div style={{ flex: 1, overflowY: 'overlay', paddingTop: docView ? 0 : 15 }}>
           {innerContent}

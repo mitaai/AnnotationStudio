@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/client';
 import {
@@ -14,8 +15,11 @@ import styles from '../../style/pages/DocumentsIndex.module.scss';
 
 const DocumentsIndex = ({
   props,
+  query,
   statefulSession,
 }) => {
+  const dashboardState = `${query.did !== undefined && query.slug !== undefined ? `did=${query.did}&slug=${query.slug}&dp=${query.dp}&` : ''}gid=${query.gid}`;
+
   const { tab, initAlert } = props;
   const [session, loading] = useSession();
   const tabToUse = tab || 'shared';
@@ -27,6 +31,17 @@ const DocumentsIndex = ({
   const alertArray = initAlert ? [initAlert] : [];
   const [alerts, setAlerts] = useState(alertArray);
   const perPage = 8;
+
+  let breadcrumbs;
+  if (session !== undefined) {
+    const group = session.user.groups.find(({ id }) => id === query.gid);
+    if (group !== undefined) {
+      breadcrumbs = [
+        { name: group.name, href: `/groups/${query.gid}` },
+        { name: 'Documents' },
+      ];
+    }
+  }
 
   const fetchData = async () => {
     if (session) {
@@ -74,8 +89,22 @@ const DocumentsIndex = ({
     }
   }, [documents]);
 
+  const cardTitle = breadcrumbs === undefined ? 'Documents' : (
+    <>
+      Documents from
+      {' '}
+      <i>{breadcrumbs[0].name}</i>
+    </>
+  );
+
   return (
-    <Layout alerts={alerts} type="document" statefulSession={statefulSession}>
+    <Layout
+      alerts={alerts}
+      type="document"
+      breadcrumbs={breadcrumbs}
+      statefulSession={statefulSession}
+      dashboardState={dashboardState}
+    >
       {((loading && !session) || (session && listLoading)) && (
       <Card>
         <Card.Header>
@@ -95,7 +124,7 @@ const DocumentsIndex = ({
       <Card>
         <Card.Header className={styles.header}>
           <Card.Title>
-            Documents
+            {cardTitle}
           </Card.Title>
           <div className={styles.tabs}>
             <Tabs
@@ -166,7 +195,7 @@ DocumentsIndex.getInitialProps = async (context) => {
     };
     props = { ...props, initAlert };
   }
-  return { props };
+  return { props, query: context.query };
 };
 
 export default DocumentsIndex;

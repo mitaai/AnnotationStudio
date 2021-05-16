@@ -22,6 +22,7 @@ export default function DocumentTile({
   activityDate,
   maxNumberOfDocumentGroups,
   onClick,
+  dashboardState,
 }) {
   const [hovered, setHovered] = useState();
   const [focused, setFocused] = useState();
@@ -96,6 +97,11 @@ export default function DocumentTile({
       onClick={onClick}
       onMouseOver={() => setHovered(true)}
       onMouseOut={() => setHovered()}
+      onMouseMove={() => {
+        if (!hovered) {
+          setHovered(true);
+        }
+      }}
       onFocus={() => { setHovered(true); setFocused(true); }}
       onBlur={() => { setHovered(); setFocused(); }}
       onKeyDown={(e) => {
@@ -117,9 +123,9 @@ export default function DocumentTile({
         <Dropdown
           onSelect={(eventKey) => {
             if (eventKey === 'edit') {
-              Router.push(`/documents/${slug}/edit`);
+              Router.push(`/documents/${slug}/edit?${dashboardState}`);
             } else if (eventKey === 'manage') {
-              Router.push('/documents');
+              Router.push(`/documents?${dashboardState}`);
             }
           }}
         >
@@ -145,7 +151,7 @@ export default function DocumentTile({
           paddingLeft: 3,
         }}
         >
-          <TileBadge href={`/documents/${slug}`} color="yellow" text="Open" />
+          <TileBadge href={`/documents/${slug}?${dashboardState}`} color="yellow" text="Open" />
         </div>
         <div className={styles.memberText}>
           <span>{author}</span>
@@ -153,8 +159,11 @@ export default function DocumentTile({
           <OverlayTrigger
             key="document-activity-date-tooltip"
             placement="bottom"
+            onExited={() => setHovered()}
             overlay={(
-              <Popover id="popover-basic">
+              <Popover
+                id="popover-basic"
+              >
                 <Popover.Content style={{ color: '#636363' }}>{moment(activityDate).format('LLLL')}</Popover.Content>
               </Popover>
             )}
