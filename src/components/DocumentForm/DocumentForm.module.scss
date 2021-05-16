@@ -16,6 +16,7 @@
   min-height: 300px;
   height: 350px;
   overflow-y: scroll;
+  overflow-x: hidden;
   border: 1px solid theme.$gray-400;
   border-top: none;
   border-radius: 0.25rem;

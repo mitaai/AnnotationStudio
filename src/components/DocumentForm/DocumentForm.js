@@ -227,6 +227,7 @@ const DocumentForm = ({
       }
       : {
         ...values,
+        uploadContentType: 'text/slate-html',
         text: serializeHTMLFromNodes({ plugins, nodes: values.textSlate }),
       };
     const res = await unfetch(postUrl, {
@@ -255,7 +256,7 @@ const DocumentForm = ({
     const { id, slug, uploadContentType } = data;
     const patchUrl = `/api/document/${id}`;
     const { text, ...rest } = values;
-    const valuesWithSerializedText = (uploadContentType && (data.uploadContentType.includes('pdf') || data.uploadContentType.includes('epub')))
+    const valuesWithSerializedText = (uploadContentType && (uploadContentType.includes('pdf') || uploadContentType.includes('epub') || uploadContentType.includes('application')))
       ? rest
       : {
         ...values,
@@ -288,7 +289,7 @@ const DocumentForm = ({
   ];
 
   const initSlateValue = (mode === 'edit' && data && (!data.uploadContentType
-    || (!data.uploadContentType.includes('pdf') && !data.uploadContentType.includes('epub'))))
+    || (!data.uploadContentType.includes('pdf') && !data.uploadContentType.includes('epub') && !data.uploadContentType.includes('application'))))
     ? deserializeHTMLToDocument({ plugins, element: txtHtml.body })
     : slateInitialValue;
 
@@ -298,7 +299,7 @@ const DocumentForm = ({
 
   if (mode === 'edit' && data) {
     if (!data.uploadContentType
-      || (!data.uploadContentType.includes('pdf') && !data.uploadContentType.includes('epub'))) {
+      || (!data.uploadContentType.includes('pdf') && !data.uploadContentType.includes('epub') && !data.uploadContentType.includes('application'))) {
       initialValues = {
         ...data,
         textSlate: deserializeHTMLToDocument({ plugins, element: txtHtml.body }),
@@ -370,7 +371,9 @@ const DocumentForm = ({
         <Form onSubmit={props.handleSubmit} noValidate className="pt-2">
           {(!data
             || (data && data.state === 'draft' && (!data.uploadContentType
-              || (!data.uploadContentType.includes('pdf') && !data.uploadContentType.includes('epub')))
+              || (!data.uploadContentType.includes('pdf')
+                  && !data.uploadContentType.includes('epub')
+                  && !data.uploadContentType.includes('application')))
             )
           ) && (
             <Form.Row>
