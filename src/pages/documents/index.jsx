@@ -9,7 +9,12 @@ import Layout from '../../components/Layout';
 import DocumentList from '../../components/DocumentList';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import UnauthorizedCard from '../../components/UnauthorizedCard';
-import { getSharedDocumentsByGroup, getDocumentsByUser, addGroupNamesToDocuments } from '../../utils/docUtil';
+import {
+  getSharedDocumentsByGroup,
+  getDocumentsByUser,
+  addGroupNamesToDocuments,
+  getDocumentsByGroupByUser,
+} from '../../utils/docUtil';
 import Paginator from '../../components/Paginator';
 import styles from '../../style/pages/DocumentsIndex.module.scss';
 
@@ -33,8 +38,10 @@ const DocumentsIndex = ({
   const perPage = 8;
 
   let breadcrumbs;
-  if (session !== undefined) {
+  let validGroupId = false;
+  if (session !== undefined && query) {
     const group = session.user.groups.find(({ id }) => id === query.gid);
+    validGroupId = group !== undefined || query.did === 'privateGroup';
     if (group !== undefined) {
       breadcrumbs = [
         { name: group.name, href: `/groups/${query.gid}` },
@@ -46,7 +53,48 @@ const DocumentsIndex = ({
   const fetchData = async () => {
     if (session) {
       setListLoading(true);
-      if (key === 'shared') {
+      if (validGroupId) {
+        if (key === 'shared') {
+          await getDocumentsByGroupByUser({
+            groups: [{ id: query.gid }],
+            page,
+            perPage,
+            mine: false,
+          })
+            .then(async (data) => {
+              const { count, docs } = data;
+              setTotalPages(Math.ceil((count) / perPage));
+              await addGroupNamesToDocuments(docs)
+                .then((docsWithGroupNames) => {
+                  setDocuments(docsWithGroupNames);
+                });
+            })
+            .catch((err) => {
+              setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
+              setListLoading(false);
+            });
+        } else if (key === 'mine') {
+          await getDocumentsByGroupByUser({
+            groups: query.gid === 'privateGroup' ? [] : [{ id: query.gid }],
+            id: session.user.id,
+            page,
+            perPage,
+            mine: true,
+          })
+            .then(async (data) => {
+              const { count, docs } = data;
+              setTotalPages(Math.ceil((count) / perPage));
+              await addGroupNamesToDocuments(docs)
+                .then((docsWithGroupNames) => {
+                  setDocuments(docsWithGroupNames);
+                });
+            })
+            .catch((err) => {
+              setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
+              setListLoading(false);
+            });
+        }
+      } else if (key === 'shared') {
         await getSharedDocumentsByGroup({ groups: session.user.groups, page, perPage })
           .then(async (data) => {
             const { count, docs } = data;

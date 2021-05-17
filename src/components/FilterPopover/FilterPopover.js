@@ -30,6 +30,7 @@ import {
 import { FirstNameLastInitial } from '../../utils/nameUtil';
 import { DocumentFiltersContext, DocumentAnnotationsContext } from '../../contexts/DocumentContext';
 import PermissionsButtonGroup from '../PermissionsButtonGroup';
+import { DeepCopyObj } from '../../utils/docUIUtils';
 
 
 function FilterPopover({ session }) {
@@ -84,10 +85,6 @@ function FilterPopover({ session }) {
         : 1)
     )
   );
-
-  function DeepCopyObj(obj) {
-    return JSON.parse(JSON.stringify(obj));
-  }
 
   function onlyUnique(value, index, self) {
     return self.indexOf(value) === index;

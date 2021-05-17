@@ -19,8 +19,29 @@
   }
 }
 
+.refreshButton {
+  cursor: pointer;
+  color: #575757;
+  display: flex;
+  margin: auto 5px auto auto;
+  font-size: 14px;
+  &:hover {
+    color: #4568AC;
+  }
+}
+
+.loadMoreDocs {
+  text-align: center;
+  cursor: pointer;
+  margin: 10px auto;
+  font-size: 14px;
+  &:hover {
+    color: #4568AC;
+  }
+}
+
 .channelContainer {
-  min-width: 300px !important;
+  min-width: 450px !important;
   display: flex;
   flex-direction: column;
   margin-left: 15px;

@@ -33,13 +33,8 @@ import { getGroupById } from '../../../utils/groupUtil';
 import { FirstNameLastInitial } from '../../../utils/nameUtil';
 import AnnotationsOverlay from '../../../components/AnnotationsOverlay';
 import UnsavedChangesToast from '../../../components/UnsavedChangesToast/UnsavedChangesToast';
-import adjustLine from '../../../utils/docUIUtils';
+import adjustLine, { DeepCopyObj } from '../../../utils/docUIUtils';
 import Footer from '../../../components/Footer';
-
-
-function DeepCopyObj(obj) {
-  return JSON.parse(JSON.stringify(obj));
-}
 
 
 const DocumentPage = ({

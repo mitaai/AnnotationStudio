@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Router from 'next/router';
 import ReactHtmlParser from 'react-html-parser';
 import {
+  ArrowClockwise,
   PeopleFill,
   PersonFill,
   PersonPlusFill,
@@ -32,7 +33,8 @@ export default function AnnotationsChannel({
 }) {
   const [selectedPermissions, setSelectedPermissions] = useState('shared');
   const [listLoading, setListLoading] = useState();
-  const [annotations, setAnnotations] = useState();
+  const [annotations, setAnnotations] = useState({});
+  const [refresh, setRefresh] = useState();
   const dashboardState = `${selectedDocumentId !== undefined && selectedDocumentSlug !== undefined ? `did=${selectedDocumentId}&slug=${selectedDocumentSlug}&dp=${documentPermissions}&` : ''}gid=${selectedGroupId}`;
 
   const byPermissionFilter = ({ email, permissions, filter }) => {
@@ -54,7 +56,7 @@ export default function AnnotationsChannel({
     {
       text: 'Mine',
       textWidth: 40,
-      count: annotations === undefined ? 0 : annotations.mine.length,
+      count: annotations[slug] === undefined ? 0 : annotations[slug].mine.length,
       selected: selectedPermissions === 'mine',
       onClick: () => { setSelectedPermissions('mine'); },
       icon: <PersonFill size="1.2em" />,
@@ -62,7 +64,7 @@ export default function AnnotationsChannel({
     {
       text: 'Shared with group(s)',
       textWidth: 145,
-      count: annotations === undefined ? 0 : annotations.shared.length,
+      count: annotations[slug] === undefined ? 0 : annotations[slug].shared.length,
       selected: selectedPermissions === 'shared',
       onClick: () => { setSelectedPermissions('shared'); },
       icon: <PeopleFill size="1.2em" />,
@@ -70,7 +72,7 @@ export default function AnnotationsChannel({
     {
       text: 'Shared with me',
       textWidth: 115,
-      count: annotations === undefined ? 0 : annotations['shared-with-me'].length,
+      count: annotations[slug] === undefined ? 0 : annotations[slug]['shared-with-me'].length,
       selected: selectedPermissions === 'shared-with-me',
       onClick: () => { setSelectedPermissions('shared-with-me'); },
       icon: <PersonPlusFill size="1.2em" />,
@@ -92,12 +94,23 @@ export default function AnnotationsChannel({
     />
   );
 
+  const updateAnnotations = (annos) => {
+    annotations[slug] = annos;
+    setAnnotations(annotations);
+  };
+
   useEffect(() => {
     if (slug === undefined) {
-      setAnnotations();
       setSelectedPermissions('shared');
       return;
     }
+
+    if (annotations[slug] !== undefined && !refresh) {
+      // we already have the annotations for this document so we don't need to reload that
+      // information
+      return;
+    }
+
     setListLoading(true);
     fetchSharedAnnotationsOnDocument({ slug, prefetch: false })
       .then((annos) => {
@@ -108,8 +121,9 @@ export default function AnnotationsChannel({
           'shared-with-me': sortedAnnos.filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'shared-with-me' })).map((anno) => toAnnotationsTile(anno, false)),
         };
 
-        setAnnotations(a);
+        updateAnnotations(a);
         setListLoading();
+        setRefresh();
 
         if (a.shared.length === 0 && a.mine.length > 0) {
           setSelectedPermissions('mine');
@@ -119,19 +133,22 @@ export default function AnnotationsChannel({
       }).catch((err) => {
         setAlerts([{ text: err.message, variant: 'danger' }]);
         setListLoading();
+        setRefresh();
       });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug]);
+  }, [slug, refresh]);
 
 
   let annotationTiles;
 
-  if (annotations === undefined) {
+  if (slug === undefined) {
     annotationTiles = <EmptyListMessage text="No document selected" />;
-  } else if (annotations[selectedPermissions].length === 0) {
+  } else if (annotations[slug] === undefined) {
+    annotationTiles = <EmptyListMessage />;
+  } else if (annotations[slug][selectedPermissions].length === 0) {
     annotationTiles = <EmptyListMessage />;
   } else {
-    annotationTiles = annotations[selectedPermissions];
+    annotationTiles = annotations[slug][selectedPermissions];
   }
 
   return (
@@ -142,10 +159,20 @@ export default function AnnotationsChannel({
             Annotations
           </span>
         </div>
+        <div
+          className={styles.refreshButton}
+          onClick={() => setRefresh(true)}
+          onKeyDown={() => {}}
+          tabIndex={-1}
+          role="button"
+        >
+          <span style={{ fontSize: 'inherit' }}>Refresh</span>
+          <ArrowClockwise size={18} style={{ margin: 'auto 5px' }} />
+        </div>
         <PermissionsButtonGroup buttons={buttons} />
       </div>
       <div className={styles.tileContainer}>
-        {listLoading ? <ListLoadingSpinner /> : annotationTiles}
+        {(listLoading || refresh) ? <ListLoadingSpinner /> : annotationTiles}
       </div>
     </div>
   );
