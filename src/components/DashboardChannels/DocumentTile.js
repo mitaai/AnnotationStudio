@@ -126,7 +126,7 @@ export default function DocumentTile({
           className={styles.documentOpenButtonContainer}
           style={openButtonHovered ? {
             background: '#FFFAEB',
-            color: '#575757',
+            color: '#B18910',
           } : {}}
           onClick={() => openDocument()}
           onMouseOver={() => setOpenButtonHovered(true)}
