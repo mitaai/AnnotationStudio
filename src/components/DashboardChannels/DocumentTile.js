@@ -4,6 +4,7 @@ import moment from 'moment';
 import {
   Dropdown, OverlayTrigger, Popover,
 } from 'react-bootstrap';
+import { Folder2Open } from 'react-bootstrap-icons';
 import TileBadge from '../TileBadge';
 import {
   TilePointer, ThreeDotDropdown,
@@ -26,9 +27,10 @@ export default function DocumentTile({
 }) {
   const [hovered, setHovered] = useState();
   const [focused, setFocused] = useState();
+  const [openButtonHovered, setOpenButtonHovered] = useState();
   const [showPopover, setShowPopover] = useState();
 
-  const classNames = [styles.tile,
+  const classNames = [styles.tile, styles.documentTile,
     selected ? styles.selectedTile : '',
     hovered ? styles.tileHovered : '',
     focused ? styles.tileFocused : '',
@@ -91,6 +93,8 @@ export default function DocumentTile({
     )));
   }
 
+  const openDocument = () => Router.push(`/documents/${slug}?${dashboardState}`);
+
   return (
     <div
       className={classNames}
@@ -118,61 +122,82 @@ export default function DocumentTile({
         flexDirection: 'row',
       }}
       >
-        <div className={styles.name}>{name}</div>
-        {isOwner && (
-        <Dropdown
-          onSelect={(eventKey) => {
-            if (eventKey === 'edit') {
-              Router.push(`/documents/${slug}/edit?${dashboardState}`);
-            } else if (eventKey === 'manage') {
-              Router.push(`/documents?${dashboardState}`);
+        <div
+          className={styles.documentOpenButtonContainer}
+          style={openButtonHovered ? {
+            background: '#FFFAEB',
+            color: '#575757',
+          } : {}}
+          onClick={() => openDocument()}
+          onMouseOver={() => setOpenButtonHovered(true)}
+          onMouseOut={() => setOpenButtonHovered()}
+          onFocus={() => { setHovered(true); setOpenButtonHovered(true); setFocused(true); }}
+          onBlur={() => { setHovered(); setFocused(); setOpenButtonHovered(); }}
+          tabIndex={0}
+          role="link"
+          onKeyDown={(e) => {
+            if (e.code === 'Space' || e.code === 'Enter') {
+              openDocument();
             }
           }}
         >
-          <Dropdown.Toggle as={ThreeDotDropdown} id="dropdown-document-tile" />
-          <Dropdown.Menu>
-            <Dropdown.Item eventKey="edit">Edit</Dropdown.Item>
-            <Dropdown.Item eventKey="manage">Manage</Dropdown.Item>
-          </Dropdown.Menu>
-        </Dropdown>
-        )}
-
-      </div>
-      <div style={{
-        display: 'flex',
-        flexDirection: 'row',
-      }}
-      >
-        <div style={{
-          width: (selected || hovered) ? 45 : 0,
-          transition: 'width 0.25s',
-          overflow: 'hidden',
-          paddingBottom: 3,
-          paddingLeft: 3,
-        }}
-        >
-          <TileBadge href={`/documents/${slug}?${dashboardState}`} color="yellow" text="Open" />
+          <span>Open</span>
+          <Folder2Open size={18} />
         </div>
-        <div className={styles.memberText}>
-          <span>{author}</span>
-          <span className={styles.dotSeperator} />
-          <OverlayTrigger
-            key="document-activity-date-tooltip"
-            placement="bottom"
-            onExited={() => setHovered()}
-            overlay={(
-              <Popover
-                id="popover-basic"
-              >
-                <Popover.Content style={{ color: '#636363' }}>{moment(activityDate).format('LLLL')}</Popover.Content>
-              </Popover>
-            )}
+        <div className={styles.documentContentContainer}>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'row',
+          }}
           >
-            <span>{moment(activityDate).fromNow()}</span>
-          </OverlayTrigger>
+            <div className={styles.name}>{name}</div>
+            {isOwner && (
+            <Dropdown
+              onSelect={(eventKey) => {
+                if (eventKey === 'edit') {
+                  Router.push(`/documents/${slug}/edit?${dashboardState}`);
+                } else if (eventKey === 'manage') {
+                  Router.push(`/documents?${dashboardState}`);
+                }
+              }}
+            >
+              <Dropdown.Toggle as={ThreeDotDropdown} id="dropdown-document-tile" />
+              <Dropdown.Menu>
+                <Dropdown.Item eventKey="edit">Edit</Dropdown.Item>
+                <Dropdown.Item eventKey="manage">Manage</Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown>
+            )}
+
+          </div>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'row',
+          }}
+          >
+            <div className={styles.memberText}>
+              <span>{author}</span>
+              <span className={styles.dotSeperator} />
+              <OverlayTrigger
+                key="document-activity-date-tooltip"
+                placement="bottom"
+                onExited={() => setHovered()}
+                overlay={(
+                  <Popover
+                    id="popover-basic"
+                  >
+                    <Popover.Content style={{ color: '#636363' }}>{moment(activityDate).format('LLLL')}</Popover.Content>
+                  </Popover>
+            )}
+              >
+                <span>{moment(activityDate).fromNow()}</span>
+              </OverlayTrigger>
+            </div>
+            {tileBadges}
+          </div>
         </div>
-        {tileBadges}
       </div>
+
     </div>
   );
 }
