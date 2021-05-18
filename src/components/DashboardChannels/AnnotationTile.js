@@ -29,6 +29,11 @@ export default function AnnotationTile({
     <div
       className={classNames}
       onClick={onClick}
+      onMouseMove={() => {
+        if (!hovered) {
+          setHovered(true);
+        }
+      }}
       onMouseOver={() => setHovered(true)}
       onMouseOut={() => setHovered()}
       onFocus={() => { setHovered(true); setFoucsed(true); }}
@@ -59,8 +64,9 @@ export default function AnnotationTile({
           }}
           />
           <OverlayTrigger
-            key="document-activity-date-tooltip"
+            key="annotation-activity-date-tooltip"
             placement="bottom"
+            onExited={() => setHovered()}
             overlay={(
               <Popover id="popover-basic">
                 <Popover.Content style={{ color: '#636363' }}>{moment(activityDate).format('LLLL')}</Popover.Content>
