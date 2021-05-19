@@ -1,11 +1,16 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react';
+import moment from 'moment';
 import Link from 'next/link';
 import {
   ArrowClockwise,
   PeopleFill,
   PersonFill,
 } from 'react-bootstrap-icons';
+
+import {
+  OverlayTrigger, Popover,
+} from 'react-bootstrap';
 
 import {
   getDocumentsByGroupByUser, addGroupNamesToDocuments,
@@ -19,7 +24,7 @@ import {
 import DocumentTile from './DocumentTile';
 
 import styles from './DashboardChannels.module.scss';
-import { DeepCopyObj } from '../../utils/docUIUtils';
+import { DeepCopyObj, RID } from '../../utils/docUIUtils';
 
 export default function DocumentsChannel({
   flex,
@@ -41,6 +46,8 @@ export default function DocumentsChannel({
   const [documents, setDocuments] = useState({});
   const [loadMore, setLoadMore] = useState();
   const [refresh, setRefresh] = useState();
+  const [lastUpdated, setLastUpdated] = useState(new Date());
+  const [, forceUpdateForRefresh] = useState();
   const perPage = 10;
   const numberOfDocuments = documents[selectedGroupId] === undefined
   || documents[selectedGroupId][documentPermissions] === undefined
@@ -134,14 +141,16 @@ export default function DocumentsChannel({
                 .then((allDocs) => {
                   setDocuments(organizeDocumentsByGroup(allDocs, selectedGroupId));
                   setListLoading(false);
-                  setRefresh(false);
+                  setRefresh();
+                  setLastUpdated(new Date());
                   setLoadMore(false);
                 });
             })
             .catch((err) => {
               setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
               setListLoading(false);
-              setRefresh(false);
+              setRefresh();
+              setLastUpdated(new Date());
               setLoadMore(false);
             });
         } else if (documentPermissions === 'mine') {
@@ -158,14 +167,16 @@ export default function DocumentsChannel({
                 .then((docsWithGroupNames) => {
                   setDocuments(organizeDocumentsByGroup(docsWithGroupNames, selectedGroupId));
                   setListLoading(false);
-                  setRefresh(false);
+                  setRefresh();
+                  setLastUpdated(new Date());
                   setLoadMore(false);
                 });
             })
             .catch((err) => {
               setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
               setListLoading(false);
-              setRefresh(false);
+              setRefresh();
+              setLastUpdated(new Date());
               setLoadMore(false);
             });
         }
@@ -179,6 +190,11 @@ export default function DocumentsChannel({
       setDocumentPermissions('mine');
     }
   }, [selectedGroupId, documentPermissions]);
+
+  useEffect(() => {
+    // this keeps the refresh popover text up-to-date
+    setInterval(() => forceUpdateForRefresh(RID()), 60 * 1000);
+  }, []);
 
   let documentTiles = documents[selectedGroupId] === undefined
   || documents[selectedGroupId][documentPermissions] === undefined
@@ -244,21 +260,33 @@ export default function DocumentsChannel({
             </span>
           </Link>
           <NewButton href="/documents/new" />
-          <div
-            className={styles.refreshButton}
-            onClick={() => setRefresh(true)}
-            onKeyDown={() => {}}
-            tabIndex={-1}
-            role="button"
+          <OverlayTrigger
+            key="refresh-documents"
+            placement="bottom"
+            overlay={(
+              <Popover
+                id="popover-basic"
+              >
+                <Popover.Content style={{ color: '#636363' }}>{`Refreshed ${moment(lastUpdated).fromNow()}`}</Popover.Content>
+              </Popover>
+            )}
           >
-            <span style={{ fontSize: 'inherit' }}>Refresh</span>
-            <ArrowClockwise size={18} style={{ margin: 'auto 5px' }} />
-          </div>
+            <div
+              className={styles.refreshButton}
+              onClick={() => setRefresh(true)}
+              onKeyDown={() => {}}
+              tabIndex={-1}
+              role="button"
+            >
+              <span style={{ fontSize: 'inherit' }}>Refresh</span>
+              <ArrowClockwise size={18} style={{ margin: 'auto 5px' }} />
+            </div>
+          </OverlayTrigger>
         </div>
         <PermissionsButtonGroup buttons={selectedGroupId === 'privateGroup' ? buttons.slice(0, 1) : buttons} />
       </div>
       <div className={styles.tileContainer}>
-        {listLoading ? <ListLoadingSpinner /> : documentTiles}
+        {(listLoading || refresh) ? <ListLoadingSpinner /> : documentTiles}
         {loadMoreDocs}
       </div>
 

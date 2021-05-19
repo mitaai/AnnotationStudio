@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import moment from 'moment';
 import Router from 'next/router';
 import ReactHtmlParser from 'react-html-parser';
 import {
@@ -7,6 +8,10 @@ import {
   PersonFill,
   PersonPlusFill,
 } from 'react-bootstrap-icons';
+
+import {
+  OverlayTrigger, Popover,
+} from 'react-bootstrap';
 
 import { fetchSharedAnnotationsOnDocument } from '../../utils/annotationUtil';
 import { fixIframes } from '../../utils/parseUtil';
@@ -19,6 +24,7 @@ import {
 import AnnotationTile from './AnnotationTile';
 
 import styles from './DashboardChannels.module.scss';
+import { RID } from '../../utils/docUIUtils';
 
 export default function AnnotationsChannel({
   session,
@@ -35,6 +41,8 @@ export default function AnnotationsChannel({
   const [listLoading, setListLoading] = useState();
   const [annotations, setAnnotations] = useState({});
   const [refresh, setRefresh] = useState();
+  const [lastUpdated, setLastUpdated] = useState(new Date());
+  const [, forceUpdateForRefresh] = useState();
   const dashboardState = `${selectedDocumentId !== undefined && selectedDocumentSlug !== undefined ? `did=${selectedDocumentId}&slug=${selectedDocumentSlug}&dp=${documentPermissions}&` : ''}gid=${selectedGroupId}`;
 
   const byPermissionFilter = ({ email, permissions, filter }) => {
@@ -124,6 +132,7 @@ export default function AnnotationsChannel({
         updateAnnotations(a);
         setListLoading();
         setRefresh();
+        setLastUpdated(new Date());
 
         if (a.shared.length === 0 && a.mine.length > 0) {
           setSelectedPermissions('mine');
@@ -134,9 +143,15 @@ export default function AnnotationsChannel({
         setAlerts([{ text: err.message, variant: 'danger' }]);
         setListLoading();
         setRefresh();
+        setLastUpdated(new Date());
       });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug, refresh]);
+
+  useEffect(() => {
+    // this keeps the refresh popover text up-to-date
+    setInterval(() => forceUpdateForRefresh(RID()), 60 * 1000);
+  }, []);
 
 
   let annotationTiles;
@@ -159,16 +174,29 @@ export default function AnnotationsChannel({
             Annotations
           </span>
         </div>
-        <div
-          className={styles.refreshButton}
-          onClick={() => setRefresh(true)}
-          onKeyDown={() => {}}
-          tabIndex={-1}
-          role="button"
+        <OverlayTrigger
+          key="refresh-annotaitons"
+          placement="bottom"
+          overlay={(
+            <Popover
+              id="popover-basic"
+            >
+              <Popover.Content style={{ color: '#636363' }}>{`Refreshed ${moment(lastUpdated).fromNow()}`}</Popover.Content>
+            </Popover>
+            )}
         >
-          <span style={{ fontSize: 'inherit' }}>Refresh</span>
-          <ArrowClockwise size={18} style={{ margin: 'auto 5px' }} />
-        </div>
+          <div
+            className={styles.refreshButton}
+            onClick={() => setRefresh(true)}
+            onKeyDown={() => {}}
+            tabIndex={-1}
+            role="button"
+          >
+            <span style={{ fontSize: 'inherit' }}>Refresh</span>
+            <ArrowClockwise size={18} style={{ margin: 'auto 5px' }} />
+          </div>
+        </OverlayTrigger>
+
         <PermissionsButtonGroup buttons={buttons} />
       </div>
       <div className={styles.tileContainer}>

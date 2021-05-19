@@ -34,7 +34,10 @@ const handler = async (req, res) => {
           condition.groups = [];
         } else {
           condition.groups = { $in: req.body.groupIds };
-          condition.state = state;
+          if (userId === undefined) {
+            // we are looking at shared documents meaning that we don't want to see drafts
+            condition.state = state;
+          }
         }
 
         let arr;
