@@ -17,6 +17,7 @@ import {
 } from '../../utils/docUtil';
 import Paginator from '../../components/Paginator';
 import styles from '../../style/pages/DocumentsIndex.module.scss';
+import TileBadge from '../../components/TileBadge';
 
 const DocumentsIndex = ({
   props,
@@ -41,10 +42,17 @@ const DocumentsIndex = ({
   let validGroupId = false;
   if (session !== undefined && query) {
     const group = session.user.groups.find(({ id }) => id === query.gid);
-    validGroupId = group !== undefined || query.did === 'privateGroup';
+    validGroupId = group !== undefined || query.gid === 'privateGroup';
     if (group !== undefined) {
       breadcrumbs = [
         { name: group.name, href: `/groups/${query.gid}` },
+        { name: 'Documents' },
+      ];
+    } else if (validGroupId) {
+      // the only way group can be undefined but still be a validGroupId is if it is the psuedo
+      // privateGroup
+      breadcrumbs = [
+        { name: 'Private Group' },
         { name: 'Documents' },
       ];
     }
@@ -141,7 +149,7 @@ const DocumentsIndex = ({
     <>
       Documents from
       {' '}
-      <i>{breadcrumbs[0].name}</i>
+      <TileBadge key="selectedGroup" color="blue" fontSize={18} text={breadcrumbs[0].name} />
     </>
   );
 
@@ -199,6 +207,7 @@ const DocumentsIndex = ({
               <DocumentList
                 documents={documents}
                 setDocuments={setDocuments}
+                selectedGroupId={breadcrumbs ? query.gid : undefined}
                 alerts={alerts}
                 setAlerts={setAlerts}
                 loading={listLoading}

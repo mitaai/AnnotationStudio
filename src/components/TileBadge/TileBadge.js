@@ -15,6 +15,7 @@ export default function TileBadge({
   marginLeft = 0,
   marginRight = 0,
   href,
+  fontSize = 10,
 }) {
   const [focused, setFocused] = useState();
   const colors = ['grey', 'blue', 'green', 'yellow'];
@@ -32,7 +33,7 @@ export default function TileBadge({
       <span
         className={classNames}
         style={{
-          marginLeft, marginRight,
+          marginLeft, marginRight, fontSize, cursor: 'default',
         }}
       >
         {text}
@@ -56,7 +57,7 @@ export default function TileBadge({
         }}
         className={classNames}
         style={{
-          marginLeft, marginRight,
+          marginLeft, marginRight, fontSize,
         }}
       >
         {text}
