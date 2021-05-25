@@ -1,0 +1,12 @@
+.container {
+  background: #EEEEEE;
+  padding: 5px;
+  display: flex;
+
+  .name {
+    flex: 1;
+    color: #424242;
+    font-size: 16px;
+    font-weight: bold;
+  }
+}
