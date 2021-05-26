@@ -1,12 +1,29 @@
 .container {
   background: #EEEEEE;
-  padding: 5px;
+  padding: 10px;
   display: flex;
+  border-radius: 5px;
+  z-index: 1;
+  position: relative;
 
   .name {
+    margin-left: 5px;
     flex: 1;
     color: #424242;
     font-size: 16px;
     font-weight: bold;
   }
+}
+
+.pointer {
+  z-index: 0;
+  position: relative;
+  top: -15px;
+  left: -12px;
+  width: 0px;
+  height: 0px;
+  border: 12px solid transparent;
+  border-right-color: #EEEEEE;
+  border-radius: 2px;
+  transform: rotate(45deg);
 }

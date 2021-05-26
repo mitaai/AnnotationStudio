@@ -9,20 +9,21 @@ export default function ISGroupHeader({
   const numberOfAnnotationsText = `${numberOfAnnotations} annotation${numberOfAnnotations === 1 ? '' : 's'}`;
   return (
     <div>
-      <div style={styles.container}>
+      <div className={styles.container}>
         <div
           onClick={() => toggle(!collapsed)}
           role="button"
           onKeyDown={() => {}}
           tabIndex={-1}
         >
-          {collapsed ? <ChevronDown size={size} /> : <ChevronUp size={size} />}
+          {collapsed ? <ChevronDown size={size} color="#424242" /> : <ChevronUp size={size} color="#424242" />}
         </div>
-        <div style={styles.name}>
+        <div className={styles.name}>
           {name}
         </div>
         <TileBadge color="yellow" text={numberOfAnnotationsText} />
       </div>
+      <div className={styles.pointer} />
     </div>
   );
 }

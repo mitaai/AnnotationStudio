@@ -25,7 +25,6 @@ import AnnotationTile from './AnnotationTile';
 
 import styles from './DashboardChannels.module.scss';
 import { RID } from '../../utils/docUIUtils';
-import ISGroupHeader from '../IdeaSpaceComponents/ISGroupHeader';
 
 export default function AnnotationsChannel({
   session,
@@ -201,11 +200,6 @@ export default function AnnotationsChannel({
         <PermissionsButtonGroup buttons={buttons} />
       </div>
       <div className={styles.tileContainer}>
-        <ISGroupHeader
-          name="Group Name"
-          collapsed
-          numberOfAnnotations={12}
-        />
         {(listLoading || refresh) ? <ListLoadingSpinner /> : annotationTiles}
       </div>
     </div>
