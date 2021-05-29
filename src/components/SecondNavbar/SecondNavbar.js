@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import {
   Nav, Navbar, Breadcrumb, Container, Modal, Table, Row, Col,
 } from 'react-bootstrap';
-import { InfoSquare } from 'react-bootstrap-icons';
+import { InfoCircleFill, InfoSquare } from 'react-bootstrap-icons';
 import FilterPopover from '../FilterPopover';
 import { publicationFieldName } from '../../utils/metadataUtil';
 import DocumentZoomSlider from '../DocumentZoomSlider/DocumentZoomSlider';
 import styles from './SecondNavbar.module.scss';
+import ArrowButton from '../ArrowButtton/ArrowButton';
 
 const SecondNavbar = ({
   session,
@@ -111,7 +112,7 @@ const SecondNavbar = ({
       <Navbar bg="light" variant="light" className={`px-0 ${styles.secondnav}`} data-testid="second-navbar">
         <Container fluid className="px-5">
           <Row className={styles.row}>
-            <Col md={type === 'document' ? documentColumnSize : 12}>
+            <Col md={type === 'document' ? documentColumnSize : 8}>
               <Nav>
                 <Breadcrumb className={styles.breadcontainer}>
                   <Breadcrumb.Item active={type === 'dashboard'} href={`/?${dashboardState}`}>Dashboard</Breadcrumb.Item>
@@ -119,6 +120,16 @@ const SecondNavbar = ({
                 </Breadcrumb>
               </Nav>
             </Col>
+            {type === 'dashboard' && (
+            <Col
+              md={mobileView ? 12 : 4}
+              style={{ display: 'flex', alignItems: 'center' }}
+            >
+              <div style={{ flex: 1 }} />
+              <InfoCircleFill size={22} color="#4568AC" />
+              <ArrowButton text="Open Idea Space" marginLeft={5} />
+            </Col>
+            )}
             {type === 'document' && document && docView && (
               <Col
                 md={mobileView ? 12 : 5}

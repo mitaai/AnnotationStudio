@@ -1,0 +1,41 @@
+.container {
+  display: flex;
+  cursor: pointer;
+  &:hover {
+    .textContainer, .topArrow, .bottomArrow {
+      transition: all 0.25s;
+      background: #4568AC;
+      color: white;
+    }
+  }
+}
+
+.textContainer {
+  background: #EBF2FF;
+  color: #4568AC;
+  padding: 5px 8px;
+  border-radius: 5px;
+  font-weight: bold;
+}
+
+.topArrow {
+  position: absolute;
+  top: 3px;
+  width: 18px;
+  height: 12px;
+  transform: skew(40deg) rotate(90deg);
+  background: #EBF2FF;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.bottomArrow {
+  position: absolute;
+  top: 19px;
+  width: 18px;
+  height: 12px;
+  transform: skew(-40deg) rotate(90deg);
+  background: #EBF2FF;
+  border-radius: 2px;
+  cursor: pointer;
+}
