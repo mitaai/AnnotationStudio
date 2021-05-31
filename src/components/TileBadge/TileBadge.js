@@ -3,7 +3,9 @@ import Router from 'next/router';
 import {
   OverlayTrigger,
 } from 'react-bootstrap';
+import { XCircleFill } from 'react-bootstrap-icons';
 import styles from './TileBadge.module.scss';
+
 
 export default function TileBadge({
   onClick,
@@ -16,13 +18,16 @@ export default function TileBadge({
   marginRight = 0,
   href,
   fontSize = 10,
+  icon,
+  onDelete,
 }) {
   const [focused, setFocused] = useState();
-  const colors = ['grey', 'blue', 'green', 'yellow'];
+  const [hoverCancel, setHoverCancel] = useState();
+  const colors = ['grey', 'blue', 'green', 'yellow', 'red'];
   const c = colors.includes(color) ? color : 'grey';
   const classNames = [
     styles.tileBadge,
-    styles[c],
+    styles[hoverCancel ? 'red' : c],
     focused ? styles.tileBadgeFoucsed : '',
   ].join(' ');
   const tileBadgeOnClick = href === undefined ? onClick : () => {
@@ -33,10 +38,20 @@ export default function TileBadge({
       <span
         className={classNames}
         style={{
-          marginLeft, marginRight, fontSize, cursor: 'default',
+          marginLeft, marginRight, fontSize, cursor: 'default', display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}
       >
+        {icon}
         {text}
+        {onDelete && (
+        <XCircleFill
+          onMouseOver={() => setHoverCancel(true)}
+          onMouseOut={() => setHoverCancel()}
+          onClick={onDelete}
+          className={styles.cancelIcon}
+          size={fontSize + 4}
+        />
+        )}
       </span>
     )
     : (

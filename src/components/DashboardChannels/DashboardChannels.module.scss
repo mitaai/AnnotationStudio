@@ -41,11 +41,14 @@
 }
 
 .channelContainer {
-  min-width: 450px !important;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  height: 100%;
   display: flex;
   flex-direction: column;
   margin-left: 15px;
-  position: relative;
+  transition: all 0.5s
 }
 
 .dividingLine {
@@ -226,8 +229,15 @@
 .headerContainer {
   flex-direction: row;
   display: flex;
-  margin-bottom: 15px;
+  padding-bottom: 5px;
+  margin-bottom: 10px;
   padding-right: 20px;
+  transition: all 0.5s;
+}
+
+.filtersContainer {
+  margin-bottom: 15px;
+  display: flex;
 }
 
 .headerText {

@@ -5,6 +5,12 @@
   font-weight: bold;
   padding: 5px;
   cursor: pointer;
+  transition: all 0.25s;
+}
+
+.cancelIcon {
+  margin-left: 4px;
+  cursor: pointer;
 }
 
 .tileBadgeFoucsed {
@@ -43,4 +49,9 @@
 .yellow {
   background: #EFC957;
   color: #575757;
+}
+
+.red {
+  background: #FFEBEB;
+  color: #AC4545;
 }

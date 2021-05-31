@@ -15,6 +15,8 @@ function Layout({
   newReg,
   statefulSession,
   dashboardState = '',
+  mode,
+  setMode,
 }) {
   const content = (
     <>
@@ -46,6 +48,8 @@ function Layout({
           newReg={newReg}
           statefulSession={statefulSession}
           dashboardState={dashboardState}
+          mode={mode}
+          setMode={setMode}
         />
         <div style={{ flex: 1, overflowY: 'overlay', paddingTop: docView ? 0 : 15 }}>
           {innerContent}

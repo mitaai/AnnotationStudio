@@ -13,7 +13,14 @@ function Arrow({ direction = 'right', left = 0 }) {
 }
 
 export default function ArrowButton({
-  text = '', direction = 'right', color = 'blue', marginLeft = 0,
+  onClick = () => {},
+  text = '',
+  direction = 'right',
+  color = 'blue',
+  marginLeft = 0,
+  marginRight = 0,
+  marginTop = 0,
+  marginBottom = 0,
 }) {
   const leftArrows = [
     <Arrow direction={direction} color={color} left={-22} />,
@@ -27,12 +34,14 @@ export default function ArrowButton({
   ];
   return (
     <div
-      onClick={() => {}}
+      onClick={onClick}
       role="button"
       onKeyDown={() => {}}
       tabIndex={-1}
       className={styles.container}
-      style={{ marginLeft }}
+      style={{
+        marginLeft, marginRight, marginTop, marginBottom,
+      }}
     >
       {direction === 'left' && leftArrows}
       <div className={styles.textContainer}>{text}</div>

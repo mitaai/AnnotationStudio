@@ -6,7 +6,9 @@ import GroupTile from './GroupTile';
 import styles from './DashboardChannels.module.scss';
 
 export default function GroupsChannel({
-  flex,
+  width,
+  left,
+  opacity,
   session,
   selectedGroupId,
   setSelectedGroupId,
@@ -47,7 +49,12 @@ export default function GroupsChannel({
   }, [session]);
 
   return (
-    <div className={styles.channelContainer} style={{ flex }}>
+    <div
+      className={styles.channelContainer}
+      style={{
+        width, left, minWidth: 300, opacity,
+      }}
+    >
       <div className={styles.dividingLine} />
       <div className={styles.headerContainer}>
         <Link href={`/groups?${dashboardState}`}>

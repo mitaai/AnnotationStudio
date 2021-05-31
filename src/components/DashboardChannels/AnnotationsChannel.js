@@ -4,9 +4,14 @@ import Router from 'next/router';
 import ReactHtmlParser from 'react-html-parser';
 import {
   ArrowClockwise,
+  BookmarkFill,
+  ChatRightQuoteFill,
   PeopleFill,
   PersonFill,
   PersonPlusFill,
+  ShieldLockFill,
+  FileEarmarkFill,
+  CalendarEventFill,
 } from 'react-bootstrap-icons';
 
 import {
@@ -25,13 +30,17 @@ import AnnotationTile from './AnnotationTile';
 
 import styles from './DashboardChannels.module.scss';
 import { RID } from '../../utils/docUIUtils';
+import TileBadge from '../TileBadge';
 
 export default function AnnotationsChannel({
   session,
   slug,
   setAlerts,
   maxNumberOfAnnotationTags = 3,
-  flex,
+  width,
+  left,
+  opacity,
+  mode,
   selectedDocumentId,
   selectedGroupId,
   selectedDocumentSlug,
@@ -41,9 +50,28 @@ export default function AnnotationsChannel({
   const [listLoading, setListLoading] = useState();
   const [annotations, setAnnotations] = useState({});
   const [refresh, setRefresh] = useState();
+  const [filters, setFilters] = useState([
+    { id: '1', type: 'byPermissions', text: 'Private' },
+    { id: '2', type: 'byGroup', text: 'ASTest4' },
+    { id: '3', type: 'byDocument', text: 'Allan Watts' },
+  ]);
+
+  const deleteFilter = (deleteId) => {
+    setFilters(filters.filter(({ id }) => id !== deleteId));
+  };
+
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [, forceUpdateForRefresh] = useState();
   const dashboardState = `${selectedDocumentId !== undefined && selectedDocumentSlug !== undefined ? `did=${selectedDocumentId}&slug=${selectedDocumentSlug}&dp=${documentPermissions}&` : ''}gid=${selectedGroupId}`;
+
+  const filterIcons = {
+    byPermissions: <ShieldLockFill size={14} style={{ marginRight: 4 }} />,
+    annotatedBy: <ChatRightQuoteFill size={14} style={{ marginRight: 4 }} />,
+    byGroup: <PeopleFill size={14} style={{ marginRight: 4 }} />,
+    byDocument: <FileEarmarkFill size={14} style={{ marginRight: 4 }} />,
+    byTag: <BookmarkFill size={14} style={{ marginRight: 4 }} />,
+    byDateCreated: <CalendarEventFill size={14} style={{ marginRight: 4 }} />,
+  };
 
   const byPermissionFilter = ({ email, permissions, filter }) => {
     if (filter === 'mine') { // mine
@@ -167,8 +195,9 @@ export default function AnnotationsChannel({
   }
 
   return (
-    <div className={styles.channelContainer} style={{ flex }}>
-      <div className={styles.headerContainer}>
+    <div className={styles.channelContainer} style={{ width, left, opacity }}>
+      {mode === 'is' && <div className={styles.dividingLine} />}
+      <div className={styles.headerContainer} style={{ borderBottom: '1px solid', borderColor: mode === 'as' ? 'transparent' : '#DADCE1' }}>
         <div style={{ display: 'flex', flex: 1 }}>
           <span className={styles.headerText}>
             Annotations
@@ -196,9 +225,23 @@ export default function AnnotationsChannel({
             <ArrowClockwise size={18} style={{ margin: 'auto 5px' }} />
           </div>
         </OverlayTrigger>
-
         <PermissionsButtonGroup buttons={buttons} />
       </div>
+      {mode === 'is' && (
+      <div className={styles.filtersContainer}>
+        {filters.map(({ type, text, id }, i) => (
+          <TileBadge
+            key={id}
+            icon={filterIcons[type]}
+            color="grey"
+            text={text}
+            marginLeft={i > 0 ? 5 : 0}
+            onDelete={() => deleteFilter(id)}
+            fontSize={12}
+          />
+        ))}
+      </div>
+      )}
       <div className={styles.tileContainer}>
         {(listLoading || refresh) ? <ListLoadingSpinner /> : annotationTiles}
       </div>

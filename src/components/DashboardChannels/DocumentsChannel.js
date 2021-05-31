@@ -27,7 +27,9 @@ import styles from './DashboardChannels.module.scss';
 import { DeepCopyObj, RID } from '../../utils/docUIUtils';
 
 export default function DocumentsChannel({
-  flex,
+  width,
+  left,
+  opacity,
   session,
   setAlerts,
   forceUpdate,
@@ -250,7 +252,7 @@ export default function DocumentsChannel({
   const loadMoreDocs = canLoadMoreDocs ? loadComponent : <></>;
 
   return (
-    <div className={styles.channelContainer} style={{ flex }}>
+    <div className={styles.channelContainer} style={{ width, left, opacity }}>
       <div className={styles.dividingLine} />
       <div className={styles.headerContainer}>
         <div style={{ display: 'flex', flex: 1, flexDirection: 'row' }}>

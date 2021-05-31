@@ -10,14 +10,27 @@ import {
 import styles from './DashboardChannels.module.scss';
 
 
-function NewButton({ href }) {
+function NewButton({ href, onClick = () => {} }) {
   return (
-    <Link href={href}>
-      <span className={styles.newButton}>
-        New +
-      </span>
-    </Link>
-
+    href
+      ? (
+        <Link href={href}>
+          <span className={styles.newButton}>
+            New +
+          </span>
+        </Link>
+      )
+      : (
+        <span
+          className={styles.newButton}
+          onClick={onClick}
+          onKeyDown={() => {}}
+          tabIndex={-1}
+          role="button"
+        >
+          New +
+        </span>
+      )
   );
 }
 
