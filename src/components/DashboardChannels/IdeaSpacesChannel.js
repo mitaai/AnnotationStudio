@@ -1,8 +1,8 @@
 import React from 'react';
-import { NewButton } from './HelperComponents';
 
 import styles from './DashboardChannels.module.scss';
 import IdeaSpaceTile from './IdeaSpaceTile';
+import TileBadge from '../TileBadge';
 
 export default function IdeaSpacesChannel({
   width,
@@ -21,10 +21,10 @@ export default function IdeaSpacesChannel({
       }}
     >
       <div className={styles.headerContainer}>
-        <span className={`${styles.headerText} ${styles.headerLink}`}>
+        <span className={styles.headerText}>
           Idea Spaces
         </span>
-        <NewButton onClick={() => {}} />
+        <TileBadge text="New + " color="yellow" onClick={() => {}} />
       </div>
       <div className={styles.tileContainer}>
         {ideaSpaceTiles}

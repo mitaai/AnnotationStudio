@@ -1,5 +1,4 @@
 import React from 'react';
-import Link from 'next/link';
 import {
   ThreeDotsVertical,
 } from 'react-bootstrap-icons';
@@ -8,31 +7,6 @@ import {
 } from 'react-bootstrap';
 
 import styles from './DashboardChannels.module.scss';
-
-
-function NewButton({ href, onClick = () => {} }) {
-  return (
-    href
-      ? (
-        <Link href={href}>
-          <span className={styles.newButton}>
-            New +
-          </span>
-        </Link>
-      )
-      : (
-        <span
-          className={styles.newButton}
-          onClick={onClick}
-          onKeyDown={() => {}}
-          tabIndex={-1}
-          role="button"
-        >
-          New +
-        </span>
-      )
-  );
-}
 
 function ListLoadingSpinner() {
   return (
@@ -75,5 +49,5 @@ const ThreeDotDropdown = React.forwardRef(({ onClick }, ref) => (
 ));
 
 export {
-  NewButton, ListLoadingSpinner, EmptyListMessage, TilePointer, ThreeDotDropdown,
+  ListLoadingSpinner, EmptyListMessage, TilePointer, ThreeDotDropdown,
 };

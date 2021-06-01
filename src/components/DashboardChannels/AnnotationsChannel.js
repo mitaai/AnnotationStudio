@@ -31,6 +31,7 @@ import AnnotationTile from './AnnotationTile';
 import styles from './DashboardChannels.module.scss';
 import { RID } from '../../utils/docUIUtils';
 import TileBadge from '../TileBadge';
+import ISFilterButton from '../IdeaSpaceComponents/ISFilterButton';
 
 export default function AnnotationsChannel({
   session,
@@ -54,7 +55,11 @@ export default function AnnotationsChannel({
     { id: '1', type: 'byPermissions', text: 'Private' },
     { id: '2', type: 'byGroup', text: 'ASTest4' },
     { id: '3', type: 'byDocument', text: 'Allan Watts' },
+    { id: '4', type: 'byDateCreated', text: 'ASTest4' },
+    { id: '5', type: 'byTag', text: 'Allan Watts' },
+    { id: '6', type: 'annotatedBy', text: 'ASTest4' },
   ]);
+  const [tab, setTab] = useState('annotations');
 
   const deleteFilter = (deleteId) => {
     setFilters(filters.filter(({ id }) => id !== deleteId));
@@ -181,6 +186,12 @@ export default function AnnotationsChannel({
     setInterval(() => forceUpdateForRefresh(RID()), 60 * 1000);
   }, []);
 
+  useEffect(() => {
+    if (mode === 'as') {
+      setTab('annotations');
+    }
+  }, [mode]);
+
 
   let annotationTiles;
 
@@ -194,57 +205,103 @@ export default function AnnotationsChannel({
     annotationTiles = annotations[slug][selectedPermissions];
   }
 
+  const annotationsTabSelected = tab === 'annotations';
+
+  const tabSelectionLineOpacity = mode === 'is' ? 1 : 0;
+  const tabSelectionLine = (
+    <div
+      className={styles.tabSelectionLine}
+      style={annotationsTabSelected ? { width: 'calc(60% - 14px)', left: 0, opacity: tabSelectionLineOpacity } : { width: 'calc(40% + 14px)', left: 'calc(60% - 14px)', opacity: tabSelectionLineOpacity }}
+    />
+  );
+
+  const tabContent = {
+    annotations:
+  <>
+    {mode === 'is' && (
+    <div className={styles.filtersContainer}>
+      {filters.map(({ type, text, id }, i) => (
+        <TileBadge
+          key={id}
+          icon={filterIcons[type]}
+          color="grey"
+          text={text}
+          marginLeft={i > 0 ? 5 : 0}
+          onDelete={() => deleteFilter(id)}
+          fontSize={12}
+        />
+      ))}
+    </div>
+    )}
+    <div className={styles.tileContainer}>
+      {(listLoading || refresh) ? <ListLoadingSpinner /> : annotationTiles}
+    </div>
+  </>,
+    outlines: <div>outlines</div>,
+  };
+
   return (
     <div className={styles.channelContainer} style={{ width, left, opacity }}>
       {mode === 'is' && <div className={styles.dividingLine} />}
       <div className={styles.headerContainer} style={{ borderBottom: '1px solid', borderColor: mode === 'as' ? 'transparent' : '#DADCE1' }}>
-        <div style={{ display: 'flex', flex: 1 }}>
-          <span className={styles.headerText}>
-            Annotations
-          </span>
-        </div>
-        <OverlayTrigger
-          key="refresh-annotaitons"
-          placement="bottom"
-          overlay={(
-            <Popover
-              id="popover-basic"
+        {tabSelectionLine}
+        <div style={{ display: 'flex', flex: 3 }}>
+          <div style={{ display: 'flex', flex: 1 }}>
+            <span
+              onClick={() => setTab('annotations')}
+              onKeyDown={() => {}}
+              tabIndex={-1}
+              role="button"
+              className={styles.headerText}
+              style={{ color: annotationsTabSelected ? '#424242' : '#ABABAB' }}
             >
-              <Popover.Content style={{ color: '#636363' }}>{`Refreshed ${moment(lastUpdated).fromNow()}`}</Popover.Content>
-            </Popover>
+              Annotations
+            </span>
+          </div>
+          <OverlayTrigger
+            key="refresh-annotaitons"
+            placement="bottom"
+            overlay={(
+              <Popover
+                id="popover-basic"
+              >
+                <Popover.Content style={{ color: '#636363' }}>{`Refreshed ${moment(lastUpdated).fromNow()}`}</Popover.Content>
+              </Popover>
             )}
+          >
+            <div
+              className={styles.refreshButton}
+              onClick={() => setRefresh(true)}
+              onKeyDown={() => {}}
+              tabIndex={-1}
+              role="button"
+            >
+              <span style={{ fontSize: 'inherit' }}>Refresh</span>
+              <ArrowClockwise size={18} style={{ margin: 'auto 5px' }} />
+            </div>
+          </OverlayTrigger>
+          {mode === 'as' ? <PermissionsButtonGroup buttons={buttons} /> : <ISFilterButton active={annotationsTabSelected} />}
+        </div>
+        {mode === 'is' && (
+        <div style={{
+          display: 'flex', flex: 2, borderLeft: '1px solid #DADCE1', marginLeft: 8, paddingLeft: 8,
+        }}
         >
-          <div
-            className={styles.refreshButton}
-            onClick={() => setRefresh(true)}
+          <span
+            onClick={() => setTab('outlines')}
             onKeyDown={() => {}}
             tabIndex={-1}
             role="button"
+            className={styles.headerText}
+            style={{ color: !annotationsTabSelected ? '#424242' : '#ABABAB' }}
           >
-            <span style={{ fontSize: 'inherit' }}>Refresh</span>
-            <ArrowClockwise size={18} style={{ margin: 'auto 5px' }} />
-          </div>
-        </OverlayTrigger>
-        <PermissionsButtonGroup buttons={buttons} />
+            Outlines
+          </span>
+          <TileBadge text="New + " color={!annotationsTabSelected ? 'yellow' : 'grey'} onClick={() => {}} />
+        </div>
+        )}
       </div>
-      {mode === 'is' && (
-      <div className={styles.filtersContainer}>
-        {filters.map(({ type, text, id }, i) => (
-          <TileBadge
-            key={id}
-            icon={filterIcons[type]}
-            color="grey"
-            text={text}
-            marginLeft={i > 0 ? 5 : 0}
-            onDelete={() => deleteFilter(id)}
-            fontSize={12}
-          />
-        ))}
-      </div>
-      )}
-      <div className={styles.tileContainer}>
-        {(listLoading || refresh) ? <ListLoadingSpinner /> : annotationTiles}
-      </div>
+      {tabContent[tab]}
     </div>
   );
 }

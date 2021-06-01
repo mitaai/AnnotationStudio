@@ -49,7 +49,7 @@ export default function TileBadge({
           onMouseOut={() => setHoverCancel()}
           onClick={onDelete}
           className={styles.cancelIcon}
-          size={fontSize + 4}
+          size={fontSize + 2}
         />
         )}
       </span>

@@ -18,13 +18,14 @@ import {
 
 import PermissionsButtonGroup from '../PermissionsButtonGroup';
 import {
-  NewButton, ListLoadingSpinner, EmptyListMessage,
+  ListLoadingSpinner, EmptyListMessage,
 } from './HelperComponents';
 
 import DocumentTile from './DocumentTile';
 
 import styles from './DashboardChannels.module.scss';
 import { DeepCopyObj, RID } from '../../utils/docUIUtils';
+import TileBadge from '../TileBadge';
 
 export default function DocumentsChannel({
   width,
@@ -261,7 +262,7 @@ export default function DocumentsChannel({
               Documents
             </span>
           </Link>
-          <NewButton href="/documents/new" />
+          <TileBadge text="New +" href="/documents/new" color="yellow" />
           <OverlayTrigger
             key="refresh-documents"
             placement="bottom"

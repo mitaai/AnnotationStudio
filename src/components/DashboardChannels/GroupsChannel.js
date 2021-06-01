@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { NewButton } from './HelperComponents';
 import GroupTile from './GroupTile';
 
 import styles from './DashboardChannels.module.scss';
+import TileBadge from '../TileBadge';
 
 export default function GroupsChannel({
   width,
@@ -62,7 +62,7 @@ export default function GroupsChannel({
             Groups
           </span>
         </Link>
-        <NewButton href="/groups/new" />
+        <TileBadge text="New +" href="/groups/new" color="yellow" />
       </div>
       <div className={styles.tileContainer}>
         {groupTiles}
