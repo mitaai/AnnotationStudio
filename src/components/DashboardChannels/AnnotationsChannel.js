@@ -15,7 +15,7 @@ import {
 } from 'react-bootstrap-icons';
 
 import {
-  OverlayTrigger, Popover,
+  OverlayTrigger, Popover, Modal, Button, Form,
 } from 'react-bootstrap';
 
 import { fetchSharedAnnotationsOnDocument } from '../../utils/annotationUtil';
@@ -60,7 +60,7 @@ export default function AnnotationsChannel({
     { id: '6', type: 'annotatedBy', text: 'ASTest4' },
   ]);
   const [tab, setTab] = useState('annotations');
-
+  const [showNewOutlineModal, setShowNewOutlineModal] = useState();
   const deleteFilter = (deleteId) => {
     setFilters(filters.filter(({ id }) => id !== deleteId));
   };
@@ -237,71 +237,106 @@ export default function AnnotationsChannel({
       {(listLoading || refresh) ? <ListLoadingSpinner /> : annotationTiles}
     </div>
   </>,
-    outlines: <div>outlines</div>,
+    outlines:
+  <div>
+    outlines
+  </div>,
   };
 
   return (
-    <div className={styles.channelContainer} style={{ width, left, opacity }}>
-      {mode === 'is' && <div className={styles.dividingLine} />}
-      <div className={styles.headerContainer} style={{ borderBottom: '1px solid', borderColor: mode === 'as' ? 'transparent' : '#DADCE1' }}>
-        {tabSelectionLine}
-        <div style={{ display: 'flex', flex: 3 }}>
-          <div style={{ display: 'flex', flex: 1 }}>
+    <>
+      <div className={styles.channelContainer} style={{ width, left, opacity }}>
+        {mode === 'is' && <div className={styles.dividingLine} />}
+        <div className={styles.headerContainer} style={{ borderBottom: '1px solid', borderColor: mode === 'as' ? 'transparent' : '#DADCE1' }}>
+          {tabSelectionLine}
+          <div style={{ display: 'flex', flex: 3 }}>
+            <div style={{ display: 'flex', flex: 1 }}>
+              <span
+                onClick={() => setTab('annotations')}
+                onKeyDown={() => {}}
+                tabIndex={-1}
+                role="button"
+                className={styles.headerText}
+                style={{ color: annotationsTabSelected ? '#424242' : '#ABABAB' }}
+              >
+                Annotations
+              </span>
+            </div>
+            <OverlayTrigger
+              key="refresh-annotaitons"
+              placement="bottom"
+              overlay={(
+                <Popover
+                  id="popover-basic"
+                >
+                  <Popover.Content style={{ color: '#636363' }}>{`Refreshed ${moment(lastUpdated).fromNow()}`}</Popover.Content>
+                </Popover>
+            )}
+            >
+              <div
+                className={styles.refreshButton}
+                onClick={() => setRefresh(true)}
+                onKeyDown={() => {}}
+                tabIndex={-1}
+                role="button"
+              >
+                <span style={{ fontSize: 'inherit' }}>Refresh</span>
+                <ArrowClockwise size={18} style={{ margin: 'auto 5px' }} />
+              </div>
+            </OverlayTrigger>
+            {mode === 'as' ? <PermissionsButtonGroup buttons={buttons} /> : <ISFilterButton active={annotationsTabSelected} />}
+          </div>
+          {mode === 'is' && (
+          <div style={{
+            display: 'flex', flex: 2, borderLeft: '1px solid #DADCE1', marginLeft: 8, paddingLeft: 8,
+          }}
+          >
             <span
-              onClick={() => setTab('annotations')}
+              onClick={() => setTab('outlines')}
               onKeyDown={() => {}}
               tabIndex={-1}
               role="button"
               className={styles.headerText}
-              style={{ color: annotationsTabSelected ? '#424242' : '#ABABAB' }}
+              style={{ color: !annotationsTabSelected ? '#424242' : '#ABABAB' }}
             >
-              Annotations
+              Outlines
             </span>
+            <TileBadge
+              text="New + "
+              color={!annotationsTabSelected ? 'yellow' : 'grey'}
+              onClick={() => {
+                setShowNewOutlineModal(true);
+                setTab('outlines');
+              }}
+            />
           </div>
-          <OverlayTrigger
-            key="refresh-annotaitons"
-            placement="bottom"
-            overlay={(
-              <Popover
-                id="popover-basic"
-              >
-                <Popover.Content style={{ color: '#636363' }}>{`Refreshed ${moment(lastUpdated).fromNow()}`}</Popover.Content>
-              </Popover>
-            )}
-          >
-            <div
-              className={styles.refreshButton}
-              onClick={() => setRefresh(true)}
-              onKeyDown={() => {}}
-              tabIndex={-1}
-              role="button"
-            >
-              <span style={{ fontSize: 'inherit' }}>Refresh</span>
-              <ArrowClockwise size={18} style={{ margin: 'auto 5px' }} />
-            </div>
-          </OverlayTrigger>
-          {mode === 'as' ? <PermissionsButtonGroup buttons={buttons} /> : <ISFilterButton active={annotationsTabSelected} />}
+          )}
         </div>
-        {mode === 'is' && (
-        <div style={{
-          display: 'flex', flex: 2, borderLeft: '1px solid #DADCE1', marginLeft: 8, paddingLeft: 8,
-        }}
-        >
-          <span
-            onClick={() => setTab('outlines')}
-            onKeyDown={() => {}}
-            tabIndex={-1}
-            role="button"
-            className={styles.headerText}
-            style={{ color: !annotationsTabSelected ? '#424242' : '#ABABAB' }}
-          >
-            Outlines
-          </span>
-          <TileBadge text="New + " color={!annotationsTabSelected ? 'yellow' : 'grey'} onClick={() => {}} />
-        </div>
-        )}
+        {tabContent[tab]}
       </div>
-      {tabContent[tab]}
-    </div>
+      <Modal
+        show={showNewOutlineModal}
+        onHide={() => setShowNewOutlineModal()}
+        backdrop="static"
+        keyboard={false}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Create New Outline</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group controlId="exampleForm.ControlInput1">
+              <Form.Control type="email" placeholder="name of outline" />
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowNewOutlineModal()}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={() => setShowNewOutlineModal()}>Create</Button>
+        </Modal.Footer>
+      </Modal>
+    </>
   );
 }
