@@ -126,7 +126,7 @@ const SecondNavbar = ({
                       onClick={() => setMode('as')}
                       text="Back To Dashboard"
                       direction="left"
-                      marginLeft={40}
+                      marginLeft={30}
                       marginRight={0}
                       marginTop={7}
                       marginBottom={7}
@@ -168,14 +168,13 @@ const SecondNavbar = ({
                   </Popover>
             )}
               >
-                <InfoCircleFill size={22} color="#4568AC" />
+                <InfoCircleFill size={22} className={styles.ideaSpaceInfoIcon} />
               </OverlayTrigger>
 
               <ArrowButton
                 onClick={() => setMode('is')}
                 text="Open Idea Space"
                 marginLeft={5}
-                marginRight={15}
               />
             </Col>
             )}

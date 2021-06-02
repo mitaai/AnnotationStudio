@@ -23,14 +23,12 @@ export default function ArrowButton({
   marginBottom = 0,
 }) {
   const leftArrows = [
-    <Arrow direction={direction} color={color} left={-22} />,
     <Arrow direction={direction} color={color} left={-6} />,
     <Arrow direction={direction} color={color} left={10} />,
   ];
   const rightArrows = [
     <Arrow direction={direction} color={color} left={-10} />,
     <Arrow direction={direction} color={color} left={6} />,
-    <Arrow direction={direction} color={color} left={22} />,
   ];
   return (
     <div

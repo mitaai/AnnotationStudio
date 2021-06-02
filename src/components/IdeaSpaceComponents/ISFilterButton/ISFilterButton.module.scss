@@ -1,4 +1,35 @@
+@use "sass:color";
+@use "../../../style/theme";
+
 .filterHeader {
   display: flex;
   align-items: center;
+  width: 100%;
+  border-radius: 0px;
+  padding: 8px 12px;
+
+  &.selected {
+    background: #EBF2FF;
+    color: theme.$primary;
+  }
+
+  .filterHeaderText {
+    flex: 1;
+    text-align: left;
+  }
+
+  .appliedText {
+    color: #616161;
+    font-size: 14px;
+  }
 }
+
+.filterRowContainer {
+  display: flex;
+
+  .filterRowCheckbox {
+    flex: 1;
+  }
+}
+
+

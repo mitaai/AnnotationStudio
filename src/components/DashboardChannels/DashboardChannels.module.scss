@@ -1,5 +1,5 @@
-//@use "sass:color";
-//@use "../../style/theme";
+@use "sass:color";
+@use "../../style/theme";
 
 
 .refreshButton {
@@ -9,7 +9,7 @@
   margin: auto 5px auto auto;
   font-size: 14px;
   &:hover {
-    color: #4568AC;
+    color: theme.$primary;
   }
 }
 
@@ -19,7 +19,7 @@
   margin: 10px auto;
   font-size: 14px;
   &:hover {
-    color: #4568AC;
+    color: theme.$primary;
   }
 }
 
@@ -96,7 +96,7 @@
       justify-content: center;
       align-items: center;
       background: #EBF2FF;
-      color: #4568AC;
+      color: theme.$primary;
     }
     .documentContentContainer {
       padding: 5px 10px 10px 10px !important;
@@ -120,12 +120,12 @@
 }
 
 .tileFocused {
-  border: 1px solid #4568AC !important
+  border: 1px solid theme.$primary !important
 }
 
 .selectedTile {
   left: 10px;
-  background: #4568AC !important;
+  background: theme.$primary !important;
 
   .name {
     color: white;
@@ -179,16 +179,16 @@
 .moreGroupsOption {
   padding: 2px 5px;
   &:hover {
-    color: #4568AC;
+    color: theme.$primary;
   }
 }
 
 .privateGroupName {
-  color: #4568AC !important;
+  color: theme.$primary !important;
 }
 
 .privateGroupLock {
-  color: #4568AC;
+  color: theme.$primary;
   height: 14px;
 }
 

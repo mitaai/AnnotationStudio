@@ -1,9 +1,11 @@
 import React, { useContext } from 'react';
 import {
-  OverlayTrigger, Button, Popover, Accordion, AccordionContext, Card, useAccordionToggle,
+  OverlayTrigger, Button, Popover, Accordion, AccordionContext, Card, useAccordionToggle, Form,
 } from 'react-bootstrap';
 import {
-  ChatRightQuoteFill, Filter, PeopleFill, ShieldLockFill,
+  BookmarkFill,
+  CalendarEventFill,
+  ChatRightQuoteFill, FileEarmarkFill, Filter, PeopleFill, ShieldLockFill,
 } from 'react-bootstrap-icons';
 import styles from './ISFilterButton.module.scss';
 
@@ -21,8 +23,9 @@ const ContextAwareToggle = ({
 
   return (
     <Button
+      className={`${styles.filterHeader} ${isCurrentEventKey ? styles.selected : ''}`}
       type="button"
-      variant={isCurrentEventKey ? 'text' : 'link'}
+      variant="text"
       onClick={decoratedOnClick}
       disabled={disabled}
     >
@@ -59,29 +62,28 @@ export default function ISFilterButton({
                 <Card>
                   <Card.Header>
                     <ContextAwareToggle eventKey="byPermissions">
-                      <div className={styles.filterHeader}>
-                        <ShieldLockFill size={18} style={{ marginRight: 4 }} />
-                        <span>By Permissions</span>
-                      </div>
+                      <ShieldLockFill size={18} style={{ marginRight: 4 }} />
+                      <span className={styles.filterHeaderText}>By Permissions</span>
+                      <span className={styles.appliedText}>1 Applied</span>
                     </ContextAwareToggle>
                   </Card.Header>
                   <Accordion.Collapse eventKey="byPermissions">
-                    <Card.Body id="document-upload-card">
-                      hello
+                    <Card.Body>
+                      <FilterRow text="Shared With Group(s)" checked number={5} />
+                      <FilterRow text="Private" checked number={5} />
                     </Card.Body>
                   </Accordion.Collapse>
                 </Card>
                 <Card>
                   <Card.Header>
                     <ContextAwareToggle eventKey="annotatedBy">
-                      <div className={styles.filterHeader}>
-                        <ChatRightQuoteFill size={18} style={{ marginRight: 4 }} />
-                        <span>Annotated By</span>
-                      </div>
+                      <ChatRightQuoteFill size={18} style={{ marginRight: 4 }} />
+                      <span className={styles.filterHeaderText}>Annotated By</span>
+                      <span className={styles.appliedText}>1 Applied</span>
                     </ContextAwareToggle>
                   </Card.Header>
                   <Accordion.Collapse eventKey="annotatedBy">
-                    <Card.Body id="document-upload-card">
+                    <Card.Body>
                       hello
                     </Card.Body>
                   </Accordion.Collapse>
@@ -89,14 +91,59 @@ export default function ISFilterButton({
                 <Card>
                   <Card.Header>
                     <ContextAwareToggle eventKey="byGroup">
-                      <div className={styles.filterHeader}>
-                        <PeopleFill size={18} style={{ marginRight: 4 }} />
-                        <span>By Group</span>
-                      </div>
+                      <PeopleFill size={18} style={{ marginRight: 4 }} />
+                      <span className={styles.filterHeaderText}>By Group</span>
+                      <span className={styles.appliedText}>1 Applied</span>
                     </ContextAwareToggle>
                   </Card.Header>
                   <Accordion.Collapse eventKey="byGroup">
-                    <Card.Body id="document-upload-card">
+                    <Card.Body>
+                      hello
+                    </Card.Body>
+                  </Accordion.Collapse>
+                </Card>
+                <Card>
+                  <Card.Header>
+                    <ContextAwareToggle eventKey="byDocument">
+                      <FileEarmarkFill size={18} style={{ marginRight: 4 }} />
+                      <span className={styles.filterHeaderText}>By Document</span>
+                      <span className={styles.appliedText}>1 Applied</span>
+                    </ContextAwareToggle>
+                  </Card.Header>
+                  <Accordion.Collapse eventKey="byDocument">
+                    <Card.Body>
+                      <FilterRow text="alpha" checked number={5} />
+                      <FilterRow text="beta" checked number={5} />
+                      <FilterRow text="gamma" checked number={5} />
+                    </Card.Body>
+                  </Accordion.Collapse>
+                </Card>
+                <Card>
+                  <Card.Header>
+                    <ContextAwareToggle eventKey="byTag">
+                      <BookmarkFill size={18} style={{ marginRight: 4 }} />
+                      <span className={styles.filterHeaderText}>By Tag</span>
+                      <span className={styles.appliedText}>1 Applied</span>
+                    </ContextAwareToggle>
+                  </Card.Header>
+                  <Accordion.Collapse eventKey="byTag">
+                    <Card.Body>
+                      <FilterRow text="alpha" checked number={5} />
+                      <FilterRow text="beta" checked number={5} />
+                      <FilterRow text="gamma" checked number={5} />
+                    </Card.Body>
+                  </Accordion.Collapse>
+                </Card>
+                <Card>
+                  <Card.Header>
+                    <ContextAwareToggle eventKey="byDateCreated">
+                      <CalendarEventFill size={18} style={{ marginRight: 4 }} />
+                      <span className={styles.filterHeaderText}>By Date Created</span>
+                      <span className={styles.appliedText}>1 Applied</span>
+                    </ContextAwareToggle>
+                  </Card.Header>
+                  <Accordion.Collapse eventKey="byDateCreated">
+                    <Card.Body>
                       hello
                     </Card.Body>
                   </Accordion.Collapse>
@@ -139,7 +186,7 @@ export default function ISFilterButton({
 
           #is-filter-popover .card-header {
             background: white;
-            padding: 5px !important;
+            padding: 0px !important;
           }
 
           #is-filter-popover {
@@ -155,5 +202,23 @@ export default function ISFilterButton({
         `}
       </style>
     </>
+  );
+}
+
+function FilterRow({
+  checked, text = '', number = 0, toggle = () => {},
+}) {
+  return (
+    <div className={styles.filterRowContainer}>
+      <Form.Check
+        type="checkbox"
+        className={styles.filterRowCheckbox}
+        onClick={toggle}
+      >
+        <Form.Check.Input type="checkbox" checked={checked} disabled={number === 0} />
+        <Form.Check.Label>{text}</Form.Check.Label>
+      </Form.Check>
+      <span className={styles.filterRowNumber}>{number}</span>
+    </div>
   );
 }

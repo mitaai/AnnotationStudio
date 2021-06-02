@@ -3,7 +3,7 @@ import Router from 'next/router';
 import {
   OverlayTrigger,
 } from 'react-bootstrap';
-import { XCircleFill } from 'react-bootstrap-icons';
+import { XCircle } from 'react-bootstrap-icons';
 import styles from './TileBadge.module.scss';
 
 
@@ -37,16 +37,42 @@ export default function TileBadge({
     ? (
       <span
         className={classNames}
+        onMouseOver={() => {
+          if (onDelete) {
+            setHoverCancel(true);
+          }
+        }}
+        onMouseOut={() => {
+          if (onDelete) {
+            setHoverCancel();
+          }
+        }}
+        onFocus={() => {
+          if (onDelete) {
+            setHoverCancel(true);
+          }
+        }}
+        onBlur={() => {
+          if (onDelete) {
+            setHoverCancel();
+          }
+        }}
+        onClick={onDelete}
+        tabIndex={0}
+        role="button"
+        onKeyDown={(e) => {
+          if (e.code === 'Space' || e.code === 'Enter') {
+            onDelete();
+          }
+        }}
         style={{
           marginLeft, marginRight, fontSize, cursor: 'default', display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}
       >
         {icon}
-        {text}
+        <span className={styles.tileBadgeText}>{text}</span>
         {onDelete && (
-        <XCircleFill
-          onMouseOver={() => setHoverCancel(true)}
-          onMouseOut={() => setHoverCancel()}
+        <XCircle
           onClick={onDelete}
           className={styles.cancelIcon}
           size={fontSize + 2}
@@ -75,7 +101,7 @@ export default function TileBadge({
           marginLeft, marginRight, fontSize,
         }}
       >
-        {text}
+        <span>{text}</span>
       </span>
     );
   return popover !== undefined ? (

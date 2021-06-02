@@ -1,10 +1,13 @@
+@use "sass:color";
+@use "../../style/theme";
+
 .container {
   display: flex;
   cursor: pointer;
   &:hover {
     .textContainer, .topArrow, .bottomArrow {
       transition: all 0.25s;
-      background: #4568AC;
+      background: theme.$primary;
       color: white;
     }
   }
@@ -12,7 +15,7 @@
 
 .textContainer {
   background: #EBF2FF;
-  color: #4568AC;
+  color: theme.$primary;
   padding: 5px 8px;
   border-radius: 5px;
   font-weight: bold;
@@ -23,7 +26,7 @@
   top: 3px;
   width: 18px;
   height: 12px;
-  transform: skew(40deg) rotate(90deg);
+  transform: skew(30deg) rotate(90deg);
   background: #EBF2FF;
   border-radius: 2px;
   cursor: pointer;
@@ -34,7 +37,7 @@
   top: 19px;
   width: 18px;
   height: 12px;
-  transform: skew(-40deg) rotate(90deg);
+  transform: skew(-30deg) rotate(90deg);
   background: #EBF2FF;
   border-radius: 2px;
   cursor: pointer;

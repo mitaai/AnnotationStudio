@@ -32,6 +32,7 @@ import styles from './DashboardChannels.module.scss';
 import { RID } from '../../utils/docUIUtils';
 import TileBadge from '../TileBadge';
 import ISFilterButton from '../IdeaSpaceComponents/ISFilterButton';
+import OutlineTile from './OutlineTile';
 
 export default function AnnotationsChannel({
   session,
@@ -49,12 +50,16 @@ export default function AnnotationsChannel({
 }) {
   const [selectedPermissions, setSelectedPermissions] = useState('shared');
   const [listLoading, setListLoading] = useState();
+  // for AS annotations
   const [annotations, setAnnotations] = useState({});
+  // for IS annotations
+
+
   const [refresh, setRefresh] = useState();
   const [filters, setFilters] = useState([
     { id: '1', type: 'byPermissions', text: 'Private' },
     { id: '2', type: 'byGroup', text: 'ASTest4' },
-    { id: '3', type: 'byDocument', text: 'Allan Watts' },
+    { id: '3', type: 'byDocument', text: 'Allan Watts asdfasf dafdsaf dsafsdfasdf sdffsdfa fdfsfaesfdsfsd f s afasfsdfsafsdaf asf d' },
     { id: '4', type: 'byDateCreated', text: 'ASTest4' },
     { id: '5', type: 'byTag', text: 'Allan Watts' },
     { id: '6', type: 'annotatedBy', text: 'ASTest4' },
@@ -195,6 +200,7 @@ export default function AnnotationsChannel({
 
   let annotationTiles;
 
+  // if (mode === 'as') {
   if (slug === undefined) {
     annotationTiles = <EmptyListMessage text="No document selected" />;
   } else if (annotations[slug] === undefined) {
@@ -204,6 +210,8 @@ export default function AnnotationsChannel({
   } else {
     annotationTiles = annotations[slug][selectedPermissions];
   }
+  // }
+
 
   const annotationsTabSelected = tab === 'annotations';
 
@@ -224,7 +232,7 @@ export default function AnnotationsChannel({
         <TileBadge
           key={id}
           icon={filterIcons[type]}
-          color="grey"
+          color="blue"
           text={text}
           marginLeft={i > 0 ? 5 : 0}
           onDelete={() => deleteFilter(id)}
@@ -238,8 +246,12 @@ export default function AnnotationsChannel({
     </div>
   </>,
     outlines:
-  <div>
-    outlines
+  <div className={styles.tileContainer}>
+    <OutlineTile
+      name="Outline Name"
+      activityDate={new Date()}
+      onClick={() => {}}
+    />
   </div>,
   };
 
