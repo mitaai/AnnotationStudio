@@ -217,6 +217,7 @@
   margin-bottom: 10px;
   padding-right: 20px;
   transition: all 0.5s;
+  align-items: center;
 }
 
 .filtersContainer {
@@ -228,7 +229,7 @@
   color: '#424242';
   font-size: 20px;
   font-weight: bold;
-  margin-right: 10px;
+  margin-right: 5px;
   cursor: pointer;
 }
 
@@ -273,4 +274,16 @@
   height: 2px;
   position: absolute;
   bottom: 0px;
+}
+
+.titleInput {
+  border: none;
+  border-bottom: 1px solid #ABABAB;
+  background: #F5F5F5;
+  outline: none;
+  flex: 1;
+
+  &:focus {
+    border-bottom-color: theme.$primary
+  }
 }

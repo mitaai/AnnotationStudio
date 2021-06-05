@@ -26,10 +26,17 @@
 
 .filterRowContainer {
   display: flex;
+  cursor: pointer !important;
 
   .filterRowCheckbox {
     flex: 1;
+    cursor: pointer !important;
   }
+}
+
+.filterRowsContainer {
+  max-height: 200px;
+  overflow: scroll;
 }
 
 

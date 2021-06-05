@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react';
 import moment from 'moment';
 import Router from 'next/router';
@@ -12,13 +13,14 @@ import {
   ShieldLockFill,
   FileEarmarkFill,
   CalendarEventFill,
+  ChevronRight,
 } from 'react-bootstrap-icons';
 
 import {
   OverlayTrigger, Popover, Modal, Button, Form,
 } from 'react-bootstrap';
 
-import { fetchSharedAnnotationsOnDocument } from '../../utils/annotationUtil';
+import { fetchSharedAnnotationsOnDocument, getAllAnnotations } from '../../utils/annotationUtil';
 import { fixIframes } from '../../utils/parseUtil';
 
 import PermissionsButtonGroup from '../PermissionsButtonGroup';
@@ -29,10 +31,18 @@ import {
 import AnnotationTile from './AnnotationTile';
 
 import styles from './DashboardChannels.module.scss';
-import { RID } from '../../utils/docUIUtils';
+import { DeepCopyObj, RID } from '../../utils/docUIUtils';
 import TileBadge from '../TileBadge';
 import ISFilterButton from '../IdeaSpaceComponents/ISFilterButton';
 import OutlineTile from './OutlineTile';
+import {
+  byPermissionsIdeaSpaceFilterMatch,
+  annotatedByFilterMatch,
+  byTagFilterMatch,
+  byGroupFilterMatch,
+  byDocumentFilterMatch,
+} from '../../utils/annotationFilteringUtil';
+import ISGroupHeader from '../IdeaSpaceComponents/ISGroupHeader/ISGroupHeader';
 
 export default function AnnotationsChannel({
   session,
@@ -49,26 +59,42 @@ export default function AnnotationsChannel({
   documentPermissions,
 }) {
   const [selectedPermissions, setSelectedPermissions] = useState('shared');
+  const [outlineOpen, setOutlineOpen] = useState();
   const [listLoading, setListLoading] = useState();
   // for AS annotations
   const [annotations, setAnnotations] = useState({});
   // for IS annotations
+  const [allAnnotations, setAllAnnotations] = useState();
+  const aa = allAnnotations || [];
+  const [groupedAnnotations, setGroupedAnnotations] = useState({});
+  const [filteredAnnotations, setFilteredAnnotations] = useState([]);
 
+  const [activeISGroupHeaders, setActiveISGroupHeaders] = useState([]);
 
   const [refresh, setRefresh] = useState();
-  const [filters, setFilters] = useState([
-    { id: '1', type: 'byPermissions', text: 'Private' },
-    { id: '2', type: 'byGroup', text: 'ASTest4' },
-    { id: '3', type: 'byDocument', text: 'Allan Watts asdfasf dafdsaf dsafsdfasdf sdffsdfa fdfsfaesfdsfsd f s afasfsdfsafsdaf asf d' },
-    { id: '4', type: 'byDateCreated', text: 'ASTest4' },
-    { id: '5', type: 'byTag', text: 'Allan Watts' },
-    { id: '6', type: 'annotatedBy', text: 'ASTest4' },
-  ]);
+  const [recalculateAllFilterNumbers, setRecalculateAllFilterNumbers] = useState();
+  const [allFilters, setAllFilters] = useState({
+    byPermissions: {
+      private: false,
+      privateNumber: 0,
+      shared: false,
+      sharedNumber: 0,
+    },
+    annotatedBy: {},
+    byGroup: {},
+    byDocument: {},
+    byTag: {},
+    byDateCreated: { start: undefined, end: undefined },
+  });
+  const [appliedFilters, setAppliedFilters] = useState({
+    byPermissions: { private: false, shared: false },
+    annotatedBy: [],
+    byGroup: [],
+    byDocument: [],
+    byTag: [],
+  });
   const [tab, setTab] = useState('annotations');
   const [showNewOutlineModal, setShowNewOutlineModal] = useState();
-  const deleteFilter = (deleteId) => {
-    setFilters(filters.filter(({ id }) => id !== deleteId));
-  };
 
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [, forceUpdateForRefresh] = useState();
@@ -126,11 +152,11 @@ export default function AnnotationsChannel({
   ];
 
   const toAnnotationsTile = ({
-    _id, target, creator: { name }, modified, body: { value, tags },
-  }, mine) => (
+    _id, permissions, target, creator: { name }, modified, body: { value, tags },
+  }) => (
     <AnnotationTile
       key={_id}
-      onClick={() => Router.push(`/documents/${slug}?mine=${mine ? 'true' : 'false'}&aid=${_id}&${dashboardState}`)}
+      onClick={() => Router.push(`/documents/${slug}?mine=${permissions.private ? 'true' : 'false'}&aid=${_id}&${dashboardState}`)}
       text={target.selector.exact}
       author={name}
       annotation={value.length > 0 ? ReactHtmlParser(value, { transform: fixIframes }) : ''}
@@ -145,7 +171,230 @@ export default function AnnotationsChannel({
     setAnnotations(annotations);
   };
 
+  const filterAnnotations = (f) => {
+    const annotationMatchesFilters = (a) => (
+      byPermissionsIdeaSpaceFilterMatch(a.permissions, f.byPermissions)
+    && byGroupFilterMatch(a.target.document.groups, f.byGroup)
+    && byDocumentFilterMatch(a.target.document.id, f.byDocument)
+    && annotatedByFilterMatch(a.creator.id, f.annotatedBy)
+      && byTagFilterMatch(a.body.tags, f.byTag));
+
+    const filteredAnnos = [];
+    if (appliedFilters.byGroup.length === 0) {
+      // this means that we have to filter all annotations to generate the list of annotations
+      // that match the filter
+
+      aa.map((a, i) => {
+        if (annotationMatchesFilters(a)) {
+          filteredAnnos.push(i);
+        }
+        return null;
+      });
+    } else {
+      // this means there are specific groups that we only have to look at and not all annotations
+      appliedFilters.byGroup.map((gid) => {
+        groupedAnnotations[gid].map((index) => {
+          if (!filteredAnnos.includes(index) && annotationMatchesFilters(aa[index])) {
+            filteredAnnos.push(index);
+          }
+          return null;
+        });
+        return null;
+      });
+    }
+
+    return filteredAnnos;
+  };
+
+  const saveAndOrganizeAnnotationsByGroup = (as) => {
+    const annos = as.sort((a, b) => new Date(b.modified) - new Date(a.modified));
+    const groupedAnnos = { privateGroup: [] };
+    // 'af' stands for 'all filters'. we are generating all filters possible for all annotations
+    const af = {
+      byPermissions: {
+        private: false, privateNumber: 0, shared: false, sharedNumber: 0,
+      },
+      annotatedBy: {},
+      byGroup: {},
+      byDocument: {},
+      byTag: {},
+      byDateCreated: { start: undefined, end: undefined },
+    };
+    annos.map(({
+      creator, created, target: { document: { groups, id: did, title } }, body: { tags },
+    }, i) => {
+      // populating all filters object
+      if (af.annotatedBy[creator.id] === undefined) {
+        af.annotatedBy[creator.id] = {
+          name: creator.name,
+          number: 0,
+          checked: allFilters.annotatedBy[creator.id] && allFilters.annotatedBy[creator.id].checked,
+        };
+      }
+
+      if (af.byDocument[did] === undefined) {
+        af.byDocument[did] = {
+          name: title,
+          number: 0,
+          checked: allFilters.byDocument[did] && allFilters.byDocument[did].checked,
+        };
+      }
+
+      tags.map((t) => {
+        if (af.byTag[t] === undefined) {
+          af.byTag[t] = {
+            name: t,
+            number: 0,
+            checked: allFilters.byTag[t] && allFilters.byTag[t].checked,
+          };
+        }
+        return null;
+      });
+
+      const dateCreated = new Date(created);
+
+      if (dateCreated < af.byDateCreated.start || af.byDateCreated.start === undefined) {
+        af.byDateCreated.start = dateCreated;
+      }
+
+      if (dateCreated < af.byDateCreated.end || af.byDateCreated.end === undefined) {
+        af.byDateCreated.end = dateCreated;
+      }
+
+
+      if (groups.length === 0) {
+        groupedAnnos.privateGroup.push(i);
+        return null;
+      }
+
+      groups.map((gid) => {
+        if (af.byGroup[gid] === undefined) {
+          const g = gid === 'privateGroup' ? { name: 'Private' } : session.user.groups.find(({ id }) => id === gid);
+          af.byGroup[gid] = { name: g.name, number: 5 };
+        }
+
+        if (groupedAnnos[gid] === undefined) {
+          groupedAnnos[gid] = [];
+        }
+        groupedAnnos[gid].push(i);
+        return null;
+      });
+      return null;
+    });
+    setAllAnnotations(annos);
+    setGroupedAnnotations(groupedAnnos);
+    setAllFilters(af);
+    setRecalculateAllFilterNumbers(true);
+  };
+
+  const toggleFilters = (type, key) => {
+    if (type === 'byPermissions') {
+      allFilters.byPermissions[key] = !allFilters.byPermissions[key];
+      appliedFilters.byPermissions[key] = allFilters.byPermissions[key];
+    } else {
+      allFilters[type][key].checked = !allFilters[type][key].checked;
+      if (allFilters[type][key].checked) {
+        appliedFilters[type].push(key);
+      } else {
+        appliedFilters[type] = appliedFilters[type].filter((k) => k !== key);
+      }
+    }
+
+    setAllFilters(DeepCopyObj(allFilters));
+    setAppliedFilters(DeepCopyObj(appliedFilters));
+    setRecalculateAllFilterNumbers(true);
+    // when the applied filters change we will collapse all ISGroupHeaders because we have a new
+    // set of results
+    setActiveISGroupHeaders([]);
+  };
+
+  const generateFilters = () => {
+    let firstFilter = true;
+    const tileBadgeFilters = [];
+    // eslint-disable-next-line no-restricted-syntax
+    for (const [type, arr] of Object.entries(appliedFilters)) {
+      if (type === 'byPermissions') {
+        if (arr.private || arr.shared) {
+          tileBadgeFilters.push(
+            <TileBadge
+              key="permissionsTileBadgeFilter"
+              icon={filterIcons[type]}
+              color="blue"
+              text={arr.private ? 'Private' : 'Shared With Group(s)'}
+              marginLeft={!firstFilter ? 5 : 0}
+              onDelete={() => toggleFilters(type, arr.private ? 'private' : 'shared')}
+              fontSize={12}
+            />,
+          );
+        }
+      } else {
+        // eslint-disable-next-line no-loop-func
+        tileBadgeFilters.push(arr.map((key) => {
+          const tileBadgeFilter = (
+            <TileBadge
+              key={key}
+              icon={filterIcons[type]}
+              color="blue"
+              text={allFilters[type][key].name}
+              marginLeft={!firstFilter ? 5 : 0}
+              onDelete={() => toggleFilters(type, key)}
+              fontSize={12}
+            />
+          );
+          firstFilter = false;
+          return tileBadgeFilter;
+        }));
+      }
+    }
+
+    return tileBadgeFilters;
+  };
+
+  const toggleISGroupHeader = (gid) => {
+    let newActiveISGroupHeaders = [];
+    if (activeISGroupHeaders.includes(gid)) {
+      newActiveISGroupHeaders = activeISGroupHeaders.filter((groupId) => groupId !== gid);
+    } else {
+      newActiveISGroupHeaders = activeISGroupHeaders.concat([gid]);
+    }
+
+    setActiveISGroupHeaders(newActiveISGroupHeaders);
+  };
+
+  const fetchAllAnnotations = async () => {
+    if (session) {
+      setListLoading(true);
+      if (session && (session.user.groups || session.user.id)) {
+        await getAllAnnotations({
+          groups: session.user.groups, userId: session.user.id,
+        })
+          .then(async (data) => {
+            saveAndOrganizeAnnotationsByGroup(data.annotations);
+            setRefresh();
+            setLastUpdated(new Date());
+            setListLoading(false);
+          })
+          .catch((err) => {
+            setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
+            setListLoading(false);
+          });
+      }
+    }
+  };
+
+  useEffect(
+    () => setFilteredAnnotations(filterAnnotations(appliedFilters)),
+    [allAnnotations, groupedAnnotations, appliedFilters],
+  );
+
   useEffect(() => {
+    // user refreshing idea space
+    if (refresh && mode === 'is') {
+      fetchAllAnnotations();
+      return;
+    }
+
+    // user refreshing annotations dashboard or changing document slug
     if (slug === undefined) {
       setSelectedPermissions('shared');
       return;
@@ -162,9 +411,9 @@ export default function AnnotationsChannel({
       .then((annos) => {
         const sortedAnnos = annos.sort((a, b) => new Date(b.modified) - new Date(a.modified));
         const a = {
-          mine: sortedAnnos.filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'mine' })).map((anno) => toAnnotationsTile(anno, true)),
-          shared: sortedAnnos.filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'shared' })).map((anno) => toAnnotationsTile(anno, false)),
-          'shared-with-me': sortedAnnos.filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'shared-with-me' })).map((anno) => toAnnotationsTile(anno, false)),
+          mine: sortedAnnos.filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'mine' })).map((anno) => toAnnotationsTile(anno)),
+          shared: sortedAnnos.filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'shared' })).map((anno) => toAnnotationsTile(anno)),
+          'shared-with-me': sortedAnnos.filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'shared-with-me' })).map((anno) => toAnnotationsTile(anno)),
         };
 
         updateAnnotations(a);
@@ -194,23 +443,100 @@ export default function AnnotationsChannel({
   useEffect(() => {
     if (mode === 'as') {
       setTab('annotations');
+    } else if (mode === 'is' && allAnnotations === undefined) {
+      fetchAllAnnotations();
     }
   }, [mode]);
 
+  useEffect(() => {
+    if (!recalculateAllFilterNumbers) {
+      return;
+    }
 
-  let annotationTiles;
+    const af = DeepCopyObj(allFilters);
 
-  // if (mode === 'as') {
-  if (slug === undefined) {
-    annotationTiles = <EmptyListMessage text="No document selected" />;
-  } else if (annotations[slug] === undefined) {
-    annotationTiles = <EmptyListMessage />;
-  } else if (annotations[slug][selectedPermissions].length === 0) {
-    annotationTiles = <EmptyListMessage />;
-  } else {
-    annotationTiles = annotations[slug][selectedPermissions];
+    const permissionsTempFilter = DeepCopyObj(appliedFilters);
+    permissionsTempFilter.byPermissions = { private: true, shared: false };
+    af.byPermissions.privateNumber = filterAnnotations(permissionsTempFilter).length;
+    permissionsTempFilter.byPermissions = { private: false, shared: true };
+    af.byPermissions.sharedNumber = filterAnnotations(permissionsTempFilter).length;
+
+    const annotatedByTempFilter = DeepCopyObj(appliedFilters);
+    Object.keys(af.annotatedBy).map((creatorId) => {
+      annotatedByTempFilter.annotatedBy = [creatorId];
+      af.annotatedBy[creatorId].number = filterAnnotations(annotatedByTempFilter).length;
+      return null;
+    });
+
+    const byGroupTempFilter = DeepCopyObj(appliedFilters);
+    Object.keys(af.byGroup).map((groupId) => {
+      byGroupTempFilter.byGroup = [groupId];
+      af.byGroup[groupId].number = filterAnnotations(byGroupTempFilter).length;
+      return null;
+    });
+
+    const byDocumentTempFilter = DeepCopyObj(appliedFilters);
+    Object.keys(af.byDocument).map((documentId) => {
+      byDocumentTempFilter.byDocument = [documentId];
+      af.byDocument[documentId].number = filterAnnotations(byDocumentTempFilter).length;
+      return null;
+    });
+
+    const byTagTempFilter = DeepCopyObj(appliedFilters);
+    Object.keys(af.byTag).map((t) => {
+      byTagTempFilter.byTag = [t];
+      af.byTag[t].number = filterAnnotations(byTagTempFilter).length;
+      return null;
+    });
+
+    setAllFilters(af);
+    setRecalculateAllFilterNumbers();
+  }, [recalculateAllFilterNumbers]);
+
+
+  let annotationTiles = [];
+
+  if (mode === 'as') {
+    if (slug === undefined) {
+      annotationTiles = <EmptyListMessage text="No document selected" />;
+    } else if (annotations[slug] === undefined) {
+      annotationTiles = <EmptyListMessage />;
+    } else if (annotations[slug][selectedPermissions].length === 0) {
+      annotationTiles = <EmptyListMessage />;
+    } else {
+      annotationTiles = annotations[slug][selectedPermissions];
+    }
+  } else if (mode === 'is') {
+    // eslint-disable-next-line no-restricted-syntax
+    for (const [gid, annosIndexes] of Object.entries(groupedAnnotations)) {
+      if ((appliedFilters.byGroup.length > 0 && appliedFilters.byGroup.includes(gid))
+      || appliedFilters.byGroup.length === 0) {
+        const aTiles = annosIndexes.map((i) => {
+          if (filteredAnnotations.includes(i)) {
+            return toAnnotationsTile(aa[i]);
+          }
+          return null;
+        }).filter((t) => t !== null);
+        if (aTiles.length > 0) {
+          const g = gid === 'privateGroup' ? { name: 'Private' } : session.user.groups.find(({ id }) => id === gid);
+          annotationTiles.push(
+            <ISGroupHeader
+              key={`${gid}-isgroupheader`}
+              name={g ? g.name : ''}
+              numberOfAnnotations={aTiles.length}
+              active={activeISGroupHeaders.includes(gid)}
+              toggle={() => toggleISGroupHeader(gid)}
+            >
+              {aTiles}
+            </ISGroupHeader>,
+          );
+        }
+      }
+    }
+    if (annotationTiles.length === 0) {
+      annotationTiles = <EmptyListMessage text="0 Annotations Found" />;
+    }
   }
-  // }
 
 
   const annotationsTabSelected = tab === 'annotations';
@@ -219,7 +545,7 @@ export default function AnnotationsChannel({
   const tabSelectionLine = (
     <div
       className={styles.tabSelectionLine}
-      style={annotationsTabSelected ? { width: 'calc(60% - 14px)', left: 0, opacity: tabSelectionLineOpacity } : { width: 'calc(40% + 14px)', left: 'calc(60% - 14px)', opacity: tabSelectionLineOpacity }}
+      style={annotationsTabSelected ? { width: 'calc(60% - 9px)', left: 0, opacity: tabSelectionLineOpacity } : { width: 'calc(40% + 9px)', left: 'calc(60% - 9px)', opacity: tabSelectionLineOpacity }}
     />
   );
 
@@ -228,38 +554,37 @@ export default function AnnotationsChannel({
   <>
     {mode === 'is' && (
     <div className={styles.filtersContainer}>
-      {filters.map(({ type, text, id }, i) => (
-        <TileBadge
-          key={id}
-          icon={filterIcons[type]}
-          color="blue"
-          text={text}
-          marginLeft={i > 0 ? 5 : 0}
-          onDelete={() => deleteFilter(id)}
-          fontSize={12}
-        />
-      ))}
+      {generateFilters()}
     </div>
     )}
     <div className={styles.tileContainer}>
       {(listLoading || refresh) ? <ListLoadingSpinner /> : annotationTiles}
     </div>
   </>,
-    outlines:
-  <div className={styles.tileContainer}>
-    <OutlineTile
-      name="Outline Name"
-      activityDate={new Date()}
-      onClick={() => {}}
-    />
-  </div>,
+    outlines: outlineOpen ? <div>Open Outline</div>
+      : (
+        <div className={styles.tileContainer}>
+          <OutlineTile
+            name="Outline Name"
+            activityDate={new Date()}
+            onClick={() => setOutlineOpen(true)}
+          />
+        </div>
+      ),
   };
 
   return (
     <>
       <div className={styles.channelContainer} style={{ width, left, opacity }}>
         {mode === 'is' && <div className={styles.dividingLine} />}
-        <div className={styles.headerContainer} style={{ borderBottom: '1px solid', borderColor: mode === 'as' ? 'transparent' : '#DADCE1' }}>
+        <div
+          className={styles.headerContainer}
+          style={{
+            borderBottom: '1px solid',
+            borderColor: mode === 'as' ? 'transparent' : '#DADCE1',
+            paddingRight: mode === 'as' ? 20 : 10,
+          }}
+        >
           {tabSelectionLine}
           <div style={{ display: 'flex', flex: 3 }}>
             <div style={{ display: 'flex', flex: 1 }}>
@@ -296,31 +621,79 @@ export default function AnnotationsChannel({
                 <ArrowClockwise size={18} style={{ margin: 'auto 5px' }} />
               </div>
             </OverlayTrigger>
-            {mode === 'as' ? <PermissionsButtonGroup buttons={buttons} /> : <ISFilterButton active={annotationsTabSelected} />}
+            {mode === 'as'
+              ? <PermissionsButtonGroup buttons={buttons} />
+              : (
+                <ISFilterButton
+                  active={annotationsTabSelected}
+                  total={aa.length}
+                  result={filteredAnnotations.length}
+                  toggleFilters={toggleFilters}
+                  filters={allFilters}
+                />
+              )}
           </div>
           {mode === 'is' && (
-          <div style={{
-            display: 'flex', flex: 2, borderLeft: '1px solid #DADCE1', marginLeft: 8, paddingLeft: 8,
-          }}
+          <div
+            style={{
+              display: 'flex',
+              flex: 2,
+              borderLeft: '1px solid #DADCE1',
+              marginLeft: 8,
+              paddingLeft: 8,
+              alignItems: 'center',
+              color: !annotationsTabSelected ? '#424242' : '#ABABAB',
+            }}
           >
             <span
-              onClick={() => setTab('outlines')}
+              onClick={() => {
+                if (tab === 'outlines') {
+                  setOutlineOpen();
+                } else {
+                  setTab('outlines');
+                }
+              }}
               onKeyDown={() => {}}
               tabIndex={-1}
               role="button"
               className={styles.headerText}
-              style={{ color: !annotationsTabSelected ? '#424242' : '#ABABAB' }}
             >
               Outlines
             </span>
-            <TileBadge
-              text="New + "
-              color={!annotationsTabSelected ? 'yellow' : 'grey'}
-              onClick={() => {
-                setShowNewOutlineModal(true);
-                setTab('outlines');
-              }}
-            />
+            {outlineOpen ? (
+              <div
+                style={{ display: 'flex', flex: 1, alignItems: 'center' }}
+                onClick={() => {
+                  if (tab === 'outlines') {
+                    setOutlineOpen();
+                  } else {
+                    setTab('outlines');
+                  }
+                }}
+                onKeyDown={() => {}}
+                tabIndex={-1}
+                role="button"
+              >
+                <ChevronRight size={14} />
+                <input
+                  style={{ color: !annotationsTabSelected ? '#424242' : '#ABABAB' }}
+                  className={styles.titleInput}
+                  type="text"
+                  value="hello and goodbye"
+                />
+              </div>
+            )
+              : (
+                <TileBadge
+                  text="New + "
+                  color={!annotationsTabSelected ? 'yellow' : 'grey'}
+                  onClick={() => {
+                    setShowNewOutlineModal(true);
+                    setTab('outlines');
+                  }}
+                />
+              )}
+
           </div>
           )}
         </div>

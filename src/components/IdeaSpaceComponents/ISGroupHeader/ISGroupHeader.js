@@ -1,29 +1,42 @@
+import {
+  Accordion,
+} from 'react-bootstrap';
 import { ChevronDown, ChevronUp } from 'react-bootstrap-icons';
 import styles from './ISGroupHeader.module.scss';
 
 import TileBadge from '../../TileBadge';
 
+
 export default function ISGroupHeader({
-  name = '', collapsed, toggle = () => {}, numberOfAnnotations = 0, size = 16,
+  name = '', numberOfAnnotations = 0, size = 16, children, active, toggle,
 }) {
   const numberOfAnnotationsText = `${numberOfAnnotations} annotation${numberOfAnnotations === 1 ? '' : 's'}`;
   return (
-    <div>
-      <div className={styles.container}>
-        <div
-          onClick={() => toggle(!collapsed)}
-          role="button"
-          onKeyDown={() => {}}
-          tabIndex={-1}
-        >
-          {collapsed ? <ChevronDown size={size} color="#424242" /> : <ChevronUp size={size} color="#424242" />}
+    <div style={{ marginBottom: 15 }}>
+      <Accordion activeKey={active ? 'name' : ''}>
+        <div>
+          <div
+            className={styles.container}
+            onClick={toggle}
+            role="button"
+            onKeyDown={() => {}}
+            tabIndex={-1}
+          >
+            {active ? <ChevronUp size={size} color="#424242" /> : <ChevronDown size={size} color="#424242" />}
+            <div className={styles.name}>
+              {name}
+            </div>
+            <TileBadge color="yellow" text={numberOfAnnotationsText} />
+          </div>
+          <div className={styles.pointer} style={active ? {} : { opacity: 0, marginBottom: -20 }} />
         </div>
-        <div className={styles.name}>
-          {name}
-        </div>
-        <TileBadge color="yellow" text={numberOfAnnotationsText} />
-      </div>
-      <div className={styles.pointer} />
+        <Accordion.Collapse eventKey="name" className={styles.tileContainer}>
+          <>
+            {children}
+          </>
+        </Accordion.Collapse>
+      </Accordion>
     </div>
+
   );
 }

@@ -34,19 +34,51 @@ const ContextAwareToggle = ({
   );
 };
 
-/*
-const filterIcons = {
-  byPermissions: <ShieldLockFill size={14} style={{ marginRight: 4 }} />,
-  annotatedBy: <ChatRightQuoteFill size={14} style={{ marginRight: 4 }} />,
-  byGroup: <PeopleFill size={14} style={{ marginRight: 4 }} />,
-  byDocument: <FileEarmarkFill size={14} style={{ marginRight: 4 }} />,
-  byTag: <BookmarkFill size={14} style={{ marginRight: 4 }} />,
-  byDateCreated: <CalendarEventFill size={14} style={{ marginRight: 4 }} />,
-};
-*/
 export default function ISFilterButton({
   active,
+  total = 0,
+  result = 0,
+  toggleFilters = () => {},
+  filters = {
+    byPermissions: {
+      private: false,
+      privateNumber: 0,
+      shared: false,
+      sharedNumber: 0,
+    },
+    annotatedBy: {},
+    byGroup: {},
+    byDocument: {},
+    byTag: {},
+    byDateCreated: { start: undefined, end: undefined },
+  },
 }) {
+  const filterToFilterRows = (type) => {
+    const filterRows = [];
+    let numberApplied = 0;
+    // eslint-disable-next-line no-restricted-syntax
+    for (const [key, { name, number, checked }] of Object.entries(filters[type])) {
+      numberApplied += checked ? 1 : 0;
+      filterRows.push(
+        <FilterRow
+          key={key}
+          text={name}
+          number={number}
+          checked={checked}
+          toggle={() => {
+            toggleFilters(type, key);
+          }}
+        />,
+      );
+    }
+    return { filterRows, numberApplied };
+  };
+
+  const annotatedByFilters = filterToFilterRows('annotatedBy');
+  const byGroupFilters = filterToFilterRows('byGroup');
+  const byDocumentFilters = filterToFilterRows('byDocument');
+  const byTagFilters = filterToFilterRows('byTag');
+
   return (
     <>
       <OverlayTrigger
@@ -56,7 +88,7 @@ export default function ISFilterButton({
         rootClose
         overlay={(
           <Popover key="is-filter-popover" id="is-filter-popover">
-            <Popover.Title as="h3">45 / 100 results</Popover.Title>
+            <Popover.Title as="h3">{`${result} results out of ${total}`}</Popover.Title>
             <Popover.Content>
               <Accordion>
                 <Card>
@@ -64,13 +96,27 @@ export default function ISFilterButton({
                     <ContextAwareToggle eventKey="byPermissions">
                       <ShieldLockFill size={18} style={{ marginRight: 4 }} />
                       <span className={styles.filterHeaderText}>By Permissions</span>
-                      <span className={styles.appliedText}>1 Applied</span>
+                      <span className={styles.appliedText}>{`${!filters.byPermissions.private && !filters.byPermissions.shared ? 0 : 1} Applied`}</span>
                     </ContextAwareToggle>
                   </Card.Header>
                   <Accordion.Collapse eventKey="byPermissions">
-                    <Card.Body>
-                      <FilterRow text="Shared With Group(s)" checked number={5} />
-                      <FilterRow text="Private" checked number={5} />
+                    <Card.Body className={styles.filterRowsContainer}>
+                      <FilterRow
+                        text="Private"
+                        checked={filters.byPermissions.private}
+                        number={filters.byPermissions.privateNumber}
+                        toggle={() => {
+                          toggleFilters('byPermissions', 'private');
+                        }}
+                      />
+                      <FilterRow
+                        text="Shared With Group(s)"
+                        checked={filters.byPermissions.shared}
+                        number={filters.byPermissions.sharedNumber}
+                        toggle={() => {
+                          toggleFilters('byPermissions', 'shared');
+                        }}
+                      />
                     </Card.Body>
                   </Accordion.Collapse>
                 </Card>
@@ -79,12 +125,12 @@ export default function ISFilterButton({
                     <ContextAwareToggle eventKey="annotatedBy">
                       <ChatRightQuoteFill size={18} style={{ marginRight: 4 }} />
                       <span className={styles.filterHeaderText}>Annotated By</span>
-                      <span className={styles.appliedText}>1 Applied</span>
+                      <span className={styles.appliedText}>{`${annotatedByFilters.numberApplied} Applied`}</span>
                     </ContextAwareToggle>
                   </Card.Header>
                   <Accordion.Collapse eventKey="annotatedBy">
-                    <Card.Body>
-                      hello
+                    <Card.Body className={styles.filterRowsContainer}>
+                      {annotatedByFilters.filterRows}
                     </Card.Body>
                   </Accordion.Collapse>
                 </Card>
@@ -93,12 +139,12 @@ export default function ISFilterButton({
                     <ContextAwareToggle eventKey="byGroup">
                       <PeopleFill size={18} style={{ marginRight: 4 }} />
                       <span className={styles.filterHeaderText}>By Group</span>
-                      <span className={styles.appliedText}>1 Applied</span>
+                      <span className={styles.appliedText}>{`${byGroupFilters.numberApplied} Applied`}</span>
                     </ContextAwareToggle>
                   </Card.Header>
                   <Accordion.Collapse eventKey="byGroup">
-                    <Card.Body>
-                      hello
+                    <Card.Body className={styles.filterRowsContainer}>
+                      {byGroupFilters.filterRows}
                     </Card.Body>
                   </Accordion.Collapse>
                 </Card>
@@ -107,14 +153,12 @@ export default function ISFilterButton({
                     <ContextAwareToggle eventKey="byDocument">
                       <FileEarmarkFill size={18} style={{ marginRight: 4 }} />
                       <span className={styles.filterHeaderText}>By Document</span>
-                      <span className={styles.appliedText}>1 Applied</span>
+                      <span className={styles.appliedText}>{`${byDocumentFilters.numberApplied} Applied`}</span>
                     </ContextAwareToggle>
                   </Card.Header>
                   <Accordion.Collapse eventKey="byDocument">
-                    <Card.Body>
-                      <FilterRow text="alpha" checked number={5} />
-                      <FilterRow text="beta" checked number={5} />
-                      <FilterRow text="gamma" checked number={5} />
+                    <Card.Body className={styles.filterRowsContainer}>
+                      {byDocumentFilters.filterRows}
                     </Card.Body>
                   </Accordion.Collapse>
                 </Card>
@@ -123,14 +167,12 @@ export default function ISFilterButton({
                     <ContextAwareToggle eventKey="byTag">
                       <BookmarkFill size={18} style={{ marginRight: 4 }} />
                       <span className={styles.filterHeaderText}>By Tag</span>
-                      <span className={styles.appliedText}>1 Applied</span>
+                      <span className={styles.appliedText}>{`${byTagFilters.numberApplied} Applied`}</span>
                     </ContextAwareToggle>
                   </Card.Header>
                   <Accordion.Collapse eventKey="byTag">
-                    <Card.Body>
-                      <FilterRow text="alpha" checked number={5} />
-                      <FilterRow text="beta" checked number={5} />
-                      <FilterRow text="gamma" checked number={5} />
+                    <Card.Body className={styles.filterRowsContainer}>
+                      {byTagFilters.filterRows}
                     </Card.Body>
                   </Accordion.Collapse>
                 </Card>
@@ -143,7 +185,7 @@ export default function ISFilterButton({
                     </ContextAwareToggle>
                   </Card.Header>
                   <Accordion.Collapse eventKey="byDateCreated">
-                    <Card.Body>
+                    <Card.Body className={styles.filterRowsContainer}>
                       hello
                     </Card.Body>
                   </Accordion.Collapse>
@@ -209,16 +251,26 @@ function FilterRow({
   checked, text = '', number = 0, toggle = () => {},
 }) {
   return (
-    <div className={styles.filterRowContainer}>
+    <div
+      className={styles.filterRowContainer}
+      onClick={toggle}
+      tabIndex={-1}
+      onKeyDown={() => {}}
+      role="button"
+    >
       <Form.Check
         type="checkbox"
         className={styles.filterRowCheckbox}
-        onClick={toggle}
       >
         <Form.Check.Input type="checkbox" checked={checked} disabled={number === 0} />
-        <Form.Check.Label>{text}</Form.Check.Label>
+        <Form.Check.Label style={{ cursor: 'pointer' }}>{text}</Form.Check.Label>
       </Form.Check>
-      <span className={styles.filterRowNumber}>{number}</span>
+      <span
+        className={styles.filterRowNumber}
+        style={{ color: number === 0 ? '#6c757d' : '#424242' }}
+      >
+        {number}
+      </span>
     </div>
   );
 }

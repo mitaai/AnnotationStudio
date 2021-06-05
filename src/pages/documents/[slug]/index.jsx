@@ -35,6 +35,7 @@ import AnnotationsOverlay from '../../../components/AnnotationsOverlay';
 import UnsavedChangesToast from '../../../components/UnsavedChangesToast/UnsavedChangesToast';
 import adjustLine, { DeepCopyObj } from '../../../utils/docUIUtils';
 import Footer from '../../../components/Footer';
+import { annotatedByFilterMatch, byDocumentPermissionsFilterMatch, byTagFilterMatch } from '../../../utils/annotationFilteringUtil';
 
 
 const DocumentPage = ({
@@ -148,49 +149,11 @@ const DocumentPage = ({
   };
 
 
-  // functions for filtering
-
-  function ByPermissionsFilterMatch(userEmail, email, permissions, cf, userId) { // AND FUNCTION
-    if (cf.permissions === 0 && userEmail === email) { // mine
-      return true;
-    }
-
-    if (cf.permissions === 1 && !permissions.private && !permissions.sharedTo) { // shared
-      return true;
-    }
-
-    if (cf.permissions === 2 && permissions.sharedTo !== undefined) { // shared with specific people
-      return permissions.sharedTo.includes(userId);
-    }
-  }
-
-  function AnnotatedByFilterMatch(email, cf) { // AND FUNCTION
-    return cf.annotatedBy.length === 0 ? true : cf.annotatedBy.includes(email);
-  }
-
-  function ByTagFilterMatch(tags, cf) { // OR FUNCTION
-    if (cf.byTags.length === 0) {
-      return true;
-    }
-
-    if (tags === undefined) {
-      return false;
-    }
-
-    for (let i = 0; i < tags.length; i += 1) {
-      if (cf.byTags.includes(tags[i])) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-
   const AnnotationMatchesFilters = (
     userEmail, a, filters, userId,
-  ) => AnnotatedByFilterMatch(a.creator.email, filters)
-    && ByTagFilterMatch(a.body.tags, filters)
-    && ByPermissionsFilterMatch(userEmail, a.creator.email, a.permissions, filters, userId);
+  ) => annotatedByFilterMatch(a.creator.email, filters.annotatedBy)
+    && byTagFilterMatch(a.body.tags, filters.byTags)
+    && byDocumentPermissionsFilterMatch(userEmail, a.creator.email, a.permissions, filters, userId);
 
   const FilterAnnotations = (channelAnnos, filters) => {
     const userEmail = session.user.email;

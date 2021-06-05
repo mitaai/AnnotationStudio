@@ -73,7 +73,6 @@ export default function TileBadge({
         <span className={styles.tileBadgeText}>{text}</span>
         {onDelete && (
         <XCircle
-          onClick={onDelete}
           className={styles.cancelIcon}
           size={fontSize + 2}
         />

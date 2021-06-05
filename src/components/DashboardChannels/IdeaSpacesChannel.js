@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import {
   Modal, Button, Form,
 } from 'react-bootstrap';
+import { ChevronRight } from 'react-bootstrap-icons';
 import styles from './DashboardChannels.module.scss';
 import IdeaSpaceTile from './IdeaSpaceTile';
 import TileBadge from '../TileBadge';
@@ -13,9 +14,10 @@ export default function IdeaSpacesChannel({
   opacity,
 }) {
   const [showNewIdeaSpaceModal, setShowNewIdeaSpaceModal] = useState();
+  const [open, setOpen] = useState();
   const ideaSpaceTiles = [
-    <IdeaSpaceTile name="Name of Idea Space" activityDate={new Date()} onClick={() => {}} numberOfAnnotations={0} />,
-    <IdeaSpaceTile name="Name of Idea Space" activityDate={new Date()} onClick={() => {}} numberOfAnnotations={5} />,
+    <IdeaSpaceTile name="Name of Idea Space" activityDate={new Date()} onClick={() => setOpen(true)} numberOfAnnotations={0} />,
+    <IdeaSpaceTile name="Name of Idea Space" activityDate={new Date()} onClick={() => setOpen(true)} numberOfAnnotations={5} />,
   ];
   return (
     <>
@@ -26,13 +28,26 @@ export default function IdeaSpacesChannel({
         }}
       >
         <div className={styles.headerContainer}>
-          <span className={styles.headerText}>
+          <span
+            className={styles.headerText}
+            onClick={() => setOpen()}
+            onFocus={() => {}}
+            onKeyDown={() => {}}
+            role="button"
+            tabIndex={-1}
+          >
             Idea Spaces
           </span>
-          <TileBadge text="New + " color="yellow" onClick={() => setShowNewIdeaSpaceModal(true)} />
+          {open ? (
+            <>
+              <ChevronRight size={14} />
+              <input className={styles.titleInput} type="text" value="hello and goodbye" />
+            </>
+          )
+            : <TileBadge text="New + " color="yellow" onClick={() => setShowNewIdeaSpaceModal(true)} />}
         </div>
         <div className={styles.tileContainer}>
-          {ideaSpaceTiles}
+          {open ? <div>Open Idea Space</div> : ideaSpaceTiles}
         </div>
 
       </div>
