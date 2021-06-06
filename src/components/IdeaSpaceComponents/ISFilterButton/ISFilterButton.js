@@ -52,15 +52,17 @@ export default function ISFilterButton({
     byTag: {},
     byDateCreated: { start: undefined, end: undefined },
   },
+  onClick = () => {},
 }) {
   const filterToFilterRows = (type) => {
     const filterRows = [];
+    const keys = Object.keys(filters[type]);
     let numberApplied = 0;
-    // eslint-disable-next-line no-restricted-syntax
-    for (const [key, { name, number, checked }] of Object.entries(filters[type])) {
+    keys.map((key) => {
+      const { name, number, checked } = filters[type][key];
       numberApplied += checked ? 1 : 0;
-      filterRows.push(
-        <FilterRow
+      filterRows.push({
+        elmnt: <FilterRow
           key={key}
           text={name}
           number={number}
@@ -69,9 +71,31 @@ export default function ISFilterButton({
             toggleFilters(type, key);
           }}
         />,
-      );
-    }
-    return { filterRows, numberApplied };
+        name,
+      });
+      return null;
+    });
+
+    return {
+      filterRows: filterRows.sort((a, b) => {
+        if (a.name.toUpperCase() < b.name.toUpperCase()) {
+          return -1;
+        }
+        if (a.name.toUpperCase() > b.name.toUpperCase()) {
+          return 1;
+        }
+
+        if (a.name < b.name) {
+          return -1;
+        }
+        if (a.name > b.name) {
+          return 1;
+        }
+
+        return 0;
+      }).map(({ elmnt }) => elmnt),
+      numberApplied,
+    };
   };
 
   const annotatedByFilters = filterToFilterRows('annotatedBy');
@@ -85,6 +109,7 @@ export default function ISFilterButton({
         trigger="click"
         key="filter-popover"
         placement="bottom"
+        onEnter={onClick}
         rootClose
         overlay={(
           <Popover key="is-filter-popover" id="is-filter-popover">

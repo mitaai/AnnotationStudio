@@ -69,6 +69,8 @@ export default function AnnotationsChannel({
   const [groupedAnnotations, setGroupedAnnotations] = useState({});
   const [filteredAnnotations, setFilteredAnnotations] = useState([]);
 
+  const [applyDefaultFilters, setApplyDefaultFilters] = useState();
+
   const [activeISGroupHeaders, setActiveISGroupHeaders] = useState([]);
 
   const [refresh, setRefresh] = useState();
@@ -206,6 +208,43 @@ export default function AnnotationsChannel({
     return filteredAnnos;
   };
 
+  const applyDefaultDashboardFilters = () => {
+    // setting the applied filters to default filtering from Annotation Studio Dashboard
+    // default setting can include a group ID filter and a document ID filter but must always
+    // include a permissions filter either private or shared
+    const appliedF = {
+      byPermissions: selectedPermissions === 'mine'
+        ? { private: true, shared: false }
+        : { private: false, shared: true },
+      annotatedBy: [],
+      byGroup: selectedGroupId !== undefined ? [selectedGroupId] : [],
+      byDocument: selectedDocumentId !== undefined ? [selectedDocumentId] : [],
+      byTag: [],
+    };
+
+    if (selectedPermissions === 'shared') {
+      allFilters.byPermissions.shared = false;
+      allFilters.byPermissions.private = true;
+    } else {
+      allFilters.byPermissions.shared = true;
+      allFilters.byPermissions.private = false;
+    }
+
+    if (selectedGroupId) {
+      allFilters.byGroup[selectedGroupId].checked = true;
+      // if we are applying default dashboard filters that means user is come from AS to IS and
+      // they need to make sure they still see their annotations when moving from AS to IS
+      setActiveISGroupHeaders([selectedGroupId]);
+    }
+
+    if (selectedDocumentId) {
+      allFilters.byDocument[selectedDocumentId].checked = true;
+    }
+
+    setAllFilters(DeepCopyObj(allFilters));
+    setAppliedFilters(appliedF);
+  };
+
   const saveAndOrganizeAnnotationsByGroup = (as) => {
     const annos = as.sort((a, b) => new Date(b.modified) - new Date(a.modified));
     const groupedAnnos = { privateGroup: [] };
@@ -289,8 +328,15 @@ export default function AnnotationsChannel({
 
   const toggleFilters = (type, key) => {
     if (type === 'byPermissions') {
-      allFilters.byPermissions[key] = !allFilters.byPermissions[key];
-      appliedFilters.byPermissions[key] = allFilters.byPermissions[key];
+      if (key === 'private') {
+        allFilters.byPermissions.private = !allFilters.byPermissions.private;
+        allFilters.byPermissions.shared = false;
+      } else {
+        allFilters.byPermissions.shared = !allFilters.byPermissions.shared;
+        allFilters.byPermissions.private = false;
+      }
+      appliedFilters.byPermissions.private = allFilters.byPermissions.private;
+      appliedFilters.byPermissions.shared = allFilters.byPermissions.shared;
     } else {
       allFilters[type][key].checked = !allFilters[type][key].checked;
       if (allFilters[type][key].checked) {
@@ -326,6 +372,7 @@ export default function AnnotationsChannel({
               fontSize={12}
             />,
           );
+          firstFilter = false;
         }
       } else {
         // eslint-disable-next-line no-loop-func
@@ -361,7 +408,7 @@ export default function AnnotationsChannel({
     setActiveISGroupHeaders(newActiveISGroupHeaders);
   };
 
-  const fetchAllAnnotations = async () => {
+  const fetchAllAnnotations = async (callback = () => {}) => {
     if (session) {
       setListLoading(true);
       if (session && (session.user.groups || session.user.id)) {
@@ -372,6 +419,7 @@ export default function AnnotationsChannel({
             saveAndOrganizeAnnotationsByGroup(data.annotations);
             setRefresh();
             setLastUpdated(new Date());
+            callback();
             setListLoading(false);
           })
           .catch((err) => {
@@ -444,9 +492,16 @@ export default function AnnotationsChannel({
     if (mode === 'as') {
       setTab('annotations');
     } else if (mode === 'is' && allAnnotations === undefined) {
-      fetchAllAnnotations();
+      fetchAllAnnotations(() => setApplyDefaultFilters(true));
     }
   }, [mode]);
+
+  useEffect(() => {
+    if (applyDefaultFilters) {
+      applyDefaultDashboardFilters();
+      setApplyDefaultFilters();
+    }
+  }, [allFilters, applyDefaultFilters]);
 
   useEffect(() => {
     if (!recalculateAllFilterNumbers) {
@@ -612,7 +667,12 @@ export default function AnnotationsChannel({
             >
               <div
                 className={styles.refreshButton}
-                onClick={() => setRefresh(true)}
+                onClick={() => {
+                  if (mode === 'is' && tab === 'outlines') {
+                    setTab('annotations');
+                  }
+                  setRefresh(true);
+                }}
                 onKeyDown={() => {}}
                 tabIndex={-1}
                 role="button"
@@ -630,6 +690,11 @@ export default function AnnotationsChannel({
                   result={filteredAnnotations.length}
                   toggleFilters={toggleFilters}
                   filters={allFilters}
+                  onClick={() => {
+                    if (tab === 'outlines') {
+                      setTab('annotations');
+                    }
+                  }}
                 />
               )}
           </div>
