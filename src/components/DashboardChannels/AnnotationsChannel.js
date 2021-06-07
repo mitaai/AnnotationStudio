@@ -355,7 +355,6 @@ export default function AnnotationsChannel({
   };
 
   const generateFilters = () => {
-    let firstFilter = true;
     const tileBadgeFilters = [];
     // eslint-disable-next-line no-restricted-syntax
     for (const [type, arr] of Object.entries(appliedFilters)) {
@@ -367,30 +366,26 @@ export default function AnnotationsChannel({
               icon={filterIcons[type]}
               color="blue"
               text={arr.private ? 'Private' : 'Shared With Group(s)'}
-              marginLeft={!firstFilter ? 5 : 0}
+              marginRight={5}
+              marginBottom={5}
               onDelete={() => toggleFilters(type, arr.private ? 'private' : 'shared')}
               fontSize={12}
             />,
           );
-          firstFilter = false;
         }
       } else {
-        // eslint-disable-next-line no-loop-func
-        tileBadgeFilters.push(arr.map((key) => {
-          const tileBadgeFilter = (
-            <TileBadge
-              key={key}
-              icon={filterIcons[type]}
-              color="blue"
-              text={allFilters[type][key].name}
-              marginLeft={!firstFilter ? 5 : 0}
-              onDelete={() => toggleFilters(type, key)}
-              fontSize={12}
-            />
-          );
-          firstFilter = false;
-          return tileBadgeFilter;
-        }));
+        tileBadgeFilters.push(arr.map((key) => (
+          <TileBadge
+            key={key}
+            icon={filterIcons[type]}
+            color="blue"
+            text={allFilters[type][key].name}
+            marginRight={5}
+            marginBottom={5}
+            onDelete={() => toggleFilters(type, key)}
+            fontSize={12}
+          />
+        )));
       }
     }
 
@@ -729,9 +724,7 @@ export default function AnnotationsChannel({
               <div
                 style={{ display: 'flex', flex: 1, alignItems: 'center' }}
                 onClick={() => {
-                  if (tab === 'outlines') {
-                    setOutlineOpen();
-                  } else {
+                  if (tab === 'annotations') {
                     setTab('outlines');
                   }
                 }}

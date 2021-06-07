@@ -14,7 +14,9 @@ export default function TileBadge({
   setShowPopover,
   color = 'grey',
   text = '',
+  marginTop = 0,
   marginLeft = 0,
+  marginBottom = 0,
   marginRight = 0,
   href,
   fontSize = 10,
@@ -66,7 +68,7 @@ export default function TileBadge({
           }
         }}
         style={{
-          marginLeft, marginRight, fontSize, cursor: 'default', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          marginTop, marginLeft, marginBottom, marginRight, fontSize, cursor: 'default', display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}
       >
         {icon}
