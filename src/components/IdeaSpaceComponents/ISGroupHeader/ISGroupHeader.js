@@ -8,9 +8,15 @@ import TileBadge from '../../TileBadge';
 
 
 export default function ISGroupHeader({
-  name = '', numberOfAnnotations = 0, size = 16, children, active, toggle,
+  name = '',
+  annotationIds = [],
+  size = 16,
+  children,
+  active,
+  toggle,
+  setAnnotationsBeingDragged,
 }) {
-  const numberOfAnnotationsText = `${numberOfAnnotations} annotation${numberOfAnnotations === 1 ? '' : 's'}`;
+  const numberOfAnnotationsText = `${annotationIds.length} annotation${annotationIds.length === 1 ? '' : 's'}`;
   return (
     <div style={{ marginBottom: 15 }}>
       <Accordion activeKey={active ? 'name' : ''}>
@@ -26,7 +32,12 @@ export default function ISGroupHeader({
             <div className={styles.name}>
               {name}
             </div>
-            <TileBadge color="yellow" text={numberOfAnnotationsText} />
+            <TileBadge
+              color="yellow"
+              text={numberOfAnnotationsText}
+              draggable
+              onDragStart={() => setAnnotationsBeingDragged(annotationIds)}
+            />
           </div>
           <div className={styles.pointer} style={active ? {} : { opacity: 0, marginBottom: -20 }} />
         </div>

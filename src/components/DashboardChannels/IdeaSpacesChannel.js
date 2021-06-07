@@ -12,12 +12,18 @@ export default function IdeaSpacesChannel({
   width,
   left,
   opacity,
+  annotationsBeingDragged,
 }) {
   const [showNewIdeaSpaceModal, setShowNewIdeaSpaceModal] = useState();
   const [open, setOpen] = useState();
   const ideaSpaceTiles = [
-    <IdeaSpaceTile name="Name of Idea Space" activityDate={new Date()} onClick={() => setOpen(true)} numberOfAnnotations={0} />,
-    <IdeaSpaceTile name="Name of Idea Space" activityDate={new Date()} onClick={() => setOpen(true)} numberOfAnnotations={5} />,
+    <IdeaSpaceTile
+      name="Name of Idea Space"
+      activityDate={new Date()}
+      onClick={() => setOpen(true)}
+      numberOfAnnotations={0}
+      annotationsBeingDragged={annotationsBeingDragged}
+    />,
   ];
   return (
     <>

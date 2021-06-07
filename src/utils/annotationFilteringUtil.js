@@ -34,7 +34,11 @@ function byGroupFilterMatch(annoGroups, filterGroups) { // OR FUNCTION
   }
 
   if (annoGroups === undefined) {
-    return false;
+    return filterGroups.includes('privateGroup');
+  }
+
+  if (annoGroups.length === 0 && filterGroups.includes('privateGroup')) {
+    return true;
   }
 
   for (let i = 0; i < annoGroups.length; i += 1) {

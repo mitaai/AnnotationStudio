@@ -1,21 +1,37 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import moment from 'moment';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import TileBadge from '../TileBadge';
 import styles from './DashboardChannels.module.scss';
 
 export default function IdeaSpaceTile({
-  name = '', activityDate, numberOfAnnotations = 0, onClick = () => {},
+  name = '',
+  activityDate,
+  numberOfAnnotations = 0,
+  onClick = () => {},
+  annotationsBeingDragged,
 }) {
   const [hovered, setHovered] = useState();
   const [focused, setFoucsed] = useState();
+  const [dragEnter, setDragEnter] = useState();
+  const [annotationsRecieved, setAnnotationsRecieved] = useState();
   const classNames = [
     styles.tile,
     hovered ? styles.tileHovered : '',
     focused ? styles.tileFocused : '',
+    dragEnter ? styles.tileDragEnter : '',
+    annotationsRecieved ? styles.annotationsRecieved : '',
   ].join(' ');
 
   const annotationsText = `${numberOfAnnotations} annotation${numberOfAnnotations === 1 ? '' : 's'}`;
+
+  useEffect(() => {
+    if (annotationsRecieved) {
+      setTimeout(() => {
+        setAnnotationsRecieved();
+      }, 3000);
+    }
+  }, [annotationsRecieved]);
 
   return (
     <div
@@ -34,6 +50,25 @@ export default function IdeaSpaceTile({
         if (e.code === 'Space' || e.code === 'Enter') {
           onClick();
         }
+      }}
+      onDragEnter={(e) => {
+        e.preventDefault();
+        setDragEnter(true);
+      }}
+      onDragOver={(e) => {
+        e.preventDefault();
+        setDragEnter(true);
+      }}
+      onDragLeave={(e) => {
+        e.preventDefault();
+        setDragEnter();
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        if (annotationsBeingDragged) {
+          setAnnotationsRecieved(true);
+        }
+        setDragEnter();
       }}
       role="button"
       tabIndex={0}

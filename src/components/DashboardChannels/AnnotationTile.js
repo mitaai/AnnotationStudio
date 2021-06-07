@@ -5,7 +5,15 @@ import TileBadge from '../TileBadge';
 import styles from './DashboardChannels.module.scss';
 
 export default function AnnotationTile({
-  text = '', annotation = '', author = '', activityDate, tags, maxNumberOfAnnotationTags = 3, onClick,
+  id,
+  text = '',
+  annotation = '',
+  author = '',
+  activityDate,
+  tags,
+  maxNumberOfAnnotationTags = 3,
+  onClick,
+  setAnnotationsBeingDragged = () => {},
 }) {
   const [hovered, setHovered] = useState();
   const [focused, setFoucsed] = useState();
@@ -25,6 +33,7 @@ export default function AnnotationTile({
   } else {
     tileBadges = tags.map((t, i) => <TileBadge key={t} color="grey" text={t} marginLeft={i > 0 ? 5 : 0} />);
   }
+
   return (
     <div
       className={classNames}
@@ -45,6 +54,8 @@ export default function AnnotationTile({
       }}
       role="button"
       tabIndex={0}
+      draggable
+      onDragStart={() => setAnnotationsBeingDragged([id])}
     >
       <div className={styles.annotatedText}>
         {`"${text}"`}

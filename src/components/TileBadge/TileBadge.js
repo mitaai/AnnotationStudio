@@ -22,6 +22,8 @@ export default function TileBadge({
   fontSize = 10,
   icon,
   onDelete,
+  draggable,
+  onDragStart = () => {},
 }) {
   const [focused, setFocused] = useState();
   const [hoverCancel, setHoverCancel] = useState();
@@ -29,16 +31,20 @@ export default function TileBadge({
   const c = colors.includes(color) ? color : 'grey';
   const classNames = [
     styles.tileBadge,
+    draggable ? styles.draggableTileBadge : '',
     styles[hoverCancel ? 'red' : c],
     focused ? styles.tileBadgeFoucsed : '',
   ].join(' ');
   const tileBadgeOnClick = href === undefined ? onClick : () => {
     Router.push(href);
   };
+
   const badge = tileBadgeOnClick === undefined && popover === undefined
     ? (
       <span
         className={classNames}
+        draggable={draggable}
+        onDragStart={onDragStart}
         onMouseOver={() => {
           if (onDelete) {
             setHoverCancel(true);
@@ -83,6 +89,8 @@ export default function TileBadge({
     )
     : (
       <span
+        draggable={draggable}
+        onDragStart={onDragStart}
         onClick={tileBadgeOnClick}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused()}

@@ -76,6 +76,7 @@ export default function Home({
 
   const channelPositions = ASISChannelPositions[mode];
 
+  const [annotationsBeingDragged, setAnnotationsBeingDragged] = useState();
   const [selectedGroupId, setSelectedGroupId] = useState('privateGroup');
   const [selectedDocumentId, setSelectedDocumentId] = useState();
   const [selectedDocumentSlug, setSelectedDocumentSlug] = useState();
@@ -219,11 +220,13 @@ export default function Home({
             selectedDocumentId={selectedDocumentId}
             selectedDocumentSlug={selectedDocumentSlug}
             documentPermissions={documentPermissions}
+            setAnnotationsBeingDragged={setAnnotationsBeingDragged}
           />
           <IdeaSpacesChannel
             width={`calc(${channelPositions.ideaspaces.width.vw}vw + ${channelPositions.ideaspaces.width.px}px)`}
             left={`calc(${channelPositions.ideaspaces.left.vw}vw + ${channelPositions.ideaspaces.left.px}px)`}
             opacity={channelPositions.ideaspaces.opacity}
+            annotationsBeingDragged={annotationsBeingDragged}
           />
         </div>
       )}

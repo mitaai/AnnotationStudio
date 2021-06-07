@@ -57,6 +57,7 @@ export default function AnnotationsChannel({
   selectedGroupId,
   selectedDocumentSlug,
   documentPermissions,
+  setAnnotationsBeingDragged,
 }) {
   const [selectedPermissions, setSelectedPermissions] = useState('shared');
   const [outlineOpen, setOutlineOpen] = useState();
@@ -158,6 +159,7 @@ export default function AnnotationsChannel({
   }) => (
     <AnnotationTile
       key={_id}
+      id={_id}
       onClick={() => Router.push(`/documents/${slug}?mine=${permissions.private ? 'true' : 'false'}&aid=${_id}&${dashboardState}`)}
       text={target.selector.exact}
       author={name}
@@ -165,6 +167,7 @@ export default function AnnotationsChannel({
       activityDate={modified}
       tags={tags}
       maxNumberOfAnnotationTags={maxNumberOfAnnotationTags}
+      setAnnotationsBeingDragged={setAnnotationsBeingDragged}
     />
   );
 
@@ -218,7 +221,7 @@ export default function AnnotationsChannel({
         : { private: false, shared: true },
       annotatedBy: [],
       byGroup: selectedGroupId !== undefined ? [selectedGroupId] : [],
-      byDocument: selectedDocumentId !== undefined ? [selectedDocumentId] : [],
+      byDocument: slug !== undefined ? [selectedDocumentId] : [],
       byTag: [],
     };
 
@@ -237,7 +240,7 @@ export default function AnnotationsChannel({
       setActiveISGroupHeaders([selectedGroupId]);
     }
 
-    if (selectedDocumentId) {
+    if (slug) {
       allFilters.byDocument[selectedDocumentId].checked = true;
     }
 
@@ -303,13 +306,16 @@ export default function AnnotationsChannel({
 
       if (groups.length === 0) {
         groupedAnnos.privateGroup.push(i);
+        if (af.byGroup.privateGroup === undefined) {
+          af.byGroup.privateGroup = { name: 'Private', number: 0, checked: false };
+        }
         return null;
       }
 
       groups.map((gid) => {
         if (af.byGroup[gid] === undefined) {
           const g = gid === 'privateGroup' ? { name: 'Private' } : session.user.groups.find(({ id }) => id === gid);
-          af.byGroup[gid] = { name: g.name, number: 5 };
+          af.byGroup[gid] = { name: g.name, number: 0, checked: false };
         }
 
         if (groupedAnnos[gid] === undefined) {
@@ -486,8 +492,12 @@ export default function AnnotationsChannel({
   useEffect(() => {
     if (mode === 'as') {
       setTab('annotations');
-    } else if (mode === 'is' && allAnnotations === undefined) {
-      fetchAllAnnotations(() => setApplyDefaultFilters(true));
+    } else if (mode === 'is') {
+      if (allAnnotations === undefined) {
+        fetchAllAnnotations(() => setApplyDefaultFilters(true));
+      } else {
+        setApplyDefaultFilters(true);
+      }
     }
   }, [mode]);
 
@@ -557,12 +567,15 @@ export default function AnnotationsChannel({
       annotationTiles = annotations[slug][selectedPermissions];
     }
   } else if (mode === 'is') {
+    const aids = [];
     // eslint-disable-next-line no-restricted-syntax
     for (const [gid, annosIndexes] of Object.entries(groupedAnnotations)) {
       if ((appliedFilters.byGroup.length > 0 && appliedFilters.byGroup.includes(gid))
       || appliedFilters.byGroup.length === 0) {
         const aTiles = annosIndexes.map((i) => {
           if (filteredAnnotations.includes(i)) {
+            // eslint-disable-next-line no-underscore-dangle
+            aids.push(aa[i]._id);
             return toAnnotationsTile(aa[i]);
           }
           return null;
@@ -573,9 +586,10 @@ export default function AnnotationsChannel({
             <ISGroupHeader
               key={`${gid}-isgroupheader`}
               name={g ? g.name : ''}
-              numberOfAnnotations={aTiles.length}
+              annotationIds={aids}
               active={activeISGroupHeaders.includes(gid)}
               toggle={() => toggleISGroupHeader(gid)}
+              setAnnotationsBeingDragged={setAnnotationsBeingDragged}
             >
               {aTiles}
             </ISGroupHeader>,
