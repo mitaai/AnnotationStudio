@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 
 import {
-  Modal, Button, Form,
+  Modal, Button, Form, DropdownButton, Dropdown, OverlayTrigger, Tooltip,
 } from 'react-bootstrap';
-import { ChevronRight } from 'react-bootstrap-icons';
+import {
+  ArrowDown, ArrowUp, Check, ChevronRight,
+} from 'react-bootstrap-icons';
 import styles from './DashboardChannels.module.scss';
 import IdeaSpaceTile from './IdeaSpaceTile';
 import TileBadge from '../TileBadge';
@@ -16,6 +18,13 @@ export default function IdeaSpacesChannel({
 }) {
   const [showNewIdeaSpaceModal, setShowNewIdeaSpaceModal] = useState();
   const [open, setOpen] = useState();
+  const [ascending, setAscending] = useState();
+  const [dropdownOpen, setDropdownOpen] = useState();
+  const [dropdownSelection, setDropdownSelection] = useState('updated');
+  const dropdownOptions = {
+    updated: 'date updated',
+    added: 'date added to Idea Space',
+  };
   const ideaSpaceTiles = [
     <IdeaSpaceTile
       name="Name of Idea Space"
@@ -53,7 +62,46 @@ export default function IdeaSpacesChannel({
             : <TileBadge text="New + " color="yellow" onClick={() => setShowNewIdeaSpaceModal(true)} />}
         </div>
         <div className={styles.tileContainer}>
-          {open ? <div>Open Idea Space</div> : ideaSpaceTiles}
+          {open ? (
+            <div className={styles.ideaSpaceHeader}>
+              <span style={{ color: '#424242' }}>Sort by</span>
+              <DropdownButton
+                id="sort-by-dropdown"
+                title={dropdownOptions[dropdownSelection]}
+                variant="light"
+                className={`${styles.sortByDropdown} ${dropdownOpen ? styles.sortByDropdownSelected : ''}`}
+                show={dropdownOpen}
+                onToggle={() => setDropdownOpen(!dropdownOpen)}
+                onSelect={(e) => setDropdownSelection(e)}
+              >
+                <Dropdown.Item eventKey="updated">
+                  {dropdownOptions.updated}
+                  {dropdownSelection === 'updated' && <Check className={styles.dropdownCheck} size={18} />}
+                </Dropdown.Item>
+                <Dropdown.Item eventKey="added">
+                  {dropdownOptions.added}
+                  {dropdownSelection === 'added' && <Check className={styles.dropdownCheck} size={18} />}
+                </Dropdown.Item>
+              </DropdownButton>
+              <OverlayTrigger
+                placement="right"
+                overlay={(
+                  <Tooltip className="styled-tooltip right">
+                    {ascending ? 'Ascending' : 'Descending'}
+                  </Tooltip>
+      )}
+              >
+                <Button
+                  className={styles.descendingAscendingButton}
+                  variant="light"
+                  onClick={() => setAscending(!ascending)}
+                >
+                  {ascending ? <ArrowUp size={14} /> : <ArrowDown size={14} />}
+                </Button>
+              </OverlayTrigger>
+
+            </div>
+          ) : ideaSpaceTiles}
         </div>
 
       </div>

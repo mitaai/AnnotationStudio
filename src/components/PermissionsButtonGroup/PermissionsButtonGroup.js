@@ -5,7 +5,7 @@ import {
 } from 'react-bootstrap';
 
 
-export default function PermissionsButtonGroup({ buttons }) {
+export default function PermissionsButtonGroup({ buttons, variant = 'primary' }) {
   // buttons is an array of objects with properties onClick, selected, text, count, icon
 
   const permissionTextMargin = 3;
@@ -23,7 +23,7 @@ export default function PermissionsButtonGroup({ buttons }) {
     return (
       <Button
         key={text}
-        variant={selected ? 'primary' : 'outline-primary'}
+        variant={selected ? variant : `outline-${variant}`}
         onClick={onClick}
       >
         {icon}
@@ -60,7 +60,7 @@ export default function PermissionsButtonGroup({ buttons }) {
           height: 31px;
         }
 
-        .permissions-buttons .btn.btn-outline-primary div {
+        .permissions-buttons .btn.btn-outline-${variant} div {
           width: 0px;
         }
 
@@ -69,21 +69,21 @@ export default function PermissionsButtonGroup({ buttons }) {
           top: -2px !important;
         }
 
-        .permissions-buttons .btn.btn-primary div > .text {
+        .permissions-buttons .btn.btn-${variant} div > .text {
           margin-right: ${permissionTextMargin}px;
         }
 
-        .permissions-buttons .btn.btn-primary div.mine {
+        .permissions-buttons .btn.btn-${variant} div.mine {
           margin-left: 10px;
           opacity: 1;
         }
 
-        .permissions-buttons .btn.btn-primary div.shared-with-groups {
+        .permissions-buttons .btn.btn-${variant} div.shared-with-groups {
           margin-left:10px;
           opacity: 1;
         }
 
-        .permissions-buttons .btn.btn-primary div.shared-with-me {
+        .permissions-buttons .btn.btn-${variant} div.shared-with-me {
           margin-left: 10px;
           opacity: 1;
         }

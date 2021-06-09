@@ -234,6 +234,19 @@ $breadcrumb-bg: transparent;
   .arrow::before {
     border-top-color: rgba(0, 0, 0, 0.125) !important;
   }
+  &.right {
+    .arrow::before {
+      border-right-color: rgba(0, 0, 0, 0.125) !important;
+      border-top-color: transparent !important;
+    }
+  }
+  &.bottom {
+    .arrow::before {
+      border-color: transparent !important;
+      border-bottom-color: rgba(0, 0, 0, 0.125) !important;
+    }
+  }
+  
 }
 
 /* import react-bootstrap-range-slider */

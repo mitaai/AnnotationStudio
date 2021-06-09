@@ -43,6 +43,7 @@ import {
   byDocumentFilterMatch,
 } from '../../utils/annotationFilteringUtil';
 import ISGroupHeader from '../IdeaSpaceComponents/ISGroupHeader/ISGroupHeader';
+import ISOutline from '../IdeaSpaceComponents/ISOutline';
 
 export default function AnnotationsChannel({
   session,
@@ -555,9 +556,11 @@ export default function AnnotationsChannel({
 
 
   let annotationTiles = [];
+  let showRefreshButton = true;
 
   if (mode === 'as') {
     if (slug === undefined) {
+      showRefreshButton = false;
       annotationTiles = <EmptyListMessage text="No document selected" />;
     } else if (annotations[slug] === undefined) {
       annotationTiles = <EmptyListMessage />;
@@ -567,9 +570,9 @@ export default function AnnotationsChannel({
       annotationTiles = annotations[slug][selectedPermissions];
     }
   } else if (mode === 'is') {
-    const aids = [];
     // eslint-disable-next-line no-restricted-syntax
     for (const [gid, annosIndexes] of Object.entries(groupedAnnotations)) {
+      const aids = [];
       if ((appliedFilters.byGroup.length > 0 && appliedFilters.byGroup.includes(gid))
       || appliedFilters.byGroup.length === 0) {
         const aTiles = annosIndexes.map((i) => {
@@ -625,7 +628,11 @@ export default function AnnotationsChannel({
       {(listLoading || refresh) ? <ListLoadingSpinner /> : annotationTiles}
     </div>
   </>,
-    outlines: outlineOpen ? <div>Open Outline</div>
+    outlines: outlineOpen ? (
+      <div style={{ marginTop: -10 }}>
+        <ISOutline mode="new" />
+      </div>
+    )
       : (
         <div className={styles.tileContainer}>
           <OutlineTile
@@ -663,6 +670,7 @@ export default function AnnotationsChannel({
                 Annotations
               </span>
             </div>
+            {showRefreshButton && (
             <OverlayTrigger
               key="refresh-annotaitons"
               placement="bottom"
@@ -690,8 +698,10 @@ export default function AnnotationsChannel({
                 <ArrowClockwise size={18} style={{ margin: 'auto 5px' }} />
               </div>
             </OverlayTrigger>
+            )}
+
             {mode === 'as'
-              ? <PermissionsButtonGroup buttons={buttons} />
+              ? <PermissionsButtonGroup variant={showRefreshButton ? 'primary' : 'secondary'} buttons={buttons} />
               : (
                 <ISFilterButton
                   active={annotationsTabSelected}
