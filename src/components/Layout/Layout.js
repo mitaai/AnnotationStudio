@@ -47,7 +47,12 @@ function Layout({
           statefulSession={statefulSession}
           dashboardState={dashboardState}
         />
-        <div style={{ flex: 1, overflowY: 'overlay', paddingTop: docView ? 0 : 15 }}>
+        <div style={{
+          flex: 1,
+          overflowY: docView ? 'hidden' : 'overlay',
+          paddingTop: docView ? 0 : 15,
+        }}
+        >
           {innerContent}
         </div>
         {!docView && <Footer />}

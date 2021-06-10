@@ -881,7 +881,7 @@ const DocumentPage = ({
               #document-container {
                 height: calc(100vh - ${headerHeight + footerHeight}px);
                 transition: height 0.5s;
-                overflow-y: scroll !important;
+                overflow-y: overlay !important;
                 overflow-x: scroll !important;
                 padding: 25px 0px 15px 0px;
                 scrollbar-color: rgba(0,0,0,0.1) !important;
