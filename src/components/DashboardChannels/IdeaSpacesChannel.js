@@ -9,7 +9,8 @@ import {
 import styles from './DashboardChannels.module.scss';
 import IdeaSpaceTile from './IdeaSpaceTile';
 import TileBadge from '../TileBadge';
-import { createIdeaSpace, getAllIdeaSpaces } from '../../utils/ideaspaceUtils';
+import { createIdeaSpace, deleteIdeaSpace, getAllIdeaSpaces } from '../../utils/ideaspaceUtils';
+import { DeepCopyObj } from '../../utils/docUIUtils';
 
 export default function IdeaSpacesChannel({
   width,
@@ -17,11 +18,16 @@ export default function IdeaSpacesChannel({
   opacity,
   annotationsBeingDragged,
 }) {
-  const [ideaspaces, setIdeaSpaces] = useState([]);
+  const [ideaspaces, setIdeaspaces] = useState([]);
+  const [showIdeaspacesSortByDropdown, setShowIdeaspacesSortByDropdown] = useState();
+  const [ideaspacesInAscendingOrder, setIdeaspacesInAscendingOrder] = useState();
+  const [ideaspacesSortByType, setIdeaspacesSortByType] = useState('last-updated');
   const [loadingIdeaSpaces, setLoadingIdeaSpaces] = useState();
   const [openIdeaSpaceTitle, setOpenIdeaSpaceTitle] = useState('');
   // const [refresh, setRefresh] = useState();
+  const [deletingIdeaSpace, setDeletingIdeaSpace] = useState();
   const [showNewIdeaSpaceModal, setShowNewIdeaSpaceModal] = useState();
+  const [ideaSpaceToDelete, setIdeaSpaceToDelete] = useState();
   const [open, setOpen] = useState();
   const [name, setName] = useState('');
   const [creatingIdeaSpace, setCreatingIdeaSpace] = useState();
@@ -32,6 +38,14 @@ export default function IdeaSpacesChannel({
     updated: 'date updated',
     added: 'date added to Idea Space',
   };
+
+  let nameOfIdeaSpaceToDelete = '';
+  if (ideaSpaceToDelete) {
+    const isToDelete = ideaspaces.find(({ _id }) => _id === ideaSpaceToDelete);
+    if (isToDelete) {
+      nameOfIdeaSpaceToDelete = isToDelete.name;
+    }
+  }
 
   const ideaSpaceTiles = loadingIdeaSpaces
     ? <div style={{ display: 'flex', justifyContent: 'center' }}><Spinner animation="border" variant="primary" /></div>
@@ -47,6 +61,9 @@ export default function IdeaSpacesChannel({
             setOpen(_id);
             setOpenIdeaSpaceTitle(ideaSpaceName);
           }}
+          onDelete={() => {
+            setIdeaSpaceToDelete(_id);
+          }}
           numberOfAnnotations={annotationIds ? Object.keys(annotationIds).length : 0}
           annotationIds={annotationIds}
           annotationsBeingDragged={annotationsBeingDragged}
@@ -54,11 +71,52 @@ export default function IdeaSpacesChannel({
       ),
     );
 
+  const comparison = () => {
+    if (ideaspacesSortByType === 'last-updated') {
+      return (a, b) => {
+        if (a.updatedAt > b.updatedAt) {
+          return ideaspacesInAscendingOrder ? 1 : -1;
+        } if (a.updatedAt < b.updatedAt) {
+          return ideaspacesInAscendingOrder ? -1 : 1;
+        }
+        return 0;
+      };
+    }
+    if (ideaspacesSortByType === 'date-created') {
+      return (a, b) => {
+        if (a.createdAt > b.createdAt) {
+          return ideaspacesInAscendingOrder ? 1 : -1;
+        } if (a.createdAt < b.createdAt) {
+          return ideaspacesInAscendingOrder ? -1 : 1;
+        }
+        return 0;
+      };
+    }
+
+    if (ideaspacesSortByType === 'name') {
+      return (a, b) => {
+        if (a.name.toLowerCase() < b.name.toLowerCase()) {
+          return ideaspacesInAscendingOrder ? 1 : -1;
+        }
+        if (a.name.toLowerCase() === b.name.toLowerCase()) {
+          if (a.name < b.name) {
+            return ideaspacesInAscendingOrder ? 1 : -1;
+          }
+          return 0;
+        }
+        return ideaspacesInAscendingOrder ? -1 : 1;
+      };
+    }
+
+    return () => {};
+  };
+
   const createNewIdeaSpace = async () => {
     setCreatingIdeaSpace(true);
     await createIdeaSpace({ name })
       .then(async (newIdeaSpace) => {
-        console.log(newIdeaSpace);
+        const newIdeaspaces = DeepCopyObj(ideaspaces).concat([newIdeaSpace]).sort(comparison());
+        setIdeaspaces(newIdeaspaces);
         setCreatingIdeaSpace();
         setShowNewIdeaSpaceModal();
       })
@@ -73,17 +131,39 @@ export default function IdeaSpacesChannel({
     setLoadingIdeaSpaces(true);
     await getAllIdeaSpaces()
       .then(async (res) => {
-        setIdeaSpaces(res.ideaspaces);
+        setIdeaspaces(res.ideaspaces.sort(comparison()));
         setLoadingIdeaSpaces();
+        setIdeaSpaceToDelete();
       })
       .catch(() => {
         setLoadingIdeaSpaces();
+        setIdeaSpaceToDelete();
+      });
+  };
+
+  const deleteIS = async () => {
+    setDeletingIdeaSpace(true);
+    await deleteIdeaSpace(ideaSpaceToDelete)
+      .then(async () => {
+        setIdeaspaces(ideaspaces.filter(({ _id }) => _id !== ideaSpaceToDelete));
+        setIdeaSpaceToDelete();
+        setDeletingIdeaSpace();
+      })
+      .catch(() => {
+        setLoadingIdeaSpaces();
+        setIdeaSpaceToDelete();
       });
   };
 
   useEffect(() => {
     loadIdeaSpaces();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    setIdeaspaces(DeepCopyObj(ideaspaces.sort(comparison())));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ideaspacesSortByType, ideaspacesInAscendingOrder]);
 
   return (
     <>
@@ -110,7 +190,90 @@ export default function IdeaSpacesChannel({
               <input className={styles.titleInput} type="text" value={openIdeaSpaceTitle} />
             </>
           )
-            : <TileBadge text="New + " color="yellow" onClick={() => setShowNewIdeaSpaceModal(true)} />}
+            : (
+              <>
+                <TileBadge
+                  text="New + "
+                  color="yellow"
+                  onClick={() => setShowNewIdeaSpaceModal(true)}
+                />
+                <span style={{ flex: 1 }} />
+                <DropdownButton
+                  key="ideaspaces-sortby-dropdown"
+                  id="ideaspaces-sortby-dropdown-btn"
+                  variant="light"
+                  style={{ fontSize: 13 }}
+                  className={`${styles.sortByDropdown} ${showIdeaspacesSortByDropdown ? styles.sortByDropdownSelected : ''}`}
+                  title="Sort By"
+                  onClick={() => setShowIdeaspacesSortByDropdown(true)}
+                  show={showIdeaspacesSortByDropdown}
+                  onToggle={(isOpen, e, { source }) => {
+                    if (source === 'rootClose') {
+                      setShowIdeaspacesSortByDropdown();
+                    }
+                  }}
+                  onSelect={(e) => {
+                    if (e === 'asc') {
+                      setIdeaspacesInAscendingOrder(true);
+                    } else if (e === 'desc') {
+                      setIdeaspacesInAscendingOrder();
+                    } else {
+                      setIdeaspacesSortByType(e);
+                    }
+                  }}
+                >
+                  <Dropdown.Item
+                    eventKey="last-updated"
+                    className={styles.ideaspacesSortByDropdownItem}
+                  >
+                    <span style={{ flex: 1 }}>
+                      Last Updated
+                    </span>
+                    {ideaspacesSortByType === 'last-updated'
+                    && <Check className={styles.dropdownCheck} size={18} />}
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    eventKey="date-created"
+                    className={styles.ideaspacesSortByDropdownItem}
+                  >
+                    <span style={{ flex: 1 }}>Date Created</span>
+                    {ideaspacesSortByType === 'date-created'
+                    && <Check className={styles.dropdownCheck} size={18} />}
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    eventKey="name"
+                    className={styles.ideaspacesSortByDropdownItem}
+                  >
+                    <span style={{ flex: 1 }}>Name</span>
+                    {ideaspacesSortByType === 'name'
+                      && <Check className={styles.dropdownCheck} size={18} />}
+                  </Dropdown.Item>
+                  <Dropdown.Divider />
+                  <Dropdown.Item
+                    eventKey="asc"
+                    className={styles.ideaspacesSortByDropdownItem}
+                  >
+                    <span style={{ flex: 1 }}>
+                      <span>Asc</span>
+                      <ArrowUp style={{ marginLeft: 10 }} size={14} />
+                    </span>
+                    {ideaspacesInAscendingOrder
+                    && <Check className={styles.dropdownCheck} size={18} />}
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    eventKey="desc"
+                    className={styles.ideaspacesSortByDropdownItem}
+                  >
+                    <span style={{ flex: 1 }}>
+                      <span>Desc</span>
+                      <ArrowDown size={14} />
+                    </span>
+                    {!ideaspacesInAscendingOrder
+                    && <Check className={styles.dropdownCheck} size={18} />}
+                  </Dropdown.Item>
+                </DropdownButton>
+              </>
+            )}
         </div>
         <div className={styles.tileContainer}>
           {open ? (
@@ -127,11 +290,13 @@ export default function IdeaSpacesChannel({
               >
                 <Dropdown.Item eventKey="updated">
                   {dropdownOptions.updated}
-                  {dropdownSelection === 'updated' && <Check className={styles.dropdownCheck} size={18} />}
+                  {dropdownSelection === 'updated'
+                  && <Check className={styles.dropdownCheck} size={18} />}
                 </Dropdown.Item>
                 <Dropdown.Item eventKey="added">
                   {dropdownOptions.added}
-                  {dropdownSelection === 'added' && <Check className={styles.dropdownCheck} size={18} />}
+                  {dropdownSelection === 'added'
+                  && <Check className={styles.dropdownCheck} size={18} />}
                 </Dropdown.Item>
               </DropdownButton>
               <OverlayTrigger
@@ -189,6 +354,41 @@ export default function IdeaSpacesChannel({
           <Button variant="primary" onClick={createNewIdeaSpace}>Create</Button>
         </Modal.Footer>
       </Modal>
+      <Modal
+        show={ideaSpaceToDelete !== undefined}
+        onHide={() => setShowNewIdeaSpaceModal()}
+        backdrop="static"
+        keyboard={false}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Delete Idea Space</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {deletingIdeaSpace
+            ? <Spinner animation="border" variant="primary" /> : (
+              <span>{`Are you sure you want to delete "${nameOfIdeaSpaceToDelete}"?`}</span>
+            )}
+
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setIdeaSpaceToDelete();
+            }}
+          >
+            Cancel
+          </Button>
+          <Button variant="danger" onClick={deleteIS}>Delete</Button>
+        </Modal.Footer>
+      </Modal>
+      <style jsx global>
+        {`
+        #ideaspaces-sortby-dropdown-btn {
+          font-size: 14px;
+        }
+          `}
+      </style>
     </>
   );
 }

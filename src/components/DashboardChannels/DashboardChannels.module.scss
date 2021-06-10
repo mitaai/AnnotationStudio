@@ -107,8 +107,27 @@
   }
 }
 
+.deleteBtn {
+  visibility: hidden;
+  position: absolute;
+  right: 5px;
+}
+
 .tileHovered {
   background: #EFF5FF !important;
+
+  .deleteBtn {
+    color: #424242;
+    visibility: visible;
+  }
+
+  &.tileDeleteHovered {
+    background: #FFEBEB !important;
+
+    .deleteBtn {
+      color: #AC4545;
+    }
+  }
 
   .moreTileOptions {
     opacity: 1.0;
@@ -362,4 +381,10 @@
 
 .dropdownCheck {
   color: theme.$primary;
+}
+
+.ideaspacesSortByDropdownItem {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

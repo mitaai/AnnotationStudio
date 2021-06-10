@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import moment from 'moment';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
+import { XCircleFill } from 'react-bootstrap-icons';
 import TileBadge from '../TileBadge';
 import styles from './DashboardChannels.module.scss';
 
@@ -9,15 +10,18 @@ export default function IdeaSpaceTile({
   activityDate,
   numberOfAnnotations = 0,
   onClick = () => {},
+  onDelete = () => {},
   annotationsBeingDragged,
 }) {
   const [hovered, setHovered] = useState();
+  const [deleteHovered, setDeleteHovered] = useState();
   const [focused, setFoucsed] = useState();
   const [dragEnter, setDragEnter] = useState();
   const [annotationsRecieved, setAnnotationsRecieved] = useState();
   const classNames = [
     styles.tile,
     hovered ? styles.tileHovered : '',
+    deleteHovered ? styles.tileDeleteHovered : '',
     focused ? styles.tileFocused : '',
     dragEnter ? styles.tileDragEnter : '',
     annotationsRecieved ? styles.annotationsRecieved : '',
@@ -36,7 +40,7 @@ export default function IdeaSpaceTile({
   return (
     <div
       className={classNames}
-      onClick={onClick}
+      onClick={deleteHovered ? onDelete : onClick}
       onMouseMove={() => {
         if (!hovered) {
           setHovered(true);
@@ -73,6 +77,12 @@ export default function IdeaSpaceTile({
       role="button"
       tabIndex={0}
     >
+      <XCircleFill
+        className={styles.deleteBtn}
+        onMouseOver={() => setDeleteHovered(true)}
+        onMouseOut={() => setDeleteHovered()}
+        size={14}
+      />
       <div className={styles.annotatedText}>{name}</div>
       <div style={{
         display: 'flex',
