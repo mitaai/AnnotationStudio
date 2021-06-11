@@ -56,17 +56,16 @@ export default function AnnotationsChannel({
   mode,
   selectedDocumentId,
   selectedGroupId,
-  selectedDocumentSlug,
-  documentPermissions,
+  dashboardState = '',
   setAnnotationsBeingDragged,
+  allAnnotations,
+  setAllAnnotations,
 }) {
   const [selectedPermissions, setSelectedPermissions] = useState('shared');
   const [outlineOpen, setOutlineOpen] = useState();
   const [listLoading, setListLoading] = useState();
   // for AS annotations
   const [annotations, setAnnotations] = useState({});
-  // for IS annotations
-  const [allAnnotations, setAllAnnotations] = useState();
   const aa = allAnnotations || [];
   const [groupedAnnotations, setGroupedAnnotations] = useState({});
   const [filteredAnnotations, setFilteredAnnotations] = useState([]);
@@ -102,7 +101,6 @@ export default function AnnotationsChannel({
 
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [, forceUpdateForRefresh] = useState();
-  const dashboardState = `${selectedDocumentId !== undefined && selectedDocumentSlug !== undefined ? `did=${selectedDocumentId}&slug=${selectedDocumentSlug}&dp=${documentPermissions}&` : ''}gid=${selectedGroupId}`;
 
   const filterIcons = {
     byPermissions: <ShieldLockFill size={14} style={{ marginRight: 4 }} />,
@@ -156,17 +154,23 @@ export default function AnnotationsChannel({
   ];
 
   const toAnnotationsTile = ({
-    _id, permissions, target, creator: { name }, modified, body: { value, tags },
+    _id,
+    permissions,
+    target: { selector, document },
+    creator: { name },
+    modified,
+    body: { value, tags },
   }) => (
     <AnnotationTile
       key={_id}
       id={_id}
-      onClick={() => Router.push(`/documents/${slug}?mine=${permissions.private ? 'true' : 'false'}&aid=${_id}&${dashboardState}`)}
-      text={target.selector.exact}
+      onClick={() => Router.push(`/documents/${document.slug}?mine=${permissions.private ? 'true' : 'false'}&aid=${_id}&${dashboardState}`)}
+      text={selector.exact}
       author={name}
       annotation={value.length > 0 ? ReactHtmlParser(value, { transform: fixIframes }) : ''}
       activityDate={modified}
       tags={tags}
+      draggable
       maxNumberOfAnnotationTags={maxNumberOfAnnotationTags}
       setAnnotationsBeingDragged={setAnnotationsBeingDragged}
     />

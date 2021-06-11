@@ -23,6 +23,7 @@ export default function Home({
 }) {
   const [session, loading] = useSession();
   const [alerts, setAlerts] = useState(initAlerts || []);
+  const [allAnnotations, setAllAnnotations] = useState();
   const [mode, setMode] = useState('as');
   const router = useRouter();
   const newReg = query && query.alert && query.alert === 'completeRegistration';
@@ -221,12 +222,18 @@ export default function Home({
             selectedDocumentSlug={selectedDocumentSlug}
             documentPermissions={documentPermissions}
             setAnnotationsBeingDragged={setAnnotationsBeingDragged}
+            allAnnotations={allAnnotations}
+            setAllAnnotations={setAllAnnotations}
+            dashboardState={dashboardState}
           />
           <IdeaSpacesChannel
             width={`calc(${channelPositions.ideaspaces.width.vw}vw + ${channelPositions.ideaspaces.width.px}px)`}
             left={`calc(${channelPositions.ideaspaces.left.vw}vw + ${channelPositions.ideaspaces.left.px}px)`}
             opacity={channelPositions.ideaspaces.opacity}
             annotationsBeingDragged={annotationsBeingDragged}
+            setAnnotationsBeingDragged={setAnnotationsBeingDragged}
+            dashboardState={dashboardState}
+            allAnnotations={allAnnotations}
           />
         </div>
       )}

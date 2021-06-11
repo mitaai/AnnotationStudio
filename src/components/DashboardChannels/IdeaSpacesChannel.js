@@ -1,24 +1,38 @@
 import React, { useEffect, useState } from 'react';
-
+import Router from 'next/router';
 import {
-  Modal, Button, Form, DropdownButton, Dropdown, OverlayTrigger, Tooltip, Spinner,
+  Modal, Button, Form, DropdownButton, Dropdown, OverlayTrigger, Tooltip, Spinner, ProgressBar,
 } from 'react-bootstrap';
 import {
   ArrowDown, ArrowUp, Check, ChevronRight,
 } from 'react-bootstrap-icons';
+import ReactHtmlParser from 'react-html-parser';
 import styles from './DashboardChannels.module.scss';
 import IdeaSpaceTile from './IdeaSpaceTile';
 import TileBadge from '../TileBadge';
-import { createIdeaSpace, deleteIdeaSpace, getAllIdeaSpaces } from '../../utils/ideaspaceUtils';
+import {
+  createIdeaSpace,
+  deleteIdeaSpace,
+  updateAnnotationIdsToIdeaSpace,
+  getAllIdeaSpaces,
+} from '../../utils/ideaspaceUtils';
 import { DeepCopyObj } from '../../utils/docUIUtils';
+import { fixIframes } from '../../utils/parseUtil';
+import AnnotationTile from './AnnotationTile';
 
 export default function IdeaSpacesChannel({
   width,
   left,
   opacity,
   annotationsBeingDragged,
+  setAnnotationsBeingDragged,
+  dashboardState,
+  allAnnotations,
 }) {
   const [ideaspaces, setIdeaspaces] = useState([]);
+  const [openIdeaSpaceDragEnter, setOpenIdeaSpaceDragEnter] = useState();
+  const [status, setStatus] = useState();
+  const [annotationTilesForIdeaSpace, setAnnotationTilesForIdeaSpace] = useState([]);
   const [showIdeaspacesSortByDropdown, setShowIdeaspacesSortByDropdown] = useState();
   const [ideaspacesInAscendingOrder, setIdeaspacesInAscendingOrder] = useState();
   const [ideaspacesSortByType, setIdeaspacesSortByType] = useState('last-updated');
@@ -28,7 +42,7 @@ export default function IdeaSpacesChannel({
   const [deletingIdeaSpace, setDeletingIdeaSpace] = useState();
   const [showNewIdeaSpaceModal, setShowNewIdeaSpaceModal] = useState();
   const [ideaSpaceToDelete, setIdeaSpaceToDelete] = useState();
-  const [open, setOpen] = useState();
+  const [openIdeaSpaceId, setOpenIdeaSpaceId] = useState();
   const [name, setName] = useState('');
   const [creatingIdeaSpace, setCreatingIdeaSpace] = useState();
   const [ascending, setAscending] = useState();
@@ -39,6 +53,7 @@ export default function IdeaSpacesChannel({
     added: 'date added to Idea Space',
   };
 
+
   let nameOfIdeaSpaceToDelete = '';
   if (ideaSpaceToDelete) {
     const isToDelete = ideaspaces.find(({ _id }) => _id === ideaSpaceToDelete);
@@ -46,6 +61,94 @@ export default function IdeaSpacesChannel({
       nameOfIdeaSpaceToDelete = isToDelete.name;
     }
   }
+
+  const updateIdeaSpace = (id, is) => {
+    // eslint-disable-next-line no-underscore-dangle
+    setIdeaspaces(ideaspaces.map((ideaspace) => (ideaspace._id === id ? is : ideaspace)));
+  };
+
+  const deleteAnnotationFromIdeaSpace = async (aid) => {
+    const ideaspace = ideaspaces.find(({ _id }) => _id === openIdeaSpaceId);
+    if (ideaspace) {
+      delete ideaspace.annotationIds[aid];
+      await updateAnnotationIdsToIdeaSpace({
+        id: openIdeaSpaceId,
+        annotationIds: { ...ideaspace.annotationIds },
+      })
+        .then(async (res) => {
+          updateIdeaSpace(openIdeaSpaceId, res.value);
+        })
+        .catch(() => {
+        // pass
+        });
+    }
+  };
+
+  const addAnnotationsToIdeaSpace = async () => {
+    setStatus({ annotationsRecieved: true });
+    const ideaspace = ideaspaces.find(({ _id }) => _id === openIdeaSpaceId);
+    if (ideaspace === undefined) {
+      return;
+    }
+    const { annotationIds } = ideaspace;
+    const newAnnotationIds = {};
+    const annotationIdsArray = Object.keys(annotationIds);
+    const dateAdded = new Date();
+    annotationsBeingDragged.map((aid) => {
+      if (!annotationIdsArray.includes(aid)) {
+        newAnnotationIds[aid] = dateAdded;
+      }
+      return null;
+    });
+    const numberOfNewAnnotationIds = Object.keys(newAnnotationIds).length;
+    const numberOfExistingAnnotationIds = annotationsBeingDragged.length - numberOfNewAnnotationIds;
+    setAnnotationsBeingDragged();
+    if (numberOfNewAnnotationIds > 0) {
+      await updateAnnotationIdsToIdeaSpace({
+        id: openIdeaSpaceId,
+        annotationIds: { ...newAnnotationIds, ...annotationIds },
+      })
+        .then(async (res) => {
+          updateIdeaSpace(openIdeaSpaceId, res.value);
+          setStatus({
+            numberOfNewAnnotations: numberOfNewAnnotationIds,
+            numberOfExistingAnnotations: numberOfExistingAnnotationIds,
+            done: true,
+          });
+        })
+        .catch(() => {
+        // pass
+        });
+    } else {
+      setStatus({
+        numberOfNewAnnotations: numberOfNewAnnotationIds,
+        numberOfExistingAnnotations: numberOfExistingAnnotationIds,
+        done: true,
+      });
+    }
+  };
+
+  const toAnnotationsTile = ({
+    _id,
+    permissions,
+    target: { selector, document: { slug } },
+    creator: { name: author },
+    modified, body: { value, tags },
+  }) => (
+    <AnnotationTile
+      key={_id}
+      id={_id}
+      onClick={() => Router.push(`/documents/${slug}?mine=${permissions.private ? 'true' : 'false'}&aid=${_id}&${dashboardState}`)}
+      onDelete={() => deleteAnnotationFromIdeaSpace(_id)}
+      text={selector.exact}
+      author={author}
+      annotation={value.length > 0 ? ReactHtmlParser(value, { transform: fixIframes }) : ''}
+      activityDate={modified}
+      tags={tags}
+      draggable
+      maxNumberOfAnnotationTags={2}
+    />
+  );
 
   const ideaSpaceTiles = loadingIdeaSpaces
     ? <div style={{ display: 'flex', justifyContent: 'center' }}><Spinner animation="border" variant="primary" /></div>
@@ -55,21 +158,103 @@ export default function IdeaSpacesChannel({
       }) => (
         <IdeaSpaceTile
           key={_id}
+          id={_id}
           name={ideaSpaceName}
           activityDate={updatedAt}
           onClick={() => {
-            setOpen(_id);
+            setOpenIdeaSpaceId(_id);
             setOpenIdeaSpaceTitle(ideaSpaceName);
           }}
           onDelete={() => {
             setIdeaSpaceToDelete(_id);
           }}
-          numberOfAnnotations={annotationIds ? Object.keys(annotationIds).length : 0}
           annotationIds={annotationIds}
           annotationsBeingDragged={annotationsBeingDragged}
+          setAnnotationsBeingDragged={setAnnotationsBeingDragged}
+          updateIdeaSpace={(is) => updateIdeaSpace(_id, is)}
         />
       ),
     );
+
+  let dragAndDropResult = <></>;
+  if (status && status.done) {
+    const addedAnnotations = status.numberOfNewAnnotations === 0 ? <></> : (
+      <TileBadge
+        key="addedAnnotationsText"
+        color="green"
+        text={status.numberOfNewAnnotations === 1 ? 'Annotation added' : `${status.numberOfNewAnnotations} annotations added`}
+        marginLeft={3}
+      />
+    );
+    const existingAnnotations = status.numberOfExistingAnnotations === 0 ? <></> : (
+      <TileBadge
+        key="existingAnnotationsText"
+        color="red"
+        text={status.numberOfExistingAnnotations === 1 ? 'Annotation already exists in Idea Space' : `${status.numberOfExistingAnnotations} already exist in Idea Space`}
+      />
+    );
+
+    dragAndDropResult = (
+      <div style={{
+        display: 'flex',
+        flexDirection: 'row-reverse',
+        justifContent: 'center',
+      }}
+      >
+        {addedAnnotations}
+        {existingAnnotations}
+      </div>
+    );
+  }
+  const openIdeaSpaceDropZone = (
+    <div
+      style={{
+        border: '2px dashed #424242',
+        flex: 1,
+        paddingTop: 20,
+        margin: '10px 0px 20px 0px',
+        alignItems: 'center',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+      className={[
+        openIdeaSpaceDragEnter ? styles.tileDragEnter : '',
+        status && status.annotationsRecieved ? styles.annotationsRecieved : '',
+      ].join(' ')}
+      onDragEnter={(e) => {
+        e.preventDefault();
+        setOpenIdeaSpaceDragEnter(true);
+      }}
+      onDragOver={(e) => {
+        e.preventDefault();
+        setOpenIdeaSpaceDragEnter(true);
+      }}
+      onDragLeave={(e) => {
+        e.preventDefault();
+        setOpenIdeaSpaceDragEnter();
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        if (annotationsBeingDragged) {
+          addAnnotationsToIdeaSpace();
+        }
+        setOpenIdeaSpaceDragEnter();
+      }}
+    >
+      <div style={{ fontSize: 18, color: '#424242' }}>Drag & Drop</div>
+      <div style={{ fontSize: 14, color: '#616161' }}>Your annotations here to ad them to this Idea Space</div>
+      {status && status.annotationsRecieved
+      && (
+      <ProgressBar
+        animated
+        now={100}
+        variant="success"
+        label={`saving annotation${annotationsBeingDragged && annotationsBeingDragged.length > 1 ? 's' : ''}`}
+      />
+      )}
+      {dragAndDropResult}
+    </div>
+  );
 
   const comparison = () => {
     if (ideaspacesSortByType === 'last-updated') {
@@ -156,9 +341,31 @@ export default function IdeaSpacesChannel({
   };
 
   useEffect(() => {
+    let annosForIdeaSpace = [];
+    if (openIdeaSpaceId) {
+      const ideaspace = ideaspaces.find(({ _id }) => _id === openIdeaSpaceId);
+      if (ideaspace) {
+        const annotationIdsInIdeaSpace = Object.keys(ideaspace.annotationIds);
+        const annos = allAnnotations.filter(({ _id }) => annotationIdsInIdeaSpace.includes(_id));
+        annosForIdeaSpace = annos.map(toAnnotationsTile);
+      }
+    }
+    setAnnotationTilesForIdeaSpace(annosForIdeaSpace);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openIdeaSpaceId, ideaspaces]);
+
+  useEffect(() => {
     loadIdeaSpaces();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (status && status.done) {
+      setTimeout(() => {
+        setStatus();
+      }, 3000);
+    }
+  }, [status]);
 
   useEffect(() => {
     setIdeaspaces(DeepCopyObj(ideaspaces.sort(comparison())));
@@ -176,7 +383,7 @@ export default function IdeaSpacesChannel({
         <div className={styles.headerContainer}>
           <span
             className={styles.headerText}
-            onClick={() => setOpen()}
+            onClick={() => setOpenIdeaSpaceId()}
             onFocus={() => {}}
             onKeyDown={() => {}}
             role="button"
@@ -184,7 +391,7 @@ export default function IdeaSpacesChannel({
           >
             Idea Spaces
           </span>
-          {open ? (
+          {openIdeaSpaceId ? (
             <>
               <ChevronRight size={14} />
               <input className={styles.titleInput} type="text" value={openIdeaSpaceTitle} />
@@ -275,48 +482,58 @@ export default function IdeaSpacesChannel({
               </>
             )}
         </div>
-        <div className={styles.tileContainer}>
-          {open ? (
-            <div className={styles.ideaSpaceHeader}>
-              <span style={{ color: '#424242' }}>Sort by</span>
-              <DropdownButton
-                id="sort-by-dropdown"
-                title={dropdownOptions[dropdownSelection]}
-                variant="light"
-                className={`${styles.sortByDropdown} ${dropdownOpen ? styles.sortByDropdownSelected : ''}`}
-                show={dropdownOpen}
-                onToggle={() => setDropdownOpen(!dropdownOpen)}
-                onSelect={(e) => setDropdownSelection(e)}
-              >
-                <Dropdown.Item eventKey="updated">
-                  {dropdownOptions.updated}
-                  {dropdownSelection === 'updated'
-                  && <Check className={styles.dropdownCheck} size={18} />}
-                </Dropdown.Item>
-                <Dropdown.Item eventKey="added">
-                  {dropdownOptions.added}
-                  {dropdownSelection === 'added'
-                  && <Check className={styles.dropdownCheck} size={18} />}
-                </Dropdown.Item>
-              </DropdownButton>
-              <OverlayTrigger
-                placement="right"
-                overlay={(
-                  <Tooltip className="styled-tooltip right">
-                    {ascending ? 'Ascending' : 'Descending'}
-                  </Tooltip>
-      )}
-              >
-                <Button
-                  className={styles.descendingAscendingButton}
+        <div className={styles.tileContainer} style={{ display: 'flex', flexDirection: 'column' }}>
+          {openIdeaSpaceId ? (
+            <>
+              <div className={styles.ideaSpaceHeader}>
+                <span style={{ color: '#424242' }}>Sort by</span>
+                <DropdownButton
+                  id="sort-by-dropdown"
+                  title={dropdownOptions[dropdownSelection]}
                   variant="light"
-                  onClick={() => setAscending(!ascending)}
+                  className={`${styles.sortByDropdown} ${dropdownOpen ? styles.sortByDropdownSelected : ''}`}
+                  show={dropdownOpen}
+                  onToggle={() => setDropdownOpen(!dropdownOpen)}
+                  onSelect={(e) => setDropdownSelection(e)}
                 >
-                  {ascending ? <ArrowUp size={14} /> : <ArrowDown size={14} />}
-                </Button>
-              </OverlayTrigger>
+                  <Dropdown.Item eventKey="updated">
+                    {dropdownOptions.updated}
+                    {dropdownSelection === 'updated'
+                  && <Check className={styles.dropdownCheck} size={18} />}
+                  </Dropdown.Item>
+                  <Dropdown.Item eventKey="added">
+                    {dropdownOptions.added}
+                    {dropdownSelection === 'added'
+                  && <Check className={styles.dropdownCheck} size={18} />}
+                  </Dropdown.Item>
+                </DropdownButton>
+                <OverlayTrigger
+                  placement="right"
+                  overlay={(
+                    <Tooltip className="styled-tooltip right">
+                      {ascending ? 'Ascending' : 'Descending'}
+                    </Tooltip>
+                )}
+                >
+                  <Button
+                    className={styles.descendingAscendingButton}
+                    variant="light"
+                    onClick={() => setAscending(!ascending)}
+                  >
+                    {ascending ? <ArrowUp size={14} /> : <ArrowDown size={14} />}
+                  </Button>
+                </OverlayTrigger>
+              </div>
+              {annotationsBeingDragged !== undefined
+              || (status && (status.done || status.annotationsRecieved))
+                ? openIdeaSpaceDropZone
+                : (
+                  <div style={{ padding: '10px 0px', flex: 1, overflowY: 'overlay' }}>
+                    {annotationTilesForIdeaSpace}
+                  </div>
+                )}
 
-            </div>
+            </>
           ) : ideaSpaceTiles}
         </div>
 

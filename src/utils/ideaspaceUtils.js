@@ -49,8 +49,27 @@ const deleteIdeaSpace = async (id) => {
   return Promise.reject(Error(`Unable to create idea space: error ${res.status} received from server`));
 };
 
+const updateAnnotationIdsToIdeaSpace = async ({ id, annotationIds }) => {
+  const url = `/api/ideaspace/${id}`;
+  const res = await unfetch(url, {
+    method: 'PATCH',
+    body: JSON.stringify({
+      annotationIds,
+    }),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (res.status === 200) {
+    const result = await res.json();
+    return Promise.resolve(result);
+  }
+  return Promise.reject(Error(`Unable to create idea space: error ${res.status} received from server`));
+};
+
 export {
   createIdeaSpace,
   getAllIdeaSpaces,
   deleteIdeaSpace,
+  updateAnnotationIdsToIdeaSpace,
 };
