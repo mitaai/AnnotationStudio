@@ -4,7 +4,7 @@ import {
   Modal, Button, Form, DropdownButton, Dropdown, OverlayTrigger, Tooltip, Spinner, ProgressBar,
 } from 'react-bootstrap';
 import {
-  ArrowDown, ArrowUp, Check, ChevronRight,
+  ArrowDown, ArrowUp, Check, CheckCircleFill, ChevronRight,
 } from 'react-bootstrap-icons';
 import ReactHtmlParser from 'react-html-parser';
 import styles from './DashboardChannels.module.scss';
@@ -32,6 +32,7 @@ export default function IdeaSpacesChannel({
   const [ideaspaces, setIdeaspaces] = useState([]);
   const [openIdeaSpaceDragEnter, setOpenIdeaSpaceDragEnter] = useState();
   const [status, setStatus] = useState();
+  const [ideaspaceNameStatus, setIdeaspaceNameStatus] = useState();
   const [annotationTilesForIdeaSpace, setAnnotationTilesForIdeaSpace] = useState([]);
   const [showIdeaspacesSortByDropdown, setShowIdeaspacesSortByDropdown] = useState();
   const [ideaspacesInAscendingOrder, setIdeaspacesInAscendingOrder] = useState();
@@ -150,9 +151,22 @@ export default function IdeaSpacesChannel({
     />
   );
 
-  const ideaSpaceTiles = loadingIdeaSpaces
-    ? <div style={{ display: 'flex', justifyContent: 'center' }}><Spinner animation="border" variant="primary" /></div>
-    : ideaspaces.map(
+
+  let ideaSpaceTiles = <></>;
+  if (loadingIdeaSpaces) {
+    ideaSpaceTiles = <div style={{ display: 'flex', justifyContent: 'center' }}><Spinner animation="border" variant="primary" /></div>;
+  } else if (ideaspaces.length === 0) {
+    ideaSpaceTiles = (
+      <div style={{
+        background: 'white', borderRadius: 5, padding: 12,
+      }}
+      >
+        <div style={{ fontSize: 18, color: '#424242', fontWeight: 'bold' }}>Create your first Idea Space!</div>
+        <div style={{ fontSize: 14, color: '#616161' }}>Click the &quot;New +&quot; button above to create your first Idea Space.</div>
+      </div>
+    );
+  } else {
+    ideaSpaceTiles = ideaspaces.map(
       ({
         _id, name: ideaSpaceName, updatedAt, annotationIds,
       }) => (
@@ -164,6 +178,7 @@ export default function IdeaSpacesChannel({
           onClick={() => {
             setOpenIdeaSpaceId(_id);
             setOpenIdeaSpaceTitle(ideaSpaceName);
+            setIdeaspaceNameStatus();
           }}
           onDelete={() => {
             setIdeaSpaceToDelete(_id);
@@ -175,6 +190,7 @@ export default function IdeaSpacesChannel({
         />
       ),
     );
+  }
 
   let dragAndDropResult = <></>;
   if (status && status.done) {
@@ -256,7 +272,7 @@ export default function IdeaSpacesChannel({
     </div>
   );
 
-  const comparison = () => {
+  const ideaspaceComparison = () => {
     if (ideaspacesSortByType === 'last-updated') {
       return (a, b) => {
         if (a.updatedAt > b.updatedAt) {
@@ -296,11 +312,38 @@ export default function IdeaSpacesChannel({
     return () => {};
   };
 
+  const annotationComparison = () => {
+    if (dropdownSelection === 'updated') {
+      return (a, b) => {
+        if (a.modified > b.modified) {
+          return ascending ? 1 : -1;
+        } if (a.modified < b.modified) {
+          return ascending ? -1 : 1;
+        }
+        return 0;
+      };
+    }
+    if (dropdownSelection === 'added') {
+      return (a, b) => {
+        if (a.created > b.created) {
+          return ascending ? 1 : -1;
+        } if (a.created < b.created) {
+          return ascending ? -1 : 1;
+        }
+        return 0;
+      };
+    }
+
+    return () => {};
+  };
+
   const createNewIdeaSpace = async () => {
     setCreatingIdeaSpace(true);
     await createIdeaSpace({ name })
       .then(async (newIdeaSpace) => {
-        const newIdeaspaces = DeepCopyObj(ideaspaces).concat([newIdeaSpace]).sort(comparison());
+        const newIdeaspaces = DeepCopyObj(ideaspaces)
+          .concat([newIdeaSpace])
+          .sort(ideaspaceComparison());
         setIdeaspaces(newIdeaspaces);
         setCreatingIdeaSpace();
         setShowNewIdeaSpaceModal();
@@ -316,7 +359,7 @@ export default function IdeaSpacesChannel({
     setLoadingIdeaSpaces(true);
     await getAllIdeaSpaces()
       .then(async (res) => {
-        setIdeaspaces(res.ideaspaces.sort(comparison()));
+        setIdeaspaces(res.ideaspaces.sort(ideaspaceComparison()));
         setLoadingIdeaSpaces();
         setIdeaSpaceToDelete();
       })
@@ -340,19 +383,26 @@ export default function IdeaSpacesChannel({
       });
   };
 
+  const saveIdeaSpaceTitle = (title) => {
+    setIdeaspaceNameStatus('saving');
+    setOpenIdeaSpaceTitle(title);
+  };
+
   useEffect(() => {
     let annosForIdeaSpace = [];
     if (openIdeaSpaceId) {
       const ideaspace = ideaspaces.find(({ _id }) => _id === openIdeaSpaceId);
       if (ideaspace) {
         const annotationIdsInIdeaSpace = Object.keys(ideaspace.annotationIds);
-        const annos = allAnnotations.filter(({ _id }) => annotationIdsInIdeaSpace.includes(_id));
+        const annos = allAnnotations
+          .filter(({ _id }) => annotationIdsInIdeaSpace.includes(_id))
+          .sort(annotationComparison());
         annosForIdeaSpace = annos.map(toAnnotationsTile);
       }
     }
     setAnnotationTilesForIdeaSpace(annosForIdeaSpace);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [openIdeaSpaceId, ideaspaces]);
+  }, [openIdeaSpaceId, ideaspaces, dropdownSelection, ascending]);
 
   useEffect(() => {
     loadIdeaSpaces();
@@ -368,7 +418,7 @@ export default function IdeaSpacesChannel({
   }, [status]);
 
   useEffect(() => {
-    setIdeaspaces(DeepCopyObj(ideaspaces.sort(comparison())));
+    setIdeaspaces(DeepCopyObj(ideaspaces.sort(ideaspaceComparison())));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ideaspacesSortByType, ideaspacesInAscendingOrder]);
 
@@ -394,7 +444,35 @@ export default function IdeaSpacesChannel({
           {openIdeaSpaceId ? (
             <>
               <ChevronRight size={14} />
-              <input className={styles.titleInput} type="text" value={openIdeaSpaceTitle} />
+              <input className={styles.titleInput} type="text" value={openIdeaSpaceTitle} onChange={(e) => saveIdeaSpaceTitle(e.target.value)} />
+              <div style={{ width: 20 }}>
+                {ideaspaceNameStatus === 'saved'
+                && (
+                <OverlayTrigger
+                  placement="bottom"
+                  overlay={(
+                    <Tooltip className="styled-tooltip bottom">
+                      Saved!
+                    </Tooltip>
+                  )}
+                >
+                  <CheckCircleFill size={16} color="#45AC87" />
+                </OverlayTrigger>
+                )}
+                {ideaspaceNameStatus === 'saving'
+                && (
+                <OverlayTrigger
+                  placement="bottom"
+                  overlay={(
+                    <Tooltip className="styled-tooltip bottom">
+                      Saving...
+                    </Tooltip>
+                )}
+                >
+                  <Spinner animation="border" variant="primary" size="sm" />
+                </OverlayTrigger>
+                )}
+              </div>
             </>
           )
             : (
