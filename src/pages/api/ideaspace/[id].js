@@ -23,7 +23,16 @@ const handler = async (req, res) => {
     if (token && token.exp > 0) {
       const {
         annotationIds,
+        name,
       } = req.body;
+
+      const updateObj = { updatedAt: new Date() };
+      if (annotationIds !== undefined) {
+        updateObj.annotationIds = annotationIds;
+      }
+      if (name !== undefined) {
+        updateObj.name = name;
+      }
 
       const { db } = await connectToDatabase();
       const findCondition = { _id: ObjectID(req.query.id), owner: token.id };
@@ -33,7 +42,7 @@ const handler = async (req, res) => {
           {
             ...findCondition,
           },
-          { $set: { annotationIds, updatedAt: new Date() } },
+          { $set: updateObj },
           {
             returnOriginal: false,
           },

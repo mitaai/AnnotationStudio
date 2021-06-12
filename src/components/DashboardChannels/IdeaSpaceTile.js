@@ -4,7 +4,7 @@ import { OverlayTrigger, Popover, ProgressBar } from 'react-bootstrap';
 import { XCircleFill } from 'react-bootstrap-icons';
 import TileBadge from '../TileBadge';
 import styles from './DashboardChannels.module.scss';
-import { updateAnnotationIdsToIdeaSpace } from '../../utils/ideaspaceUtils';
+import { updateIdeaSpaceData } from '../../utils/ideaspaceUtils';
 
 export default function IdeaSpaceTile({
   id,
@@ -49,7 +49,7 @@ export default function IdeaSpaceTile({
     const numberOfExistingAnnotationIds = annotationsBeingDragged.length - numberOfNewAnnotationIds;
     setAnnotationsBeingDragged();
     if (numberOfNewAnnotationIds > 0) {
-      await updateAnnotationIdsToIdeaSpace({
+      await updateIdeaSpaceData({
         id,
         annotationIds: { ...newAnnotationIds, ...annotationIds },
       })
@@ -191,7 +191,7 @@ export default function IdeaSpaceTile({
         onMouseOut={() => setDeleteHovered()}
         size={14}
       />
-      <div className={styles.annotatedText}>{name}</div>
+      <div className={`${styles.annotatedText} ${name === '' ? styles.untitledText : ''}`}>{name === '' ? 'Untitled' : name}</div>
       {content}
     </div>
   );

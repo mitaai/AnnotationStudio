@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from 'react';
+/* eslint-disable no-underscore-dangle */
+import React, { useEffect, useState, useRef } from 'react';
 import Router from 'next/router';
+import debounce from 'lodash.debounce';
 import {
   Modal, Button, Form, DropdownButton, Dropdown, OverlayTrigger, Tooltip, Spinner, ProgressBar,
 } from 'react-bootstrap';
@@ -13,7 +15,7 @@ import TileBadge from '../TileBadge';
 import {
   createIdeaSpace,
   deleteIdeaSpace,
-  updateAnnotationIdsToIdeaSpace,
+  updateIdeaSpaceData,
   getAllIdeaSpaces,
 } from '../../utils/ideaspaceUtils';
 import { DeepCopyObj } from '../../utils/docUIUtils';
@@ -38,7 +40,7 @@ export default function IdeaSpacesChannel({
   const [ideaspacesInAscendingOrder, setIdeaspacesInAscendingOrder] = useState();
   const [ideaspacesSortByType, setIdeaspacesSortByType] = useState('last-updated');
   const [loadingIdeaSpaces, setLoadingIdeaSpaces] = useState();
-  const [openIdeaSpaceTitle, setOpenIdeaSpaceTitle] = useState('');
+  const [openIdeaSpaceName, setOpenIdeaSpaceName] = useState('');
   // const [refresh, setRefresh] = useState();
   const [deletingIdeaSpace, setDeletingIdeaSpace] = useState();
   const [showNewIdeaSpaceModal, setShowNewIdeaSpaceModal] = useState();
@@ -63,21 +65,40 @@ export default function IdeaSpacesChannel({
     }
   }
 
-  const updateIdeaSpace = (id, is) => {
-    // eslint-disable-next-line no-underscore-dangle
-    setIdeaspaces(ideaspaces.map((ideaspace) => (ideaspace._id === id ? is : ideaspace)));
+  const updateIdeaSpace = (is) => {
+    const newIdeaspaces = ideaspaces.map(
+      (ideaspace) => (ideaspace._id === is._id ? is : ideaspace),
+    );
+    setIdeaspaces(newIdeaspaces);
   };
+
+  const saveIdeaSpaceName = async (id, ideaspaceName, callback = () => {}) => {
+    await updateIdeaSpaceData({
+      id,
+      name: ideaspaceName,
+    })
+      .then(async (res) => {
+        callback(res.value);
+      })
+      .catch(() => {
+        setIdeaspaceNameStatus('error');
+      });
+  };
+
+  const saveIdeaSpaceNameDebounced = useRef(
+    debounce(saveIdeaSpaceName, 2000),
+  ).current;
 
   const deleteAnnotationFromIdeaSpace = async (aid) => {
     const ideaspace = ideaspaces.find(({ _id }) => _id === openIdeaSpaceId);
     if (ideaspace) {
       delete ideaspace.annotationIds[aid];
-      await updateAnnotationIdsToIdeaSpace({
+      await updateIdeaSpaceData({
         id: openIdeaSpaceId,
         annotationIds: { ...ideaspace.annotationIds },
       })
         .then(async (res) => {
-          updateIdeaSpace(openIdeaSpaceId, res.value);
+          updateIdeaSpace(res.value);
         })
         .catch(() => {
         // pass
@@ -105,12 +126,12 @@ export default function IdeaSpacesChannel({
     const numberOfExistingAnnotationIds = annotationsBeingDragged.length - numberOfNewAnnotationIds;
     setAnnotationsBeingDragged();
     if (numberOfNewAnnotationIds > 0) {
-      await updateAnnotationIdsToIdeaSpace({
+      await updateIdeaSpaceData({
         id: openIdeaSpaceId,
         annotationIds: { ...newAnnotationIds, ...annotationIds },
       })
         .then(async (res) => {
-          updateIdeaSpace(openIdeaSpaceId, res.value);
+          updateIdeaSpace(res.value);
           setStatus({
             numberOfNewAnnotations: numberOfNewAnnotationIds,
             numberOfExistingAnnotations: numberOfExistingAnnotationIds,
@@ -177,7 +198,7 @@ export default function IdeaSpacesChannel({
           activityDate={updatedAt}
           onClick={() => {
             setOpenIdeaSpaceId(_id);
-            setOpenIdeaSpaceTitle(ideaSpaceName);
+            setOpenIdeaSpaceName(ideaSpaceName);
             setIdeaspaceNameStatus();
           }}
           onDelete={() => {
@@ -186,7 +207,7 @@ export default function IdeaSpacesChannel({
           annotationIds={annotationIds}
           annotationsBeingDragged={annotationsBeingDragged}
           setAnnotationsBeingDragged={setAnnotationsBeingDragged}
-          updateIdeaSpace={(is) => updateIdeaSpace(_id, is)}
+          updateIdeaSpace={(is) => updateIdeaSpace(is)}
         />
       ),
     );
@@ -383,9 +404,13 @@ export default function IdeaSpacesChannel({
       });
   };
 
-  const saveIdeaSpaceTitle = (title) => {
+  const updateIdeaSpaceName = (ideaspaceName) => {
     setIdeaspaceNameStatus('saving');
-    setOpenIdeaSpaceTitle(title);
+    setOpenIdeaSpaceName(ideaspaceName);
+    saveIdeaSpaceNameDebounced(openIdeaSpaceId, ideaspaceName, (ideaspace) => {
+      updateIdeaSpace(ideaspace);
+      setIdeaspaceNameStatus('saved');
+    });
   };
 
   useEffect(() => {
@@ -444,7 +469,7 @@ export default function IdeaSpacesChannel({
           {openIdeaSpaceId ? (
             <>
               <ChevronRight size={14} />
-              <input className={styles.titleInput} type="text" value={openIdeaSpaceTitle} onChange={(e) => saveIdeaSpaceTitle(e.target.value)} />
+              <input className={styles.titleInput} type="text" placeholder="descriptive name" value={openIdeaSpaceName} onChange={(e) => updateIdeaSpaceName(e.target.value)} />
               <div style={{ width: 20 }}>
                 {ideaspaceNameStatus === 'saved'
                 && (
@@ -658,10 +683,10 @@ export default function IdeaSpacesChannel({
         <Modal.Header closeButton>
           <Modal.Title>Delete Idea Space</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
+        <Modal.Body style={{ display: 'flex', justifyContent: deletingIdeaSpace ? 'center' : 'left' }}>
           {deletingIdeaSpace
-            ? <Spinner animation="border" variant="primary" /> : (
-              <span>{`Are you sure you want to delete "${nameOfIdeaSpaceToDelete}"?`}</span>
+            ? <Spinner animation="border" variant="danger" /> : (
+              <div>{`Are you sure you want to delete "${nameOfIdeaSpaceToDelete}"?`}</div>
             )}
 
         </Modal.Body>

@@ -49,12 +49,13 @@ const deleteIdeaSpace = async (id) => {
   return Promise.reject(Error(`Unable to create idea space: error ${res.status} received from server`));
 };
 
-const updateAnnotationIdsToIdeaSpace = async ({ id, annotationIds }) => {
+const updateIdeaSpaceData = async ({ id, annotationIds, name }) => {
   const url = `/api/ideaspace/${id}`;
   const res = await unfetch(url, {
     method: 'PATCH',
     body: JSON.stringify({
       annotationIds,
+      name,
     }),
     headers: {
       'Content-Type': 'application/json',
@@ -71,5 +72,5 @@ export {
   createIdeaSpace,
   getAllIdeaSpaces,
   deleteIdeaSpace,
-  updateAnnotationIdsToIdeaSpace,
+  updateIdeaSpaceData,
 };
