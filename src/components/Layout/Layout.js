@@ -71,6 +71,7 @@ function Layout({
             flex-direction: column !important;
             display: flex !important;        
           }
+          
         `}
       </style>
     </>
