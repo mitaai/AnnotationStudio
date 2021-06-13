@@ -227,7 +227,7 @@ export default function IdeaSpacesChannel({
       <TileBadge
         key="existingAnnotationsText"
         color="red"
-        text={status.numberOfExistingAnnotations === 1 ? 'Annotation already exists in Idea Space' : `${status.numberOfExistingAnnotations} annotations already exist in Idea Space`}
+        text={status.numberOfExistingAnnotations === 1 ? '1 annotation already exists in this Idea Space' : `${status.numberOfExistingAnnotations} annotations already exist in Idea Space`}
       />
     );
 
@@ -469,7 +469,7 @@ export default function IdeaSpacesChannel({
           {openIdeaSpaceId ? (
             <>
               <ChevronRight size={14} />
-              <input className={styles.titleInput} type="text" placeholder="descriptive name" value={openIdeaSpaceName} onChange={(e) => updateIdeaSpaceName(e.target.value)} />
+              <input className={styles.titleInput} type="text" placeholder="title" value={openIdeaSpaceName} onChange={(e) => updateIdeaSpaceName(e.target.value)} />
               <div style={{ width: 20 }}>
                 {ideaspaceNameStatus === 'saved'
                 && (
@@ -655,7 +655,7 @@ export default function IdeaSpacesChannel({
             ? <Spinner animation="border" variant="primary" /> : (
               <Form>
                 <Form.Group controlId="exampleForm.ControlInput1">
-                  <Form.Control type="text" placeholder="descriptive name" value={name} onChange={(e) => setName(e.target.value)} />
+                  <Form.Control type="text" placeholder="title" value={name} onChange={(e) => setName(e.target.value)} />
                 </Form.Group>
               </Form>
             )}

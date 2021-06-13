@@ -121,7 +121,7 @@ export default function IdeaSpaceTile({
       <TileBadge
         key="existingAnnotationsText"
         color="red"
-        text={status.numberOfExistingAnnotations === 1 ? 'Annotation already exists in Idea Space' : `${status.numberOfExistingAnnotations} annotations already exist in Idea Space`}
+        text={status.numberOfExistingAnnotations === 1 ? '1 annotation already exists in this Idea Space' : `${status.numberOfExistingAnnotations} annotations already exist in Idea Space`}
       />
     );
 
