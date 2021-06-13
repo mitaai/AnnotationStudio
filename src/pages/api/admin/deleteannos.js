@@ -15,13 +15,9 @@ const handler = async (req, res) => {
         .findOne({ _id: ObjectId(token.id) });
       const { role } = userObj;
       if (role === 'admin') {
-        const { query } = req;
-        const { page, perPage } = query;
         const doc = await db
           .collection('annotations')
           .find({}, { projection: { 'target.document.id': 1 } })
-          .skip(page > 0 ? ((page - 1) * perPage) : 0)
-          .limit(parseInt(perPage, 10))
           .toArray();
         const annos = doc.map((entry) => ({
           // eslint-disable-next-line no-underscore-dangle
@@ -38,8 +34,14 @@ const handler = async (req, res) => {
           }
           return { ...anno, deleteMe };
         }));
-        const annosToDelete = annosCheckDoc.filter((anno) => anno.deleteMe === true);
-        res.status(200).json({ found: JSON.parse(JSON.stringify(annosToDelete)) });
+        const annoIdsToDelete = annosCheckDoc
+          .filter((anno) => anno.deleteMe === true)
+          // eslint-disable-next-line no-underscore-dangle
+          .map((anno) => ObjectId(anno._id));
+        const deletedAnnotations = await db
+          .collection('annotations')
+          .deleteMany({ _id: { $in: annoIdsToDelete } });
+        res.status(200).json({ deletedAnnotations });
       } else res.status(403).end('Unauthorized');
     } else res.status(403).end('Invalid or expired token');
   } else res.status(405).end(`Method ${method} Not Allowed`);
