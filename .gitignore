@@ -41,3 +41,5 @@ globalConfig.json
 
 # vercel
 .vercel
+.serverless
+.serverless_nextjs
