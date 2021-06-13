@@ -15,9 +15,13 @@ const handler = async (req, res) => {
         .findOne({ _id: ObjectId(token.id) });
       const { role } = userObj;
       if (role === 'admin') {
+        const { query } = req;
+        const { page, perPage } = query;
         const doc = await db
           .collection('annotations')
           .find({}, { projection: { 'target.document.id': 1 } })
+          .skip(page > 0 ? ((page - 1) * perPage) : 0)
+          .limit(parseInt(perPage, 10))
           .toArray();
         const annos = doc.map((entry) => ({
           // eslint-disable-next-line no-underscore-dangle
