@@ -3,6 +3,7 @@ import moment from 'moment';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import TileBadge from '../TileBadge';
 import styles from './DashboardChannels.module.scss';
+import { FirstNameLastInitial } from '../../utils/nameUtil';
 
 export default function AnnotationTile({
   text = '', annotation = '', author = '', activityDate, tags, maxNumberOfAnnotationTags = 3, onClick,
@@ -58,7 +59,7 @@ export default function AnnotationTile({
       }}
       >
         <div className={styles.memberText}>
-          <span style={{ fontWeight: 'bold' }}>{author}</span>
+          <span style={{ fontWeight: 'bold' }}>{FirstNameLastInitial(author)}</span>
           <span style={{
             width: 3, height: 3, borderRadius: 1.5, background: '#838383', marginLeft: 10, marginRight: 10,
           }}
@@ -71,7 +72,7 @@ export default function AnnotationTile({
               <Popover id="popover-basic">
                 <Popover.Content style={{ color: '#636363' }}>{moment(activityDate).format('LLLL')}</Popover.Content>
               </Popover>
-            )}
+              )}
           >
             <span>{moment(activityDate).fromNow()}</span>
           </OverlayTrigger>
