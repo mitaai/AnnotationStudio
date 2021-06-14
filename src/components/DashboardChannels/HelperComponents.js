@@ -8,7 +8,7 @@ import {
 
 import styles from './DashboardChannels.module.scss';
 
-function ListLoadingSpinner({ variant = 'dark', marginTop = 10}) {
+function ListLoadingSpinner({ variant = 'dark', marginTop = 10 }) {
   return (
     <div style={{ textAlign: 'center', marginTop }}>
       <Spinner animation="border" variant={variant} />
