@@ -1,7 +1,9 @@
+/* eslint-disable no-underscore-dangle */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import moment from 'moment';
 import Router from 'next/router';
+import debounce from 'lodash.debounce';
 import ReactHtmlParser from 'react-html-parser';
 import {
   ArrowClockwise,
@@ -14,10 +16,11 @@ import {
   FileEarmarkFill,
   CalendarEventFill,
   ChevronRight,
+  CheckCircleFill,
 } from 'react-bootstrap-icons';
 
 import {
-  OverlayTrigger, Popover, Modal, Button, Form,
+  OverlayTrigger, Popover, Modal, Button, Form, Tooltip, Spinner,
 } from 'react-bootstrap';
 
 import { fetchSharedAnnotationsOnDocument, getAllAnnotations } from '../../utils/annotationUtil';
@@ -44,6 +47,9 @@ import {
 } from '../../utils/annotationFilteringUtil';
 import ISGroupHeader from '../IdeaSpaceComponents/ISGroupHeader/ISGroupHeader';
 import ISOutline from '../IdeaSpaceComponents/ISOutline';
+import {
+  createOutline, getAllOutlines, updateOutlineData, deleteOutline,
+} from '../../utils/outlineUtil';
 
 export default function AnnotationsChannel({
   session,
@@ -62,7 +68,6 @@ export default function AnnotationsChannel({
   setAllAnnotations,
 }) {
   const [selectedPermissions, setSelectedPermissions] = useState('shared');
-  const [outlineOpen, setOutlineOpen] = useState();
   const [listLoading, setListLoading] = useState();
   // for AS annotations
   const [annotations, setAnnotations] = useState({});
@@ -97,10 +102,40 @@ export default function AnnotationsChannel({
     byTag: [],
   });
   const [tab, setTab] = useState('annotations');
+
+  // state variables for outlines tab
   const [showNewOutlineModal, setShowNewOutlineModal] = useState();
+  const [openOutlineId, setOpenOutlineId] = useState();
+  const [newOutlineName, setNewOutlineName] = useState('');
+  const [creatingOutline, setCreatingOutline] = useState();
+  const [deletingOutline, setDeletingOutline] = useState();
+  const [outlines, setOutlines] = useState([]);
+  const [loadingOutlines, setLoadingOutlines] = useState();
+  const [outlineToDelete, setOutlineToDelete] = useState();
+  const [openOutlineName, setOpenOutlineName] = useState('');
+  const [openOutlineDocument, setOpenOutlineDocument] = useState();
+  const [outlineStatus, setOutlineStatus] = useState();
 
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [, forceUpdateForRefresh] = useState();
+
+  const saveOutline = async (id, { name, document }, callback = () => {}) => {
+    await updateOutlineData({
+      id,
+      name,
+      document,
+    })
+      .then(async (res) => {
+        callback(res.value);
+      })
+      .catch(() => {
+        setOutlineStatus('error');
+      });
+  };
+
+  const saveOutlineDebounced = useRef(
+    debounce(saveOutline, 2000),
+  ).current;
 
   const filterIcons = {
     byPermissions: <ShieldLockFill size={14} style={{ marginRight: 4 }} />,
@@ -436,6 +471,85 @@ export default function AnnotationsChannel({
     }
   };
 
+  const byDateUpdatedAt = (a, b) => {
+    if (a.updatedAt > b.updatedAt) {
+      return -1;
+    } if (a.updatedAt < b.updatedAt) {
+      return 1;
+    }
+    return 0;
+  };
+
+  const createNewOutline = async () => {
+    setCreatingOutline(true);
+    await createOutline({ name: newOutlineName })
+      .then(async (newOutline) => {
+        const newOutlines = DeepCopyObj(outlines)
+          .concat([newOutline])
+          .sort(byDateUpdatedAt);
+        setOutlines(newOutlines);
+        setCreatingOutline();
+        setShowNewOutlineModal();
+      })
+      .catch(() => {
+        setCreatingOutline();
+        setShowNewOutlineModal();
+      });
+    setNewOutlineName('');
+  };
+
+  const loadOutlines = async () => {
+    setLoadingOutlines(true);
+    await getAllOutlines()
+      .then(async (res) => {
+        setOutlines(res.outlines.sort(byDateUpdatedAt));
+        setLoadingOutlines();
+        setOutlineToDelete();
+      })
+      .catch(() => {
+        setLoadingOutlines();
+        setOutlineToDelete();
+      });
+  };
+
+  const updateOutlines = (o) => {
+    const newOutlines = outlines.map(
+      // eslint-disable-next-line no-underscore-dangle
+      (outline) => (outline._id === o._id ? o : outline),
+    );
+    setOutlines(newOutlines);
+  };
+
+  const updateOutline = ({ name, document }) => {
+    setOutlineStatus('saving');
+    if (name) {
+      setOpenOutlineName(name);
+    }
+
+    if (document) {
+      setOpenOutlineDocument(document);
+    }
+
+    saveOutlineDebounced(openOutlineId, { name, document }, (outline) => {
+      updateOutlines(outline);
+      setOutlineStatus('saved');
+    });
+  };
+
+  const deleteO = async () => {
+    setDeletingOutline(true);
+    await deleteOutline(outlineToDelete._id)
+      .then(async () => {
+        setOutlines(outlines.filter(({ _id }) => _id !== outlineToDelete._id));
+        setOutlineToDelete();
+        setDeletingOutline();
+      })
+      .catch(() => {
+        setLoadingOutlines();
+        setOutlineToDelete();
+      });
+  };
+
   useEffect(
     () => setFilteredAnnotations(filterAnnotations(appliedFilters)),
     [allAnnotations, groupedAnnotations, appliedFilters],
@@ -492,6 +606,7 @@ export default function AnnotationsChannel({
   useEffect(() => {
     // this keeps the refresh popover text up-to-date
     setInterval(() => forceUpdateForRefresh(RID()), 60 * 1000);
+    loadOutlines();
   }, []);
 
   useEffect(() => {
@@ -616,9 +731,42 @@ export default function AnnotationsChannel({
   const tabSelectionLine = (
     <div
       className={styles.tabSelectionLine}
-      style={annotationsTabSelected ? { width: 'calc(60% - 9px)', left: 0, opacity: tabSelectionLineOpacity } : { width: 'calc(40% + 9px)', left: 'calc(60% - 9px)', opacity: tabSelectionLineOpacity }}
+      style={annotationsTabSelected ? { width: 'calc(60% - 6px)', left: 0, opacity: tabSelectionLineOpacity } : { width: 'calc(40% + 6px)', left: 'calc(60% - 6px)', opacity: tabSelectionLineOpacity }}
     />
   );
+
+  let outlineTiles = <></>;
+  if (loadingOutlines) {
+    outlineTiles = <ListLoadingSpinner />;
+  } else if (outlines.length === 0) {
+    outlineTiles = (
+      <div style={{
+        background: 'white', borderRadius: 5, padding: 12,
+      }}
+      >
+        <div style={{ fontSize: 18, color: '#424242', fontWeight: 'bold' }}>Create your first outline!</div>
+        <div style={{ fontSize: 14, color: '#616161' }}>Click the &quot;New +&quot; button above to create your first outline.</div>
+      </div>
+    );
+  } else {
+    outlineTiles = outlines.map(({
+      _id, name, updatedAt, document,
+    }) => (
+      <OutlineTile
+        key={_id}
+        name={name}
+        activityDate={updatedAt}
+        onClick={() => {
+          setOpenOutlineId(_id);
+          setOpenOutlineName(name);
+          setOpenOutlineDocument(document);
+        }}
+        onDelete={() => {
+          setOutlineToDelete({ _id, name });
+        }}
+      />
+    ));
+  }
 
   const tabContent = {
     annotations:
@@ -632,18 +780,18 @@ export default function AnnotationsChannel({
       {(listLoading || refresh) ? <ListLoadingSpinner /> : annotationTiles}
     </div>
   </>,
-    outlines: outlineOpen ? (
+    outlines: openOutlineId ? (
       <div style={{ marginTop: -10 }}>
-        <ISOutline mode="new" />
+        <ISOutline
+          key={openOutlineId}
+          document={openOutlineDocument}
+          setDocument={(document) => updateOutline({ document })}
+        />
       </div>
     )
       : (
         <div className={styles.tileContainer}>
-          <OutlineTile
-            name="Outline Name"
-            activityDate={new Date()}
-            onClick={() => setOutlineOpen(true)}
-          />
+          {outlineTiles}
         </div>
       ),
   };
@@ -657,7 +805,7 @@ export default function AnnotationsChannel({
           style={{
             borderBottom: '1px solid',
             borderColor: mode === 'as' ? 'transparent' : '#DADCE1',
-            paddingRight: mode === 'as' ? 20 : 10,
+            paddingRight: mode === 'as' ? 20 : 5,
           }}
         >
           {tabSelectionLine}
@@ -736,7 +884,9 @@ export default function AnnotationsChannel({
             <span
               onClick={() => {
                 if (tab === 'outlines') {
-                  setOutlineOpen();
+                  setOpenOutlineId();
+                  setOutlineStatus();
+                  setOpenOutlineDocument();
                 } else {
                   setTab('outlines');
                 }
@@ -748,7 +898,7 @@ export default function AnnotationsChannel({
             >
               Outlines
             </span>
-            {outlineOpen ? (
+            {openOutlineId ? (
               <div
                 style={{ display: 'flex', flex: 1, alignItems: 'center' }}
                 onClick={() => {
@@ -765,8 +915,37 @@ export default function AnnotationsChannel({
                   style={{ color: !annotationsTabSelected ? '#424242' : '#ABABAB' }}
                   className={styles.titleInput}
                   type="text"
-                  value="hello and goodbye"
+                  value={openOutlineName}
+                  onChange={(e) => updateOutline({ name: e.target.value })}
                 />
+                <div style={{ width: 20 }}>
+                  {outlineStatus === 'saved'
+                && (
+                <OverlayTrigger
+                  placement="bottom"
+                  overlay={(
+                    <Tooltip className="styled-tooltip bottom">
+                      Saved!
+                    </Tooltip>
+                  )}
+                >
+                  <CheckCircleFill size={16} color="#45AC87" />
+                </OverlayTrigger>
+                )}
+                  {outlineStatus === 'saving'
+                && (
+                <OverlayTrigger
+                  placement="bottom"
+                  overlay={(
+                    <Tooltip className="styled-tooltip bottom">
+                      Saving...
+                    </Tooltip>
+                )}
+                >
+                  <Spinner animation="border" variant="primary" size="sm" />
+                </OverlayTrigger>
+                )}
+                </div>
               </div>
             )
               : (
@@ -786,6 +965,33 @@ export default function AnnotationsChannel({
         {tabContent[tab]}
       </div>
       <Modal
+        show={outlineToDelete !== undefined}
+        backdrop="static"
+        keyboard={false}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Delete Outline</Modal.Title>
+        </Modal.Header>
+        <Modal.Body style={{ display: 'flex', justifyContent: deletingOutline ? 'center' : 'left' }}>
+          {deletingOutline
+            ? <Spinner animation="border" variant="danger" /> : (
+              <div>{`Are you sure you want to delete "${outlineToDelete ? outlineToDelete.name : ''}"?`}</div>
+            )}
+
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setOutlineToDelete();
+            }}
+          >
+            Cancel
+          </Button>
+          <Button variant="danger" onClick={deleteO}>Delete</Button>
+        </Modal.Footer>
+      </Modal>
+      <Modal
         show={showNewOutlineModal}
         onHide={() => setShowNewOutlineModal()}
         backdrop="static"
@@ -795,17 +1001,27 @@ export default function AnnotationsChannel({
           <Modal.Title>Create New Outline</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Form>
-            <Form.Group controlId="exampleForm.ControlInput1">
-              <Form.Control type="email" placeholder="name of outline" />
-            </Form.Group>
-          </Form>
+          {creatingOutline
+            ? <ListLoadingSpinner variant="primary" marginTop={0} /> : (
+              <Form>
+                <Form.Group controlId="exampleForm.ControlInput1" style={{ marginBottom: 0 }}>
+                  <Form.Control type="text" placeholder="name of outline" value={newOutlineName} onChange={(e) => setNewOutlineName(e.target.value)} />
+                </Form.Group>
+              </Form>
+            )}
+
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowNewOutlineModal()}>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setShowNewOutlineModal();
+              setNewOutlineName('');
+            }}
+          >
             Cancel
           </Button>
-          <Button variant="primary" onClick={() => setShowNewOutlineModal()}>Create</Button>
+          <Button variant="primary" onClick={createNewOutline}>Create</Button>
         </Modal.Footer>
       </Modal>
     </>

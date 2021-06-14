@@ -21,6 +21,7 @@ import {
 import { DeepCopyObj } from '../../utils/docUIUtils';
 import { fixIframes } from '../../utils/parseUtil';
 import AnnotationTile from './AnnotationTile';
+import { ListLoadingSpinner } from './HelperComponents';
 
 export default function IdeaSpacesChannel({
   width,
@@ -56,16 +57,7 @@ export default function IdeaSpacesChannel({
     added: 'date added to Idea Space',
   };
 
-
-  let nameOfIdeaSpaceToDelete = '';
-  if (ideaSpaceToDelete) {
-    const isToDelete = ideaspaces.find(({ _id }) => _id === ideaSpaceToDelete);
-    if (isToDelete) {
-      nameOfIdeaSpaceToDelete = isToDelete.name;
-    }
-  }
-
-  const updateIdeaSpace = (is) => {
+  const updateIdeaSpaces = (is) => {
     const newIdeaspaces = ideaspaces.map(
       (ideaspace) => (ideaspace._id === is._id ? is : ideaspace),
     );
@@ -98,7 +90,7 @@ export default function IdeaSpacesChannel({
         annotationIds: { ...ideaspace.annotationIds },
       })
         .then(async (res) => {
-          updateIdeaSpace(res.value);
+          updateIdeaSpaces(res.value);
         })
         .catch(() => {
         // pass
@@ -131,7 +123,7 @@ export default function IdeaSpacesChannel({
         annotationIds: { ...newAnnotationIds, ...annotationIds },
       })
         .then(async (res) => {
-          updateIdeaSpace(res.value);
+          updateIdeaSpaces(res.value);
           setStatus({
             numberOfNewAnnotations: numberOfNewAnnotationIds,
             numberOfExistingAnnotations: numberOfExistingAnnotationIds,
@@ -202,12 +194,12 @@ export default function IdeaSpacesChannel({
             setIdeaspaceNameStatus();
           }}
           onDelete={() => {
-            setIdeaSpaceToDelete(_id);
+            setIdeaSpaceToDelete({ _id, name: ideaSpaceName });
           }}
           annotationIds={annotationIds}
           annotationsBeingDragged={annotationsBeingDragged}
           setAnnotationsBeingDragged={setAnnotationsBeingDragged}
-          updateIdeaSpace={(is) => updateIdeaSpace(is)}
+          updateIdeaSpace={(is) => updateIdeaSpaces(is)}
         />
       ),
     );
@@ -392,9 +384,9 @@ export default function IdeaSpacesChannel({
 
   const deleteIS = async () => {
     setDeletingIdeaSpace(true);
-    await deleteIdeaSpace(ideaSpaceToDelete)
+    await deleteIdeaSpace(ideaSpaceToDelete._id)
       .then(async () => {
-        setIdeaspaces(ideaspaces.filter(({ _id }) => _id !== ideaSpaceToDelete));
+        setIdeaspaces(ideaspaces.filter(({ _id }) => _id !== ideaSpaceToDelete._id));
         setIdeaSpaceToDelete();
         setDeletingIdeaSpace();
       })
@@ -408,7 +400,7 @@ export default function IdeaSpacesChannel({
     setIdeaspaceNameStatus('saving');
     setOpenIdeaSpaceName(ideaspaceName);
     saveIdeaSpaceNameDebounced(openIdeaSpaceId, ideaspaceName, (ideaspace) => {
-      updateIdeaSpace(ideaspace);
+      updateIdeaSpaces(ideaspace);
       setIdeaspaceNameStatus('saved');
     });
   };
@@ -469,7 +461,13 @@ export default function IdeaSpacesChannel({
           {openIdeaSpaceId ? (
             <>
               <ChevronRight size={14} />
-              <input className={styles.titleInput} type="text" placeholder="title" value={openIdeaSpaceName} onChange={(e) => updateIdeaSpaceName(e.target.value)} />
+              <input
+                className={styles.titleInput}
+                type="text"
+                placeholder="title"
+                value={openIdeaSpaceName}
+                onChange={(e) => updateIdeaSpaceName(e.target.value)}
+              />
               <div style={{ width: 20 }}>
                 {ideaspaceNameStatus === 'saved'
                 && (
@@ -652,9 +650,9 @@ export default function IdeaSpacesChannel({
         </Modal.Header>
         <Modal.Body>
           {creatingIdeaSpace
-            ? <Spinner animation="border" variant="primary" /> : (
+            ? <ListLoadingSpinner marginTop={0} variant="primary" /> : (
               <Form>
-                <Form.Group controlId="exampleForm.ControlInput1">
+                <Form.Group controlId="exampleForm.ControlInput1" style={{ marginBottom: 0 }}>
                   <Form.Control type="text" placeholder="title" value={name} onChange={(e) => setName(e.target.value)} />
                 </Form.Group>
               </Form>
@@ -676,7 +674,6 @@ export default function IdeaSpacesChannel({
       </Modal>
       <Modal
         show={ideaSpaceToDelete !== undefined}
-        onHide={() => setShowNewIdeaSpaceModal()}
         backdrop="static"
         keyboard={false}
       >
@@ -686,7 +683,7 @@ export default function IdeaSpacesChannel({
         <Modal.Body style={{ display: 'flex', justifyContent: deletingIdeaSpace ? 'center' : 'left' }}>
           {deletingIdeaSpace
             ? <Spinner animation="border" variant="danger" /> : (
-              <div>{`Are you sure you want to delete "${nameOfIdeaSpaceToDelete}"?`}</div>
+              <div>{`Are you sure you want to delete "${ideaSpaceToDelete ? ideaSpaceToDelete.name : ''}"?`}</div>
             )}
 
         </Modal.Body>

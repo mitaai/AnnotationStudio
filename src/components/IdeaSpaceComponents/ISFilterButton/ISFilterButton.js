@@ -103,6 +103,8 @@ export default function ISFilterButton({
   const byDocumentFilters = filterToFilterRows('byDocument');
   const byTagFilters = filterToFilterRows('byTag');
 
+  const popoverTitle = `${result} result${result === 1 ? '' : 's'} out of ${total}`;
+
   return (
     <>
       <OverlayTrigger
@@ -113,7 +115,7 @@ export default function ISFilterButton({
         rootClose
         overlay={(
           <Popover key="is-filter-popover" id="is-filter-popover">
-            <Popover.Title as="h3">{`${result} results out of ${total}`}</Popover.Title>
+            <Popover.Title as="h3">{popoverTitle}</Popover.Title>
             <Popover.Content>
               <Accordion>
                 <Card>
@@ -223,7 +225,12 @@ export default function ISFilterButton({
         <Button
           id="btn-filter-annotation-well"
           size="sm"
-          variant={active ? 'primary' : 'secondary'}
+          variant={active ? 'primary' : 'light'}
+          style={active ? {} : {
+            background: '#EEEEEE',
+            borderColor: '#EEEEEE',
+            color: '#ABABAB',
+          }}
         >
           <div>
             <Filter size="1em" />

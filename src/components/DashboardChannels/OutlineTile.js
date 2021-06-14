@@ -1,24 +1,30 @@
 import { useState } from 'react';
 import moment from 'moment';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
+import { XCircleFill } from 'react-bootstrap-icons';
 import styles from './DashboardChannels.module.scss';
 
 export default function OutlineTile({
-  name = '', activityDate, onClick = () => {},
+  name = '',
+  activityDate,
+  onClick = () => {},
+  onDelete = () => {},
 }) {
   const [hovered, setHovered] = useState();
   const [focused, setFoucsed] = useState();
+  const [deleteHovered, setDeleteHovered] = useState();
   const classNames = [
     styles.tile,
     hovered ? styles.tileHovered : '',
     focused ? styles.tileFocused : '',
+    deleteHovered ? styles.tileDeleteHovered : '',
   ].join(' ');
 
   return (
     <div
       className={classNames}
-      style={{ flexDirection: 'row', paddingTop: 10 }}
-      onClick={onClick}
+      style={{ flexDirection: 'row', paddingTop: 14, paddingBottom: 14 }}
+      onClick={deleteHovered ? onDelete : onClick}
       onMouseMove={() => {
         if (!hovered) {
           setHovered(true);
@@ -36,6 +42,13 @@ export default function OutlineTile({
       role="button"
       tabIndex={0}
     >
+      <XCircleFill
+        className={styles.deleteBtn}
+        style={{ top: 3, right: 3 }}
+        onMouseOver={() => setDeleteHovered(true)}
+        onMouseOut={() => setDeleteHovered()}
+        size={14}
+      />
       <div
         className={styles.annotatedText}
       >

@@ -14,7 +14,6 @@ import {
   DEFAULTS_PARAGRAPH,
   DEFAULTS_TABLE,
   EditablePlugins,
-  deserializeHTMLToDocument,
   pipe,
   withCodeBlock,
   withDeserializeHTML,
@@ -30,8 +29,8 @@ import SlateToolbar from '../../SlateToolbar';
 import styles from './ISOutline.module.scss';
 
 const ISOutline = ({
-  mode,
-  data,
+  document,
+  setDocument,
 }) => {
   const [slateLoading, setSlateLoading] = useState(false);
   const withPlugins = [
@@ -48,9 +47,6 @@ const ISOutline = ({
   ];
   const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
-
-  // eslint-disable-next-line no-undef
-  const txtHtml = (mode === 'edit' && data) ? new DOMParser().parseFromString(data.text, 'text/html') : undefined;
   const slateInitialValue = [
     {
       children: [{ text: '' }],
@@ -58,15 +54,12 @@ const ISOutline = ({
     },
   ];
 
-  const initSlateValue = (mode === 'edit' && data && (!data.uploadContentType
-    || (!data.uploadContentType.includes('pdf') && !data.uploadContentType.includes('epub'))))
-    ? deserializeHTMLToDocument({ plugins, element: txtHtml.body })
-    : slateInitialValue;
-
-  const [slateValue, setSlateValue] = useState(initSlateValue);
+  const [slateValue, setSlateValue] = useState(document || slateInitialValue);
 
   useEffect(() => {
     setSlateLoading(false);
+    setDocument(slateValue);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slateValue]);
 
 
