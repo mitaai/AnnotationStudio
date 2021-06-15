@@ -155,8 +155,9 @@ export default function AnnotationsChannel({
 
 
   let annotationTiles;
-
+  let showRefreshButton = true;
   if (slug === undefined) {
+    showRefreshButton = false;
     annotationTiles = <EmptyListMessage text="No document selected" />;
   } else if (annotations[slug] === undefined) {
     annotationTiles = <EmptyListMessage />;
@@ -174,6 +175,7 @@ export default function AnnotationsChannel({
             Annotations
           </span>
         </div>
+        {showRefreshButton && (
         <OverlayTrigger
           key="refresh-annotaitons"
           placement="bottom"
@@ -196,8 +198,9 @@ export default function AnnotationsChannel({
             <ArrowClockwise size={18} style={{ margin: 'auto 5px' }} />
           </div>
         </OverlayTrigger>
+        )}
 
-        <PermissionsButtonGroup buttons={buttons} />
+        <PermissionsButtonGroup variant={showRefreshButton ? 'primary' : 'secondary'} buttons={buttons} />
       </div>
       <div className={styles.tileContainer}>
         {(listLoading || refresh) ? <ListLoadingSpinner /> : annotationTiles}

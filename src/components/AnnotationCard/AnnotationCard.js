@@ -773,10 +773,8 @@ function AnnotationCard({
                   <span style={{ display: 'flex', alignItems: 'center' }}>
                     {user.email === annotationData.creator.email && !annotationData.new && (
                       <>
-                        <PenFill
+                        <span
                           className="edit-annotation-btn"
-                          style={{ marginRight: 3 }}
-                          size={14}
                           onClick={() => {
                             if (annotationIdBeingEdited !== undefined) {
                               setShowUnsavedChangesToast(true);
@@ -785,7 +783,12 @@ function AnnotationCard({
                               SetAndSaveAnnotationData(annotationData);
                             }
                           }}
-                        />
+                        >
+                          <PenFill
+                            style={{ marginRight: 7 }}
+                            size={14}
+                          />
+                        </span>
                         <TrashFill
                           className="delete-annotation-btn"
                           size={14}
