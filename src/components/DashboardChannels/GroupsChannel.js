@@ -20,7 +20,7 @@ export default function GroupsChannel({
   const groupTiles = [
     <GroupTile
       key="privateGroup"
-      name="Private"
+      name="Personal"
       privateGroup
       position="Owner"
       selected={selectedGroupId === 'privateGroup'}

@@ -53,7 +53,7 @@ const DocumentsIndex = ({
       // the only way group can be undefined but still be a validGroupId is if it is the psuedo
       // privateGroup
       breadcrumbs = [
-        { name: 'Private Group' },
+        { name: 'Personal' },
         { name: 'Documents' },
       ];
     }

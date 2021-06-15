@@ -31,7 +31,7 @@ export default function Home({
   const [documentPermissions, setDocumentPermissions] = useState('shared');
   const dashboardState = `${selectedDocumentId !== undefined && selectedDocumentSlug !== undefined ? `did=${selectedDocumentId}&slug=${selectedDocumentSlug}&dp=${documentPermissions}&` : ''}gid=${selectedGroupId}`;
   const breadcrumbs = [
-    { name: selectedGroupId === 'privateGroup' ? 'Private' : session.user.groups.find(({ id }) => id === selectedGroupId).name },
+    { name: selectedGroupId === 'privateGroup' ? 'Personal' : session.user.groups.find(({ id }) => id === selectedGroupId).name },
   ];
 
   useEffect(() => {
