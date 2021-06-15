@@ -500,7 +500,16 @@ function AnnotationCard({
     return ids[side].length > 0;
   };
 
-  const saveButton = <Button size="sm" className="btn-save-annotation-edits float-right" variant="primary" onClick={SaveAnnotation}>Save</Button>;
+  const saveButton = (
+    <Button
+      size="sm"
+      className="btn-save-annotation-edits"
+      variant="primary"
+      onClick={SaveAnnotation}
+    >
+      Save
+    </Button>
+  );
 
   const annotationSaveButton = annotationMatchesCurrentFilters() ? saveButton : (
     <OverlayTrigger
@@ -1021,7 +1030,7 @@ function AnnotationCard({
         }
 
         .btn-save-annotation-edits {
-          margin-right: 3px;
+          margin-left: 3px;
           font-size: 9px;
         }
 
