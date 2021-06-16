@@ -215,13 +215,29 @@ export default function IdeaSpacesChannel({
         marginLeft={3}
       />
     );
-    const existingAnnotations = status.numberOfExistingAnnotations === 0 ? <></> : (
-      <TileBadge
-        key="existingAnnotationsText"
-        color="red"
-        text={status.numberOfExistingAnnotations === 1 ? '1 annotation already exists in this Idea Space' : `${status.numberOfExistingAnnotations} annotations already exist in Idea Space`}
-      />
-    );
+
+    let existingText = '';
+    let existingAnnotations = <></>;
+
+    if (status.numberOfExistingAnnotations > 0) {
+      if (status.numberOfExistingAnnotations === 1) {
+        if (status.numberOfNewAnnotations === 0) {
+          existingText = 'That annotation already exists in this Idea Space';
+        } else {
+          existingText = '1 annotation already exists in this Idea Space';
+        }
+      } else {
+        existingText = `${status.numberOfExistingAnnotations} annotations already exist in Idea Space`;
+      }
+      existingAnnotations = (
+        <TileBadge
+          key="existingAnnotationsText"
+          color="red"
+          maxWidth={300}
+          text={existingText}
+        />
+      );
+    }
 
     dragAndDropResult = (
       <div style={{

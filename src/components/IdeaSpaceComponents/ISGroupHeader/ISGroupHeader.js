@@ -37,6 +37,11 @@ export default function ISGroupHeader({
               text={numberOfAnnotationsText}
               draggable
               onDragStart={() => setAnnotationsBeingDragged(annotationIds)}
+              onDragEnd={(e) => {
+                if (e.dataTransfer.dropEffect !== 'copy') {
+                  setAnnotationsBeingDragged();
+                }
+              }}
             />
           </div>
           <div className={styles.pointer} style={active ? {} : { opacity: 0, marginBottom: -20 }} />

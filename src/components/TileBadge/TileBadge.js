@@ -18,12 +18,14 @@ export default function TileBadge({
   marginLeft = 0,
   marginBottom = 0,
   marginRight = 0,
+  maxWidth = 200,
   href,
   fontSize = 10,
   icon,
   onDelete,
   draggable,
   onDragStart = () => {},
+  onDragEnd = () => {},
 }) {
   const [focused, setFocused] = useState();
   const [hoverCancel, setHoverCancel] = useState();
@@ -45,6 +47,7 @@ export default function TileBadge({
         className={classNames}
         draggable={draggable}
         onDragStart={onDragStart}
+        onDragEnd={onDragEnd}
         onMouseOver={() => {
           if (onDelete) {
             setHoverCancel(true);
@@ -78,7 +81,12 @@ export default function TileBadge({
         }}
       >
         {icon}
-        <span className={styles.tileBadgeText}>{text}</span>
+        <span
+          className={styles.tileBadgeText}
+          style={{ maxWidth }}
+        >
+          {text}
+        </span>
         {onDelete && (
         <XCircle
           className={styles.cancelIcon}
@@ -91,6 +99,7 @@ export default function TileBadge({
       <span
         draggable={draggable}
         onDragStart={onDragStart}
+        onDragEnd={onDragEnd}
         onClick={tileBadgeOnClick}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused()}
