@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import { useSession } from 'next-auth/client';
 import React, { useEffect, useState } from 'react';
@@ -28,6 +29,8 @@ const GroupList = ({ query, initAlerts, statefulSession }) => {
   const [totalPages, setTotalPages] = useState(1);
   const [page, setPage] = useState(1);
   const perPage = 8;
+
+  const dashboardState = `${query.did !== undefined && query.slug !== undefined ? `did=${query.did}&slug=${query.slug}&dp=${query.dp}&` : ''}gid=${query.gid}`;
 
   const [showModal, setShowModal] = useState('');
   const handleCloseModal = () => setShowModal('');
@@ -64,7 +67,7 @@ const GroupList = ({ query, initAlerts, statefulSession }) => {
   }, [groups]);
 
   return (
-    <Layout alerts={alerts} type="group" statefulSession={statefulSession}>
+    <Layout alerts={alerts} type="group" statefulSession={statefulSession} dashboardState={dashboardState}>
       <Card>
         {((!session && loading) || (session && pageLoading)) && (
           <LoadingSpinner />

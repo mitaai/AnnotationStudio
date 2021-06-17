@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-continue */
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-underscore-dangle */
@@ -25,7 +26,7 @@ import LoadingSpinner from '../../../components/LoadingSpinner';
 import AnnotationChannel from '../../../components/AnnotationChannel';
 import Document from '../../../components/Document';
 import { prefetchDocumentBySlug } from '../../../utils/docUtil';
-import { prefetchSharedAnnotationsOnDocument } from '../../../utils/annotationUtil';
+import { fetchSharedAnnotationsOnDocument } from '../../../utils/annotationUtil';
 import {
   DocumentAnnotationsContext,
   DocumentFiltersContext,
@@ -36,17 +37,14 @@ import { getGroupById } from '../../../utils/groupUtil';
 import { FirstNameLastInitial } from '../../../utils/nameUtil';
 import AnnotationsOverlay from '../../../components/AnnotationsOverlay';
 import UnsavedChangesToast from '../../../components/UnsavedChangesToast/UnsavedChangesToast';
-import adjustLine from '../../../utils/docUIUtils';
-
-
-function DeepCopyObj(obj) {
-  return JSON.parse(JSON.stringify(obj));
-}
+import adjustLine, { DeepCopyObj } from '../../../utils/docUIUtils';
+import Footer from '../../../components/Footer';
 
 
 const DocumentPage = ({
   document, annotations, initAlerts, query, statefulSession,
 }) => {
+  const dashboardState = `${query.did !== undefined && query.slug !== undefined ? `did=${query.did}&slug=${query.slug}&dp=${query.dp}&` : ''}gid=${query.gid}`;
   let validQuery = false;
   let defaultPermissions = 0;
   if ((query && (query.mine === 'true' || query.mine === 'false')) && query.aid !== undefined) {
@@ -537,6 +535,7 @@ const DocumentPage = ({
         }
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [annotationIdToScrollTo, documentFilters]);
 
   async function getIntersectionOfGroupsAndUsers() {
@@ -788,6 +787,7 @@ const DocumentPage = ({
               alerts={alerts}
               docView
               statefulSession={statefulSession}
+              dashboardState={dashboardState}
             >
               {!session && loading && (
               <LoadingSpinner />
@@ -885,9 +885,8 @@ const DocumentPage = ({
                         setAlerts={setAlerts}
                       />
                     </div>
-
                   </div>
-
+                  <Footer />
                   <Modal
                     show={!(annotationChannel1Loaded && annotationChannel2Loaded)}
                     backdrop="static"
@@ -951,7 +950,7 @@ const DocumentPage = ({
               #document-container {
                 height: calc(100vh - ${headerHeight + footerHeight}px);
                 transition: height 0.5s;
-                overflow-y: scroll !important;
+                overflow-y: overlay !important;
                 overflow-x: scroll !important;
                 padding: 25px 0px 15px 0px;
                 scrollbar-color: rgba(0,0,0,0.1) !important;
@@ -1081,7 +1080,9 @@ export async function getServerSideProps(context) {
   });
 
   // after we get the document data we need to get the annotations on this document data
-  await prefetchSharedAnnotationsOnDocument(slug, context.req.headers.cookie)
+  await fetchSharedAnnotationsOnDocument({
+    slug, cookie: context.req.headers.cookie, prefetch: true,
+  })
     .then((annotations) => {
       props.annotations = annotations;
     }).catch((err) => {

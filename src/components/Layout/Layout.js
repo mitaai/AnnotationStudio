@@ -5,37 +5,58 @@ import Footer from '../Footer';
 import Alerts from '../Alerts';
 
 function Layout({
-  children, type, document, alerts, docView, annotations, newReg, statefulSession,
+  children,
+  type,
+  document,
+  breadcrumbs,
+  alerts,
+  docView,
+  annotations,
+  newReg,
+  statefulSession,
+  dashboardState = '',
 }) {
+  const content = (
+    <>
+      {alerts && (<Alerts alerts={alerts} />)}
+      {children}
+    </>
+  );
+  let innerContent;
+  if (docView) {
+    innerContent = content;
+  } else if (type === 'dashboard') {
+    innerContent = content;
+  } else {
+    innerContent = <Container>{content}</Container>;
+  }
   return (
     <>
       <Head>
         <title>{process.env.NEXT_PUBLIC_SITE_NAME || 'Annotation Studio'}</title>
         <link rel="icon" href="/as-logo-32x32.png" />
       </Head>
-      <Header
-        type={type}
-        document={document}
-        docView={docView}
-        annotations={annotations}
-        newReg={newReg}
-        statefulSession={statefulSession}
-      />
-      <main role="main" className={docView ? 'flex-shrink-0' : 'flex-shrink-0 p-3'}>
-        {!docView && (
-          <Container>
-            {alerts && (<Alerts alerts={alerts} />)}
-            {children}
-          </Container>
-        )}
-        {docView && (
-          <>
-            {alerts && (<Alerts alerts={alerts} />)}
-            {children}
-          </>
-        )}
-      </main>
-      <Footer />
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <Header
+          type={type}
+          document={document}
+          breadcrumbs={breadcrumbs}
+          docView={docView}
+          annotations={annotations}
+          newReg={newReg}
+          statefulSession={statefulSession}
+          dashboardState={dashboardState}
+        />
+        <div style={{
+          flex: 1,
+          overflowY: docView ? 'hidden' : 'overlay',
+          paddingTop: docView ? 0 : 15,
+        }}
+        >
+          {innerContent}
+        </div>
+        {!docView && <Footer />}
+      </div>
       <style jsx global>
         {`
           html,
@@ -44,12 +65,13 @@ function Layout({
             height: 100% !important
           }
           body {
-            background-color: #eee;
+            background-color: #f5f5f5;
           }
           #__next {
             flex-direction: column !important;
             display: flex !important;        
           }
+          
         `}
       </style>
     </>

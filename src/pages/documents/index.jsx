@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/client';
 import {
@@ -8,17 +9,27 @@ import Layout from '../../components/Layout';
 import DocumentList from '../../components/DocumentList';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import UnauthorizedCard from '../../components/UnauthorizedCard';
-import { getSharedDocumentsByGroup, getDocumentsByUser, addGroupNamesToDocuments } from '../../utils/docUtil';
+import {
+  getSharedDocumentsByGroup,
+  getDocumentsByUser,
+  addGroupNamesToDocuments,
+  getDocumentsByGroupByUser,
+} from '../../utils/docUtil';
 import Paginator from '../../components/Paginator';
 import styles from '../../style/pages/DocumentsIndex.module.scss';
+import TileBadge from '../../components/TileBadge';
 
 const DocumentsIndex = ({
   props,
+  query,
   statefulSession,
 }) => {
+  const dashboardState = `${query.did !== undefined && query.slug !== undefined ? `did=${query.did}&slug=${query.slug}&dp=${query.dp}&` : ''}gid=${query.gid}`;
+
   const { tab, initAlert } = props;
   const [session, loading] = useSession();
   const tabToUse = tab || 'shared';
+  const isPrivateGroup = query && query.gid === 'privateGroup';
   const [key, setKey] = useState(tabToUse);
   const [totalPages, setTotalPages] = useState(1);
   const [page, setPage] = useState(1);
@@ -28,10 +39,71 @@ const DocumentsIndex = ({
   const [alerts, setAlerts] = useState(alertArray);
   const perPage = 8;
 
+  let breadcrumbs;
+  let validGroupId = false;
+  if (session !== undefined && query) {
+    const group = session.user.groups.find(({ id }) => id === query.gid);
+    validGroupId = group !== undefined || query.gid === 'privateGroup';
+    if (group !== undefined) {
+      breadcrumbs = [
+        { name: group.name, href: `/groups/${query.gid}` },
+        { name: 'Documents' },
+      ];
+    } else if (validGroupId) {
+      // the only way group can be undefined but still be a validGroupId is if it is the psuedo
+      // privateGroup
+      breadcrumbs = [
+        { name: 'Personal' },
+        { name: 'Documents' },
+      ];
+    }
+  }
+
   const fetchData = async () => {
     if (session) {
       setListLoading(true);
-      if (key === 'shared') {
+      if (validGroupId) {
+        if (key === 'shared') {
+          await getDocumentsByGroupByUser({
+            groups: [{ id: query.gid }],
+            page,
+            perPage,
+            mine: false,
+          })
+            .then(async (data) => {
+              const { count, docs } = data;
+              setTotalPages(Math.ceil((count) / perPage));
+              await addGroupNamesToDocuments(docs)
+                .then((docsWithGroupNames) => {
+                  setDocuments(docsWithGroupNames);
+                });
+            })
+            .catch((err) => {
+              setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
+              setListLoading(false);
+            });
+        } else if (key === 'mine') {
+          await getDocumentsByGroupByUser({
+            groups: query.gid === 'privateGroup' ? [] : [{ id: query.gid }],
+            id: session.user.id,
+            page,
+            perPage,
+            mine: true,
+          })
+            .then(async (data) => {
+              const { count, docs } = data;
+              setTotalPages(Math.ceil((count) / perPage));
+              await addGroupNamesToDocuments(docs)
+                .then((docsWithGroupNames) => {
+                  setDocuments(docsWithGroupNames);
+                });
+            })
+            .catch((err) => {
+              setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
+              setListLoading(false);
+            });
+        }
+      } else if (key === 'shared') {
         await getSharedDocumentsByGroup({ groups: session.user.groups, page, perPage })
           .then(async (data) => {
             const { count, docs } = data;
@@ -74,8 +146,22 @@ const DocumentsIndex = ({
     }
   }, [documents]);
 
+  const cardTitle = breadcrumbs === undefined ? 'Documents' : (
+    <>
+      Documents from
+      {' '}
+      <TileBadge key="selectedGroup" color="blue" fontSize={18} text={breadcrumbs[0].name} />
+    </>
+  );
+
   return (
-    <Layout alerts={alerts} type="document" statefulSession={statefulSession}>
+    <Layout
+      alerts={alerts}
+      type="document"
+      breadcrumbs={breadcrumbs}
+      statefulSession={statefulSession}
+      dashboardState={dashboardState}
+    >
       {((loading && !session) || (session && listLoading)) && (
       <Card>
         <Card.Header>
@@ -95,7 +181,7 @@ const DocumentsIndex = ({
       <Card>
         <Card.Header className={styles.header}>
           <Card.Title>
-            Documents
+            {cardTitle}
           </Card.Title>
           <div className={styles.tabs}>
             <Tabs
@@ -105,7 +191,7 @@ const DocumentsIndex = ({
                 setKey(k);
               }}
             >
-              <Tab eventKey="shared" title="Shared" />
+              {!isPrivateGroup && <Tab eventKey="shared" title="Shared" />}
               <Tab eventKey="mine" title="Mine" />
             </Tabs>
           </div>
@@ -122,6 +208,7 @@ const DocumentsIndex = ({
               <DocumentList
                 documents={documents}
                 setDocuments={setDocuments}
+                selectedGroupId={breadcrumbs ? query.gid : undefined}
                 alerts={alerts}
                 setAlerts={setAlerts}
                 loading={listLoading}
@@ -166,7 +253,7 @@ DocumentsIndex.getInitialProps = async (context) => {
     };
     props = { ...props, initAlert };
   }
-  return { props };
+  return { props, query: context.query };
 };
 
 export default DocumentsIndex;

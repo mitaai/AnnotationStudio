@@ -11,8 +11,10 @@ import styles from './SecondNavbar.module.scss';
 const SecondNavbar = ({
   session,
   type,
+  breadcrumbs,
   document,
   docView,
+  dashboardState,
 }) => {
   const metadataFields = {
     title: 'Title',
@@ -50,9 +52,59 @@ const SecondNavbar = ({
         }
       });
     }
-  }, []);
+  }, [type]);
 
   const documentColumnSize = mobileView ? 12 : 7;
+
+  const breadcrumbsContent = Array.isArray(breadcrumbs)
+    ? breadcrumbs.map(({ name, href }) => (
+      href === undefined
+        ? <Breadcrumb.Item active>{name}</Breadcrumb.Item>
+        : <Breadcrumb.Item active={false} href={href}>{name}</Breadcrumb.Item>
+    ))
+    : (
+      <>
+        {type === 'document' && (
+        <Breadcrumb.Item href={`/documents?${dashboardState}`} active={!document}>
+          Documents
+        </Breadcrumb.Item>
+        )}
+        {type === 'group' && (
+        <Breadcrumb.Item href={`/groups?${dashboardState}`} active={!document}>
+          Groups
+        </Breadcrumb.Item>
+        )}
+        {type === 'admin' && (
+        <Breadcrumb.Item active={!document}>
+          Administration
+        </Breadcrumb.Item>
+        )}
+        {type === 'profile' && (
+        <Breadcrumb.Item active>
+          Edit Profile
+        </Breadcrumb.Item>
+        )}
+        {type === 'newuser' && (
+        <Breadcrumb.Item active>
+          Registration
+        </Breadcrumb.Item>
+        )}
+        {type === 'annotations' && (
+        <Breadcrumb.Item active>
+          Annotations
+        </Breadcrumb.Item>
+        )}
+        {document && (
+        <Breadcrumb.Item active>{document.title}</Breadcrumb.Item>
+        )}
+        {type === 'document' && document && docView && (
+        <span className={styles.infobutton}>
+          <InfoSquare size="1.4em" onClick={() => { setShowMoreDocumentInfo(true); }} />
+        </span>
+        )}
+      </>
+    );
+
 
   return (
     <>
@@ -62,45 +114,8 @@ const SecondNavbar = ({
             <Col md={type === 'document' ? documentColumnSize : 12}>
               <Nav>
                 <Breadcrumb className={styles.breadcontainer}>
-                  <Breadcrumb.Item active={type === 'dashboard'} href="/">Dashboard</Breadcrumb.Item>
-                  {type === 'document' && (
-                    <Breadcrumb.Item href="/documents" active={!document}>
-                      Documents
-                    </Breadcrumb.Item>
-                  )}
-                  {type === 'group' && (
-                    <Breadcrumb.Item href="/groups" active={!document}>
-                      Groups
-                    </Breadcrumb.Item>
-                  )}
-                  {type === 'admin' && (
-                    <Breadcrumb.Item active={!document}>
-                      Administration
-                    </Breadcrumb.Item>
-                  )}
-                  {type === 'profile' && (
-                    <Breadcrumb.Item active>
-                      Edit Profile
-                    </Breadcrumb.Item>
-                  )}
-                  {type === 'newuser' && (
-                    <Breadcrumb.Item active>
-                      Registration
-                    </Breadcrumb.Item>
-                  )}
-                  {type === 'annotations' && (
-                    <Breadcrumb.Item active>
-                      Annotations
-                    </Breadcrumb.Item>
-                  )}
-                  {document && (
-                    <Breadcrumb.Item active>{document.title}</Breadcrumb.Item>
-                  )}
-                  {type === 'document' && document && docView && (
-                    <span className={styles.infobutton}>
-                      <InfoSquare size="1.4em" onClick={() => { setShowMoreDocumentInfo(true); }} />
-                    </span>
-                  )}
+                  <Breadcrumb.Item active={type === 'dashboard'} href={`/?${dashboardState}`}>Dashboard</Breadcrumb.Item>
+                  {breadcrumbsContent}
                 </Breadcrumb>
               </Nav>
             </Col>

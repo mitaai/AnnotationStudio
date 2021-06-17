@@ -1,0 +1,46 @@
+.tileBadge {
+  outline: none;
+  border-radius: 5px;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 5px;
+  cursor: pointer;
+}
+
+.tileBadgeFoucsed {
+  &.green {
+    border: 1px solid #45AC87;
+  }
+
+  &.grey {
+    border: 1px solid #ABABAB;
+  }
+
+  &.blue {
+    border: 1px solid #4568AC;
+  }
+
+  &.yellow {
+    border: 1px solid #575757;
+  }
+}
+
+.green {
+  background: #DEFFF3;
+  color: #45AC87;
+}
+
+.grey {
+  background: #EEEEEE;
+  color: #ABABAB;
+}
+
+.blue {
+  color: #4568AC;
+  background: #EBF2FF;
+}
+
+.yellow {
+  background: #EFC957;
+  color: #575757;
+}
