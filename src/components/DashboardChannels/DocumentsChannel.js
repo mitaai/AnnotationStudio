@@ -202,8 +202,7 @@ export default function DocumentsChannel({
     : documents[selectedGroupId][documentPermissions].docs.map(({
       _id, title, groups, contributors, updatedAt, slug, owner,
     }) => {
-      console.log(contributors);
-      const contributor = contributors.find(({ type }) => type.toLowerCase() === 'author');
+      const contributor = contributors ? contributors.find(({ type }) => type.toLowerCase() === 'author') : undefined;
       const author = contributor === undefined ? 'Author' : contributor.name;
       return (
         <DocumentTile
