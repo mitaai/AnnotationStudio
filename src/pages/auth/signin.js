@@ -102,6 +102,11 @@ SignIn.getInitialProps = async (context) => {
       text: 'Error: This email address is already associated with another login method. Please use the login method you used previously.',
       variant: 'danger',
     }];
+  } else if (error && error === 'EmailCreateAccount') {
+    initAlerts = [{
+      text: `Error: There was an error creating an account. Please try again, or contact ${process.env.SUPPORT_EMAIL}.`,
+      variant: 'danger',
+    }];
   }
   return {
     props: {
