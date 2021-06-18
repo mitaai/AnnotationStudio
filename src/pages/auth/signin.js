@@ -1,7 +1,7 @@
 import { setCookie } from 'nookies';
 import Router from 'next/router';
 import React, { useState } from 'react';
-import { csrfToken, useSession } from 'next-auth/client';
+import { getCsrfToken, useSession } from 'next-auth/client';
 import { Button, Card, Form } from 'react-bootstrap';
 import Layout from '../../components/Layout';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -110,7 +110,7 @@ SignIn.getInitialProps = async (context) => {
   }
   return {
     props: {
-      cToken: await csrfToken(context),
+      cToken: await getCsrfToken(context),
       groupToken,
       groupId,
       initAlerts,
