@@ -471,7 +471,7 @@ export default function IdeaSpacesChannel({
           width, left, minWidth: 300, opacity,
         }}
       >
-        <div className={styles.headerContainer}>
+        <div className={styles.headerContainer} style={{ alignItems: 'center' }}>
           <span
             className={styles.headerText}
             onClick={() => setOpenIdeaSpaceId()}

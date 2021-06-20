@@ -260,11 +260,14 @@
 }
 
 .headerText {
-  color: '#424242';
+  color: #424242;
   font-size: 20px;
   font-weight: bold;
   margin-right: 5px;
   cursor: pointer;
+  &:hover {
+    color: #22417D !important;
+  }
 }
 
 .headerLink {
