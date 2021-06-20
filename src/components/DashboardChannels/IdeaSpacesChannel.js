@@ -108,14 +108,15 @@ export default function IdeaSpacesChannel({
     const newAnnotationIds = {};
     const annotationIdsArray = Object.keys(annotationIds);
     const dateAdded = new Date();
-    annotationsBeingDragged.map((aid) => {
+    annotationsBeingDragged.ids.map((aid) => {
       if (!annotationIdsArray.includes(aid)) {
         newAnnotationIds[aid] = dateAdded;
       }
       return null;
     });
     const numberOfNewAnnotationIds = Object.keys(newAnnotationIds).length;
-    const numberOfExistingAnnotationIds = annotationsBeingDragged.length - numberOfNewAnnotationIds;
+    const numberOfExistingAnnotationIds = annotationsBeingDragged.ids.length
+      - numberOfNewAnnotationIds;
     setAnnotationsBeingDragged();
     if (numberOfNewAnnotationIds > 0) {
       await updateIdeaSpaceData({
@@ -160,6 +161,13 @@ export default function IdeaSpacesChannel({
       activityDate={modified}
       tags={tags}
       draggable
+      setAnnotationsBeingDragged={(ids) => {
+        if (ids) {
+          setAnnotationsBeingDragged({ ids, from: 'ideaspaceChannel' });
+        } else {
+          setAnnotationsBeingDragged();
+        }
+      }}
       maxNumberOfAnnotationTags={2}
     />
   );
@@ -294,7 +302,7 @@ export default function IdeaSpacesChannel({
         animated
         now={100}
         variant="success"
-        label={`saving annotation${annotationsBeingDragged && annotationsBeingDragged.length > 1 ? 's' : ''}`}
+        label={`saving annotation${annotationsBeingDragged && annotationsBeingDragged.ids.length > 1 ? 's' : ''}`}
       />
       )}
       {dragAndDropResult}
@@ -641,7 +649,7 @@ export default function IdeaSpacesChannel({
                   </Button>
                 </OverlayTrigger>
               </div>
-              {annotationsBeingDragged !== undefined
+              {(annotationsBeingDragged && annotationsBeingDragged.from !== 'ideaspaceChannel')
               || (status && (status.done || status.annotationsRecieved))
                 ? openIdeaSpaceDropZone
                 : (

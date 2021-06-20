@@ -39,14 +39,15 @@ export default function IdeaSpaceTile({
     const newAnnotationIds = {};
     const annotationIdsArray = Object.keys(annotationIds);
     const dateAdded = new Date();
-    annotationsBeingDragged.map((aid) => {
+    annotationsBeingDragged.ids.map((aid) => {
       if (!annotationIdsArray.includes(aid)) {
         newAnnotationIds[aid] = dateAdded;
       }
       return null;
     });
     const numberOfNewAnnotationIds = Object.keys(newAnnotationIds).length;
-    const numberOfExistingAnnotationIds = annotationsBeingDragged.length - numberOfNewAnnotationIds;
+    const numberOfExistingAnnotationIds = annotationsBeingDragged.ids.length
+      - numberOfNewAnnotationIds;
     setAnnotationsBeingDragged();
     if (numberOfNewAnnotationIds > 0) {
       await updateIdeaSpaceData({
@@ -105,7 +106,7 @@ export default function IdeaSpaceTile({
         animated
         now={100}
         variant="success"
-        label={`saving annotation${annotationsBeingDragged && annotationsBeingDragged.length > 1 ? 's' : ''}`}
+        label={`saving annotation${annotationsBeingDragged && annotationsBeingDragged.ids.length > 1 ? 's' : ''}`}
       />
     );
   } else if (status.done) {

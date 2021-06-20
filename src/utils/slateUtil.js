@@ -300,6 +300,24 @@ const MarkButton = ({
 // @udecode slate plugins
 
 const plugins = [
+  {
+    renderElement: ({ element }) => {
+      if (element.type === 'dropzone') {
+        return element.dropzone;
+      }
+      if (element.type === 'annotation' && element.annotation) {
+        return (
+          <div
+            style={{ userSelect: 'none' }}
+            contentEditable={false}
+          >
+            {element.annotation}
+          </div>
+        );
+      }
+      return undefined;
+    },
+  },
   AlignPlugin(DEFAULTS_ALIGN),
   BoldPlugin({
     bold: {

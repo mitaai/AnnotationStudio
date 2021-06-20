@@ -27,12 +27,67 @@ import { withHistory } from 'slate-history';
 import { plugins, withDivs } from '../../../utils/slateUtil';
 import SlateToolbar from '../../SlateToolbar';
 import styles from './ISOutline.module.scss';
+import { DeepCopyObj } from '../../../utils/docUIUtils';
+
+const Dropzone = ({
+  slateValue,
+  setSlateValue,
+  getDroppedAnnotationsData,
+  posArray,
+  hydrateOutlineData,
+  setRemoveDropzones,
+}) => {
+  const [dragEnter, setDragEnter] = useState();
+  return (
+    <div
+      className={styles.dropzoneContainer}
+    >
+      <div
+        className={`${styles.dropzone} ${dragEnter ? styles.dropzoneDragEnter : ''}`}
+        onDragEnter={(e) => {
+          e.preventDefault();
+          setDragEnter(true);
+        }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragEnter(true);
+        }}
+        onDragLeave={(e) => {
+          e.preventDefault();
+          setDragEnter();
+        }}
+        onDrop={(e) => {
+          e.preventDefault();
+          const newSlateValue = DeepCopyObj(slateValue);
+          const container = posArray.slice(0, -1).reduce((o, k) => o[k], newSlateValue);
+          const annos = getDroppedAnnotationsData();
+          if (annos) {
+            const formattedAnnos = hydrateOutlineData(annos.map((a) => ({
+              type: 'annotation',
+              annotationData: a,
+              children: [{ text: 'annotation' }],
+            })));
+            container.splice(posArray.slice(-1)[0], 0, ...formattedAnnos);
+          }
+          setSlateValue(newSlateValue);
+          setRemoveDropzones(true);
+          setDragEnter();
+        }}
+      />
+    </div>
+  );
+};
 
 const ISOutline = ({
   document,
   setDocument,
+  getDroppedAnnotationsData,
+  hydrateOutlineData,
+  annotationsBeingDragged,
+  setAnnotationsBeingDragged,
 }) => {
   const [slateLoading, setSlateLoading] = useState(false);
+  const [removeDropzones, setRemoveDropzones] = useState(false);
   const withPlugins = [
     withReact,
     withHistory,
@@ -56,22 +111,81 @@ const ISOutline = ({
 
   const [slateValue, setSlateValue] = useState(document || slateInitialValue);
 
+  const addDropzonesToSlateValue = (arr, parentType, currentPosArray = []) => {
+    const newArr = [];
+    for (let i = 0; i < arr.length; i += 1) {
+      const {
+        type,
+        children,
+        text,
+        dropzoneType,
+      } = arr[i];
+      if (dropzoneType === undefined) {
+        if (text !== undefined) {
+          newArr.push(arr[i]);
+        } else if (children) {
+          newArr.push({ ...arr[i], children: addDropzonesToSlateValue(children, type, currentPosArray.concat([i, 'children'])) });
+          if (parentType === undefined || (!['li'].includes(parentType) && type !== 'p')) {
+            newArr.push({
+              type: 'dropzone',
+              dropzoneType: type,
+              children: [{ text: 'dropzone' }],
+              dropzone: <Dropzone
+                posArray={currentPosArray.concat([i + 1])}
+                getDroppedAnnotationsData={getDroppedAnnotationsData}
+                hydrateOutlineData={hydrateOutlineData}
+                slateValue={slateValue}
+                setSlateValue={setSlateValue}
+                setRemoveDropzones={setRemoveDropzones}
+              />,
+            });
+          }
+        }
+      }
+    }
+    return newArr;
+  };
+
+  const removeDropzonesFromSlateValue = (arr) => {
+    const newArr = [];
+    for (let i = 0; i < arr.length; i += 1) {
+      const {
+        children,
+        text,
+        dropzoneType,
+      } = arr[i];
+      if (dropzoneType === undefined) {
+        if (text !== undefined) {
+          newArr.push(arr[i]);
+        } else {
+          newArr.push({ ...arr[i], children: children && removeDropzonesFromSlateValue(children) });
+        }
+      }
+    }
+
+    return newArr;
+  };
+
+
   useEffect(() => {
     setSlateLoading(false);
     setDocument(slateValue);
+    if (removeDropzones) {
+      setAnnotationsBeingDragged();
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slateValue]);
+  }, [slateValue, removeDropzones]);
 
 
   return (
     <>
       <Slate
         editor={editor}
-        value={slateValue}
+        value={annotationsBeingDragged ? addDropzonesToSlateValue(slateValue) : slateValue}
         disabled={false}
         onChange={(value) => {
           setSlateLoading(false);
-          setSlateValue(value);
+          setSlateValue(removeDropzonesFromSlateValue(value));
         }}
       >
         <SlateToolbar

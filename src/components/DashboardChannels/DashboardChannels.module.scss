@@ -243,10 +243,14 @@
   display: flex;
   position: relative;
   padding-bottom: 5px;
+  padding-top: 5px;
   margin-bottom: 10px;
   padding-right: 20px;
   transition: all 0.5s;
-  align-items: center;
+}
+
+.selectedTab {
+  background: linear-gradient(to bottom, transparent, #FFEAAB);
 }
 
 .filtersContainer {
@@ -313,7 +317,7 @@
 .titleInput {
   border: none;
   border-bottom: 1px solid #ABABAB;
-  background: #F5F5F5;
+  background: transparent;
   outline: none;
   flex: 1;
 

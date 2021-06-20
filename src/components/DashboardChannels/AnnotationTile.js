@@ -15,7 +15,7 @@ export default function AnnotationTile({
   tags,
   maxNumberOfAnnotationTags = 3,
   onClick = () => {},
-  onDelete = () => {},
+  onDelete,
   setAnnotationsBeingDragged = () => {},
 }) {
   const [deleting, setDeleting] = useState();
@@ -68,12 +68,14 @@ export default function AnnotationTile({
         }
       }}
     >
+      {onDelete && (
       <XCircleFill
         className={styles.deleteBtn}
         onMouseOver={() => setDeleteHovered(true)}
         onMouseOut={() => setDeleteHovered()}
         size={14}
       />
+      )}
       <div className={styles.annotatedText}>
         {`"${text}"`}
       </div>

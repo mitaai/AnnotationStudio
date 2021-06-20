@@ -221,6 +221,7 @@ export default function Home({
             selectedDocumentId={selectedDocumentId}
             selectedDocumentSlug={selectedDocumentSlug}
             documentPermissions={documentPermissions}
+            annotationsBeingDragged={annotationsBeingDragged}
             setAnnotationsBeingDragged={setAnnotationsBeingDragged}
             allAnnotations={allAnnotations}
             setAllAnnotations={setAllAnnotations}

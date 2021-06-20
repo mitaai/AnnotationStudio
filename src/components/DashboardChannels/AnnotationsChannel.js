@@ -63,6 +63,7 @@ export default function AnnotationsChannel({
   selectedDocumentId,
   selectedGroupId,
   dashboardState = '',
+  annotationsBeingDragged,
   setAnnotationsBeingDragged,
   allAnnotations,
   setAllAnnotations,
@@ -195,21 +196,31 @@ export default function AnnotationsChannel({
     creator: { name },
     modified,
     body: { value, tags },
-  }) => (
-    <AnnotationTile
-      key={_id}
-      id={_id}
-      onClick={() => Router.push(`/documents/${document.slug}?mine=${permissions.private ? 'true' : 'false'}&aid=${_id}&${dashboardState}`)}
-      text={selector.exact}
-      author={name}
-      annotation={value.length > 0 ? ReactHtmlParser(value, { transform: fixIframes }) : ''}
-      activityDate={modified}
-      tags={tags}
-      draggable
-      maxNumberOfAnnotationTags={maxNumberOfAnnotationTags}
-      setAnnotationsBeingDragged={setAnnotationsBeingDragged}
-    />
-  );
+  }, extraInfo) => {
+    const dbs = (extraInfo && extraInfo.dbs) ? extraInfo.dbs : dashboardState;
+    const from = (extraInfo && extraInfo.from) ? extraInfo.from : 'annotationsChannel';
+    return (
+      <AnnotationTile
+        key={`${_id}-${from}`}
+        id={_id}
+        onClick={() => Router.push(`/documents/${document.slug}?mine=${permissions.private ? 'true' : 'false'}&aid=${_id}&${dbs}`)}
+        text={selector.exact}
+        author={name}
+        annotation={value.length > 0 ? ReactHtmlParser(value, { transform: fixIframes }) : ''}
+        activityDate={modified}
+        tags={tags}
+        draggable
+        maxNumberOfAnnotationTags={maxNumberOfAnnotationTags}
+        setAnnotationsBeingDragged={(ids) => {
+          if (ids) {
+            setAnnotationsBeingDragged({ ids, from });
+          } else {
+            setAnnotationsBeingDragged();
+          }
+        }}
+      />
+    );
+  };
 
   const updateAnnotations = (annos) => {
     annotations[slug] = annos;
@@ -480,6 +491,44 @@ export default function AnnotationsChannel({
     return 0;
   };
 
+  const hydrateOutlineData = (data) => {
+    const d = DeepCopyObj(data);
+    for (let i = 0; i < d.length; i += 1) {
+      const {
+        annotationData,
+        children,
+      } = d[i];
+
+      if (children) {
+        d[i].children = hydrateOutlineData(children);
+      }
+      if (annotationData) {
+        d[i].annotation = toAnnotationsTile(annotationData, { dbs: '', from: 'outline' });
+      }
+    }
+
+    return d;
+  };
+
+  const dehydrateOutlineData = (data) => {
+    const d = DeepCopyObj(data);
+    for (let i = 0; i < d.length; i += 1) {
+      const {
+        annotation,
+        children,
+      } = d[i];
+
+      if (children) {
+        d[i].children = dehydrateOutlineData(children);
+      }
+      if (annotation) {
+        delete d[i].annotation;
+      }
+    }
+
+    return d;
+  };
+
   const createNewOutline = async () => {
     setCreatingOutline(true);
     await createOutline({ name: newOutlineName })
@@ -487,7 +536,13 @@ export default function AnnotationsChannel({
         const newOutlines = DeepCopyObj(outlines)
           .concat([newOutline])
           .sort(byDateUpdatedAt);
+        // saving changes to outlines
         setOutlines(newOutlines);
+        // opening new outline
+        setOpenOutlineId(newOutline._id);
+        setOpenOutlineName(newOutline.name);
+        setOpenOutlineDocument(hydrateOutlineData(newOutline.document));
+        // closing modal and stopping loading ui
         setCreatingOutline();
         setShowNewOutlineModal();
       })
@@ -516,7 +571,7 @@ export default function AnnotationsChannel({
     const newOutlines = outlines.map(
       // eslint-disable-next-line no-underscore-dangle
       (outline) => (outline._id === o._id ? o : outline),
-    );
+    ).sort(byDateUpdatedAt);
     setOutlines(newOutlines);
   };
 
@@ -530,10 +585,14 @@ export default function AnnotationsChannel({
       setOpenOutlineDocument(document);
     }
 
-    saveOutlineDebounced(openOutlineId, { name, document }, (outline) => {
-      updateOutlines(outline);
-      setOutlineStatus('saved');
-    });
+    saveOutlineDebounced(
+      openOutlineId,
+      { name, document: dehydrateOutlineData(document) },
+      (outline) => {
+        updateOutlines(outline);
+        setOutlineStatus('saved');
+      },
+    );
   };
 
   const deleteO = async () => {
@@ -549,6 +608,10 @@ export default function AnnotationsChannel({
         setOutlineToDelete();
       });
   };
+
+  const getDroppedAnnotationsData = () => (annotationsBeingDragged
+    ? aa.filter((anno) => annotationsBeingDragged.ids.includes(anno._id))
+    : undefined);
 
   useEffect(
     () => setFilteredAnnotations(filterAnnotations(appliedFilters)),
@@ -711,7 +774,13 @@ export default function AnnotationsChannel({
               annotationIds={aids}
               active={activeISGroupHeaders.includes(gid)}
               toggle={() => toggleISGroupHeader(gid)}
-              setAnnotationsBeingDragged={setAnnotationsBeingDragged}
+              setAnnotationsBeingDragged={(ids) => {
+                if (ids) {
+                  setAnnotationsBeingDragged({ ids, from: 'isGroupHeader' });
+                } else {
+                  setAnnotationsBeingDragged();
+                }
+              }}
             >
               {aTiles}
             </ISGroupHeader>,
@@ -759,7 +828,7 @@ export default function AnnotationsChannel({
         onClick={() => {
           setOpenOutlineId(_id);
           setOpenOutlineName(name);
-          setOpenOutlineDocument(document);
+          setOpenOutlineDocument(hydrateOutlineData(document));
         }}
         onDelete={() => {
           setOutlineToDelete({ _id, name });
@@ -783,9 +852,13 @@ export default function AnnotationsChannel({
     outlines: openOutlineId ? (
       <div style={{ marginTop: -10 }}>
         <ISOutline
-          key={openOutlineId}
+          key={`${openOutlineId}-${annotationsBeingDragged ? 'dropzones' : ''}`}
           document={openOutlineDocument}
           setDocument={(document) => updateOutline({ document })}
+          getDroppedAnnotationsData={getDroppedAnnotationsData}
+          hydrateOutlineData={hydrateOutlineData}
+          annotationsBeingDragged={annotationsBeingDragged}
+          setAnnotationsBeingDragged={setAnnotationsBeingDragged}
         />
       </div>
     )
@@ -805,11 +878,24 @@ export default function AnnotationsChannel({
           style={{
             borderBottom: '1px solid',
             borderColor: mode === 'as' ? 'transparent' : '#DADCE1',
-            paddingRight: mode === 'as' ? 20 : 5,
+            paddingRight: mode === 'as' ? 20 : 0,
+            paddingTop: 0,
+            paddingBottom: 0,
           }}
         >
           {tabSelectionLine}
-          <div style={{ display: 'flex', flex: 3 }}>
+          <div
+            className={(mode === 'is' && tab === 'annotations') && styles.selectedTab}
+            style={{
+              display: 'flex',
+              flex: 3,
+              paddingLeft: mode === 'as' ? 0 : 5,
+              paddingTop: 5,
+              paddingBottom: 5,
+              paddingRight: 5,
+              transition: 'all 0.5s',
+            }}
+          >
             <div style={{ display: 'flex', flex: 1 }}>
               <span
                 onClick={() => setTab('annotations')}
@@ -871,12 +957,14 @@ export default function AnnotationsChannel({
           </div>
           {mode === 'is' && (
           <div
+            className={tab === 'outlines' && styles.selectedTab}
             style={{
               display: 'flex',
               flex: 2,
               borderLeft: '1px solid #DADCE1',
-              marginLeft: 8,
               paddingLeft: 8,
+              paddingBottom: 5,
+              paddingRight: 5,
               alignItems: 'center',
               color: !annotationsTabSelected ? '#424242' : '#ABABAB',
             }}
