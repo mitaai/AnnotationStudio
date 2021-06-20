@@ -365,7 +365,9 @@ export default function AnnotationsChannel({
 
       groups.map((gid) => {
         if (af.byGroup[gid] === undefined) {
-          const g = gid === 'privateGroup' ? { name: 'Private' } : session.user.groups.find(({ id }) => id === gid);
+          const g = gid === 'privateGroup'
+            ? { name: 'Private' }
+            : session.user.groups.find(({ id }) => id === gid);
           af.byGroup[gid] = { name: g.name, number: 0, checked: false };
         }
 
@@ -766,7 +768,9 @@ export default function AnnotationsChannel({
           return null;
         }).filter((t) => t !== null);
         if (aTiles.length > 0) {
-          const g = gid === 'privateGroup' ? { name: 'Private' } : session.user.groups.find(({ id }) => id === gid);
+          const g = gid === 'privateGroup'
+            ? { name: 'Private' }
+            : session.user.groups.find(({ id }) => id === gid);
           annotationTiles.push(
             <ISGroupHeader
               key={`${gid}-isgroupheader`}
@@ -800,7 +804,11 @@ export default function AnnotationsChannel({
   const tabSelectionLine = (
     <div
       className={styles.tabSelectionLine}
-      style={annotationsTabSelected ? { width: 'calc(60% - 6px)', left: 0, opacity: tabSelectionLineOpacity } : { width: 'calc(40% + 6px)', left: 'calc(60% - 6px)', opacity: tabSelectionLineOpacity }}
+      style={
+        annotationsTabSelected
+          ? { width: 'calc(60% - 6px)', left: 0, opacity: tabSelectionLineOpacity }
+          : { width: 'calc(40% + 6px)', left: 'calc(60% - 6px)', opacity: tabSelectionLineOpacity }
+      }
     />
   );
 
@@ -814,7 +822,9 @@ export default function AnnotationsChannel({
       }}
       >
         <div style={{ fontSize: 18, color: '#424242', fontWeight: 'bold' }}>Create your first outline!</div>
-        <div style={{ fontSize: 14, color: '#616161' }}>Click the &quot;New +&quot; button above to create your first outline.</div>
+        <div style={{ fontSize: 14, color: '#616161' }}>
+          Click the &quot;New +&quot; button above to create your first outline.
+        </div>
       </div>
     );
   } else {
@@ -916,12 +926,15 @@ export default function AnnotationsChannel({
                 <Popover
                   id="popover-basic"
                 >
-                  <Popover.Content style={{ color: '#636363' }}>{`Refreshed ${moment(lastUpdated).fromNow()}`}</Popover.Content>
+                  <Popover.Content style={{ color: '#636363' }}>
+                    {`Refreshed ${moment(lastUpdated).fromNow()}`}
+                  </Popover.Content>
                 </Popover>
             )}
             >
               <div
                 className={styles.refreshButton}
+                style={tab === 'outlines' ? { color: '#9e9e9e' } : {}}
                 onClick={() => {
                   if (mode === 'is' && tab === 'outlines') {
                     setTab('annotations');
@@ -939,7 +952,12 @@ export default function AnnotationsChannel({
             )}
 
             {mode === 'as'
-              ? <PermissionsButtonGroup variant={showRefreshButton ? 'primary' : 'secondary'} buttons={buttons} />
+              ? (
+                <PermissionsButtonGroup
+                  variant={showRefreshButton ? 'primary' : 'secondary'}
+                  buttons={buttons}
+                />
+              )
               : (
                 <ISFilterButton
                   active={annotationsTabSelected}
@@ -1063,7 +1081,9 @@ export default function AnnotationsChannel({
         <Modal.Body style={{ display: 'flex', justifyContent: deletingOutline ? 'center' : 'left' }}>
           {deletingOutline
             ? <Spinner animation="border" variant="danger" /> : (
-              <div>{`Are you sure you want to delete "${outlineToDelete ? outlineToDelete.name : ''}"?`}</div>
+              <div>
+                {`Are you sure you want to delete "${outlineToDelete ? outlineToDelete.name : ''}"?`}
+              </div>
             )}
 
         </Modal.Body>
@@ -1093,7 +1113,12 @@ export default function AnnotationsChannel({
             ? <ListLoadingSpinner variant="primary" marginTop={0} /> : (
               <Form>
                 <Form.Group controlId="exampleForm.ControlInput1" style={{ marginBottom: 0 }}>
-                  <Form.Control type="text" placeholder="name of outline" value={newOutlineName} onChange={(e) => setNewOutlineName(e.target.value)} />
+                  <Form.Control
+                    type="text"
+                    placeholder="name of outline"
+                    value={newOutlineName}
+                    onChange={(e) => setNewOutlineName(e.target.value)}
+                  />
                 </Form.Group>
               </Form>
             )}
