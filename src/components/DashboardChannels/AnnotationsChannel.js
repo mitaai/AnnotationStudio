@@ -1001,6 +1001,7 @@ export default function AnnotationsChannel({
               tabIndex={-1}
               role="button"
               className={styles.headerText}
+              style={{ color: annotationsTabSelected ? '#ABABAB' : '#424242' }}
             >
               Outlines
             </span>
