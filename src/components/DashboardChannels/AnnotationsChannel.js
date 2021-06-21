@@ -106,15 +106,36 @@ export default function AnnotationsChannel({
 
   // state variables for outlines tab
   const [showNewOutlineModal, setShowNewOutlineModal] = useState();
-  const [openOutlineId, setOpenOutlineId] = useState();
   const [newOutlineName, setNewOutlineName] = useState('');
   const [creatingOutline, setCreatingOutline] = useState();
   const [deletingOutline, setDeletingOutline] = useState();
   const [outlines, setOutlines] = useState([]);
   const [loadingOutlines, setLoadingOutlines] = useState();
   const [outlineToDelete, setOutlineToDelete] = useState();
-  const [openOutlineName, setOpenOutlineName] = useState('');
-  const [openOutlineDocument, setOpenOutlineDocument] = useState();
+
+  const openOutline = useRef({
+    id: null,
+    name: '',
+    document: null,
+  });
+
+  const setOpenOutline = useRef(({
+    id, name, document, callback = () => {},
+  }) => {
+    if (id !== undefined) {
+      openOutline.current.id = id;
+    }
+    if (name !== undefined) {
+      openOutline.current.name = name;
+    }
+    if (document !== undefined) {
+      openOutline.current.document = document;
+    }
+    callback();
+  }).current;
+
+  const [, setForceUpdate] = useState();
+  const forceUpdate = () => setForceUpdate(RID());
   const [outlineStatus, setOutlineStatus] = useState();
 
   const [lastUpdated, setLastUpdated] = useState(new Date());
@@ -199,11 +220,13 @@ export default function AnnotationsChannel({
   }, extraInfo) => {
     const dbs = (extraInfo && extraInfo.dbs) ? extraInfo.dbs : dashboardState;
     const from = (extraInfo && extraInfo.from) ? extraInfo.from : 'annotationsChannel';
+    const onDelete = (extraInfo && extraInfo.onDelete) ? extraInfo.onDelete : undefined;
     return (
       <AnnotationTile
         key={`${_id}-${from}`}
         id={_id}
         onClick={() => Router.push(`/documents/${document.slug}?mine=${permissions.private ? 'true' : 'false'}&aid=${_id}&${dbs}`)}
+        onDelete={onDelete}
         text={selector.exact}
         author={name}
         annotation={value.length > 0 ? ReactHtmlParser(value, { transform: fixIframes }) : ''}
@@ -493,66 +516,28 @@ export default function AnnotationsChannel({
     return 0;
   };
 
-  const hydrateOutlineData = (data) => {
-    const d = DeepCopyObj(data);
-    for (let i = 0; i < d.length; i += 1) {
+  const deleteAnnotationFromOutline = (arr, oid) => {
+    // oid stands for outline id which is the id of an annotation that uniquely identifies
+    // it in an outline. so what we need to do is go through the document tree and delete
+    // the annotation with the specific oid
+    for (let i = 0; i < arr.length; i += 1) {
       const {
         annotationData,
         children,
-      } = d[i];
-
-      if (children) {
-        d[i].children = hydrateOutlineData(children);
-      }
+      } = arr[i];
       if (annotationData) {
-        d[i].annotation = toAnnotationsTile(annotationData, { dbs: '', from: 'outline' });
+        if (annotationData.oid === oid) {
+          arr.splice(i, 1);
+          return true;
+        }
+      } else if (children) {
+        if (deleteAnnotationFromOutline(arr[i].children, oid)) {
+          return true;
+        }
       }
     }
 
-    return d;
-  };
-
-  const dehydrateOutlineData = (data) => {
-    const d = DeepCopyObj(data);
-    for (let i = 0; i < d.length; i += 1) {
-      const {
-        annotation,
-        children,
-      } = d[i];
-
-      if (children) {
-        d[i].children = dehydrateOutlineData(children);
-      }
-      if (annotation) {
-        delete d[i].annotation;
-      }
-    }
-
-    return d;
-  };
-
-  const createNewOutline = async () => {
-    setCreatingOutline(true);
-    await createOutline({ name: newOutlineName })
-      .then(async (newOutline) => {
-        const newOutlines = DeepCopyObj(outlines)
-          .concat([newOutline])
-          .sort(byDateUpdatedAt);
-        // saving changes to outlines
-        setOutlines(newOutlines);
-        // opening new outline
-        setOpenOutlineId(newOutline._id);
-        setOpenOutlineName(newOutline.name);
-        setOpenOutlineDocument(hydrateOutlineData(newOutline.document));
-        // closing modal and stopping loading ui
-        setCreatingOutline();
-        setShowNewOutlineModal();
-      })
-      .catch(() => {
-        setCreatingOutline();
-        setShowNewOutlineModal();
-      });
-    setNewOutlineName('');
+    return false;
   };
 
   const loadOutlines = async () => {
@@ -577,24 +562,90 @@ export default function AnnotationsChannel({
     setOutlines(newOutlines);
   };
 
+  const dehydrateOutlineData = (data) => {
+    const d = DeepCopyObj(data);
+    for (let i = 0; i < d.length; i += 1) {
+      const {
+        annotation,
+        children,
+      } = d[i];
+
+      if (children) {
+        d[i].children = dehydrateOutlineData(children);
+      }
+      if (annotation) {
+        delete d[i].annotation;
+      }
+    }
+
+    return d;
+  };
+
   const updateOutline = ({ name, document }) => {
     setOutlineStatus('saving');
-    if (name) {
-      setOpenOutlineName(name);
-    }
-
-    if (document) {
-      setOpenOutlineDocument(document);
-    }
+    setOpenOutline({ name, document, callback: forceUpdate });
 
     saveOutlineDebounced(
-      openOutlineId,
-      { name, document: dehydrateOutlineData(document) },
+      openOutline.current.id,
+      { name, document: document ? dehydrateOutlineData(document) : undefined },
       (outline) => {
         updateOutlines(outline);
         setOutlineStatus('saved');
       },
     );
+  };
+
+  const hydrateOutlineData = (data) => {
+    const d = DeepCopyObj(data);
+    for (let i = 0; i < d.length; i += 1) {
+      const {
+        annotationData,
+        children,
+      } = d[i];
+
+      if (children) {
+        d[i].children = hydrateOutlineData(children);
+      }
+      if (annotationData) {
+        d[i].annotation = toAnnotationsTile(annotationData, {
+          dbs: '',
+          from: 'outline',
+          onDelete: () => {
+            deleteAnnotationFromOutline(openOutline.current.document, annotationData.oid);
+            updateOutline({ document: openOutline.current.document });
+          },
+        });
+      }
+    }
+
+    return d;
+  };
+
+  const createNewOutline = async () => {
+    setCreatingOutline(true);
+    await createOutline({ name: newOutlineName })
+      .then(async (newOutline) => {
+        const newOutlines = DeepCopyObj(outlines)
+          .concat([newOutline])
+          .sort(byDateUpdatedAt);
+        // saving changes to outlines
+        setOutlines(newOutlines);
+        // opening new outline
+        setOpenOutline({
+          id: newOutline._id,
+          name: newOutline.name,
+          document: hydrateOutlineData(newOutline.document),
+          callback: forceUpdate,
+        });
+        // closing modal and stopping loading ui
+        setCreatingOutline();
+        setShowNewOutlineModal();
+      })
+      .catch(() => {
+        setCreatingOutline();
+        setShowNewOutlineModal();
+      });
+    setNewOutlineName('');
   };
 
   const deleteO = async () => {
@@ -806,8 +857,8 @@ export default function AnnotationsChannel({
       className={styles.tabSelectionLine}
       style={
         annotationsTabSelected
-          ? { width: 'calc(60% - 6px)', left: 0, opacity: tabSelectionLineOpacity }
-          : { width: 'calc(40% + 6px)', left: 'calc(60% - 6px)', opacity: tabSelectionLineOpacity }
+          ? { width: 'calc(60% - 5px)', left: 0, opacity: tabSelectionLineOpacity }
+          : { width: 'calc(40% + 5px)', left: 'calc(60% - 5px)', opacity: tabSelectionLineOpacity }
       }
     />
   );
@@ -836,9 +887,12 @@ export default function AnnotationsChannel({
         name={name}
         activityDate={updatedAt}
         onClick={() => {
-          setOpenOutlineId(_id);
-          setOpenOutlineName(name);
-          setOpenOutlineDocument(hydrateOutlineData(document));
+          setOpenOutline({
+            id: _id,
+            name,
+            document: hydrateOutlineData(document),
+            callback: forceUpdate,
+          });
         }}
         onDelete={() => {
           setOutlineToDelete({ _id, name });
@@ -846,6 +900,13 @@ export default function AnnotationsChannel({
       />
     ));
   }
+
+  const slateInitialValue = [
+    {
+      children: [{ text: '' }],
+      type: 'p',
+    },
+  ];
 
   const tabContent = {
     annotations:
@@ -859,11 +920,11 @@ export default function AnnotationsChannel({
       {(listLoading || refresh) ? <ListLoadingSpinner /> : annotationTiles}
     </div>
   </>,
-    outlines: openOutlineId ? (
+    outlines: openOutline.current.id ? (
       <div style={{ marginTop: -10 }}>
         <ISOutline
-          key={`${openOutlineId}-${annotationsBeingDragged ? 'dropzones' : ''}`}
-          document={openOutlineDocument}
+          key={openOutline.current.id}
+          document={openOutline.current.document || slateInitialValue}
           setDocument={(document) => updateOutline({ document })}
           getDroppedAnnotationsData={getDroppedAnnotationsData}
           hydrateOutlineData={hydrateOutlineData}
@@ -990,9 +1051,8 @@ export default function AnnotationsChannel({
             <span
               onClick={() => {
                 if (tab === 'outlines') {
-                  setOpenOutlineId();
                   setOutlineStatus();
-                  setOpenOutlineDocument();
+                  setOpenOutline({ id: null, document: null, callback: forceUpdate });
                 } else {
                   setTab('outlines');
                 }
@@ -1005,7 +1065,7 @@ export default function AnnotationsChannel({
             >
               Outlines
             </span>
-            {openOutlineId ? (
+            {openOutline.current.id ? (
               <div
                 style={{ display: 'flex', flex: 1, alignItems: 'center' }}
                 onClick={() => {
@@ -1022,7 +1082,7 @@ export default function AnnotationsChannel({
                   style={{ color: !annotationsTabSelected ? '#424242' : '#ABABAB' }}
                   className={styles.titleInput}
                   type="text"
-                  value={openOutlineName}
+                  value={openOutline.current.name}
                   onChange={(e) => updateOutline({ name: e.target.value })}
                 />
                 <div style={{ width: 20 }}>

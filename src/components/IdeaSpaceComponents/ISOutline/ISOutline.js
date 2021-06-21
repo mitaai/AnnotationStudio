@@ -11,7 +11,6 @@ import {
 } from 'slate-react';
 import {
   DEFAULTS_LIST,
-  DEFAULTS_PARAGRAPH,
   DEFAULTS_TABLE,
   EditablePlugins,
   pipe,
@@ -27,11 +26,11 @@ import { withHistory } from 'slate-history';
 import { plugins, withDivs } from '../../../utils/slateUtil';
 import SlateToolbar from '../../SlateToolbar';
 import styles from './ISOutline.module.scss';
-import { DeepCopyObj } from '../../../utils/docUIUtils';
+import { DeepCopyObj, RID } from '../../../utils/docUIUtils';
 
 const Dropzone = ({
-  slateValue,
-  setSlateValue,
+  document,
+  setDocument,
   getDroppedAnnotationsData,
   posArray,
   hydrateOutlineData,
@@ -58,18 +57,18 @@ const Dropzone = ({
         }}
         onDrop={(e) => {
           e.preventDefault();
-          const newSlateValue = DeepCopyObj(slateValue);
+          const newSlateValue = DeepCopyObj(document);
           const container = posArray.slice(0, -1).reduce((o, k) => o[k], newSlateValue);
           const annos = getDroppedAnnotationsData();
           if (annos) {
-            const formattedAnnos = hydrateOutlineData(annos.map((a) => ({
+            const formattedAnnos = annos.map((a) => ({
               type: 'annotation',
-              annotationData: a,
+              annotationData: { oid: RID(), ...a },
               children: [{ text: 'annotation' }],
-            })));
+            }));
             container.splice(posArray.slice(-1)[0], 0, ...formattedAnnos);
           }
-          setSlateValue(newSlateValue);
+          setDocument(hydrateOutlineData(newSlateValue));
           setRemoveDropzones(true);
           setDragEnter();
         }}
@@ -102,15 +101,6 @@ const ISOutline = ({
   ];
   const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
-  const slateInitialValue = [
-    {
-      children: [{ text: '' }],
-      type: DEFAULTS_PARAGRAPH.p.type,
-    },
-  ];
-
-  const [slateValue, setSlateValue] = useState(document || slateInitialValue);
-
   const addDropzonesToSlateValue = (arr, parentType, currentPosArray = []) => {
     const newArr = [];
     for (let i = 0; i < arr.length; i += 1) {
@@ -134,8 +124,8 @@ const ISOutline = ({
                 posArray={currentPosArray.concat([i + 1])}
                 getDroppedAnnotationsData={getDroppedAnnotationsData}
                 hydrateOutlineData={hydrateOutlineData}
-                slateValue={slateValue}
-                setSlateValue={setSlateValue}
+                document={document}
+                setDocument={setDocument}
                 setRemoveDropzones={setRemoveDropzones}
               />,
             });
@@ -169,23 +159,22 @@ const ISOutline = ({
 
   useEffect(() => {
     setSlateLoading(false);
-    setDocument(slateValue);
     if (removeDropzones) {
       setAnnotationsBeingDragged();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slateValue, removeDropzones]);
+  }, [document, removeDropzones]);
 
 
   return (
     <>
       <Slate
         editor={editor}
-        value={annotationsBeingDragged ? addDropzonesToSlateValue(slateValue) : slateValue}
+        value={annotationsBeingDragged ? addDropzonesToSlateValue(document) : document}
         disabled={false}
         onChange={(value) => {
           setSlateLoading(false);
-          setSlateValue(removeDropzonesFromSlateValue(value));
+          setDocument(removeDropzonesFromSlateValue(value));
         }}
       >
         <SlateToolbar
