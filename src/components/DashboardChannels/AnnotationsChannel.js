@@ -956,7 +956,7 @@ export default function AnnotationsChannel({
         >
           {tabSelectionLine}
           <div
-            className={(mode === 'is' && tab === 'annotations') && styles.selectedTab}
+            className={(mode === 'is' && tab === 'annotations') ? styles.selectedTab : undefined}
             style={{
               display: 'flex',
               flex: 3,
@@ -1036,7 +1036,7 @@ export default function AnnotationsChannel({
           </div>
           {mode === 'is' && (
           <div
-            className={tab === 'outlines' && styles.selectedTab}
+            className={tab === 'outlines' ? styles.selectedTab : undefined}
             style={{
               display: 'flex',
               flex: 2,

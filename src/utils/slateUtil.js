@@ -308,7 +308,6 @@ const plugins = [
       if (element.type === 'annotation' && element.annotation) {
         return (
           <div
-            style={{ userSelect: 'none' }}
             contentEditable={false}
           >
             {element.annotation}

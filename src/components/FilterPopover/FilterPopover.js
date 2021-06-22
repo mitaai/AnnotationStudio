@@ -242,7 +242,7 @@ function FilterPopover({ session }) {
       key={index}
       onRemove={onRemove}
       option={option}
-      className={option.matches === 0 ? 'no-matches-token' : ''}
+      className={option.matches === 0 ? 'no-matches-token' : undefined}
     >
       <span>{option.name}</span>
       <span className="token-badge">{option.matches}</span>
@@ -415,7 +415,7 @@ function FilterPopover({ session }) {
           <div>
             <Filter size="1em" />
             <span className="text">Filter</span>
-            <Badge className={filterActive && 'active'} variant="light">
+            <Badge className={filterActive ? 'active' : undefined} variant="light">
               {
               `${totalNumberOfFilteredAnnotations}/${numberOfMatchesForPermissions[documentFilters.filters.permissions]}`
               }

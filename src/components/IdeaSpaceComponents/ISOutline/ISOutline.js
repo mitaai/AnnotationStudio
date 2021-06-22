@@ -165,6 +165,9 @@ const ISOutline = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [document, removeDropzones]);
 
+  // console.log(editor);
+  console.log(document);
+
 
   return (
     <>
@@ -221,7 +224,7 @@ const ISOutline = ({
 
             #outline-container {
               border-radius: 0px;
-              height: calc(100vh - 299px);
+              height: calc(100vh - 303px);
               resize: none;
               outline: none !important;
               box-shadow: none !important;
