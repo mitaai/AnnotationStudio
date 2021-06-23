@@ -480,7 +480,7 @@ export default function IdeaSpacesChannel({
             role="button"
             tabIndex={-1}
           >
-            Idea Spaces
+            Ideas
           </span>
           {openIdeaSpaceId ? (
             <>

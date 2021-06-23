@@ -1063,7 +1063,7 @@ export default function AnnotationsChannel({
               className={styles.headerText}
               style={{ color: annotationsTabSelected ? '#ABABAB' : '#424242' }}
             >
-              Outlines
+              Compositions
             </span>
             {openOutline.current.id ? (
               <div

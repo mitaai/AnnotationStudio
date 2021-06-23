@@ -286,8 +286,10 @@ $breadcrumb-bg: transparent;
 
 .annotation-card-container.new-annotation .line1,
 .annotation-card-container.new-annotation .line2 {
-  background-color: color.adjust(theme.$primary, $alpha: -0.5) !important;
   z-index: 3;
+  > div {
+    background-color: color.adjust(theme.$primary, $alpha: -0.5) !important;
+  }
 }
 
 .annotation-card-container.new-annotation .annotation-pointer-background-left {
