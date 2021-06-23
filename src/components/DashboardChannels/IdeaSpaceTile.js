@@ -28,6 +28,7 @@ export default function IdeaSpaceTile({
     deleteHovered ? styles.tileDeleteHovered : '',
     focused ? styles.tileFocused : '',
     dragEnter ? styles.tileDragEnter : '',
+    annotationsBeingDragged && !dragEnter ? styles.tileOpenForAnnotations : '',
     status && status.annotationsRecieved ? styles.annotationsRecieved : '',
   ].join(' ');
 
@@ -93,7 +94,7 @@ export default function IdeaSpaceTile({
               </Popover>
       )}
           >
-            <span>{moment(activityDate).fromNow()}</span>
+            <span>{`Edited ${moment(activityDate).fromNow()}`}</span>
           </OverlayTrigger>
         </div>
         <TileBadge key="annotationsText" color="grey" text={annotationsText} />

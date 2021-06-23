@@ -143,8 +143,12 @@
 }
 
 .tileDragEnter {
-  border-color: #B18910 !important;
+  border: 1px dashed #B18910 !important;
   background: #FFFAEB !important;
+}
+
+.tileOpenForAnnotations {
+  border: 1px dashed #015999 !important;
 }
 
 .annotationsRecieved {
