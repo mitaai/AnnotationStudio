@@ -293,7 +293,7 @@ function FilterPopover({ session }) {
                   />
                   {byUserDisabled && (
                   <Form.Text className="text-muted">
-                    This input is disabled because &quot;Mine&quot; permission view is selected.
+                    This option is disabled because &quot;Mine&quot; permission view is selected.
                   </Form.Text>
                   )}
 

@@ -252,6 +252,9 @@ $breadcrumb-bg: transparent;
 /* import react-bootstrap-range-slider */
 @import "~react-bootstrap-range-slider/dist/react-bootstrap-range-slider.scss";
 
+/* import react-bootstrap-range-slider */
+@import "~react-bootstrap-typeahead/css/Typeahead.scss";
+
 /* import bootstrap */
 @import "~bootstrap/scss/bootstrap";
 
@@ -307,4 +310,13 @@ $breadcrumb-bg: transparent;
 
 .token-badge {
   border: 1px solid theme.$primary;
+}
+
+.rbt-token {
+  color: theme.$primary !important;
+
+  &.rbt-token-active {
+    background-color: theme.$primary !important;
+    color: white !important;
+  }
 }
