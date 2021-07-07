@@ -1,8 +1,10 @@
+/* eslint-disable prefer-destructuring */
 /* eslint-disable import/prefer-default-export */
 
 import { MongoClient } from 'mongodb';
 
-const { MONGODB_URI, DB_NAME } = process.env;
+const MONGODB_URI = process.env.MONGODB_URI;
+const DB_NAME = process.env.DB_NAME;
 
 if (!MONGODB_URI) {
   throw new Error(
