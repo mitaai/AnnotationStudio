@@ -534,7 +534,6 @@ export default function IdeaSpacesChannel({
                   key="ideaspaces-sortby-dropdown"
                   id="ideaspaces-sortby-dropdown-btn"
                   variant="light"
-                  style={{ fontSize: 13 }}
                   className={`${styles.sortByDropdown} ${showIdeaspacesSortByDropdown ? styles.sortByDropdownSelected : ''}`}
                   title="Sort By"
                   onClick={() => setShowIdeaspacesSortByDropdown(true)}

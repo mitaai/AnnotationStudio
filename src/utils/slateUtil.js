@@ -306,13 +306,7 @@ const plugins = [
         return element.dropzone;
       }
       if (element.type === 'annotation' && element.annotation) {
-        return (
-          <div
-            contentEditable={false}
-          >
-            {element.annotation}
-          </div>
-        );
+        return element.annotation;
       }
       return undefined;
     },

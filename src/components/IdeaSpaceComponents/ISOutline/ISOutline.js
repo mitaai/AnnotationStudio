@@ -64,7 +64,7 @@ const Dropzone = ({
             const formattedAnnos = annos.map((a) => ({
               type: 'annotation',
               annotationData: { oid: RID(), ...a },
-              children: [{ text: 'annotation' }],
+              children: [{ text: '' }],
             }));
             container.splice(posArray.slice(-1)[0], 0, ...formattedAnnos);
           }
@@ -165,7 +165,7 @@ const ISOutline = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [document, removeDropzones]);
 
-  // console.log(editor);
+  console.log(editor);
   console.log(document);
 
 
@@ -184,6 +184,7 @@ const ISOutline = ({
           id="hello"
           key="goodbye"
           disabled={false}
+          exportButton
         />
         {slateLoading && (
         <div className={styles['slate-loader']}>

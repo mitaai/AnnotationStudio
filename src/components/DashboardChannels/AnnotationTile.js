@@ -43,6 +43,7 @@ export default function AnnotationTile({
   return (
     <div
       className={classNames}
+      contentEditable={false}
       onClick={deleteHovered ? () => { onDelete(); setDeleting(true); } : onClick}
       onMouseMove={() => {
         if (!hovered) {

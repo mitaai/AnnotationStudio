@@ -23,6 +23,9 @@ import {
   OverlayTrigger, Popover, Modal, Button, Form, Tooltip, Spinner,
 } from 'react-bootstrap';
 
+import {
+  DEFAULTS_PARAGRAPH,
+} from '@udecode/slate-plugins';
 import { fetchSharedAnnotationsOnDocument, getAllAnnotations } from '../../utils/annotationUtil';
 import { fixIframes } from '../../utils/parseUtil';
 
@@ -32,6 +35,7 @@ import {
 } from './HelperComponents';
 
 import AnnotationTile from './AnnotationTile';
+
 
 import styles from './DashboardChannels.module.scss';
 import { DeepCopyObj, RID } from '../../utils/docUIUtils';
@@ -218,14 +222,24 @@ export default function AnnotationsChannel({
     modified,
     body: { value, tags },
   }, extraInfo) => {
-    const dbs = (extraInfo && extraInfo.dbs) ? extraInfo.dbs : dashboardState;
-    const from = (extraInfo && extraInfo.from) ? extraInfo.from : 'annotationsChannel';
-    const onDelete = (extraInfo && extraInfo.onDelete) ? extraInfo.onDelete : undefined;
+    const defaultExtraInfo = {
+      dbs: dashboardState,
+      from: 'annotationsChannel',
+      onDelete: undefined,
+      onClick: undefined,
+    };
+    const {
+      dbs,
+      from,
+      onDelete,
+      onClick,
+    } = extraInfo ? { ...defaultExtraInfo, ...extraInfo } : defaultExtraInfo;
+
     return (
       <AnnotationTile
         key={`${_id}-${from}`}
         id={_id}
-        onClick={() => Router.push(`/documents/${document.slug}?mine=${permissions.private ? 'true' : 'false'}&aid=${_id}&${dbs}`)}
+        onClick={onClick || (() => Router.push(`/documents/${document.slug}?mine=${permissions.private ? 'true' : 'false'}&aid=${_id}&${dbs}`))}
         onDelete={onDelete}
         text={selector.exact}
         author={name}
@@ -595,7 +609,34 @@ export default function AnnotationsChannel({
     );
   };
 
+  const setCursorAfterAnnotation = (oid) => {
+    const indexOfAnnotation = openOutline.current.document
+      .findIndex(({ annotationData }) => annotationData && annotationData.oid === oid);
+
+    if (indexOfAnnotation !== -1) {
+      openOutline.current.document.splice(
+        indexOfAnnotation + 1,
+        0,
+        {
+          children: [{ text: '' }],
+          type: DEFAULTS_PARAGRAPH.p.type,
+        },
+      );
+      updateOutline({});
+    }
+  };
+
+  const documentInitialValue = [
+    {
+      children: [{ text: '' }],
+      type: DEFAULTS_PARAGRAPH.p.type,
+    },
+  ];
+
   const hydrateOutlineData = (data) => {
+    if (!data) {
+      return documentInitialValue;
+    }
     const d = DeepCopyObj(data);
     for (let i = 0; i < d.length; i += 1) {
       const {
@@ -614,6 +655,7 @@ export default function AnnotationsChannel({
             deleteAnnotationFromOutline(openOutline.current.document, annotationData.oid);
             updateOutline({ document: openOutline.current.document });
           },
+          onClick: () => setCursorAfterAnnotation(annotationData.oid),
         });
       }
     }
@@ -623,7 +665,7 @@ export default function AnnotationsChannel({
 
   const createNewOutline = async () => {
     setCreatingOutline(true);
-    await createOutline({ name: newOutlineName })
+    await createOutline({ name: newOutlineName, document: documentInitialValue })
       .then(async (newOutline) => {
         const newOutlines = DeepCopyObj(outlines)
           .concat([newOutline])
