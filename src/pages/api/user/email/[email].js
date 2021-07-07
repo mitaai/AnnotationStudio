@@ -11,9 +11,11 @@ const handler = async (req, res) => {
       const { db } = await connectToDatabase();
       const user = await db
         .collection('users')
-        .find(
-          { email: req.query.email },
-        ).toArray();
+        .find({
+          $text: {
+            $search: req.query.email,
+          },
+        }).toArray();
       if (user[0]) {
         const doc = user[0];
         // eslint-disable-next-line no-underscore-dangle
