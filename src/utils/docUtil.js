@@ -84,6 +84,34 @@ const getSharedDocumentsByGroup = async ({
   } return Promise.reject(Error(`Unable to retrieve documents: error ${res.status} received from server`));
 };
 
+const getDocumentsByGroupByUser = async ({
+  groups,
+  page,
+  perPage,
+  id,
+  mine,
+}) => {
+  const url = '/api/documents2';
+  const body = {
+    userId: mine ? id : undefined,
+    groupIds: groups.map((group) => group.id),
+    page,
+    perPage,
+  };
+  const res = await unfetch(url, {
+    method: 'POST',
+    body: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (res.status === 200) {
+    const response = await res.json();
+    const { documents, count } = response;
+    return Promise.resolve({ docs: documents.filter((document) => document.state !== 'draft'), count });
+  } return Promise.reject(Error(`Unable to retrieve documents: error ${res.status} received from server`));
+};
+
 const deleteDocumentById = async (id) => {
   const url = `/api/document/${id}`;
   const res = await unfetch(url, {
@@ -170,6 +198,7 @@ export {
   getDocumentsByUser,
   getManyGroupNamesById,
   getSharedDocumentsByGroup,
+  getDocumentsByGroupByUser,
   prefetchDocumentBySlug,
   prefetchManyGroupNamesById,
 };

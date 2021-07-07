@@ -58,6 +58,7 @@ const AdminUserTable = ({
       if (type === 'documents') {
         setDocs({
           found: await getDocumentsByUser({ id })
+            .then((res) => res.docs)
             .catch((err) => setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }])),
         });
       } else if (type === 'annotations') {

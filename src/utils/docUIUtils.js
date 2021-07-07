@@ -46,6 +46,10 @@ export function mapRanges(input, istart, iend, ostart, oend) {
   return ostart + ((oend - ostart) / (iend - istart)) * (input - istart);
 }
 
+export function DeepCopyObj(obj) {
+  return JSON.parse(JSON.stringify(obj));
+}
+
 export const RID = () => {
   const c = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let rid = '';

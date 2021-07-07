@@ -58,7 +58,7 @@ const DashboardDocumentList = ({
       }
     }
     fetchData();
-  }, [key, forceUpdate]);
+  }, [key, forceUpdate, session, setAlerts]);
 
   return (
     <Card data-testid="dash-document-list">

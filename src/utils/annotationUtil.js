@@ -51,10 +51,11 @@ const postAnnotation = async ({
   } return Promise.reject(Error(`Unable to create annotation: error ${res.status} received from server`));
 };
 
-const prefetchSharedAnnotationsOnDocument = async (slug, cookie) => {
-  const url = `${appendProtocolIfMissing(process.env.SITE)}/api/annotations?slug=${slug}`;
+const fetchSharedAnnotationsOnDocument = async ({ slug, cookie, prefetch }) => {
+  const url = `${prefetch ? appendProtocolIfMissing(process.env.SITE) : ''}/api/annotations?slug=${slug}`;
   // eslint-disable-next-line no-undef
-  const res = await fetch(url, {
+  const f = prefetch ? fetch : unfetch;
+  const res = await f(url, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -243,7 +244,7 @@ export {
   getOwnAnnotations,
   getSharedAnnotations,
   postAnnotation,
-  prefetchSharedAnnotationsOnDocument,
+  fetchSharedAnnotationsOnDocument,
   reassignAnnotationsToUser,
   updateAllAnnotationsByUser,
   updateAllAnnotationsOnDocument,

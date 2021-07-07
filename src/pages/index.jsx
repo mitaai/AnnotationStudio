@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { parseCookies, destroyCookie } from 'nookies';
 import {
-  Button, Card, CardColumns, Col, Row,
+  Button, Card,
 } from 'react-bootstrap';
 import { useSession } from 'next-auth/client';
 import Link from 'next/link';
@@ -9,10 +9,8 @@ import { useRouter } from 'next/router';
 import Layout from '../components/Layout';
 import LoadingSpinner from '../components/LoadingSpinner';
 import GroupJoinCard from '../components/GroupJoinCard';
-import DashboardAnnotationList from '../components/Dashboard/DashboardAnnotationList';
-import DashboardDocumentList from '../components/Dashboard/DashboardDocumentList';
-import DashboardGroupList from '../components/Dashboard/DashboardGroupList';
 import { appendProtocolIfMissing } from '../utils/fetchUtil';
+import { GroupsChannel, DocumentsChannel, AnnotationsChannel } from '../components/DashboardChannels';
 
 export default function Home({
   query,
@@ -27,8 +25,43 @@ export default function Home({
   const router = useRouter();
   const newReg = query && query.alert && query.alert === 'completeRegistration';
 
+  const [selectedGroupId, setSelectedGroupId] = useState('privateGroup');
+  const [selectedDocumentId, setSelectedDocumentId] = useState();
+  const [selectedDocumentSlug, setSelectedDocumentSlug] = useState();
+  const [documentPermissions, setDocumentPermissions] = useState('shared');
+  const dashboardState = `${selectedDocumentId !== undefined && selectedDocumentSlug !== undefined ? `did=${selectedDocumentId}&slug=${selectedDocumentSlug}&dp=${documentPermissions}&` : ''}gid=${selectedGroupId}`;
+  const breadcrumbs = [
+    { name: selectedGroupId === 'privateGroup' ? 'Personal' : session.user.groups.find(({ id }) => id === selectedGroupId).name },
+  ];
+
+  useEffect(() => {
+    if (session && query) {
+      if (query.gid !== undefined && (session.user.groups.some(({ id }) => query.gid === id) || query.gid === 'privateGroup')) {
+        setSelectedGroupId(query.gid);
+        if (query.did !== undefined && query.slug !== undefined) {
+          setSelectedDocumentId(query.did);
+          setSelectedDocumentSlug(query.slug);
+        }
+        setDocumentPermissions(['mine', 'shared'].includes(query.dp) ? query.dp : 'shared');
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, session]);
+
+  const showDashboard = session
+  && ((session.user && session.user.firstName)
+  || statefulSession)
+  && !loading;
+
   return (
-    <Layout alerts={alerts} type="dashboard" newReg={newReg} statefulSession={statefulSession}>
+    <Layout
+      alerts={alerts}
+      type="dashboard"
+      breadcrumbs={showDashboard ? breadcrumbs : undefined}
+      dashboardState={dashboardState}
+      newReg={newReg}
+      statefulSession={statefulSession}
+    >
       {loading && (
         <Card>
           <Card.Body>
@@ -80,29 +113,54 @@ export default function Home({
         />
       )}
       {session && ((session.user && session.user.firstName) || statefulSession) && !loading && (
-        <Row>
-          <Col>
-            <CardColumns style={{ columnCount: 1 }}>
-              <DashboardDocumentList
-                session={statefulSession || session}
-                forceUpdate={!!statefulSession}
-                alerts={alerts}
-                setAlerts={setAlerts}
-              />
-              <DashboardGroupList
-                session={statefulSession || session}
-              />
-            </CardColumns>
-          </Col>
-          <Col>
-            <DashboardAnnotationList
-              session={statefulSession || session}
-              alerts={alerts}
-              setAlerts={setAlerts}
-              mode="dashboard"
-            />
-          </Col>
-        </Row>
+        <div style={{
+          display: 'flex', height: '100%', marginLeft: 15, marginRight: 10,
+        }}
+        >
+          <GroupsChannel
+            flex={1}
+            session={statefulSession || session}
+            selectedGroupId={selectedGroupId}
+            setSelectedGroupId={(id) => {
+              if (id !== selectedGroupId) {
+                // if a new group is selected the selected document id and
+                // slug should be cleared and set to undefined
+                setSelectedGroupId(id);
+                setSelectedDocumentId();
+                setSelectedDocumentSlug();
+              }
+            }}
+            selectedDocumentId={selectedDocumentId}
+            setSelectedDocumentId={setSelectedDocumentId}
+            selectedDocumentSlug={selectedDocumentSlug}
+            setSelectedDocumentSlug={setSelectedDocumentSlug}
+            documentPermissions={documentPermissions}
+          />
+          <DocumentsChannel
+            flex={2}
+            session={statefulSession || session}
+            selectedGroupId={selectedGroupId}
+            setSelectedGroupId={setSelectedGroupId}
+            selectedDocumentId={selectedDocumentId}
+            setSelectedDocumentId={setSelectedDocumentId}
+            selectedDocumentSlug={selectedDocumentSlug}
+            setSelectedDocumentSlug={setSelectedDocumentSlug}
+            documentPermissions={documentPermissions}
+            setDocumentPermissions={setDocumentPermissions}
+            setAlerts={setAlerts}
+            forceUpdate={!!statefulSession}
+          />
+          <AnnotationsChannel
+            flex={2}
+            session={statefulSession || session}
+            setAlerts={setAlerts}
+            slug={selectedDocumentSlug}
+            selectedGroupId={selectedGroupId}
+            selectedDocumentId={selectedDocumentId}
+            selectedDocumentSlug={selectedDocumentSlug}
+            documentPermissions={documentPermissions}
+          />
+        </div>
       )}
     </Layout>
   );

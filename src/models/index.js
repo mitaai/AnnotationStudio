@@ -5,6 +5,7 @@ class User {
     }
     if (email) {
       this.email = email;
+      this.slug = email.replace(/[*+~.()'"!:@]/g, '-');
       if (email === process.env.ADMIN_EMAIL) {
         this.role = 'admin';
       } else this.role = 'user';
