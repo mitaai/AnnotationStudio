@@ -3,7 +3,9 @@ import Router from 'next/router';
 import {
   OverlayTrigger,
 } from 'react-bootstrap';
+import { XCircle } from 'react-bootstrap-icons';
 import styles from './TileBadge.module.scss';
+
 
 export default function TileBadge({
   onClick,
@@ -12,35 +14,92 @@ export default function TileBadge({
   setShowPopover,
   color = 'grey',
   text = '',
+  marginTop = 0,
   marginLeft = 0,
+  marginBottom = 0,
   marginRight = 0,
+  maxWidth = 200,
   href,
   fontSize = 10,
+  icon,
+  onDelete,
+  draggable,
+  onDragStart = () => {},
+  onDragEnd = () => {},
 }) {
   const [focused, setFocused] = useState();
-  const colors = ['grey', 'blue', 'green', 'yellow'];
+  const [hoverCancel, setHoverCancel] = useState();
+  const colors = ['grey', 'blue', 'green', 'yellow', 'red'];
   const c = colors.includes(color) ? color : 'grey';
   const classNames = [
     styles.tileBadge,
-    styles[c],
+    draggable ? styles.draggableTileBadge : '',
+    styles[hoverCancel ? 'red' : c],
     focused ? styles.tileBadgeFoucsed : '',
   ].join(' ');
   const tileBadgeOnClick = href === undefined ? onClick : () => {
     Router.push(href);
   };
+
   const badge = tileBadgeOnClick === undefined && popover === undefined
     ? (
       <span
         className={classNames}
+        draggable={draggable}
+        onDragStart={onDragStart}
+        onDragEnd={onDragEnd}
+        onMouseOver={() => {
+          if (onDelete) {
+            setHoverCancel(true);
+          }
+        }}
+        onMouseOut={() => {
+          if (onDelete) {
+            setHoverCancel();
+          }
+        }}
+        onFocus={() => {
+          if (onDelete) {
+            setHoverCancel(true);
+          }
+        }}
+        onBlur={() => {
+          if (onDelete) {
+            setHoverCancel();
+          }
+        }}
+        onClick={onDelete}
+        tabIndex={0}
+        role="button"
+        onKeyDown={(e) => {
+          if (e.code === 'Space' || e.code === 'Enter') {
+            onDelete();
+          }
+        }}
         style={{
-          marginLeft, marginRight, fontSize, cursor: 'default',
+          marginTop, marginLeft, marginBottom, marginRight, fontSize, cursor: 'default', display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}
       >
-        {text}
+        {icon}
+        <span
+          className={styles.tileBadgeText}
+          style={{ maxWidth }}
+        >
+          {text}
+        </span>
+        {onDelete && (
+        <XCircle
+          className={styles.cancelIcon}
+          size={fontSize + 2}
+        />
+        )}
       </span>
     )
     : (
       <span
+        draggable={draggable}
+        onDragStart={onDragStart}
+        onDragEnd={onDragEnd}
         onClick={tileBadgeOnClick}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused()}
@@ -60,7 +119,7 @@ export default function TileBadge({
           marginLeft, marginRight, fontSize,
         }}
       >
-        {text}
+        <span>{text}</span>
       </span>
     );
   return popover !== undefined ? (

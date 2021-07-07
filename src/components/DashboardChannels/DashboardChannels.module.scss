@@ -1,23 +1,6 @@
-//@use "sass:color";
-//@use "../../style/theme";
+@use "sass:color";
+@use "../../style/theme";
 
-.newButton {
-  padding: 5px 7px;
-  background: #EFC957;
-  color: #575757;
-  font-size: 10px;
-  font-weight: bold;
-  border-radius: 5px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  transition: background 0.25s;
-  margin-top: 2px;
-  margin-bottom: 2px;
-  &:hover {
-    background: #EED486;
-  }
-}
 
 .refreshButton {
   cursor: pointer;
@@ -26,7 +9,7 @@
   margin: auto 5px auto auto;
   font-size: 14px;
   &:hover {
-    color: #4568AC;
+    color: theme.$primary;
   }
 }
 
@@ -36,16 +19,19 @@
   margin: 10px auto;
   font-size: 14px;
   &:hover {
-    color: #4568AC;
+    color: theme.$primary;
   }
 }
 
 .channelContainer {
-  min-width: 450px !important;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  height: 100%;
   display: flex;
   flex-direction: column;
   margin-left: 15px;
-  position: relative;
+  transition: all 0.5s
 }
 
 .dividingLine {
@@ -110,7 +96,7 @@
       justify-content: center;
       align-items: center;
       background: #EBF2FF;
-      color: #4568AC;
+      color: theme.$primary;
     }
     .documentContentContainer {
       padding: 5px 10px 10px 10px !important;
@@ -121,8 +107,27 @@
   }
 }
 
+.deleteBtn {
+  visibility: hidden;
+  position: absolute;
+  right: 5px;
+}
+
 .tileHovered {
   background: #EFF5FF !important;
+
+  .deleteBtn {
+    color: #424242;
+    visibility: visible;
+  }
+
+  &.tileDeleteHovered {
+    background: #FFEBEB !important;
+
+    .deleteBtn {
+      color: #AC4545;
+    }
+  }
 
   .moreTileOptions {
     opacity: 1.0;
@@ -134,12 +139,26 @@
 }
 
 .tileFocused {
-  border: 1px solid #4568AC !important
+  border: 1px solid theme.$primary !important
+}
+
+.tileDragEnter {
+  border: 1px dashed #B18910 !important;
+  background: #FFFAEB !important;
+}
+
+.tileOpenForAnnotations {
+  border: 1px dashed #015999 !important;
+}
+
+.annotationsRecieved {
+  border-color: #45AC87 !important;
+  background: #DEFFF3;
 }
 
 .selectedTile {
   left: 10px;
-  background: #4568AC !important;
+  background: theme.$primary !important;
 
   .name {
     color: white;
@@ -193,16 +212,16 @@
 .moreGroupsOption {
   padding: 2px 5px;
   &:hover {
-    color: #4568AC;
+    color: theme.$primary;
   }
 }
 
 .privateGroupName {
-  color: #4568AC !important;
+  color: theme.$primary !important;
 }
 
 .privateGroupLock {
-  color: #4568AC;
+  color: theme.$primary;
   height: 14px;
 }
 
@@ -226,16 +245,33 @@
 .headerContainer {
   flex-direction: row;
   display: flex;
-  margin-bottom: 15px;
+  position: relative;
+  padding-bottom: 5px;
+  padding-top: 5px;
+  margin-bottom: 10px;
   padding-right: 20px;
+  transition: all 0.5s;
+}
+
+.selectedTab {
+  background: linear-gradient(to bottom, transparent, #FFEAAB);
+}
+
+.filtersContainer {
+  margin-bottom: 15px;
+  display: flex;
+  flex-wrap: wrap;
 }
 
 .headerText {
-  color: '#424242';
+  color: #424242;
   font-size: 20px;
   font-weight: bold;
-  margin-right: 10px;
+  margin-right: 5px;
   cursor: pointer;
+  &:hover {
+    color: #22417D !important;
+  }
 }
 
 .headerLink {
@@ -261,6 +297,10 @@
   -webkit-box-orient: vertical;
 }
 
+.untitledText {
+  color: #757575;
+}
+
 .annotation {
   padding-left: 5px;
   color: #838383;
@@ -271,4 +311,95 @@
   > p {
     margin-bottom: 0px;
   }
+}
+
+.tabSelectionLine {
+  transition: all 0.25s;
+  background: #EFC957;
+  height: 2px;
+  position: absolute;
+  bottom: 0px;
+}
+
+.titleInput {
+  border: none;
+  border-bottom: 1px solid #ABABAB;
+  background: transparent;
+  outline: none;
+  flex: 1;
+
+  &:focus {
+    border-bottom-color: theme.$primary
+  }
+}
+
+.ideaSpaceHeader {
+  display: flex;
+  align-items: center;
+
+  > span {
+    margin-right: 3px;
+  }
+}
+
+.descendingAscendingButton {
+  transition: all 0.25s;
+  padding: 2px 7px;
+  background: #EEEEEE;
+  color: #424242;
+  border-color: #ABABAB;
+  box-shadow: none !important;
+  outline: none !important;
+  
+  &:hover {
+    border-color: theme.$primary !important;
+    color: theme.$primary !important;
+    background: #EBF2FF !important;
+  }
+
+  &:focus {
+    background: #EEEEEE;
+    color: #424242;
+    border-color: #ABABAB;
+  }
+}
+
+.sortByDropdown > button {
+  transition: all 0.25s;
+  padding: 2px 9px !important;
+  background: #EEEEEE;
+  color: #424242;
+  border-color: #ABABAB;
+  margin-right: 3px;
+  box-shadow: none !important;
+  outline: none !important;
+
+  &:hover {
+    border-color: theme.$primary;
+    color: theme.$primary;
+    background: #EBF2FF;
+  }
+
+  &:focus {
+    background: #EEEEEE;
+    color: #424242;
+    border-color: #ABABAB;
+  }
+  
+}
+
+.sortByDropdownSelected > button, .sortByDropdownSelected > button:focus {
+  border-color: theme.$primary !important;
+  color: theme.$primary !important;
+  background: #EBF2FF !important;
+}
+
+.dropdownCheck {
+  color: theme.$primary;
+}
+
+.ideaspacesSortByDropdownItem {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

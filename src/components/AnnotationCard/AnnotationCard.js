@@ -118,6 +118,7 @@ function AnnotationCard({
     setUpdateFocusOfAnnotation,
   ] = useState(annotation.editing);
   const [hovered, setHovered] = useState();
+  const [lineHovered, setLineHovered] = useState();
   const [newSelectedUsersToShare, setNewSelectedUsersToShare] = useState(null);
 
   const leftRightPositionForAnnotation = annotationData.editing ? -10 : 15;
@@ -527,6 +528,8 @@ function AnnotationCard({
     </OverlayTrigger>
   );
 
+  const innerLine = <div className="inner-line" style={{ width: lineHovered ? 3 : 1, left: lineHovered ? 0 : 1 }} />;
+
   const expandedAndFocus = () => {
     if (!expanded) {
       setExpanded(true);
@@ -555,19 +558,31 @@ function AnnotationCard({
         id={annotationData._id}
         onMouseOver={() => { setHovered(true); }}
         onMouseOut={() => { setHovered(); }}
-        className={`annotation-card-container ${annotationData.new ? 'new-annotation' : ''} ${expanded ? 'expanded' : ''} ${expanded || hovered || activeAnnotations.annotations.includes(annotationData._id) ? 'active' : ''} ${annotationData.editing ? 'editing' : ''}`}
+        className={`annotation-card-container ${side === 'left' ? 'left-annotation' : 'right-annotation'} ${annotationData.new ? 'new-annotation' : ''} ${expanded ? 'expanded' : ''} ${expanded || hovered || activeAnnotations.annotations.includes(annotationData._id) ? 'active' : ''} ${annotationData.editing ? 'editing' : ''}`}
         style={side === 'left' ? { right: leftRightPositionForAnnotation } : { left: leftRightPositionForAnnotation }}
       >
         <div
           className="line1"
           style={{ zIndex: -1 }}
           onClick={expandedAndFocus}
-        />
+          onMouseOver={() => { setLineHovered(true); }}
+          onMouseOut={() => { setLineHovered(); }}
+          onFocus={() => {}}
+          onBlur={() => {}}
+        >
+          {innerLine}
+        </div>
         <div
           className="line2"
           style={{ zIndex: -1 }}
           onClick={expandedAndFocus}
-        />
+          onMouseOver={() => { setLineHovered(true); }}
+          onMouseOut={() => { setLineHovered(); }}
+          onFocus={() => {}}
+          onBlur={() => {}}
+        >
+          {innerLine}
+        </div>
         {side === 'left'
           ? (
             <>
@@ -978,7 +993,7 @@ function AnnotationCard({
           visibility: visible;
         }
 
-        .active .line1, .active .line2, .active .line1, .active .line2 {
+        .active .line1, .active .line2 {
           visibility: visible;
         }
 
@@ -990,19 +1005,32 @@ function AnnotationCard({
           border-bottom: none !important;
         }
 
+        .left-annotation .inner-line {
+          /*top: 3px;*/
+        }
+
         .line1, .line2 {
             visibility: hidden;
             position: absolute;
-            width:1px;
+            width: 5px;
             margin-top:-1px;
-            background-color:#eeeeee;
+            background-color: transparent;
             z-index: 2;
             transition: background-color 0.5s;
         }
 
-        .annotation-card-container.active .line1, .annotation-card-container.active .line2 {
+        .line1 .inner-line, .line2 .inner-line {
+          height: 100%;
+          transition: all 0.25s;
+          position: relative;
+        }
+
+        .annotation-card-container.active .line1 > div, .annotation-card-container.active .line2 > div {
             background-color: rgba(255, 165, 10, 0.5);
-            z-index: 3;
+        }
+
+        .annotation-card-container.active .line1, .annotation-card-container.active .line2 {
+          z-index: 3;
         }
 
         .annotation-card-container.active .annotation-pointer-background-left {

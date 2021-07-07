@@ -27,6 +27,8 @@ const Header = ({
   newReg,
   statefulSession,
   dashboardState,
+  mode,
+  setMode,
 }) => {
   const [session, loading] = useSession();
   const router = useRouter();
@@ -115,6 +117,8 @@ const Header = ({
           docView={docView}
           annotations={annotations}
           dashboardState={dashboardState}
+          mode={mode}
+          setMode={setMode}
         />
       )}
     </header>

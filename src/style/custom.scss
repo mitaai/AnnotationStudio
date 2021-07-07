@@ -234,10 +234,26 @@ $breadcrumb-bg: transparent;
   .arrow::before {
     border-top-color: rgba(0, 0, 0, 0.125) !important;
   }
+  &.right {
+    .arrow::before {
+      border-right-color: rgba(0, 0, 0, 0.125) !important;
+      border-top-color: transparent !important;
+    }
+  }
+  &.bottom {
+    .arrow::before {
+      border-color: transparent !important;
+      border-bottom-color: rgba(0, 0, 0, 0.125) !important;
+    }
+  }
+  
 }
 
 /* import react-bootstrap-range-slider */
 @import "~react-bootstrap-range-slider/dist/react-bootstrap-range-slider.scss";
+
+/* import react-bootstrap-range-slider */
+@import "~react-bootstrap-typeahead/css/Typeahead.scss";
 
 /* import bootstrap */
 @import "~bootstrap/scss/bootstrap";
@@ -273,8 +289,10 @@ $breadcrumb-bg: transparent;
 
 .annotation-card-container.new-annotation .line1,
 .annotation-card-container.new-annotation .line2 {
-  background-color: color.adjust(theme.$primary, $alpha: -0.5) !important;
   z-index: 3;
+  > div {
+    background-color: color.adjust(theme.$primary, $alpha: -0.5) !important;
+  }
 }
 
 .annotation-card-container.new-annotation .annotation-pointer-background-left {
@@ -292,4 +310,13 @@ $breadcrumb-bg: transparent;
 
 .token-badge {
   border: 1px solid theme.$primary;
+}
+
+.rbt-token {
+  color: theme.$primary !important;
+
+  &.rbt-token-active {
+    background-color: theme.$primary !important;
+    color: white !important;
+  }
 }
