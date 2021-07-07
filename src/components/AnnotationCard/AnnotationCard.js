@@ -23,6 +23,7 @@ import {
   PeopleFill,
   PersonFill,
   PersonPlusFill,
+  PenFill,
 } from 'react-bootstrap-icons';
 import {
   Typeahead, Menu, MenuItem, Token,
@@ -500,7 +501,16 @@ function AnnotationCard({
     return ids[side].length > 0;
   };
 
-  const saveButton = <Button size="sm" className="btn-save-annotation-edits float-right" variant="primary" onClick={SaveAnnotation}>Save</Button>;
+  const saveButton = (
+    <Button
+      size="sm"
+      className="btn-save-annotation-edits"
+      variant="primary"
+      onClick={SaveAnnotation}
+    >
+      Save
+    </Button>
+  );
 
   const annotationSaveButton = annotationMatchesCurrentFilters() ? saveButton : (
     <OverlayTrigger
@@ -731,20 +741,25 @@ function AnnotationCard({
                   </ListGroup>
                 </>
               )}
-            <Card.Header className="annotation-header grey-background" onClick={() => { setUpdateFocusOfAnnotation(true); }}>
-              <span className="float-left">{FirstNameLastInitial(annotationData.creator.name)}</span>
+            <Card.Header
+              className="annotation-header grey-background"
+              style={{ display: 'flex', alignItems: 'center' }}
+              onClick={() => { setUpdateFocusOfAnnotation(true); }}
+            >
+              <span>{FirstNameLastInitial(annotationData.creator.name)}</span>
               {annotationData.editing ? (
                 <>
+                  <span style={{ flex: 1 }} />
                   {annotationData.new ? (
                     <TrashFill
-                      className="btn-cancel-annotation-edits float-right"
+                      className="btn-cancel-annotation-edits"
                       size="1em"
                       variant="secondary"
                       onClick={CancelAnnotation}
                     />
                   ) : (
                     <Button
-                      className="btn-cancel float-right"
+                      className="btn-cancel"
                       variant="secondary"
                       size="sm"
                       onClick={CancelAnnotation}
@@ -762,35 +777,40 @@ function AnnotationCard({
                 </>
               ) : (
                 <>
-
-                  <span className="float-right">
+                  <span style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    <div style={{
+                      width: 3, height: 3, borderRadius: 1.5, background: '#616161', marginLeft: 10, marginRight: 10,
+                    }}
+                    />
                     <span>{annotationData.modified === undefined ? '' : moment(annotationData.modified.toString()).format('MM/DD/YYYY')}</span>
-                    {user.email === annotationData.creator.email && !annotationData.new ? (
-                      <Dropdown className="annotation-more-options-dropdown">
-                        <Dropdown.Toggle variant="light" id="dropdown-basic">
-                          <svg width="0.8em" height="0.8em" viewBox="0 0 16 16" className="bi bi-three-dots-vertical" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                            <path fillRule="evenodd" d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z" />
-                          </svg>
-                        </Dropdown.Toggle>
-
-                        <Dropdown.Menu className="annotation-more-options-dropdown-menu">
-                          <Dropdown.Item
-                            onClick={() => {
-                              if (annotationIdBeingEdited !== undefined) {
-                                setShowUnsavedChangesToast(true);
-                              } else {
-                                annotationData.editing = true;
-                                SetAndSaveAnnotationData(annotationData);
-                              }
-                            }}
-                          >
-                            Edit
-                          </Dropdown.Item>
-                          <Dropdown.Item onClick={DeleteAnnotation}>Delete</Dropdown.Item>
-                        </Dropdown.Menu>
-                      </Dropdown>
-                    ) : ''}
-
+                  </span>
+                  <span style={{ flex: 1 }} />
+                  <span style={{ display: 'flex', alignItems: 'center' }}>
+                    {user.email === annotationData.creator.email && !annotationData.new && (
+                      <>
+                        <span
+                          className="edit-annotation-btn"
+                          onClick={() => {
+                            if (annotationIdBeingEdited !== undefined) {
+                              setShowUnsavedChangesToast(true);
+                            } else {
+                              annotationData.editing = true;
+                              SetAndSaveAnnotationData(annotationData);
+                            }
+                          }}
+                        >
+                          <PenFill
+                            style={{ marginRight: 7 }}
+                            size={14}
+                          />
+                        </span>
+                        <TrashFill
+                          className="delete-annotation-btn"
+                          size={14}
+                          onClick={DeleteAnnotation}
+                        />
+                      </>
+                    )}
                   </span>
 
                 </>
@@ -830,6 +850,18 @@ function AnnotationCard({
       </Card>
       <style jsx global>
         {`
+        .delete-annotation-btn, .edit-annotation-btn {
+          color: #616161;
+        }
+
+        .delete-annotation-btn:hover {
+          color: #AC4545;
+        }
+
+        .edit-annotation-btn:hover {
+          color: #015999;
+        }
+
         .truncated-annotation, .truncated-annotation .text-quote {
           overflow: hidden;
           text-overflow: ellipsis;
@@ -1029,7 +1061,7 @@ function AnnotationCard({
         }
 
         .btn-save-annotation-edits {
-          margin-right: 3px;
+          margin-left: 3px;
           font-size: 9px;
         }
 

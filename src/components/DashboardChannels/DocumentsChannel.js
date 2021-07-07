@@ -205,7 +205,7 @@ export default function DocumentsChannel({
     : documents[selectedGroupId][documentPermissions].docs.map(({
       _id, title, groups, contributors, updatedAt, slug, owner,
     }) => {
-      const contributor = contributors.find(({ type }) => type.toLowerCase() === 'author');
+      const contributor = contributors ? contributors.find(({ type }) => type.toLowerCase() === 'author') : undefined;
       const author = contributor === undefined ? 'Author' : contributor.name;
       return (
         <DocumentTile
@@ -257,7 +257,7 @@ export default function DocumentsChannel({
       <div className={styles.dividingLine} />
       <div className={styles.headerContainer}>
         <div style={{ display: 'flex', flex: 1, flexDirection: 'row' }}>
-          <Link href={`/documents?${dashboardState}`}>
+          <Link href={`/documents?${dashboardState}&tab=${selectedGroupId === 'privateGroup' ? 'mine' : 'shared'}`}>
             <span className={`${styles.headerText} ${styles.headerLink}`}>
               Documents
             </span>

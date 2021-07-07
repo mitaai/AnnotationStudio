@@ -1,5 +1,6 @@
 import jwt from 'next-auth/jwt';
 import { connectToDatabase } from '../../../utils/dbUtil';
+import { uploadSlateToS3 } from '../../../utils/s3Util';
 
 const secret = process.env.AUTH_SECRET;
 
@@ -24,7 +25,6 @@ const handler = async (req, res) => {
         rightsStatus,
         location,
         state,
-        text,
         uploadContentType,
         volume,
         issue,
@@ -48,7 +48,6 @@ const handler = async (req, res) => {
         rightsStatus,
         location,
         state,
-        text,
         uploadContentType,
         volume,
         issue,
@@ -68,6 +67,11 @@ const handler = async (req, res) => {
       } else if (!metadata.title) {
         res.status(400).end('Missing title');
       } else {
+        let { text } = req.body;
+        if (uploadContentType === 'text/slate-html') {
+          text = await uploadSlateToS3({ textToUpload: req.body.text })
+            .catch((err) => res.status(500).end(err.message));
+        }
         const { db } = await connectToDatabase();
         const doc = await db
           .collection('documents')
@@ -76,6 +80,7 @@ const handler = async (req, res) => {
               owner: token.id,
               createdAt: dateCreated,
               updatedAt: dateCreated,
+              text,
               ...metadata,
             },
           );

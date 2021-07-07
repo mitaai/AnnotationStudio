@@ -29,6 +29,7 @@ const DocumentsIndex = ({
   const { tab, initAlert } = props;
   const [session, loading] = useSession();
   const tabToUse = tab || 'shared';
+  const isPrivateGroup = query && query.gid === 'privateGroup';
   const [key, setKey] = useState(tabToUse);
   const [totalPages, setTotalPages] = useState(1);
   const [page, setPage] = useState(1);
@@ -52,7 +53,7 @@ const DocumentsIndex = ({
       // the only way group can be undefined but still be a validGroupId is if it is the psuedo
       // privateGroup
       breadcrumbs = [
-        { name: 'Private Group' },
+        { name: 'Personal' },
         { name: 'Documents' },
       ];
     }
@@ -190,7 +191,7 @@ const DocumentsIndex = ({
                 setKey(k);
               }}
             >
-              <Tab eventKey="shared" title="Shared" />
+              {!isPrivateGroup && <Tab eventKey="shared" title="Shared" />}
               <Tab eventKey="mine" title="Mine" />
             </Tabs>
           </div>

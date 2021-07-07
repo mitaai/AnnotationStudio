@@ -4,6 +4,7 @@ import { OverlayTrigger, Popover, ProgressBar } from 'react-bootstrap';
 import { XCircleFill } from 'react-bootstrap-icons';
 import TileBadge from '../TileBadge';
 import styles from './DashboardChannels.module.scss';
+import { FirstNameLastInitial } from '../../utils/nameUtil';
 
 export default function AnnotationTile({
   id,

@@ -185,6 +185,15 @@ const handler = async (req, res) => {
       const doc = await db
         .collection('documents')
         .findOneAndDelete(findCondition);
+      // eslint-disable-next-line no-underscore-dangle
+      if (doc && doc.value && doc.value._id) {
+        const { _id } = doc.value;
+        await db
+          .collection('annotations')
+          .deleteMany({
+            'target.document.id': _id.toString(),
+          });
+      }
       res.status(200).json(doc);
     } else res.status(403).end('Invalid or expired token');
   } else res.status(405).end(`Method ${method} Not Allowed`);
