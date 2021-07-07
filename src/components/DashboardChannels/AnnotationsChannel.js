@@ -2,7 +2,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect, useRef } from 'react';
 import moment from 'moment';
-import Router from 'next/router';
+import Router, { useRouter } from 'next/router';
 import debounce from 'lodash.debounce';
 import ReactHtmlParser from 'react-html-parser';
 import {
@@ -20,7 +20,7 @@ import {
 } from 'react-bootstrap-icons';
 
 import {
-  OverlayTrigger, Popover, Modal, Button, Form, Tooltip, Spinner,
+  OverlayTrigger, Popover, Modal, Button, Form, Tooltip, Spinner, ProgressBar,
 } from 'react-bootstrap';
 
 import {
@@ -52,7 +52,7 @@ import {
 import ISGroupHeader from '../IdeaSpaceComponents/ISGroupHeader/ISGroupHeader';
 import ISOutline from '../IdeaSpaceComponents/ISOutline';
 import {
-  createOutline, getAllOutlines, updateOutlineData, deleteOutline,
+  createOutline, getAllOutlines, updateOutlineData, deleteOutline, exportDocumentToAnnotationStudio,
 } from '../../utils/outlineUtil';
 
 export default function AnnotationsChannel({
@@ -72,6 +72,7 @@ export default function AnnotationsChannel({
   allAnnotations,
   setAllAnnotations,
 }) {
+  const router = useRouter();
   const [selectedPermissions, setSelectedPermissions] = useState('shared');
   const [listLoading, setListLoading] = useState();
   // for AS annotations
@@ -110,6 +111,8 @@ export default function AnnotationsChannel({
 
   // state variables for outlines tab
   const [showNewOutlineModal, setShowNewOutlineModal] = useState();
+  const [showExportingDocumentModal, setShowExportingDocumentModal] = useState();
+  const [exportingDocumentModalTitle, setExportingDocumentModalTitle] = useState('');
   const [newOutlineName, setNewOutlineName] = useState('');
   const [creatingOutline, setCreatingOutline] = useState();
   const [deletingOutline, setDeletingOutline] = useState();
@@ -966,6 +969,20 @@ export default function AnnotationsChannel({
       <div style={{ marginTop: -10 }}>
         <ISOutline
           key={openOutline.current.id}
+          exportDocument={(e) => {
+            const eventText = {
+              'annotation-studio': 'Exporting composition to Annotation Studio',
+            };
+            // show ui popup that we are exporting the document
+            setExportingDocumentModalTitle(eventText[e] || 'Exporting...');
+            setShowExportingDocumentModal(true);
+            if (e === 'annotation-studio') {
+              exportDocumentToAnnotationStudio({
+                composition: openOutline.current,
+                callback: ({ pathname }) => router.push({ pathname }),
+              });
+            }
+          }}
           document={openOutline.current.document || slateInitialValue}
           setDocument={(document) => updateOutline({ document })}
           getDroppedAnnotationsData={getDroppedAnnotationsData}
@@ -1239,6 +1256,14 @@ export default function AnnotationsChannel({
           </Button>
           <Button variant="primary" onClick={createNewOutline}>Create</Button>
         </Modal.Footer>
+      </Modal>
+      <Modal show={showExportingDocumentModal} onHide={() => {}}>
+        <Modal.Header>
+          <Modal.Title>{exportingDocumentModalTitle}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <ProgressBar animated now={100} />
+        </Modal.Body>
       </Modal>
     </>
   );

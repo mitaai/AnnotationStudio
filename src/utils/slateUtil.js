@@ -310,6 +310,15 @@ const plugins = [
       }
       return undefined;
     },
+    deserialize: {
+      element: [{
+        type: 'annotation',
+        withoutChildren: undefined,
+        deserialize: () => {
+          // returns html string of annotation component
+        },
+      }],
+    },
   },
   AlignPlugin(DEFAULTS_ALIGN),
   BoldPlugin({

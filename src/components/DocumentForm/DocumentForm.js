@@ -344,6 +344,7 @@ const DocumentForm = ({
   return (
     <Formik
       onSubmit={(values, actions) => {
+        console.log(values, actions);
         const submitFunction = mode === 'edit' ? editDocument : createDocument;
         setTimeout(() => {
           submitFunction(values)

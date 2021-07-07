@@ -42,7 +42,7 @@ import {
 } from '../../utils/slateUtil';
 import styles from './SlateToolbar.module.scss';
 
-const SlateToolbar = ({ disabled, exportButton }) => {
+const SlateToolbar = ({ disabled, exportButton, exportDocument = () => {} }) => {
   const editor = useSlate();
   return (
     <div
@@ -275,9 +275,7 @@ const SlateToolbar = ({ disabled, exportButton }) => {
             className={styles['export-button-dropdown']}
             variant="outline-secondary"
             title="Export"
-            onSelect={(e) => {
-              console.log(e);
-            }}
+            onSelect={exportDocument}
           >
             <Dropdown.Item
               eventKey="annotation-studio"

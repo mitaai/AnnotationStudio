@@ -1,4 +1,8 @@
 import unfetch from 'unfetch';
+import slugify from '@sindresorhus/slugify';
+import cryptoRandomString from 'crypto-random-string';
+import { serializeHTMLFromNodes } from '@udecode/slate-plugins';
+import { plugins } from './slateUtil';
 
 const createOutline = async ({ name, document }) => {
   const postUrl = '/api/outline';
@@ -68,9 +72,37 @@ const deleteOutline = async (id) => {
   return Promise.reject(Error(`Unable to create idea space: error ${res.status} received from server`));
 };
 
+const exportDocumentToAnnotationStudio = async ({ composition, callback }) => {
+  const slug = `${slugify(composition.name)}-${cryptoRandomString({ length: 5, type: 'hex' })}`;
+
+  const body = {
+    title: composition.name,
+    slug,
+    state: 'published',
+    uploadContentType: 'text/slate-html',
+    text: serializeHTMLFromNodes({ plugins, nodes: composition.document }),
+  };
+
+  const postUrl = '/api/document';
+
+  const res = await unfetch(postUrl, {
+    method: 'POST',
+    body: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (res.status === 200) {
+    await res.json();
+    callback({ pathname: `/documents/${slug}/edit` });
+  }
+};
+
 export {
   createOutline,
   getAllOutlines,
   updateOutlineData,
   deleteOutline,
+  exportDocumentToAnnotationStudio,
 };

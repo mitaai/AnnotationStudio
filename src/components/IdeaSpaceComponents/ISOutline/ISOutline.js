@@ -78,6 +78,7 @@ const Dropzone = ({
 };
 
 const ISOutline = ({
+  exportDocument,
   document,
   setDocument,
   getDroppedAnnotationsData,
@@ -119,7 +120,7 @@ const ISOutline = ({
             newArr.push({
               type: 'dropzone',
               dropzoneType: type,
-              children: [{ text: 'dropzone' }],
+              children: [{ text: '' }],
               dropzone: <Dropzone
                 posArray={currentPosArray.concat([i + 1])}
                 getDroppedAnnotationsData={getDroppedAnnotationsData}
@@ -165,8 +166,9 @@ const ISOutline = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [document, removeDropzones]);
 
-  console.log(editor);
-  console.log(document);
+  // console.log(editor);
+  // console.log(document);
+  console.log(plugins);
 
 
   return (
@@ -185,6 +187,7 @@ const ISOutline = ({
           key="goodbye"
           disabled={false}
           exportButton
+          exportDocument={exportDocument}
         />
         {slateLoading && (
         <div className={styles['slate-loader']}>
