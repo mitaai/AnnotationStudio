@@ -287,7 +287,6 @@ const SlateToolbar = ({ disabled, exportButton, exportDocument = () => {} }) => 
         )}
         onMouseDown={(event) => {
           event.preventDefault();
-          console.log('export');
         }}
       />
       )}
