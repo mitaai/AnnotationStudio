@@ -193,7 +193,7 @@ export default function Home({
               </Col>
             </Row>
             <Row>
-              <Col style={{ padding: '0% 12%', marginBottom: 20, minHeight: 100 }}>
+              <Col style={{ padding: '0% 25%', marginBottom: 20, minHeight: 100 }}>
                 <Image src="/splashpagepic3.svg" alt="picture 1" fluid />
               </Col>
             </Row>
@@ -213,7 +213,7 @@ export default function Home({
               </Col>
             </Row>
             <Row style={{ marginTop: -27 }}>
-              <Col style={{ paddingRight: '24%', marginBottom: 20, minHeight: 100 }}>
+              <Col style={{ padding: '0px 34% 0px 16%', marginBottom: 20, minHeight: 100 }}>
                 <Image
                   style={{
                     position: 'relative',
@@ -241,7 +241,7 @@ export default function Home({
               </Col>
             </Row>
             <Row style={{ marginTop: -27 }}>
-              <Col style={{ marginBottom: 20, minHeight: 100 }}>
+              <Col style={{ padding: '0px 20% 0px 16%', marginBottom: 20, minHeight: 100 }}>
                 <Image
                   style={{
                     position: 'relative',

@@ -168,7 +168,7 @@ const ISOutline = ({
 
   // console.log(editor);
   // console.log(document);
-  console.log(plugins);
+  // console.log(plugins);
 
 
   return (
