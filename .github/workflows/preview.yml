@@ -38,7 +38,7 @@ jobs:
         run: npm ci
 
       - name: Deploy to AWS
-        run: npx serverless
+        run: npx serverless --component="@sls-next/serverless-component@1.19.0"
         env:
           SLS_INTERACTIVE_SETUP_ENABLE: 1 
           ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
