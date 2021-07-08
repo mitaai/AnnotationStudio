@@ -25,7 +25,7 @@ jobs:
       - uses: actions/checkout@v2
       
       - name: Copy serverless-preview.yml to serverless.yml
-      - uses: canastro/copy-file-action@master
+        uses: canastro/copy-file-action@master
         with:
           source: "serverless-preview.yml"
           target: "serverless.yml"
