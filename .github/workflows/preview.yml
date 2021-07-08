@@ -40,25 +40,25 @@ jobs:
 
       - name: Create .env.local
         run: |
-          echo ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }} > .env.local
-          echo AUTH_SECRET=${{ secrets.AUTH_SECRET }} >> .env.local
-          echo AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} >> .env.local
-          echo AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} >> .env.local
-          echo DB_NAME=${{ secrets.DB_NAME }} >> .env.local
-          echo EMAIL_SERVER_USER=${{ secrets.EMAIL_SERVER_USER }} >> .env.local
-          echo EMAIL_SERVER_PASSWORD=${{ secrets.EMAIL_SERVER_PASSWORD }} >> .env.local
-          echo EMAIL_SERVER_HOST=${{ secrets.EMAIL_SERVER_HOST }} >> .env.local
-          echo EMAIL_SERVER_PORT=${{ secrets.EMAIL_SERVER_PORT }} >> .env.local
-          echo EMAIL_FROM=${{ secrets.EMAIL_FROM }} >> .env.local
-          echo SUPPORT_EMAIL=${{ secrets.SUPPORT_EMAIL }} >> .env.local
-          echo MONGODB_URI=${{ secrets.MONGODB_URI }} >> .env.local
-          echo NEXTAUTH_URL=${{ secrets.NEXTAUTH_URL }} >> .env.local
-          echo NEXT_PUBLIC_LOGO_SVG=${{ secrets.NEXT_PUBLIC_LOGO_SVG }} >> .env.local
-          echo NEXT_PUBLIC_SIGNING_URL=${{ secrets.NEXT_PUBLIC_SIGNING_URL }} >> .env.local
-          echo NEXT_PUBLIC_SITE_NAME=${{ secrets.NEXT_PUBLIC_SITE_NAME }} >> .env.local
-          echo NEXT_PUBLIC_TINYMCE_API_KEY=${{ secrets.NEXT_PUBLIC_TINYMCE_API_KEY }} >> .env.local
-          echo SITE=${{ secrets.SITE }} >> .env.local
-          echo SITE_NAME=${{ secrets.SITE_NAME }} >> .env.local
+          echo "ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}" > .env.local
+          echo "AUTH_SECRET=${{ secrets.AUTH_SECRET }}" >> .env.local
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env.local
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env.local
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env.local
+          echo "EMAIL_SERVER_USER=${{ secrets.EMAIL_SERVER_USER }}" >> .env.local
+          echo "EMAIL_SERVER_PASSWORD=${{ secrets.EMAIL_SERVER_PASSWORD }}" >> .env.local
+          echo "EMAIL_SERVER_HOST=${{ secrets.EMAIL_SERVER_HOST }}" >> .env.local
+          echo "EMAIL_SERVER_PORT=${{ secrets.EMAIL_SERVER_PORT }}" >> .env.local
+          echo "EMAIL_FROM=${{ secrets.EMAIL_FROM }}" >> .env.local
+          echo "SUPPORT_EMAIL=${{ secrets.SUPPORT_EMAIL }}" >> .env.local
+          echo "MONGODB_URI=${{ secrets.MONGODB_URI }}" >> .env.local
+          echo "NEXTAUTH_URL=${{ secrets.NEXTAUTH_URL }}" >> .env.local
+          echo "NEXT_PUBLIC_LOGO_SVG=${{ secrets.NEXT_PUBLIC_LOGO_SVG }}" >> .env.local
+          echo "NEXT_PUBLIC_SIGNING_URL=${{ secrets.NEXT_PUBLIC_SIGNING_URL }}" >> .env.local
+          echo "NEXT_PUBLIC_SITE_NAME=${{ secrets.NEXT_PUBLIC_SITE_NAME }}" >> .env.local
+          echo "NEXT_PUBLIC_TINYMCE_API_KEY=${{ secrets.NEXT_PUBLIC_TINYMCE_API_KEY }}" >> .env.local
+          echo "SITE=${{ secrets.SITE }}" >> .env.local
+          echo "SITE_NAME=${{ secrets.SITE_NAME }}" >> .env.local
 
       - name: Deploy to AWS
         uses: serverless/github-action@master
