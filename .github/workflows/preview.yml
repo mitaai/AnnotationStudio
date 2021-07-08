@@ -40,6 +40,7 @@ jobs:
       - name: Deploy to AWS
         run: npx serverless
         env:
+          SLS_INTERACTIVE_SETUP_ENABLE: 1 
           ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
           AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
