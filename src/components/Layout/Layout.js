@@ -7,6 +7,7 @@ import Alerts from '../Alerts';
 function Layout({
   children,
   type,
+  splashPage,
   document,
   breadcrumbs,
   alerts,
@@ -69,7 +70,7 @@ function Layout({
             height: 100% !important
           }
           body {
-            background-color: #f5f5f5;
+            background-color: ${splashPage ? 'white' : '#f5f5f5'};
           }
           #__next {
             flex-direction: column !important;

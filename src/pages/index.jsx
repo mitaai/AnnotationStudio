@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react';
 import { parseCookies, destroyCookie } from 'nookies';
 import {
-  Button, Card,
+  Button, Card, Container, Row, Col, Image, Nav,
 } from 'react-bootstrap';
+import {
+  ArrowRightShort,
+} from 'react-bootstrap-icons';
 import { useSession } from 'next-auth/client';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+
 import Layout from '../components/Layout';
 import LoadingSpinner from '../components/LoadingSpinner';
 import GroupJoinCard from '../components/GroupJoinCard';
@@ -106,10 +110,13 @@ export default function Home({
   || statefulSession)
   && !loading;
 
+  const splashPage = !session && !loading;
+
   return (
     <Layout
       alerts={alerts}
       type="dashboard"
+      splashPage={splashPage}
       breadcrumbs={showDashboard ? breadcrumbs : undefined}
       dashboardState={dashboardState}
       newReg={newReg}
@@ -124,11 +131,139 @@ export default function Home({
           </Card.Body>
         </Card>
       )}
-      {!session && !loading && (
-      <Card>
-        <Card.Header><Card.Title>Welcome to Annotation Studio</Card.Title></Card.Header>
-        <Card.Body>Welcome to Annotation Studio. Please log in to use the application.</Card.Body>
-      </Card>
+      {splashPage && (
+      <Container style={{ marginBottom: 60 }}>
+        <Row>
+          <Col
+            xs={12}
+            sm={12}
+            md={4}
+            style={{
+              justifyContent: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              marginTop: -10,
+            }}
+          >
+            <Row>
+              <Col style={{ fontSize: 36, fontFamily: 'Arial', marginBottom: 10 }}>
+                <div>Welcome to</div>
+                <div>Annotation Studio</div>
+              </Col>
+            </Row>
+            <Row>
+              <Col style={{ marginBottom: 20 }}>
+                <span style={{ fontSize: 16, color: '#768399', lineHeight: '28px' }}>
+                  Facilitating the reading and writing process by giving students and teachers
+                  tools to collaboratively annotate literary documents
+                </span>
+              </Col>
+            </Row>
+            <Row style={{ paddingTop: 10, paddingBottom: 10 }}>
+              <Col>
+                <Nav.Link
+                  style={{ display: 'inline' }}
+                  as={Button}
+                  href={`/api/auth/signin?callbackUrl=${appendProtocolIfMissing(process.env.SITE)}`}
+                >
+                  <span>Log In / Sign Up</span>
+                  <ArrowRightShort size={22} style={{ position: 'relative', left: 2, top: -1 }} />
+                </Nav.Link>
+              </Col>
+            </Row>
+          </Col>
+          <Col xs={12} sm={12} md={8}>
+            <div style={{
+              width: '100%',
+              minHeight: 430,
+              display: 'flex',
+              justifyContent: 'center',
+              marginBottom: 40,
+            }}
+            >
+              <Image src="/splashpage2.svg" alt="Annotation Studio" fluid />
+            </div>
+          </Col>
+        </Row>
+        <Row>
+          <Col style={{ marginTop: 30 }} xs={12} sm={12} md={4}>
+            <Row>
+              <Col style={{ marginBottom: 5, display: 'flex', justifyContent: 'center' }}>
+                <span style={{ fontSize: 18, fontWeight: 'bold' }}>Collaboration</span>
+              </Col>
+            </Row>
+            <Row>
+              <Col style={{ padding: '0% 12%', marginBottom: 20, minHeight: 100 }}>
+                <Image src="/splashpagepic3.svg" alt="picture 1" fluid />
+              </Col>
+            </Row>
+            <Row>
+              <Col>
+                <span>
+                  Landkit is built to make  your life easier.. Variables, build tooling,
+                  documentation, and reusable components
+                </span>
+              </Col>
+            </Row>
+          </Col>
+          <Col style={{ marginTop: 30 }} xs={12} sm={12} md={4}>
+            <Row>
+              <Col style={{ marginBottom: 5, display: 'flex', justifyContent: 'center' }}>
+                <span style={{ fontSize: 18, fontWeight: 'bold' }}>Close Reading</span>
+              </Col>
+            </Row>
+            <Row style={{ marginTop: -27 }}>
+              <Col style={{ paddingRight: '24%', marginBottom: 20, minHeight: 100 }}>
+                <Image
+                  style={{
+                    position: 'relative',
+                    left: 15,
+                  }}
+                  src="/splashpagepic2.svg"
+                  alt="picture 1"
+                  fluid
+                />
+              </Col>
+            </Row>
+            <Row>
+              <Col>
+                <span>
+                  Landkit is built to make  your life easier.. Variables, build tooling,
+                  documentation, and reusable components
+                </span>
+              </Col>
+            </Row>
+          </Col>
+          <Col style={{ marginTop: 30 }} xs={12} sm={12} md={4}>
+            <Row>
+              <Col style={{ marginBottom: 5, display: 'flex', justifyContent: 'center' }}>
+                <span style={{ fontSize: 18, fontWeight: 'bold' }}>Private Library</span>
+              </Col>
+            </Row>
+            <Row style={{ marginTop: -27 }}>
+              <Col style={{ marginBottom: 20, minHeight: 100 }}>
+                <Image
+                  style={{
+                    position: 'relative',
+                    left: -8,
+                  }}
+                  src="/splashpagepic1.svg"
+                  alt="picture 1"
+                  fluid
+                />
+              </Col>
+            </Row>
+            <Row>
+              <Col>
+                <span>
+                  Landkit is built to make  your life easier.. Variables, build tooling,
+                  documentation, and reusable components
+                </span>
+              </Col>
+            </Row>
+          </Col>
+        </Row>
+      </Container>
       )}
       {session && session.user && !session.user.firstName && !statefulSession && (
         <Card>
@@ -156,7 +291,8 @@ export default function Home({
           </Card.Body>
         </Card>
       )}
-      {session && ((session.user && session.user.firstName) || statefulSession) && !loading && groupId && groupId !== '' && (
+      {session && ((session.user && session.user.firstName) || statefulSession)
+        && !loading && groupId && groupId !== '' && (
         <GroupJoinCard
           alerts={alerts}
           setAlerts={setAlerts}
