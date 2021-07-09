@@ -72,11 +72,15 @@ const deleteOutline = async (id) => {
   return Promise.reject(Error(`Unable to create idea space: error ${res.status} received from server`));
 };
 
-const exportDocumentToAnnotationStudio = async ({ composition, callback }) => {
+const exportDocumentToAnnotationStudio = async ({ author = '', composition, callback }) => {
   const slug = `${slugify(composition.name)}-${cryptoRandomString({ length: 5, type: 'hex' })}`;
 
   const body = {
     title: composition.name,
+    contributors: [{type: "Author", name: author }],
+    groups: [],
+    resourceType: 'Other',
+    rightsStatus: 'Copyrighted',
     slug,
     state: 'published',
     uploadContentType: 'text/slate-html',

@@ -978,6 +978,7 @@ export default function AnnotationsChannel({
             setShowExportingDocumentModal(true);
             if (e === 'annotation-studio') {
               exportDocumentToAnnotationStudio({
+                author: (session && session.user) ? session.user.name : '',
                 composition: openOutline.current,
                 callback: ({ pathname }) => router.push({ pathname }),
               });
