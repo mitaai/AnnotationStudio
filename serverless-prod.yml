@@ -1,2 +1,18 @@
-as4-prod:
+AnnotationStudio:
   component: "@sls-next/serverless-component@1.19.0"
+  inputs:
+    bucketName: b5q90y-xu2rp9
+    cloudfront:
+      distributionId: E2L5RNSYYSE66M
+      defaults:
+        forward:
+          headers:
+            [
+              CloudFront-Is-Desktop-Viewer,
+              CloudFront-Is-Mobile-Viewer,
+              CloudFront-Is-Tablet-Viewer,
+            ]
+      api:
+        minTTL: 10
+        maxTTL: 10
+        defaultTTL: 10
