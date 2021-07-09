@@ -77,7 +77,7 @@ const exportDocumentToAnnotationStudio = async ({ author = '', composition, call
 
   const body = {
     title: composition.name,
-    contributors: [{type: "Author", name: author }],
+    contributors: [{ type: 'Author', name: author }],
     groups: [],
     resourceType: 'Other',
     rightsStatus: 'Copyrighted',
