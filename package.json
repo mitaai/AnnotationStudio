@@ -15,7 +15,8 @@
     "test:ci": "jest --ci",
     "lint": "eslint --fix --ext .js,.jsx ./src",
     "lint-latest": "LIST=`git diff-index --name-only --diff-filter=d HEAD | grep .*\\.js | grep -v json`; if [ \"$LIST\" ]; then eslint --fix $LIST; fi",
-    "quality-check": "npm run lint-latest && jest -b -o"
+    "quality-check": "npm run lint-latest && jest -b -o",
+    "postinstall": "patch-package"
   },
   "husky": {
     "hooks": {
@@ -45,6 +46,7 @@
     "nodemailer": "^6.4.17",
     "nookies": "^2.5.2",
     "nprogress": "^0.2.0",
+    "patch-package": "^6.4.7",
     "popper.js": "^1.16.1",
     "react": "^17.0.2",
     "react-bootstrap": "^1.5.2",

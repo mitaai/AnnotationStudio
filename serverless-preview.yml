@@ -1,0 +1,18 @@
+AnnotationStudio:
+  component: "@sls-next/serverless-component@1.19.0"
+  inputs:
+    bucketName: vu5lozb-aamixnb
+    cloudfront:
+      distributionId: EDEHONPX3BEKJ
+      defaults:
+        forward:
+          headers:
+            [
+              CloudFront-Is-Desktop-Viewer,
+              CloudFront-Is-Mobile-Viewer,
+              CloudFront-Is-Tablet-Viewer,
+            ]
+      api:
+        minTTL: 10
+        maxTTL: 10
+        defaultTTL: 10

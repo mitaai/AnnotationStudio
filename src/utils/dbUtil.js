@@ -1,8 +1,10 @@
+/* eslint-disable prefer-destructuring */
 /* eslint-disable import/prefer-default-export */
 
 import { MongoClient } from 'mongodb';
 
-const { MONGODB_URI, DB_NAME } = process.env;
+const MONGODB_URI = process.env.MONGODB_URI;
+const DB_NAME = process.env.DB_NAME;
 
 if (!MONGODB_URI) {
   throw new Error(
@@ -41,7 +43,8 @@ export async function connectToDatabase() {
         return client.db(DB_NAME);
       })
       .then((db) => {
-        db.collection('users').createIndex({ email: 1 }, { unique: true });
+        db.collection('users').createIndex({ email: 1 }, { unique: true, collation: { locale: 'en', strength: 1 } });
+        db.collection('users').createIndex({ email: 'text' });
         db.collection('documents').createIndex({ groups: 1 });
         db.collection('documents').createIndex({ owner: 1 });
         conn.db = db;
