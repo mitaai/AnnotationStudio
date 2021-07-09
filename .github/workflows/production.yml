@@ -1,0 +1,71 @@
+# GitHub Action for Serverless NextJS staging environment
+
+name: Deploy as4-production
+on:
+  push:
+    branches: [master]
+jobs:
+  deploy-production:
+    name: deploy-production
+    environment: Production
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [14.x]
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - uses: actions/checkout@v2
+      
+      - name: Copy serverless-prod.yml to serverless.yml
+        uses: canastro/copy-file-action@master
+        with:
+          source: "serverless-prod.yml"
+          target: "serverless.yml"
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create .env.local
+        run: |
+          echo "ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}" > .env.local
+          echo "AUTH_SECRET=${{ secrets.AUTH_SECRET }}" >> .env.local
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env.local
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env.local
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env.local
+          echo "EMAIL_SERVER_USER=${{ secrets.EMAIL_SERVER_USER }}" >> .env.local
+          echo "EMAIL_SERVER_PASSWORD=${{ secrets.EMAIL_SERVER_PASSWORD }}" >> .env.local
+          echo "EMAIL_SERVER_HOST=${{ secrets.EMAIL_SERVER_HOST }}" >> .env.local
+          echo "EMAIL_SERVER_PORT=${{ secrets.EMAIL_SERVER_PORT }}" >> .env.local
+          echo "EMAIL_FROM=${{ secrets.EMAIL_FROM }}" >> .env.local
+          echo "SUPPORT_EMAIL=${{ secrets.SUPPORT_EMAIL }}" >> .env.local
+          echo "MONGODB_URI=${{ secrets.MONGODB_URI }}" >> .env.local
+          echo "NEXTAUTH_URL=${{ secrets.NEXTAUTH_URL }}" >> .env.local
+          echo "NEXT_PUBLIC_LOGO_SVG=${{ secrets.NEXT_PUBLIC_LOGO_SVG }}" >> .env.local
+          echo "NEXT_PUBLIC_SIGNING_URL=${{ secrets.NEXT_PUBLIC_SIGNING_URL }}" >> .env.local
+          echo "NEXT_PUBLIC_SITE_NAME=${{ secrets.NEXT_PUBLIC_SITE_NAME }}" >> .env.local
+          echo "NEXT_PUBLIC_TINYMCE_API_KEY=${{ secrets.NEXT_PUBLIC_TINYMCE_API_KEY }}" >> .env.local
+          echo "SITE=${{ secrets.SITE }}" >> .env.local
+          echo "SITE_NAME=${{ secrets.SITE_NAME }}" >> .env.local
+
+      - name: Deploy to AWS
+        uses: serverless/github-action@master
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          NEXT_PUBLIC_LOGO_SVG: ${{ secrets.NEXT_PUBLIC_LOGO_SVG }}
+          NEXT_PUBLIC_SIGNING_URL: ${{ secrets.NEXT_PUBLIC_SIGNING_URL }}
+          NEXT_PUBLIC_SITE_NAME: ${{ secrets.NEXT_PUBLIC_SITE_NAME }}
+          NEXT_PUBLIC_TINYMCE_API_KEY: ${{ secrets.NEXT_PUBLIC_TINYMCE_API_KEY }}
