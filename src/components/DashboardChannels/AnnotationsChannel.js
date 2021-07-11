@@ -2,9 +2,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect, useRef } from 'react';
 import moment from 'moment';
-import Router, { useRouter } from 'next/router';
+import { useRouter } from 'next/router';
 import debounce from 'lodash.debounce';
-import ReactHtmlParser from 'react-html-parser';
 import {
   ArrowClockwise,
   BookmarkFill,
@@ -28,14 +27,11 @@ import {
 } from '@udecode/slate-plugins';
 import { toPng } from 'html-to-image';
 import { fetchSharedAnnotationsOnDocument, getAllAnnotations } from '../../utils/annotationUtil';
-import { fixIframes } from '../../utils/parseUtil';
 
 import PermissionsButtonGroup from '../PermissionsButtonGroup';
 import {
   ListLoadingSpinner, EmptyListMessage,
 } from './HelperComponents';
-
-import AnnotationTile from './AnnotationTile';
 
 import styles from './DashboardChannels.module.scss';
 import { DeepCopyObj, RID } from '../../utils/docUIUtils';
@@ -70,9 +66,9 @@ export default function AnnotationsChannel({
   mode,
   selectedDocumentId,
   selectedGroupId,
-  dashboardState = '',
   annotationsBeingDragged,
   setAnnotationsBeingDragged,
+  toAnnotationsTile,
   allAnnotations,
   setAllAnnotations,
 }) {
@@ -131,7 +127,7 @@ export default function AnnotationsChannel({
   });
 
   const setOpenOutline = useRef(({
-    id, name, document, callback = () => {},
+    id, name, selection, document, callback = () => {},
   }) => {
     if (id !== undefined) {
       openOutline.current.id = id;
@@ -141,6 +137,9 @@ export default function AnnotationsChannel({
     }
     if (document !== undefined) {
       openOutline.current.document = document;
+    }
+    if (selection !== undefined) {
+      openOutline.current.selection = selection;
     }
     callback();
   }).current;
@@ -220,52 +219,6 @@ export default function AnnotationsChannel({
       icon: <PersonPlusFill size="1.2em" />,
     },
   ];
-
-  const toAnnotationsTile = ({
-    _id,
-    oid,
-    permissions,
-    target: { selector, document },
-    creator: { name },
-    modified,
-    body: { value, tags },
-  }, extraInfo) => {
-    const defaultExtraInfo = {
-      dbs: dashboardState,
-      from: 'annotationsChannel',
-      onDelete: undefined,
-      onClick: undefined,
-    };
-    const {
-      dbs,
-      from,
-      onDelete,
-      onClick,
-    } = extraInfo ? { ...defaultExtraInfo, ...extraInfo } : defaultExtraInfo;
-
-    return (
-      <AnnotationTile
-        key={`${oid || _id}-${from}`}
-        id={oid || _id}
-        onClick={onClick || (() => Router.push(`/documents/${document.slug}?mine=${permissions.private ? 'true' : 'false'}&aid=${_id}&${dbs}`))}
-        onDelete={onDelete}
-        text={selector.exact}
-        author={name}
-        annotation={value.length > 0 ? ReactHtmlParser(value, { transform: fixIframes }) : ''}
-        activityDate={modified}
-        tags={tags}
-        draggable
-        maxNumberOfAnnotationTags={maxNumberOfAnnotationTags}
-        setAnnotationsBeingDragged={(ids) => {
-          if (ids) {
-            setAnnotationsBeingDragged({ ids, from });
-          } else {
-            setAnnotationsBeingDragged();
-          }
-        }}
-      />
-    );
-  };
 
   const updateAnnotations = (annos) => {
     annotations[slug] = annos;
@@ -603,10 +556,13 @@ export default function AnnotationsChannel({
     return d;
   };
 
-  const updateOutline = ({ name, document }) => {
+  const updateOutline = ({
+    name, document, selection,
+  }) => {
     setOutlineStatus('saving');
-    setOpenOutline({ name, document, callback: forceUpdate });
-
+    setOpenOutline({
+      name, document, selection, callback: forceUpdate,
+    });
     saveOutlineDebounced(
       openOutline.current.id,
       { name, document: document ? dehydrateOutlineData(document) : undefined },
@@ -617,20 +573,54 @@ export default function AnnotationsChannel({
     );
   };
 
-  const setCursorAfterAnnotation = (oid) => {
-    const indexOfAnnotation = openOutline.current.document
-      .findIndex(({ annotationData }) => annotationData && annotationData.oid === oid);
+  const getPosArrayOfAnnotation = (arr, oid, currentPosArray = []) => {
+    for (let i = 0; i < arr.length; i += 1) {
+      const { annotationData, children } = arr[i];
+      if (annotationData && annotationData.oid === oid) {
+        return currentPosArray.concat([i]);
+      } if (children) {
+        const posArray = getPosArrayOfAnnotation(
+          children,
+          oid,
+          currentPosArray.concat([i, 'children']),
+        );
+        if (posArray) {
+          return posArray;
+        }
+      }
+    }
 
-    if (indexOfAnnotation !== -1) {
-      openOutline.current.document.splice(
-        indexOfAnnotation + 1,
+    return undefined;
+  };
+
+  const setCursorAfterAnnotation = (oid) => {
+    const posArrayOfAnnotation = getPosArrayOfAnnotation(openOutline.current.document, oid);
+    if (posArrayOfAnnotation) {
+      const subDocument = posArrayOfAnnotation.slice(0, -1).reduce(
+        (o, k) => o[k],
+        openOutline.current.document,
+      );
+      subDocument.splice(
+        posArrayOfAnnotation.slice(-1)[0] + 1,
         0,
         {
           children: [{ text: '' }],
           type: DEFAULTS_PARAGRAPH.p.type,
         },
       );
-      updateOutline({});
+      // console.log(posArrayOfAnnotation);
+      const selectionPath = posArrayOfAnnotation.filter((item) => !Number.isNaN(item));
+      const selection = {
+        anchor: {
+          offset: 0,
+          path: selectionPath,
+        },
+        focus: {
+          offset: 0,
+          path: selectionPath,
+        },
+      };
+      updateOutline({ selection });
     }
   };
 
@@ -658,7 +648,10 @@ export default function AnnotationsChannel({
       if (annotationData) {
         d[i].annotation = toAnnotationsTile(annotationData, {
           dbs: '',
-          from: 'outline',
+          from: 'composition',
+          linkTarget: '_blank',
+          openInAnnotationStudio: true,
+          maxNumberOfTags: maxNumberOfAnnotationTags,
           onDelete: () => {
             deleteAnnotationFromOutline(openOutline.current.document, annotationData.oid);
             updateOutline({ document: openOutline.current.document });
@@ -776,9 +769,9 @@ export default function AnnotationsChannel({
       .then((annos) => {
         const sortedAnnos = annos.sort((a, b) => new Date(b.modified) - new Date(a.modified));
         const a = {
-          mine: sortedAnnos.filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'mine' })).map((anno) => toAnnotationsTile(anno)),
-          shared: sortedAnnos.filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'shared' })).map((anno) => toAnnotationsTile(anno)),
-          'shared-with-me': sortedAnnos.filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'shared-with-me' })).map((anno) => toAnnotationsTile(anno)),
+          mine: sortedAnnos.filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'mine' })).map((anno) => toAnnotationsTile(anno, { maxNumberOfTags: maxNumberOfAnnotationTags })),
+          shared: sortedAnnos.filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'shared' })).map((anno) => toAnnotationsTile(anno, { maxNumberOfTags: maxNumberOfAnnotationTags })),
+          'shared-with-me': sortedAnnos.filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'shared-with-me' })).map((anno) => toAnnotationsTile(anno, { maxNumberOfTags: maxNumberOfAnnotationTags })),
         };
 
         updateAnnotations(a);
@@ -895,7 +888,10 @@ export default function AnnotationsChannel({
           if (filteredAnnotations.includes(i)) {
             // eslint-disable-next-line no-underscore-dangle
             aids.push(aa[i]._id);
-            return toAnnotationsTile(aa[i]);
+            return toAnnotationsTile(aa[i], {
+              linkTarget: '_blank',
+              maxNumberOfTags: maxNumberOfAnnotationTags,
+            });
           }
           return null;
         }).filter((t) => t !== null);
@@ -1005,6 +1001,7 @@ export default function AnnotationsChannel({
       <div style={{ marginTop: -10 }}>
         <ISOutline
           key={openOutline.current.id}
+          // selection={openOutline.current.selection}
           exportDocument={async (e) => {
             const eventText = {
               'annotation-studio': 'Exporting composition to Annotation Studio',

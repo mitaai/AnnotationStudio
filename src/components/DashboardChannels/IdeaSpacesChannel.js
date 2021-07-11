@@ -1,6 +1,5 @@
 /* eslint-disable no-underscore-dangle */
 import React, { useEffect, useState, useRef } from 'react';
-import Router from 'next/router';
 import debounce from 'lodash.debounce';
 import {
   Modal, Button, Form, DropdownButton, Dropdown, OverlayTrigger, Tooltip, Spinner, ProgressBar,
@@ -8,7 +7,6 @@ import {
 import {
   ArrowDown, ArrowUp, Check, CheckCircleFill, ChevronRight,
 } from 'react-bootstrap-icons';
-import ReactHtmlParser from 'react-html-parser';
 import styles from './DashboardChannels.module.scss';
 import IdeaSpaceTile from './IdeaSpaceTile';
 import TileBadge from '../TileBadge';
@@ -19,8 +17,6 @@ import {
   getAllIdeaSpaces,
 } from '../../utils/ideaspaceUtils';
 import { DeepCopyObj } from '../../utils/docUIUtils';
-import { fixIframes } from '../../utils/parseUtil';
-import AnnotationTile from './AnnotationTile';
 import { ListLoadingSpinner } from './HelperComponents';
 
 export default function IdeaSpacesChannel({
@@ -29,7 +25,7 @@ export default function IdeaSpacesChannel({
   opacity,
   annotationsBeingDragged,
   setAnnotationsBeingDragged,
-  dashboardState,
+  toAnnotationsTile,
   allAnnotations,
 }) {
   const [ideaspaces, setIdeaspaces] = useState([]);
@@ -142,36 +138,6 @@ export default function IdeaSpacesChannel({
       });
     }
   };
-
-  const toAnnotationsTile = ({
-    _id,
-    permissions,
-    target: { selector, document: { slug } },
-    creator: { name: author },
-    modified, body: { value, tags },
-  }) => (
-    <AnnotationTile
-      key={_id}
-      id={_id}
-      onClick={() => Router.push(`/documents/${slug}?mine=${permissions.private ? 'true' : 'false'}&aid=${_id}&${dashboardState}`)}
-      onDelete={() => deleteAnnotationFromIdeaSpace(_id)}
-      text={selector.exact}
-      author={author}
-      annotation={value.length > 0 ? ReactHtmlParser(value, { transform: fixIframes }) : ''}
-      activityDate={modified}
-      tags={tags}
-      draggable
-      setAnnotationsBeingDragged={(ids) => {
-        if (ids) {
-          setAnnotationsBeingDragged({ ids, from: 'ideaspaceChannel' });
-        } else {
-          setAnnotationsBeingDragged();
-        }
-      }}
-      maxNumberOfAnnotationTags={2}
-    />
-  );
-
 
   let ideaSpaceTiles = <></>;
   if (loadingIdeaSpaces) {
@@ -438,7 +404,15 @@ export default function IdeaSpacesChannel({
         const annos = allAnnotations
           .filter(({ _id }) => annotationIdsInIdeaSpace.includes(_id))
           .sort(annotationComparison());
-        annosForIdeaSpace = annos.map(toAnnotationsTile);
+        annosForIdeaSpace = annos.map((anno) => toAnnotationsTile(
+          anno,
+          {
+            onDelete: () => deleteAnnotationFromIdeaSpace(anno._id),
+            from: 'ideaspaceChannel',
+            linkTarget: '_blank',
+            maxNumberOfTags: 2,
+          },
+        ));
       }
     }
     setAnnotationTilesForIdeaSpace(annosForIdeaSpace);

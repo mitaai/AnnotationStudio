@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { parseCookies, destroyCookie } from 'nookies';
+import ReactHtmlParser from 'react-html-parser';
 import {
   Button, Card, Container, Row, Col, Image, Nav,
 } from 'react-bootstrap';
@@ -8,14 +9,16 @@ import {
 } from 'react-bootstrap-icons';
 import { useSession } from 'next-auth/client';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
+import Router, { useRouter } from 'next/router';
 
+import { fixIframes } from '../utils/parseUtil';
 import Layout from '../components/Layout';
 import LoadingSpinner from '../components/LoadingSpinner';
 import GroupJoinCard from '../components/GroupJoinCard';
 import { appendProtocolIfMissing } from '../utils/fetchUtil';
 import { GroupsChannel, DocumentsChannel, AnnotationsChannel } from '../components/DashboardChannels';
 import IdeaSpacesChannel from '../components/DashboardChannels/IdeaSpacesChannel';
+import AnnotationTile from '../components/DashboardChannels/AnnotationTile';
 
 export default function Home({
   query,
@@ -90,6 +93,65 @@ export default function Home({
   const breadcrumbs = [
     { name: selectedGroupId === 'privateGroup' ? 'Personal' : session.user.groups.find(({ id }) => id === selectedGroupId).name },
   ];
+
+  const toAnnotationsTile = ({
+    _id,
+    oid,
+    permissions,
+    target: { selector, document },
+    creator: { name },
+    modified,
+    body: { value, tags },
+  }, extraInfo) => {
+    const defaultExtraInfo = {
+      dbs: dashboardState,
+      from: 'annotationsChannel',
+      onDelete: undefined,
+      onClick: undefined,
+      linkTarget: undefined,
+      openInAnnotationStudio: false,
+      maxNumberOfTags: 3,
+    };
+    const {
+      dbs,
+      from,
+      onDelete,
+      onClick,
+      linkTarget,
+      openInAnnotationStudio,
+      maxNumberOfTags,
+    } = extraInfo ? { ...defaultExtraInfo, ...extraInfo } : defaultExtraInfo;
+
+    const url = `/documents/${document.slug}?mine=${permissions.private ? 'true' : 'false'}&aid=${_id}&${dbs}`;
+    const openInAS = linkTarget === '_blank'
+      // eslint-disable-next-line no-undef
+      ? () => window.open(url, '_blank')
+      : () => Router.push(url);
+
+    return (
+      <AnnotationTile
+        key={`${oid || _id}-${from}`}
+        id={oid || _id}
+        onClick={onClick || openInAS}
+        openInAnnotationStudio={openInAnnotationStudio ? openInAS : undefined}
+        onDelete={onDelete}
+        text={selector.exact}
+        author={name}
+        annotation={value.length > 0 ? ReactHtmlParser(value, { transform: fixIframes }) : ''}
+        activityDate={modified}
+        tags={tags}
+        draggable
+        maxNumberOfAnnotationTags={maxNumberOfTags}
+        setAnnotationsBeingDragged={(ids) => {
+          if (ids) {
+            setAnnotationsBeingDragged({ ids, from });
+          } else {
+            setAnnotationsBeingDragged();
+          }
+        }}
+      />
+    );
+  };
 
   useEffect(() => {
     if (session && query) {
@@ -359,9 +421,9 @@ export default function Home({
             documentPermissions={documentPermissions}
             annotationsBeingDragged={annotationsBeingDragged}
             setAnnotationsBeingDragged={setAnnotationsBeingDragged}
+            toAnnotationsTile={toAnnotationsTile}
             allAnnotations={allAnnotations}
             setAllAnnotations={setAllAnnotations}
-            dashboardState={dashboardState}
           />
           <IdeaSpacesChannel
             width={`calc(${channelPositions.ideaspaces.width.vw}vw + ${channelPositions.ideaspaces.width.px}px)`}
@@ -369,7 +431,7 @@ export default function Home({
             opacity={channelPositions.ideaspaces.opacity}
             annotationsBeingDragged={annotationsBeingDragged}
             setAnnotationsBeingDragged={setAnnotationsBeingDragged}
-            dashboardState={dashboardState}
+            toAnnotationsTile={toAnnotationsTile}
             allAnnotations={allAnnotations}
           />
         </div>

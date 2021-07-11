@@ -17,17 +17,20 @@ export default function AnnotationTile({
   maxNumberOfAnnotationTags = 3,
   onClick = () => {},
   onDelete,
+  openInAnnotationStudio,
   setAnnotationsBeingDragged = () => {},
 }) {
   const [deleting, setDeleting] = useState();
   const [hovered, setHovered] = useState();
   const [focused, setFoucsed] = useState();
   const [deleteHovered, setDeleteHovered] = useState();
+  const [openInASHovered, setOpenInASHovered] = useState();
   const classNames = [
     styles.tile,
     hovered ? styles.tileHovered : '',
     focused ? styles.tileFocused : '',
     deleteHovered ? styles.tileDeleteHovered : '',
+    openInASHovered ? styles.tileOpenInASHovered : '',
   ].join(' ');
 
   let tileBadges = [];
@@ -46,7 +49,16 @@ export default function AnnotationTile({
       id={id}
       className={classNames}
       contentEditable={false}
-      onClick={deleteHovered ? () => { onDelete(); setDeleting(true); } : onClick}
+      onClick={() => {
+        if (deleteHovered) {
+          onDelete();
+          setDeleting(true);
+        } else if (openInASHovered) {
+          openInAnnotationStudio();
+        } else {
+          onClick();
+        }
+      }}
       onMouseMove={() => {
         if (!hovered) {
           setHovered(true);
@@ -71,6 +83,18 @@ export default function AnnotationTile({
         }
       }}
     >
+      {openInAnnotationStudio && (
+      <span
+        className={styles.openInAnnotationStudioBtn}
+        style={{ right: onDelete ? 23 : 5 }}
+        onMouseOver={() => setOpenInASHovered(true)}
+        onMouseOut={() => setOpenInASHovered()}
+        onFocus={() => {}}
+        onBlur={() => {}}
+      >
+        Open in Annotation Studio
+      </span>
+      )}
       {onDelete && (
       <XCircleFill
         className={styles.deleteBtn}

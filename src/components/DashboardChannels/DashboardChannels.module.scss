@@ -113,12 +113,38 @@
   right: 5px;
 }
 
+.openInAnnotationStudioBtn {
+  visibility: hidden;
+  position: absolute;
+  top: 3px;
+  font-size: 10px;
+  font-weight: bold;
+  transition: all 0.5s;
+  background: #FFFAEB;
+  color: #B18910;
+  border-radius: 5px;
+  padding: 2px 3px;
+}
+
 .tileHovered {
   background: #EFF5FF !important;
 
   .deleteBtn {
     color: #424242;
     visibility: visible;
+  }
+
+  .openInAnnotationStudioBtn {
+    visibility: visible;
+  }
+
+  &.tileOpenInASHovered {
+    background: #FFFAEB !important;
+
+    .openInAnnotationStudioBtn {
+      background: #EFC957;
+      color: #575757;
+    }
   }
 
   &.tileDeleteHovered {

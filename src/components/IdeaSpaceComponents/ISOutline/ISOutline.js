@@ -166,6 +166,7 @@ const ISOutline = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [document, removeDropzones]);
 
+  // console.log(selection);
 
   return (
     <>
@@ -174,6 +175,7 @@ const ISOutline = ({
         value={annotationsBeingDragged ? addDropzonesToSlateValue(document) : document}
         disabled={false}
         onChange={(value) => {
+          // console.log(value);
           setSlateLoading(false);
           setDocument(removeDropzonesFromSlateValue(value));
         }}
