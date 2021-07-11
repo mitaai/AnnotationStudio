@@ -26,6 +26,7 @@ import {
 import {
   DEFAULTS_PARAGRAPH,
 } from '@udecode/slate-plugins';
+import { toPng } from 'html-to-image';
 import { fetchSharedAnnotationsOnDocument, getAllAnnotations } from '../../utils/annotationUtil';
 import { fixIframes } from '../../utils/parseUtil';
 
@@ -35,7 +36,6 @@ import {
 } from './HelperComponents';
 
 import AnnotationTile from './AnnotationTile';
-
 
 import styles from './DashboardChannels.module.scss';
 import { DeepCopyObj, RID } from '../../utils/docUIUtils';
@@ -52,7 +52,11 @@ import {
 import ISGroupHeader from '../IdeaSpaceComponents/ISGroupHeader/ISGroupHeader';
 import ISOutline from '../IdeaSpaceComponents/ISOutline';
 import {
-  createOutline, getAllOutlines, updateOutlineData, deleteOutline, exportDocumentToAnnotationStudio,
+  createOutline,
+  getAllOutlines,
+  updateOutlineData,
+  deleteOutline,
+  exportDocumentToAnnotationStudio,
 } from '../../utils/outlineUtil';
 
 export default function AnnotationsChannel({
@@ -219,6 +223,7 @@ export default function AnnotationsChannel({
 
   const toAnnotationsTile = ({
     _id,
+    oid,
     permissions,
     target: { selector, document },
     creator: { name },
@@ -240,8 +245,8 @@ export default function AnnotationsChannel({
 
     return (
       <AnnotationTile
-        key={`${_id}-${from}`}
-        id={_id}
+        key={`${oid || _id}-${from}`}
+        id={oid || _id}
         onClick={onClick || (() => Router.push(`/documents/${document.slug}?mine=${permissions.private ? 'true' : 'false'}&aid=${_id}&${dbs}`))}
         onDelete={onDelete}
         text={selector.exact}
@@ -658,7 +663,9 @@ export default function AnnotationsChannel({
             deleteAnnotationFromOutline(openOutline.current.document, annotationData.oid);
             updateOutline({ document: openOutline.current.document });
           },
-          onClick: () => setCursorAfterAnnotation(annotationData.oid),
+          onClick: () => {
+            setCursorAfterAnnotation(annotationData.oid);
+          },
         });
       }
     }
@@ -710,6 +717,35 @@ export default function AnnotationsChannel({
   const getDroppedAnnotationsData = () => (annotationsBeingDragged
     ? aa.filter((anno) => annotationsBeingDragged.ids.includes(anno._id))
     : undefined);
+
+  const findAnnotationTilesPostions = (arr, currentPosArray) => {
+    const annotationTilesPositions = [];
+    for (let i = 0; i < arr.length; i += 1) {
+      const { annotationData, children } = arr[i];
+      if (annotationData) {
+        const {
+          _id,
+          oid,
+          permissions,
+          target: { document },
+        } = annotationData;
+        const dbs = '';
+        const url = `/documents/${document.slug}?mine=${permissions.private ? 'true' : 'false'}&aid=${_id}&${dbs}`;
+        annotationTilesPositions.push({
+          posArray: currentPosArray.concat([i]),
+          oid,
+          url,
+        });
+      } else if (children) {
+        annotationTilesPositions.push(...findAnnotationTilesPostions(
+          children,
+          currentPosArray.concat([i, 'children']),
+        ));
+      }
+    }
+
+    return annotationTilesPositions;
+  };
 
   useEffect(
     () => setFilteredAnnotations(filterAnnotations(appliedFilters)),
@@ -969,20 +1005,47 @@ export default function AnnotationsChannel({
       <div style={{ marginTop: -10 }}>
         <ISOutline
           key={openOutline.current.id}
-          exportDocument={(e) => {
+          exportDocument={async (e) => {
             const eventText = {
               'annotation-studio': 'Exporting composition to Annotation Studio',
             };
             // show ui popup that we are exporting the document
             setExportingDocumentModalTitle(eventText[e] || 'Exporting...');
             setShowExportingDocumentModal(true);
-            if (e === 'annotation-studio') {
-              exportDocumentToAnnotationStudio({
-                author: (session && session.user) ? session.user.name : '',
-                composition: openOutline.current,
-                callback: ({ pathname }) => router.push({ pathname }),
-              });
-            }
+
+            const composition = DeepCopyObj(openOutline.current.document);
+            const annotationTilesPositions = findAnnotationTilesPostions(composition, []);
+            // now we need to create all the images for all the annotations we found
+            Promise.all(annotationTilesPositions.map(({ oid }) => {
+              // eslint-disable-next-line no-undef
+              const node = document.getElementById(oid);
+              return toPng(node);
+            })).then((annotationImages) => {
+              for (let i = 0; i < annotationTilesPositions.length; i += 1) {
+                const {
+                  posArray,
+                  url,
+                } = annotationTilesPositions[i];
+                const subDocument = posArray.slice(0, -1).reduce((o, k) => o[k], composition);
+                subDocument[posArray.slice(-1)[0]] = {
+                  type: 'a',
+                  url,
+                  children: [{
+                    type: 'img',
+                    children: [{ text: '' }],
+                    url: annotationImages[i],
+                  }],
+                };
+              }
+
+              if (e === 'annotation-studio') {
+                exportDocumentToAnnotationStudio({
+                  author: (session && session.user) ? session.user.name : '',
+                  composition: { ...openOutline.current, document: composition },
+                  callback: ({ pathname }) => router.push({ pathname }),
+                });
+              }
+            });
           }}
           document={openOutline.current.document || slateInitialValue}
           setDocument={(document) => updateOutline({ document })}

@@ -45,7 +45,7 @@ import { annotatedByFilterMatch, byDocumentPermissionsFilterMatch, byTagFilterMa
 const DocumentPage = ({
   document, annotations, initAlerts, query, statefulSession,
 }) => {
-  const dashboardState = `${query.did !== undefined && query.slug !== undefined ? `did=${query.did}&slug=${query.slug}&dp=${query.dp}&` : ''}gid=${query.gid}`;
+  const dashboardState = `${query && query.did !== undefined && query.slug !== undefined ? `did=${query.did}&slug=${query.slug}&dp=${query.dp}&` : ''}gid=${query && query.gid}`;
   let validQuery = false;
   let defaultPermissions = 0;
   if ((query && (query.mine === 'true' || query.mine === 'false')) && query.aid !== undefined) {
@@ -139,7 +139,6 @@ const DocumentPage = ({
       setFooterH(footerH);
     }, 250),
   ).current;
-
 
   const expandAnnotation = (aid, expand) => {
     const aidExistInList = expandedAnnotations.includes(aid);
@@ -505,7 +504,7 @@ const DocumentPage = ({
     // when session loaded, get intersection of groups and the users that applies to
     if (session && document && !groupIntersection) {
       const userGroupIds = session.user.groups.map((g) => g.id);
-      const intersection = userGroupIds.filter((id) => document.groups.includes(id));
+      const intersection = userGroupIds.filter((id) => document && document.groups.includes(id));
       const intersectionGroups = await Promise.all(intersection.map((id) => getGroupById(id)));
       let intersectionMembers = [];
       for (let i = 0; i < intersectionGroups.length; i += 1) {
@@ -660,6 +659,11 @@ const DocumentPage = ({
         });
         setInitializedDocumentScrollEventListener(true);
       }
+
+      // another thing we must do is set all the links in the document to target="_blank" so that
+      // if the user clicks on a link it will open the url in another tab and presever the work
+      // they are doing on the document view page
+      $('#document-container a').attr('target', '_blank');
     }
   }, [session, loading, document, documentLoading]);
 
@@ -676,7 +680,7 @@ const DocumentPage = ({
           <p>
             This document is currently
             {' '}
-            {document.state === 'draft' && (
+            {document && document.state === 'draft' && (
             <>
               a
               {' '}
@@ -685,7 +689,7 @@ const DocumentPage = ({
               <strong>Draft</strong>
             </>
             )}
-            {document.state === 'archived' && (
+            {document && document.state === 'archived' && (
             <>
               <ArchiveFill alt="archived" />
               {' '}
@@ -694,14 +698,14 @@ const DocumentPage = ({
             )}
             . Documents in
             {' '}
-            {document.state === 'draft' && (
+            {document && document.state === 'draft' && (
             <>
               <PencilFill alt="draft" />
               {' '}
               <strong>Draft</strong>
             </>
             )}
-            {document.state === 'archived' && (
+            {document && document.state === 'archived' && (
             <>
               <ArchiveFill alt="archived" />
               {' '}
@@ -724,6 +728,10 @@ const DocumentPage = ({
       </Toast>
     </div>
   );
+
+  if (document === undefined) {
+    return <span>Document could not be found</span>;
+  }
 
   return (
     <DocumentActiveAnnotationsContext.Provider value={[activeAnnotations, setActiveAnnotations]}>

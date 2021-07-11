@@ -43,6 +43,7 @@ export default function AnnotationTile({
 
   return (
     <div
+      id={id}
       className={classNames}
       contentEditable={false}
       onClick={deleteHovered ? () => { onDelete(); setDeleting(true); } : onClick}
@@ -93,7 +94,7 @@ export default function AnnotationTile({
           }}
           >
             <div className={styles.memberText}>
-              <span style={{ fontWeight: 'bold' }}>{author}</span>
+              <span style={{ fontWeight: 'bold' }}>{FirstNameLastInitial(author)}</span>
               <span style={{
                 width: 3, height: 3, borderRadius: 1.5, background: '#838383', marginLeft: 10, marginRight: 10,
               }}
@@ -114,7 +115,6 @@ export default function AnnotationTile({
             {tileBadges}
           </div>
         )}
-
     </div>
   );
 }

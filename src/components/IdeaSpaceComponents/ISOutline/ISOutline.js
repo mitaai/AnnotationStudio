@@ -165,8 +165,6 @@ const ISOutline = ({
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [document, removeDropzones]);
-  
-  // console.log(plugins);
 
 
   return (
