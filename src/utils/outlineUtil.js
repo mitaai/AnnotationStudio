@@ -99,7 +99,12 @@ const exportDocumentToAnnotationStudio = async ({ author = '', composition, call
 
   if (res.status === 200) {
     await res.json();
-    callback({ pathname: `/documents/${slug}/edit` });
+    callback({
+      pathname: `/documents/${slug}/edit`,
+      query: {
+        exportDocument: true,
+      },
+    });
   }
 };
 

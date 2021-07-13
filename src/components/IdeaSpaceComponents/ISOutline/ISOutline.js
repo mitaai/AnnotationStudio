@@ -26,56 +26,6 @@ import { withHistory } from 'slate-history';
 import { plugins, withDivs } from '../../../utils/slateUtil';
 import SlateToolbar from '../../SlateToolbar';
 import styles from './ISOutline.module.scss';
-import { DeepCopyObj, RID } from '../../../utils/docUIUtils';
-
-const Dropzone = ({
-  document,
-  setDocument,
-  getDroppedAnnotationsData,
-  posArray,
-  hydrateOutlineData,
-  setRemoveDropzones,
-}) => {
-  const [dragEnter, setDragEnter] = useState();
-  return (
-    <div
-      className={styles.dropzoneContainer}
-    >
-      <div
-        className={`${styles.dropzone} ${dragEnter ? styles.dropzoneDragEnter : ''}`}
-        onDragEnter={(e) => {
-          e.preventDefault();
-          setDragEnter(true);
-        }}
-        onDragOver={(e) => {
-          e.preventDefault();
-          setDragEnter(true);
-        }}
-        onDragLeave={(e) => {
-          e.preventDefault();
-          setDragEnter();
-        }}
-        onDrop={(e) => {
-          e.preventDefault();
-          const newSlateValue = DeepCopyObj(document);
-          const container = posArray.slice(0, -1).reduce((o, k) => o[k], newSlateValue);
-          const annos = getDroppedAnnotationsData();
-          if (annos) {
-            const formattedAnnos = annos.map((a) => ({
-              type: 'annotation',
-              annotationData: { oid: RID(), ...a },
-              children: [{ text: '' }],
-            }));
-            container.splice(posArray.slice(-1)[0], 0, ...formattedAnnos);
-          }
-          setDocument(hydrateOutlineData(newSlateValue));
-          setRemoveDropzones(true);
-          setDragEnter();
-        }}
-      />
-    </div>
-  );
-};
 
 const ISOutline = ({
   exportDocument,
@@ -121,14 +71,14 @@ const ISOutline = ({
               type: 'dropzone',
               dropzoneType: type,
               children: [{ text: '' }],
-              dropzone: <Dropzone
-                posArray={currentPosArray.concat([i + 1])}
-                getDroppedAnnotationsData={getDroppedAnnotationsData}
-                hydrateOutlineData={hydrateOutlineData}
-                document={document}
-                setDocument={setDocument}
-                setRemoveDropzones={setRemoveDropzones}
-              />,
+              props: {
+                posArray: currentPosArray.concat([i + 1]),
+                getDroppedAnnotationsData,
+                hydrateOutlineData,
+                document,
+                setDocument,
+                setRemoveDropzones,
+              },
             });
           }
         }
@@ -166,8 +116,6 @@ const ISOutline = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [document, removeDropzones]);
 
-  // console.log(selection);
-
   return (
     <>
       <Slate
@@ -175,7 +123,6 @@ const ISOutline = ({
         value={annotationsBeingDragged ? addDropzonesToSlateValue(document) : document}
         disabled={false}
         onChange={(value) => {
-          // console.log(value);
           setSlateLoading(false);
           setDocument(removeDropzonesFromSlateValue(value));
         }}

@@ -1039,7 +1039,7 @@ export default function AnnotationsChannel({
                 exportDocumentToAnnotationStudio({
                   author: (session && session.user) ? session.user.name : '',
                   composition: { ...openOutline.current, document: composition },
-                  callback: ({ pathname }) => router.push({ pathname }),
+                  callback: ({ pathname, query }) => router.push({ pathname, query }),
                 });
               }
             });

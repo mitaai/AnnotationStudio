@@ -46,24 +46,3 @@
   height: 350px;
   background-color: rgba(255, 255, 255, 0.75);
 }
-
-.dropzoneContainer {
-  top: -18px;
-  position: relative;
-  height: 0px;
-
-  .dropzone {
-    position: absolute;
-    border: 1px dashed;
-    border-color: #B18910;
-    background: #FFFAEB;
-    height: 20px;
-    width: 100%;
-    border-radius: 3px;
-
-    &.dropzoneDragEnter {
-      border-color: #45AC87 !important;
-      background: #DEFFF3;
-    }
-  }
-}

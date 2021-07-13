@@ -11,10 +11,22 @@ import DocumentForm from '../../../components/DocumentForm';
 
 import { prefetchDocumentBySlug } from '../../../utils/docUtil';
 
-const EditDocument = ({ document, alerts, statefulSession }) => {
+const EditDocument = ({
+  query, document, alerts, statefulSession,
+}) => {
   const [session, loading] = useSession();
   const [pageLoading, setPageLoading] = useState(true);
   const [errors, setErrors] = useState(alerts || []);
+  const {
+    did,
+    slug,
+    dp,
+    gid,
+    exportDocument,
+  } = query || {};
+  const dashboardStateQuery = {
+    did, slug, dp, gid,
+  };
 
   const cloudfrontUrl = process.env.NEXT_PUBLIC_SIGNING_URL.split('/url')[0];
 
@@ -68,6 +80,8 @@ const EditDocument = ({ document, alerts, statefulSession }) => {
                   <DocumentForm
                     mode="edit"
                     session={session}
+                    exportDocument={exportDocument}
+                    dashboardStateQuery={dashboardStateQuery}
                     data={document}
                     setErrors={setErrors}
                     errors={errors}
@@ -98,6 +112,7 @@ export async function getServerSideProps(context) {
   let props = {};
   await prefetchDocumentBySlug(slug, context.req.headers.cookie).then((response) => {
     props = {
+      query: context.query,
       document: {
         slug,
         ...response,

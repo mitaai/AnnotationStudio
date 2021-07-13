@@ -57,6 +57,8 @@ import styles from './DocumentForm.module.scss';
 const DocumentForm = ({
   session,
   mode,
+  exportDocument,
+  dashboardStateQuery,
   data,
   setErrors,
 }) => {
@@ -347,11 +349,24 @@ const DocumentForm = ({
         const submitFunction = mode === 'edit' ? editDocument : createDocument;
         setTimeout(() => {
           submitFunction(values)
-            .then(() => {
+            .then((result) => {
+              const { slug } = mode === 'edit' ? data : result.ops[0];
               setErrors([]);
+              if (exportDocument || mode !== 'edit') {
+                // in the scenario where the user has created a new document or is saving changes
+                // from a document that has just been exported we want to redirect them to the
+                // document view so they can start working with the document immediately
+                router.push({
+                  pathname: `/documents/${slug || ''}`,
+                  query: {
+                    ...dashboardStateQuery,
+                  },
+                });
+              }
               router.push({
                 pathname: '/documents',
                 query: {
+                  ...dashboardStateQuery,
                   tab: 'mine',
                   alert: (mode === 'edit') ? 'editedDocument' : 'createdDocument',
                 },
