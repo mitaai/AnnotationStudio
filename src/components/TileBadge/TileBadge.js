@@ -77,7 +77,14 @@ export default function TileBadge({
           }
         }}
         style={{
-          marginTop, marginLeft, marginBottom, marginRight, fontSize, cursor: 'default', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          marginTop,
+          marginLeft,
+          marginBottom,
+          marginRight,
+          fontSize,
+          cursor: 'default',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
       >
         {icon}
