@@ -347,36 +347,34 @@ const DocumentForm = ({
     <Formik
       onSubmit={(values, actions) => {
         const submitFunction = mode === 'edit' ? editDocument : createDocument;
-        setTimeout(() => {
-          submitFunction(values)
-            .then((result) => {
-              const { slug } = mode === 'edit' ? data : result.ops[0];
-              setErrors([]);
-              if (exportDocument || mode !== 'edit') {
-                // in the scenario where the user has created a new document or is saving changes
-                // from a document that has just been exported we want to redirect them to the
-                // document view so they can start working with the document immediately
-                router.push({
-                  pathname: `/documents/${slug || ''}`,
-                  query: {
-                    ...dashboardStateQuery,
-                  },
-                });
-              }
+        submitFunction(values)
+          .then((result) => {
+            const { slug } = mode === 'edit' ? data : result.ops[0];
+            setErrors([]);
+            if (exportDocument || mode !== 'edit') {
+              // in the scenario where the user has created a new document or is saving changes
+              // from a document that has just been exported we want to redirect them to the
+              // document view so they can start working with the document immediately
               router.push({
-                pathname: '/documents',
+                pathname: `/documents/${slug || ''}`,
                 query: {
                   ...dashboardStateQuery,
-                  tab: 'mine',
-                  alert: (mode === 'edit') ? 'editedDocument' : 'createdDocument',
                 },
               });
-            })
-            .catch((err) => {
-              setErrors((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
+            }
+            router.push({
+              pathname: '/documents',
+              query: {
+                ...dashboardStateQuery,
+                tab: 'mine',
+                alert: (mode === 'edit') ? 'editedDocument' : 'createdDocument',
+              },
             });
-          actions.setSubmitting(false);
-        }, 1000);
+          })
+          .catch((err) => {
+            setErrors((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
+          });
+        actions.setSubmitting(false);
       }}
       validationSchema={schema}
       initialValues={initialValues}
