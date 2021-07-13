@@ -275,11 +275,11 @@ export default function AnnotationsChannel({
     };
 
     if (selectedPermissions === 'shared') {
-      allFilters.byPermissions.shared = false;
-      allFilters.byPermissions.private = true;
-    } else {
       allFilters.byPermissions.shared = true;
       allFilters.byPermissions.private = false;
+    } else {
+      allFilters.byPermissions.shared = false;
+      allFilters.byPermissions.private = true;
     }
 
     if (selectedGroupId) {
@@ -383,28 +383,25 @@ export default function AnnotationsChannel({
     setRecalculateAllFilterNumbers(true);
   };
 
-  const toggleFilters = (type, key) => {
-    if (type === 'byPermissions') {
-      if (key === 'private') {
-        allFilters.byPermissions.private = !allFilters.byPermissions.private;
-        allFilters.byPermissions.shared = false;
-      } else {
-        allFilters.byPermissions.shared = !allFilters.byPermissions.shared;
-        allFilters.byPermissions.private = false;
-      }
-      appliedFilters.byPermissions.private = allFilters.byPermissions.private;
-      appliedFilters.byPermissions.shared = allFilters.byPermissions.shared;
+  const toggleFilters = (type, { key, obj }) => {
+    const allF = DeepCopyObj(allFilters);
+    const appliedF = DeepCopyObj(appliedFilters);
+    if (type === 'byPermissions' && obj) {
+      allF.byPermissions.private = obj.private;
+      allF.byPermissions.shared = obj.shared;
+      appliedF.byPermissions.private = obj.private;
+      appliedF.byPermissions.shared = obj.shared;
     } else {
-      allFilters[type][key].checked = !allFilters[type][key].checked;
-      if (allFilters[type][key].checked) {
-        appliedFilters[type].push(key);
+      allF[type][key].checked = !allFilters[type][key].checked;
+      if (allF[type][key].checked) {
+        appliedF[type].push(key);
       } else {
-        appliedFilters[type] = appliedFilters[type].filter((k) => k !== key);
+        appliedF[type] = appliedFilters[type].filter((k) => k !== key);
       }
     }
 
-    setAllFilters(DeepCopyObj(allFilters));
-    setAppliedFilters(DeepCopyObj(appliedFilters));
+    setAllFilters(allF);
+    setAppliedFilters(appliedF);
     setRecalculateAllFilterNumbers(true);
     // when the applied filters change we will collapse all ISGroupHeaders because we have a new
     // set of results
@@ -425,7 +422,9 @@ export default function AnnotationsChannel({
               text={arr.private ? 'Private' : 'Shared With Group(s)'}
               marginRight={5}
               marginBottom={5}
-              onDelete={() => toggleFilters(type, arr.private ? 'private' : 'shared')}
+              onDelete={() => {
+                toggleFilters(type, { obj: { private: false, shared: false } });
+              }}
               fontSize={12}
             />,
           );
@@ -439,7 +438,7 @@ export default function AnnotationsChannel({
             text={allFilters[type][key].name}
             marginRight={5}
             marginBottom={5}
-            onDelete={() => toggleFilters(type, key)}
+            onDelete={() => toggleFilters(type, { key })}
             fontSize={12}
           />
         )));

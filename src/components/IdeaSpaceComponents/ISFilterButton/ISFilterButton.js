@@ -68,7 +68,7 @@ export default function ISFilterButton({
           number={number}
           checked={checked}
           toggle={() => {
-            toggleFilters(type, key);
+            toggleFilters(type, { key });
           }}
         />,
         name,
@@ -132,17 +132,21 @@ export default function ISFilterButton({
                         text="Private"
                         checked={filters.byPermissions.private}
                         number={filters.byPermissions.privateNumber}
-                        toggle={() => {
-                          toggleFilters('byPermissions', 'private');
-                        }}
+                        toggle={() => toggleFilters('byPermissions', {
+                          obj: filters.byPermissions.private
+                            ? { private: false, shared: false }
+                            : { private: true, shared: false },
+                        })}
                       />
                       <FilterRow
                         text="Shared With Group(s)"
                         checked={filters.byPermissions.shared}
                         number={filters.byPermissions.sharedNumber}
-                        toggle={() => {
-                          toggleFilters('byPermissions', 'shared');
-                        }}
+                        toggle={() => toggleFilters('byPermissions', {
+                          obj: filters.byPermissions.shared
+                            ? { private: false, shared: false }
+                            : { private: false, shared: true },
+                        })}
                       />
                     </Card.Body>
                   </Accordion.Collapse>
@@ -285,7 +289,7 @@ function FilterRow({
   return (
     <div
       className={styles.filterRowContainer}
-      onClick={toggle}
+      onClick={number > 0 ? toggle : () => {}}
       tabIndex={-1}
       onKeyDown={() => {}}
       role="button"
