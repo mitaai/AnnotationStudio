@@ -1,4 +1,4 @@
-function byDocumentPermissionsFilterMatch(
+function byPermissionsDocumentViewFilterMatch(
   userEmail, email, permissions, cf, userId,
 ) { // AND FUNCTION
   if (cf.permissions === 0 && userEmail === email) { // mine
@@ -16,16 +16,31 @@ function byDocumentPermissionsFilterMatch(
   return false;
 }
 
-function byPermissionsIdeaSpaceFilterMatch(annoPermissions, filterPermissions) {
-  if (!filterPermissions.private && !filterPermissions.shared) {
-    return true;
+function byPermissionsIdeaSpaceFilterMatch({
+  user: {
+    email: userEmail,
+    id: userId,
+  },
+  annotation: { permissions, creator: { email } },
+  filterPermissions,
+}) {
+  if (filterPermissions.mine) {
+    return userEmail === email;
+  }
+
+  if (filterPermissions.sharedWithMe) {
+    return permissions.sharedTo ? permissions.sharedTo.includes(userId) : false;
   }
 
   if (filterPermissions.private) {
-    return annoPermissions.private;
+    return permissions.private;
   }
 
-  return !annoPermissions.private;
+  if (filterPermissions.shared) {
+    return !permissions.private && !permissions.sharedTo;
+  }
+
+  return true;
 }
 
 function byGroupFilterMatch(annoGroups, filterGroups) { // OR FUNCTION
@@ -75,7 +90,7 @@ function byDocumentFilterMatch(did, filterDids) {
 }
 
 export {
-  byDocumentPermissionsFilterMatch,
+  byPermissionsDocumentViewFilterMatch,
   byPermissionsIdeaSpaceFilterMatch,
   annotatedByFilterMatch,
   byTagFilterMatch,

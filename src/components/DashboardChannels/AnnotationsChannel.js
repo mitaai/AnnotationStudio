@@ -89,6 +89,10 @@ export default function AnnotationsChannel({
   const [recalculateAllFilterNumbers, setRecalculateAllFilterNumbers] = useState();
   const [allFilters, setAllFilters] = useState({
     byPermissions: {
+      mine: false,
+      mineNumber: 0,
+      sharedWithMe: false,
+      sharedWithMeNumber: 0,
       private: false,
       privateNumber: 0,
       shared: false,
@@ -227,11 +231,16 @@ export default function AnnotationsChannel({
 
   const filterAnnotations = (f) => {
     const annotationMatchesFilters = (a) => (
-      byPermissionsIdeaSpaceFilterMatch(a.permissions, f.byPermissions)
-    && byGroupFilterMatch(a.target.document.groups, f.byGroup)
-    && byDocumentFilterMatch(a.target.document.id, f.byDocument)
-    && annotatedByFilterMatch(a.creator.id, f.annotatedBy)
-      && byTagFilterMatch(a.body.tags, f.byTag));
+      byPermissionsIdeaSpaceFilterMatch({
+        user: session.user,
+        annotation: a,
+        filterPermissions: f.byPermissions,
+      })
+      && byGroupFilterMatch(a.target.document.groups, f.byGroup)
+      && byDocumentFilterMatch(a.target.document.id, f.byDocument)
+      && annotatedByFilterMatch(a.creator.id, f.annotatedBy)
+      && byTagFilterMatch(a.body.tags, f.byTag)
+    );
 
     const filteredAnnos = [];
     if (appliedFilters.byGroup.length === 0) {
@@ -265,21 +274,29 @@ export default function AnnotationsChannel({
     // default setting can include a group ID filter and a document ID filter but must always
     // include a permissions filter either private or shared
     const appliedF = {
-      byPermissions: selectedPermissions === 'mine'
-        ? { private: true, shared: false }
-        : { private: false, shared: true },
+      byPermissions: {
+        mine: selectedPermissions === 'mine',
+        sharedWithMe: selectedPermissions === 'shared-with-me',
+        private: selectedPermissions === 'private',
+        shared: selectedPermissions === 'shared',
+      },
       annotatedBy: [],
       byGroup: selectedGroupId !== undefined ? [selectedGroupId] : [],
       byDocument: slug !== undefined ? [selectedDocumentId] : [],
       byTag: [],
     };
 
-    if (selectedPermissions === 'shared') {
+    allFilters.byPermissions.mine = false;
+    allFilters.byPermissions.sharedWithMe = false;
+    allFilters.byPermissions.shared = false;
+    allFilters.byPermissions.private = false;
+
+    if (selectedPermissions === 'mine') {
+      allFilters.byPermissions.mine = true;
+    } else if (selectedPermissions === 'shared-with-me') {
+      allFilters.byPermissions.sharedWithMe = true;
+    } else if (selectedPermissions === 'shared') {
       allFilters.byPermissions.shared = true;
-      allFilters.byPermissions.private = false;
-    } else {
-      allFilters.byPermissions.shared = false;
-      allFilters.byPermissions.private = true;
     }
 
     if (selectedGroupId) {
@@ -294,6 +311,8 @@ export default function AnnotationsChannel({
     }
 
     setAllFilters(DeepCopyObj(allFilters));
+    // after we have applied all the default filters we need to calculate the correct counts
+    setRecalculateAllFilterNumbers(true);
     setAppliedFilters(appliedF);
   };
 
@@ -303,7 +322,14 @@ export default function AnnotationsChannel({
     // 'af' stands for 'all filters'. we are generating all filters possible for all annotations
     const af = {
       byPermissions: {
-        private: false, privateNumber: 0, shared: false, sharedNumber: 0,
+        mine: false,
+        mineNumber: 0,
+        sharedWithMe: false,
+        sharedWithMeNumber: 0,
+        private: false,
+        privateNumber: 0,
+        shared: false,
+        sharedNumber: 0,
       },
       annotatedBy: {},
       byGroup: {},
@@ -356,7 +382,7 @@ export default function AnnotationsChannel({
       if (groups.length === 0) {
         groupedAnnos.privateGroup.push(i);
         if (af.byGroup.privateGroup === undefined) {
-          af.byGroup.privateGroup = { name: 'Private', number: 0, checked: false };
+          af.byGroup.privateGroup = { name: 'Personal', number: 0, checked: false };
         }
         return null;
       }
@@ -364,7 +390,7 @@ export default function AnnotationsChannel({
       groups.map((gid) => {
         if (af.byGroup[gid] === undefined) {
           const g = gid === 'privateGroup'
-            ? { name: 'Private' }
+            ? { name: 'Personal' }
             : session.user.groups.find(({ id }) => id === gid);
           af.byGroup[gid] = { name: g.name, number: 0, checked: false };
         }
@@ -387,8 +413,15 @@ export default function AnnotationsChannel({
     const allF = DeepCopyObj(allFilters);
     const appliedF = DeepCopyObj(appliedFilters);
     if (type === 'byPermissions' && obj) {
+      // setting all Filters permissions
+      allF.byPermissions.mine = obj.mine;
+      allF.byPermissions.sharedWithMe = obj.sharedWithMe;
       allF.byPermissions.private = obj.private;
       allF.byPermissions.shared = obj.shared;
+
+      // setting applied filters permission
+      appliedF.byPermissions.mine = obj.mine;
+      appliedF.byPermissions.sharedWithMe = obj.sharedWithMe;
       appliedF.byPermissions.private = obj.private;
       appliedF.byPermissions.shared = obj.shared;
     } else {
@@ -413,18 +446,55 @@ export default function AnnotationsChannel({
     // eslint-disable-next-line no-restricted-syntax
     for (const [type, arr] of Object.entries(appliedFilters)) {
       if (type === 'byPermissions') {
-        if (arr.private || arr.shared) {
+        if (arr.mine) {
           tileBadgeFilters.push(
             <TileBadge
               key="permissionsTileBadgeFilter"
               icon={filterIcons[type]}
               color="blue"
-              text={arr.private ? 'Private' : 'Shared With Group(s)'}
+              text="Mine"
               marginRight={5}
               marginBottom={5}
-              onDelete={() => {
-                toggleFilters(type, { obj: { private: false, shared: false } });
-              }}
+              onDelete={() => toggleFilters(type, { obj: {} })}
+              fontSize={12}
+            />,
+          );
+        } else if (arr.sharedWithMe) {
+          tileBadgeFilters.push(
+            <TileBadge
+              key="permissionsTileBadgeFilter"
+              icon={filterIcons[type]}
+              color="blue"
+              text="Shared With Me"
+              marginRight={5}
+              marginBottom={5}
+              onDelete={() => toggleFilters(type, { obj: {} })}
+              fontSize={12}
+            />,
+          );
+        } else if (arr.private) {
+          tileBadgeFilters.push(
+            <TileBadge
+              key="permissionsTileBadgeFilter"
+              icon={filterIcons[type]}
+              color="blue"
+              text="Private"
+              marginRight={5}
+              marginBottom={5}
+              onDelete={() => toggleFilters(type, { obj: {} })}
+              fontSize={12}
+            />,
+          );
+        } else if (arr.shared) {
+          tileBadgeFilters.push(
+            <TileBadge
+              key="permissionsTileBadgeFilter"
+              icon={filterIcons[type]}
+              color="blue"
+              text="Shared With Group(s)"
+              marginRight={5}
+              marginBottom={5}
+              onDelete={() => toggleFilters(type, { obj: {} })}
               fontSize={12}
             />,
           );
@@ -824,10 +894,15 @@ export default function AnnotationsChannel({
 
     const af = DeepCopyObj(allFilters);
 
+    // calculating the number of annotations for each permission type
     const permissionsTempFilter = DeepCopyObj(appliedFilters);
-    permissionsTempFilter.byPermissions = { private: true, shared: false };
+    permissionsTempFilter.byPermissions = { mine: true };
+    af.byPermissions.mineNumber = filterAnnotations(permissionsTempFilter).length;
+    permissionsTempFilter.byPermissions = { sharedWithMe: true };
+    af.byPermissions.sharedWithMeNumber = filterAnnotations(permissionsTempFilter).length;
+    permissionsTempFilter.byPermissions = { private: true };
     af.byPermissions.privateNumber = filterAnnotations(permissionsTempFilter).length;
-    permissionsTempFilter.byPermissions = { private: false, shared: true };
+    permissionsTempFilter.byPermissions = { shared: true };
     af.byPermissions.sharedNumber = filterAnnotations(permissionsTempFilter).length;
 
     const annotatedByTempFilter = DeepCopyObj(appliedFilters);
@@ -896,7 +971,7 @@ export default function AnnotationsChannel({
         }).filter((t) => t !== null);
         if (aTiles.length > 0) {
           const g = gid === 'privateGroup'
-            ? { name: 'Private' }
+            ? { name: 'Personal' }
             : session.user.groups.find(({ id }) => id === gid);
           annotationTiles.push(
             <ISGroupHeader

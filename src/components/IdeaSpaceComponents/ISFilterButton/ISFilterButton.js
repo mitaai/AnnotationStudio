@@ -1,6 +1,15 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState, useRef } from 'react';
 import {
-  OverlayTrigger, Button, Popover, Accordion, AccordionContext, Card, useAccordionToggle, Form,
+  OverlayTrigger,
+  Overlay,
+  Tooltip,
+  Button,
+  Popover,
+  Accordion,
+  AccordionContext,
+  Card,
+  useAccordionToggle,
+  Form,
 } from 'react-bootstrap';
 import {
   BookmarkFill,
@@ -41,6 +50,10 @@ export default function ISFilterButton({
   toggleFilters = () => {},
   filters = {
     byPermissions: {
+      mine: false,
+      mineNumber: 0,
+      sharedWithMe: false,
+      sharedWithMeNumber: 0,
       private: false,
       privateNumber: 0,
       shared: false,
@@ -54,6 +67,8 @@ export default function ISFilterButton({
   },
   onClick = () => {},
 }) {
+  const [tooltipShow, setTooltipShow] = useState();
+  const [tooltipTarget, setTooltipTarget] = useState(null);
   const filterToFilterRows = (type) => {
     const filterRows = [];
     const keys = Object.keys(filters[type]);
@@ -123,30 +138,76 @@ export default function ISFilterButton({
                     <ContextAwareToggle eventKey="byPermissions">
                       <ShieldLockFill size={18} style={{ marginRight: 4 }} />
                       <span className={styles.filterHeaderText}>By Permissions</span>
-                      <span className={styles.appliedText}>{`${!filters.byPermissions.private && !filters.byPermissions.shared ? 0 : 1} Applied`}</span>
+                      <span className={styles.appliedText}>
+                        {`${filters.byPermissions.mine || filters.byPermissions.sharedWithMe || filters.byPermissions.private || filters.byPermissions.shared ? 1 : 0} Applied`}
+                      </span>
                     </ContextAwareToggle>
                   </Card.Header>
                   <Accordion.Collapse eventKey="byPermissions">
                     <Card.Body className={styles.filterRowsContainer}>
                       <FilterRow
+                        text="Mine"
+                        description="Annotations that are created by you"
+                        checked={filters.byPermissions.mine || false}
+                        type="radio"
+                        number={filters.byPermissions.mineNumber}
+                        toggle={() => toggleFilters('byPermissions', {
+                          obj: filters.byPermissions.mine
+                            ? {}
+                            : { mine: true },
+                        })}
+                        tooltipShow={tooltipShow === 'mine'}
+                        setTooltipShow={() => setTooltipShow('mine')}
+                        tooltipTarget={tooltipTarget}
+                        setTooltipTarget={setTooltipTarget}
+                      />
+                      <FilterRow
+                        text="Shared with me"
+                        description="Annotations that were specifically shared to you and not the group"
+                        checked={filters.byPermissions.sharedWithMe || false}
+                        type="radio"
+                        number={filters.byPermissions.sharedWithMeNumber}
+                        toggle={() => toggleFilters('byPermissions', {
+                          obj: filters.byPermissions.sharedWithMe
+                            ? {}
+                            : { sharedWithMe: true },
+                        })}
+                        tooltipShow={tooltipShow === 'shared-with-me'}
+                        setTooltipShow={() => setTooltipShow('shared-with-me')}
+                        tooltipTarget={tooltipTarget}
+                        setTooltipTarget={setTooltipTarget}
+                      />
+                      <FilterRow
                         text="Private"
-                        checked={filters.byPermissions.private}
+                        description="Annotations created by you that you can only view"
+                        checked={filters.byPermissions.private || false}
+                        type="radio"
                         number={filters.byPermissions.privateNumber}
                         toggle={() => toggleFilters('byPermissions', {
                           obj: filters.byPermissions.private
-                            ? { private: false, shared: false }
-                            : { private: true, shared: false },
+                            ? {}
+                            : { private: true },
                         })}
+                        tooltipShow={tooltipShow === 'private'}
+                        setTooltipShow={() => setTooltipShow('private')}
+                        tooltipTarget={tooltipTarget}
+                        setTooltipTarget={setTooltipTarget}
                       />
                       <FilterRow
                         text="Shared With Group(s)"
-                        checked={filters.byPermissions.shared}
+                        description="Annotations created by you or anyone in a group that everyone can view"
+                        checked={filters.byPermissions.shared || false}
+                        type="radio"
                         number={filters.byPermissions.sharedNumber}
                         toggle={() => toggleFilters('byPermissions', {
                           obj: filters.byPermissions.shared
-                            ? { private: false, shared: false }
-                            : { private: false, shared: true },
+                            ? {}
+                            : { shared: true },
                         })}
+                        tooltipShow={tooltipShow === 'shared'}
+                        setTooltipShow={() => setTooltipShow('shared')}
+                        tooltipTarget={tooltipTarget}
+                        setTooltipTarget={setTooltipTarget}
                       />
                     </Card.Body>
                   </Accordion.Collapse>
@@ -284,12 +345,37 @@ export default function ISFilterButton({
 }
 
 function FilterRow({
-  checked, text = '', number = 0, toggle = () => {},
+  checked,
+  text = '',
+  number = 0,
+  toggle = () => {},
+  description,
+  type = 'checkbox',
+  tooltipShow,
+  setTooltipShow,
+  tooltipTarget,
+  setTooltipTarget,
 }) {
-  return (
+  const ref = useRef(null);
+  const descriptionExists = description && description.length > 0;
+  const handleOnMouseOver = descriptionExists
+    ? (event) => {
+      setTooltipShow(true);
+      setTooltipTarget(event.target.closest('.filterRowContainer').querySelector('.form-check-label'));
+    }
+    : () => {};
+  const handleOnMouseOut = descriptionExists
+    ? () => setTooltipShow()
+    : () => {};
+  const filterRow = (
     <div
-      className={styles.filterRowContainer}
+      ref={ref}
+      className={`${styles.filterRowContainer} filterRowContainer`}
       onClick={number > 0 ? toggle : () => {}}
+      onMouseOver={handleOnMouseOver}
+      onMouseOut={handleOnMouseOut}
+      onFocus={handleOnMouseOver}
+      onBlur={handleOnMouseOut}
       tabIndex={-1}
       onKeyDown={() => {}}
       role="button"
@@ -298,8 +384,8 @@ function FilterRow({
         type="checkbox"
         className={styles.filterRowCheckbox}
       >
-        <Form.Check.Input type="checkbox" checked={checked} disabled={number === 0} />
-        <Form.Check.Label style={{ cursor: 'pointer' }}>{text}</Form.Check.Label>
+        <Form.Check.Input type={type} checked={checked} disabled={number === 0} />
+        <Form.Check.Label style={{ cursor: 'pointer', paddingRight: type === 'radio' ? 10 : 0 }}>{text}</Form.Check.Label>
       </Form.Check>
       <span
         className={styles.filterRowNumber}
@@ -308,5 +394,25 @@ function FilterRow({
         {number}
       </span>
     </div>
+  );
+
+  return (
+    <>
+      {filterRow}
+      {descriptionExists && (
+      <Overlay
+        key="permission-filter-overlay"
+        show={tooltipShow}
+        target={tooltipTarget}
+        placement="right"
+        container={ref.current}
+        containerPadding={20}
+      >
+        <Tooltip className="styled-tooltip right permissions-filter-tooltip-right">
+          {description}
+        </Tooltip>
+      </Overlay>
+      )}
+    </>
   );
 }

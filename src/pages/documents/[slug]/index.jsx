@@ -39,7 +39,7 @@ import AnnotationsOverlay from '../../../components/AnnotationsOverlay';
 import UnsavedChangesToast from '../../../components/UnsavedChangesToast/UnsavedChangesToast';
 import adjustLine, { DeepCopyObj } from '../../../utils/docUIUtils';
 import Footer from '../../../components/Footer';
-import { annotatedByFilterMatch, byDocumentPermissionsFilterMatch, byTagFilterMatch } from '../../../utils/annotationFilteringUtil';
+import { annotatedByFilterMatch, byPermissionsDocumentViewFilterMatch, byTagFilterMatch } from '../../../utils/annotationFilteringUtil';
 
 
 const DocumentPage = ({
@@ -157,7 +157,13 @@ const DocumentPage = ({
     userEmail, a, filters, userId,
   ) => annotatedByFilterMatch(a.creator.email, filters.annotatedBy)
     && byTagFilterMatch(a.body.tags, filters.byTags)
-    && byDocumentPermissionsFilterMatch(userEmail, a.creator.email, a.permissions, filters, userId);
+    && byPermissionsDocumentViewFilterMatch(
+      userEmail,
+      a.creator.email,
+      a.permissions,
+      filters,
+      userId,
+    );
 
   const FilterAnnotations = (channelAnnos, filters) => {
     const userEmail = session.user.email;
