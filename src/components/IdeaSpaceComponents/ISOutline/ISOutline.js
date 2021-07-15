@@ -29,10 +29,14 @@ import styles from './ISOutline.module.scss';
 
 const ISOutline = ({
   exportDocument,
+  selection,
+  clearSelection,
   document,
   setDocument,
   getDroppedAnnotationsData,
   hydrateOutlineData,
+  readOnly,
+  setReadOnly,
   annotationsBeingDragged,
   setAnnotationsBeingDragged,
 }) => {
@@ -116,6 +120,24 @@ const ISOutline = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [document, removeDropzones]);
 
+  useEffect(() => {
+    if (selection) {
+      if (readOnly) {
+        editor.selection = selection;
+        // this clears the selection variable but not the editors selection so that the editors
+        // selection doesn't get influenced by the parameter selection until the next time we
+        // want to manually move the cursor outside of the editors control
+        clearSelection();
+        setReadOnly();
+      } else {
+        setReadOnly(true);
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selection, readOnly]);
+
+  // console.log(editor.selection);
+
   return (
     <>
       <Slate
@@ -150,20 +172,24 @@ const ISOutline = ({
           </div>
         </div>
         )}
-        <EditablePlugins
-          plugins={plugins}
-          disabled={false}
-          onKeyDown={[(e) => {
-            const isPasteCapture = (e.ctrlKey || e.metaKey)
+        <div id="outline-container-container">
+          <EditablePlugins
+            readOnly={readOnly}
+            plugins={plugins}
+            disabled={false}
+            onKeyDown={[(e) => {
+              const isPasteCapture = (e.ctrlKey || e.metaKey)
           && e.keyCode === 86;
-            if (isPasteCapture) {
-              setSlateLoading(true);
-            }
-          }]}
-          placeholder="Paste or type here"
-          id="outline-container"
-          className={styles['slate-editor']}
-        />
+              if (isPasteCapture) {
+                setSlateLoading(true);
+              }
+            }]}
+            placeholder="Paste or type here"
+            id="outline-container"
+            className={styles['slate-editor']}
+          />
+        </div>
+
       </Slate>
       <style jsx global>
         {`
@@ -171,13 +197,23 @@ const ISOutline = ({
               border-radius: 0px;
             }
 
-            #outline-container {
-              border-radius: 0px;
+            #outline-container-container {
               height: calc(100vh - 303px);
-              resize: none;
+              padding: 20px 0px;
+              overflow: scroll;
+            }
+
+            #outline-container {
+              background: white;
+              width: 750px;
+              min-height: 971px !important;
+              height: auto !important;
+              margin: 0px auto;
+              border: none;
+              border-radius: 0px;
+              box-shadow: 3px 3px 9px 0px rgb(0 0 0 / 38%) !important;
               outline: none !important;
-              box-shadow: none !important;
-              border: 1px solid #ced4da !important;
+              resize: none;
             }
         `}
       </style>

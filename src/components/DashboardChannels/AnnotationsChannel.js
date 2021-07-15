@@ -124,6 +124,12 @@ export default function AnnotationsChannel({
   const [loadingOutlines, setLoadingOutlines] = useState();
   const [outlineToDelete, setOutlineToDelete] = useState();
 
+  const compositionReadOnly = useRef(false);
+  const setCompositionReadOnly = useRef((readOnly, callback = () => {}) => {
+    compositionReadOnly.current = readOnly;
+    callback();
+  }).current;
+
   const openOutline = useRef({
     id: null,
     name: '',
@@ -143,7 +149,7 @@ export default function AnnotationsChannel({
       openOutline.current.document = document;
     }
     if (selection !== undefined) {
-      openOutline.current.selection = selection;
+      openOutline.current.selection = selection === null ? undefined : selection;
     }
     callback();
   }).current;
@@ -677,8 +683,15 @@ export default function AnnotationsChannel({
           type: DEFAULTS_PARAGRAPH.p.type,
         },
       );
-      // console.log(posArrayOfAnnotation);
-      const selectionPath = posArrayOfAnnotation.filter((item) => !Number.isNaN(item));
+      // adding an extra item of 0 to the end because that makes sure that the editor's selection
+      // ends in a leaf and not a node
+      const selectionPath = posArrayOfAnnotation.filter((item) => !Number.isNaN(item)).concat([0]);
+      // we need to increment the second to last item in the selection path because right now that
+      // points to the position of the annotation in the tree but the new 'p' tag block we have
+      // inserted into the doucment is one index greater than the index of the annotation. And it
+      // is the second to last item because we concatonated an extra 0 on to the end of the array
+      // for slate editor selection reasons
+      selectionPath[selectionPath.length - 2] += 1;
       const selection = {
         anchor: {
           offset: 0,
@@ -689,6 +702,12 @@ export default function AnnotationsChannel({
           path: selectionPath,
         },
       };
+      // i am not passing in a callback function because updateOutline will already cause a
+      // forceUpdate
+      setCompositionReadOnly(true);
+      // this line not only updates the selection but it also updates the document because we have
+      // mutated the document object when we passed it into the function getPosArrayOfAnnotation in
+      // the first line of this function
       updateOutline({ selection });
     }
   };
@@ -1075,7 +1094,8 @@ export default function AnnotationsChannel({
       <div style={{ marginTop: -10 }}>
         <ISOutline
           key={openOutline.current.id}
-          // selection={openOutline.current.selection}
+          selection={openOutline.current.selection}
+          clearSelection={() => updateOutline({ selection: null })}
           exportDocument={async (e) => {
             const eventText = {
               'annotation-studio': 'Exporting composition to Annotation Studio',
@@ -1122,6 +1142,8 @@ export default function AnnotationsChannel({
           setDocument={(document) => updateOutline({ document })}
           getDroppedAnnotationsData={getDroppedAnnotationsData}
           hydrateOutlineData={hydrateOutlineData}
+          readOnly={compositionReadOnly.current || annotationsBeingDragged}
+          setReadOnly={(readOnly) => setCompositionReadOnly(readOnly, forceUpdate)}
           annotationsBeingDragged={annotationsBeingDragged}
           setAnnotationsBeingDragged={setAnnotationsBeingDragged}
         />
