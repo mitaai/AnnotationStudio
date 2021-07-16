@@ -40,6 +40,7 @@ import {
 } from '../../contexts/DocumentContext';
 import { FirstNameLastInitial } from '../../utils/nameUtil';
 import { fixIframes } from '../../utils/parseUtil';
+import AnnotationShareableLinkIcon from '../AnnotationShareableLinkIcon';
 
 function addHoverEventListenersToAllHighlightedText() {
   $('.annotation-highlighted-text').on('mouseover', (e) => {
@@ -530,6 +531,15 @@ function AnnotationCard({
 
   const innerLine = <div className="inner-line" style={{ width: lineHovered ? 3 : 1, left: lineHovered ? 0 : 1 }} />;
 
+  const annotationShareableLinkIconClicked = (ev) => ev.target.closest('.annotation-shareable-link-icon') !== null;
+  const annotationShareableLinkIcon = (
+    <AnnotationShareableLinkIcon
+      setAlerts={setAlerts}
+      // eslint-disable-next-line no-undef
+      link={`${window.location.origin}/documents/${annotation.target.document.slug}?mine=false&aid=${annotationData._id}`}
+    />
+  );
+
   const expandedAndFocus = () => {
     if (!expanded) {
       setExpanded(true);
@@ -542,6 +552,7 @@ function AnnotationCard({
       focusOnAnnotation();
       setUpdateFocusOfAnnotation();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [updateFocusOfAnnotation]);
 
   useEffect(() => {
@@ -550,6 +561,7 @@ function AnnotationCard({
     } else {
       RemoveClassActive(annotationData._id);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [expanded, hovered]);
 
   return (
@@ -557,7 +569,7 @@ function AnnotationCard({
       <Card
         id={annotationData._id}
         onMouseOver={() => { setHovered(true); }}
-        onMouseOut={() => { setHovered(); }}
+        onMouseLeave={() => { setHovered(); }}
         className={`annotation-card-container ${side === 'left' ? 'left-annotation' : 'right-annotation'} ${annotationData.new ? 'new-annotation' : ''} ${expanded ? 'expanded' : ''} ${expanded || hovered || activeAnnotations.annotations.includes(annotationData._id) ? 'active' : ''} ${annotationData.editing ? 'editing' : ''}`}
         style={side === 'left' ? { right: leftRightPositionForAnnotation } : { left: leftRightPositionForAnnotation }}
       >
@@ -711,7 +723,16 @@ function AnnotationCard({
               : (
                 <>
                   <ListGroup variant="flush" style={{ borderTop: 'none', zIndex: 1, position: 'relative' }}>
-                    <ListGroup.Item className="annotation-body" onClick={() => { setExpanded(); }}>
+                    <ListGroup.Item
+                      className="annotation-body"
+                      onClick={(ev) => {
+                        if (annotationShareableLinkIconClicked(ev)) { return; }
+                        // this means that the user clicked on the annotation-body and not on the
+                        // link icon
+                        setExpanded();
+                      }}
+                    >
+                      {hovered && annotationShareableLinkIcon}
                       {annotationData.body.value.length > 0
                         ? ReactHtmlParser(annotationData.body.value, { transform: fixIframes })
                         : (
@@ -827,10 +848,19 @@ function AnnotationCard({
                 <Tooltip id={`tooltip-${annotationData._id}`}>
                   {FirstNameLastInitial(annotationData.creator.name)}
                 </Tooltip>
-      )}
+              )}
             >
-              <Card.Header className="annotation-header" onClick={expandedAndFocus}>
-                <div className="truncated-annotation">
+              <Card.Header
+                className="annotation-header"
+                onClick={(ev) => {
+                  if (annotationShareableLinkIconClicked(ev)) { return; }
+                  // this means that the user clicked on the annotation-header and not on the link
+                  // icon
+                  expandedAndFocus();
+                }}
+              >
+                {hovered && annotationShareableLinkIcon}
+                <div className={`truncated-annotation ${hovered ? 'hovered' : ''}`}>
                   {annotationData.body.value.length === 0 ? (
                     <span className="text-quote">
                       <img
@@ -865,11 +895,14 @@ function AnnotationCard({
         .truncated-annotation, .truncated-annotation .text-quote {
           overflow: hidden;
           text-overflow: ellipsis;
-          white-space: nowrap;
           -webkit-line-clamp: 1;
           -webkit-box-orient: vertical;
           display: -webkit-box;
           max-height: 20px;
+        }
+
+        .annotation-header .truncated-annotation.hovered {
+          padding-right: 18px !important;
         }
 
         .tag-already-exists {
@@ -1168,6 +1201,11 @@ function AnnotationCard({
         padding: 6px;
         font-size: 12px;
         background: white;
+      }
+
+      .annotation-header.grey-background:hover {
+        transition: background-color 0.25s;
+        background-color: rgba(255,165,10,0.10) !important
       }
 
       .grey-background {

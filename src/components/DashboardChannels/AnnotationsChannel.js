@@ -72,6 +72,8 @@ export default function AnnotationsChannel({
   allAnnotations,
   setAllAnnotations,
 }) {
+  // eslint-disable-next-line no-undef
+  const { origin } = window.location;
   const router = useRouter();
   const [selectedPermissions, setSelectedPermissions] = useState('shared');
   const [listLoading, setListLoading] = useState();
@@ -857,9 +859,30 @@ export default function AnnotationsChannel({
       .then((annos) => {
         const sortedAnnos = annos.sort((a, b) => new Date(b.modified) - new Date(a.modified));
         const a = {
-          mine: sortedAnnos.filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'mine' })).map((anno) => toAnnotationsTile(anno, { maxNumberOfTags: maxNumberOfAnnotationTags })),
-          shared: sortedAnnos.filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'shared' })).map((anno) => toAnnotationsTile(anno, { maxNumberOfTags: maxNumberOfAnnotationTags })),
-          'shared-with-me': sortedAnnos.filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'shared-with-me' })).map((anno) => toAnnotationsTile(anno, { maxNumberOfTags: maxNumberOfAnnotationTags })),
+          mine: sortedAnnos
+            .filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'mine' }))
+            .map((anno) => toAnnotationsTile(anno,
+              {
+                maxNumberOfTags: maxNumberOfAnnotationTags,
+                shareableLink: `${origin}/documents/${anno.target.document.slug}?mine=false&aid=${anno._id}`,
+                setAlerts,
+              })),
+          shared: sortedAnnos
+            .filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'shared' }))
+            .map((anno) => toAnnotationsTile(anno,
+              {
+                maxNumberOfTags: maxNumberOfAnnotationTags,
+                shareableLink: `${origin}/documents/${anno.target.document.slug}?mine=false&aid=${anno._id}`,
+                setAlerts,
+              })),
+          'shared-with-me': sortedAnnos
+            .filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'shared-with-me' }))
+            .map((anno) => toAnnotationsTile(anno,
+              {
+                maxNumberOfTags: maxNumberOfAnnotationTags,
+                shareableLink: `${origin}/documents/${anno.target.document.slug}?mine=false&aid=${anno._id}`,
+                setAlerts,
+              })),
         };
 
         updateAnnotations(a);
@@ -984,6 +1007,8 @@ export default function AnnotationsChannel({
             return toAnnotationsTile(aa[i], {
               linkTarget: '_blank',
               maxNumberOfTags: maxNumberOfAnnotationTags,
+              shareableLink: `${origin}/documents/${aa[i].target.document.slug}?mine=false&aid=${aa[i]._id}`,
+              setAlerts,
             });
           }
           return null;

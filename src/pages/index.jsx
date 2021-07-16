@@ -111,6 +111,8 @@ export default function Home({
       linkTarget: undefined,
       openInAnnotationStudio: false,
       maxNumberOfTags: 3,
+      shareableLink: undefined,
+      setAlerts: undefined,
     };
     const {
       dbs,
@@ -120,6 +122,8 @@ export default function Home({
       linkTarget,
       openInAnnotationStudio,
       maxNumberOfTags,
+      shareableLink,
+      setAlerts: setAlertsFunc,
     } = extraInfo ? { ...defaultExtraInfo, ...extraInfo } : defaultExtraInfo;
 
     const url = `/documents/${document.slug}?mine=${permissions.private ? 'true' : 'false'}&aid=${_id}&${dbs}`;
@@ -142,6 +146,8 @@ export default function Home({
         tags={tags}
         draggable
         maxNumberOfAnnotationTags={maxNumberOfTags}
+        shareableLink={shareableLink}
+        setAlerts={setAlertsFunc}
         setAnnotationsBeingDragged={(ids) => {
           if (ids) {
             setAnnotationsBeingDragged({ ids, from });

@@ -5,6 +5,7 @@ import { XCircleFill } from 'react-bootstrap-icons';
 import TileBadge from '../TileBadge';
 import styles from './DashboardChannels.module.scss';
 import { FirstNameLastInitial } from '../../utils/nameUtil';
+import AnnotationShareableLinkIcon from '../AnnotationShareableLinkIcon';
 
 export default function AnnotationTile({
   id,
@@ -18,6 +19,8 @@ export default function AnnotationTile({
   onClick = () => {},
   onDelete,
   openInAnnotationStudio,
+  shareableLink,
+  setAlerts = () => {},
   setAnnotationsBeingDragged = () => {},
 }) {
   const [deleting, setDeleting] = useState();
@@ -44,12 +47,16 @@ export default function AnnotationTile({
     tileBadges = tags.map((t, i) => <TileBadge key={t} color="grey" text={t} marginLeft={i > 0 ? 5 : 0} />);
   }
 
+  const annotationShareableLinkIconClicked = (ev) => ev.target.closest('.annotation-shareable-link-icon') !== null;
+
   return (
     <div
       id={id}
       className={classNames}
       contentEditable={false}
-      onClick={() => {
+      onClick={(ev) => {
+        if (annotationShareableLinkIconClicked(ev)) { return; }
+
         if (deleteHovered) {
           onDelete();
           setDeleting(true);
@@ -65,7 +72,7 @@ export default function AnnotationTile({
         }
       }}
       onMouseOver={() => setHovered(true)}
-      onMouseOut={() => setHovered()}
+      onMouseLeave={() => setHovered()}
       onFocus={() => { setHovered(true); setFoucsed(true); }}
       onBlur={() => { setHovered(); setFoucsed(); }}
       onKeyDown={(e) => {
@@ -83,6 +90,25 @@ export default function AnnotationTile({
         }
       }}
     >
+      {hovered && shareableLink && (
+        <AnnotationShareableLinkIcon
+          onExited={() => {
+            if (hovered) {
+              // this makes sure that if the user exits the overlay trigger and also leaves the
+              // annotation tile that we set the hovered state to false
+              setHovered();
+            }
+          }}
+          setAlerts={setAlerts}
+          link={shareableLink}
+          top={4}
+          right={4}
+          paddingTop={0}
+          paddingBottom={0}
+          borderRadius={5}
+          border="1px solid #DCDCDC"
+        />
+      )}
       {openInAnnotationStudio && (
       <span
         className={styles.openInAnnotationStudioBtn}
