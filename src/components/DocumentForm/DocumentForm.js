@@ -494,36 +494,45 @@ const DocumentForm = ({
                                   <SlateToolbar
                                     disabled={props.isSubmitting}
                                   />
-                                  {slateLoading && (
-                                    <div className={styles['slate-loader']}>
-                                      <Spinner animation="border" role="status">
-                                        <span className="sr-only">Loading...</span>
-                                      </Spinner>
-                                      <div className="text-center">
-                                        <h4 className="text-muted">
-                                          <em>Please wait, processing pasted content.</em>
-                                        </h4>
-                                        <small className="text-muted">
-                                          The page may become unresponsive. Please do not
-                                          close or navigate away from the page.
-                                        </small>
+                                  <div
+                                    style={{
+                                      width: '100%',
+                                      padding: '20px 0px',
+                                      height: 450,
+                                      overflow: 'scroll',
+                                    }}
+                                  >
+                                    {slateLoading && (
+                                      <div className={styles['slate-loader']}>
+                                        <Spinner animation="border" role="status">
+                                          <span className="sr-only">Loading...</span>
+                                        </Spinner>
+                                        <div className="text-center">
+                                          <h4 className="text-muted">
+                                            <em>Please wait, processing pasted content.</em>
+                                          </h4>
+                                          <small className="text-muted">
+                                            The page may become unresponsive. Please do not
+                                            close or navigate away from the page.
+                                          </small>
+                                        </div>
                                       </div>
-                                    </div>
-                                  )}
-                                  <EditablePlugins
-                                    plugins={plugins}
-                                    disabled={props.isSubmitting}
-                                    onKeyDown={[(e) => {
-                                      const isPasteCapture = (e.ctrlKey || e.metaKey)
-                                        && e.keyCode === 86;
-                                      if (isPasteCapture) {
-                                        setSlateLoading(true);
-                                      }
-                                    }]}
-                                    placeholder="Paste or type here"
-                                    id={field.name}
-                                    className={styles['slate-editor']}
-                                  />
+                                    )}
+                                    <EditablePlugins
+                                      plugins={plugins}
+                                      disabled={props.isSubmitting}
+                                      onKeyDown={[(e) => {
+                                        const isPasteCapture = (e.ctrlKey || e.metaKey)
+                                          && e.keyCode === 86;
+                                        if (isPasteCapture) {
+                                          setSlateLoading(true);
+                                        }
+                                      }]}
+                                      placeholder="Paste or type here"
+                                      id={field.name}
+                                      className={styles['slate-editor']}
+                                    />
+                                  </div>
                                 </Slate>
                               )}
                             </Field>
