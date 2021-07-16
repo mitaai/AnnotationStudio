@@ -82,9 +82,7 @@ export default function ISFilterButton({
           text={name}
           number={number}
           checked={checked}
-          toggle={() => {
-            toggleFilters(type, { key });
-          }}
+          toggle={() => toggleFilters(type, { key })}
         />,
         name,
       });
@@ -367,11 +365,13 @@ function FilterRow({
   const handleOnMouseOut = descriptionExists
     ? () => setTooltipShow()
     : () => {};
+
+  const disabled = number === 0 && !checked;
   const filterRow = (
     <div
       ref={ref}
       className={`${styles.filterRowContainer} filterRowContainer`}
-      onClick={number > 0 ? toggle : () => {}}
+      onClick={disabled ? () => {} : toggle}
       onMouseOver={handleOnMouseOver}
       onMouseOut={handleOnMouseOut}
       onFocus={handleOnMouseOver}
@@ -384,7 +384,7 @@ function FilterRow({
         type="checkbox"
         className={styles.filterRowCheckbox}
       >
-        <Form.Check.Input type={type} checked={checked} disabled={number === 0} />
+        <Form.Check.Input type={type} checked={checked} disabled={disabled} />
         <Form.Check.Label style={{ cursor: 'pointer', paddingRight: type === 'radio' ? 10 : 0 }}>{text}</Form.Check.Label>
       </Form.Check>
       <span

@@ -40,13 +40,14 @@ export default function DocumentsChannel({
   setSelectedDocumentId,
   selectedDocumentSlug,
   setSelectedDocumentSlug,
+  documents,
+  setDocuments,
   documentPermissions,
   setDocumentPermissions,
   maxNumberOfDocumentGroups = 3,
 }) {
   const dashboardState = `${selectedDocumentId !== undefined && selectedDocumentSlug !== undefined ? `did=${selectedDocumentId}&slug=${selectedDocumentSlug}&dp=${documentPermissions}&` : ''}gid=${selectedGroupId}`;
   const [listLoading, setListLoading] = useState(true);
-  const [documents, setDocuments] = useState({});
   const [loadMore, setLoadMore] = useState();
   const [refresh, setRefresh] = useState();
   const [lastUpdated, setLastUpdated] = useState(new Date());

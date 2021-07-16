@@ -66,6 +66,7 @@ export default function AnnotationsChannel({
   mode,
   selectedDocumentId,
   selectedGroupId,
+  documents,
   annotationsBeingDragged,
   setAnnotationsBeingDragged,
   toAnnotationsTile,
@@ -277,6 +278,37 @@ export default function AnnotationsChannel({
     return filteredAnnos;
   };
 
+  const setDocumentDataForDocumentsWithZeroAnnotations = (byDocument) => {
+    // this function mutates the 'af' object standing for allFilters
+    const documentIdsIncluded = Object.keys(byDocument);
+    // eslint-disable-next-line no-restricted-syntax
+    for (const [groupId, { shared, mine }] of Object.entries(documents)) {
+      const permissions = [].concat(shared ? ['shared'] : []).concat(mine ? ['mine'] : []);
+      permissions.map((p) => {
+        documents[groupId][p].docs.map(({ _id, title }) => {
+          if (!documentIdsIncluded.includes(_id)) {
+            // this means that the user has access to this document but not any annotations in this
+            // document if it has any, so it was not added to the allFilers.byDocument object. So we
+            // need to add it
+
+            // eslint-disable-next-line no-param-reassign
+            byDocument[_id] = {
+              name: title,
+              number: 0,
+              checked: false,
+            };
+
+            // once we have added the document data to byDocument Object we need to add its id to
+            // the documentIdsIncluded array
+            documentIdsIncluded.push(_id);
+          }
+          return null;
+        });
+        return null;
+      });
+    }
+  };
+
   const applyDefaultDashboardFilters = () => {
     // setting the applied filters to default filtering from Annotation Studio Dashboard
     // default setting can include a group ID filter and a document ID filter but must always
@@ -315,7 +347,27 @@ export default function AnnotationsChannel({
     }
 
     if (slug) {
-      allFilters.byDocument[selectedDocumentId].checked = true;
+      if (allFilters.byDocument[selectedDocumentId]) {
+        allFilters.byDocument[selectedDocumentId].checked = true;
+      } else {
+        // this means that there is a document that exists in the dashboard that doesn't exist in
+        // the allFilters.byDocument object so we will try to get that data and update the object
+        const doc = documents[selectedGroupId]
+          && documents[selectedGroupId][selectedPermissions]
+          && documents[selectedGroupId][selectedPermissions].docs
+            .find(({ _id }) => _id === selectedDocumentId);
+        const obj = doc ? {
+          name: doc.title,
+          number: 0,
+          checked: true,
+        } : {
+          name: '{Could not retrive document data}',
+          number: 0,
+          checked: true,
+        };
+
+        allFilters.byDocument[selectedDocumentId] = obj;
+      }
     }
 
     setAllFilters(DeepCopyObj(allFilters));
@@ -411,6 +463,16 @@ export default function AnnotationsChannel({
       });
       return null;
     });
+
+    // one thing we must do is look at the list of documents being displayed in the dashboard and
+    // make sure they are all included in the af.byDocument beecause at this point this object has
+    // been populated by annotations that exist in the annotation that the user has access to but
+    // if the user has no access to annotations in the document or there are no annotations, but
+    // has access to the document, the document is not stored in af.byDocument at the moment
+
+    // this function mutates the object af.byDocument
+    setDocumentDataForDocumentsWithZeroAnnotations(af.byDocument);
+
     setAllAnnotations(annos);
     setGroupedAnnotations(groupedAnnos);
     setAllFilters(af);
@@ -830,6 +892,15 @@ export default function AnnotationsChannel({
     return annotationTilesPositions;
   };
 
+  // if the documents data gets updated we need to make sure we have all the document data
+  // represented in the allFilters.byDocument object
+  useEffect(() => {
+    const af = DeepCopyObj(allFilters);
+    setDocumentDataForDocumentsWithZeroAnnotations(af.byDocument);
+    setAllFilters(af);
+    setRecalculateAllFilterNumbers(true);
+  }, [documents]);
+
   useEffect(
     () => setFilteredAnnotations(filterAnnotations(appliedFilters)),
     [allAnnotations, groupedAnnotations, appliedFilters],
@@ -890,7 +961,7 @@ export default function AnnotationsChannel({
         setRefresh();
         setLastUpdated(new Date());
 
-        if (a.shared.length === 0 && a.mine.length > 0) {
+        if ((a.shared.length === 0 && a.mine.length > 0) || selectedGroupId === 'privateGroup') {
           setSelectedPermissions('mine');
         } else {
           setSelectedPermissions('shared');
