@@ -675,7 +675,11 @@ function AnnotationCard({
                           </Dropdown.Item>
                         </DropdownButton>
                       </div>
-                      <QuestionCircle id="question-circle-icon" onClick={() => { setShowMoreInfoShareModal(true); }} />
+                      <QuestionCircle
+                        id="question-circle-icon"
+                        style={{ marginLeft: 3 }}
+                        onClick={() => { setShowMoreInfoShareModal(true); }}
+                      />
                       <div id="typeahead-share-annotation-users-container" className={showPermissionNumber() === 2 ? 'show' : ''}>
                         <Typeahead
                           id="typeahead-share-annotation-users"
@@ -1040,9 +1044,14 @@ function AnnotationCard({
           z-index: 2;
           transition: background-color 0.5s;
         }
+
         .annotation-card-container.active .line1, .annotation-card-container.active .line2 {
-            background-color: rgba(255, 165, 10, 0.5);
-            z-index: 3;
+          background-color: rgba(255, 165, 10, 0.5);
+          z-index: 3;
+        }
+
+        .annotation-card-container.new-annotation .line1, .annotation-card-container.new-annotation .line2 {
+          background-color: rgba(1,89,153,.5) !important;
         }
 
         .annotation-card-container.active .line1, .annotation-card-container.active .line2 {
@@ -1095,6 +1104,10 @@ function AnnotationCard({
           height: 18px;
           padding-top: 2.3px;
           background-color: transparent;
+        }
+
+        .btn-cancel-annotation-edits:hover {
+          color: #AC4545 !important;
         }
 
         .annotation-more-options-dropdown-menu {

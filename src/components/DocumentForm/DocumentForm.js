@@ -361,15 +361,16 @@ const DocumentForm = ({
                   ...dashboardStateQuery,
                 },
               });
+            } else {
+              router.push({
+                pathname: '/documents',
+                query: {
+                  ...dashboardStateQuery,
+                  tab: 'mine',
+                  alert: (mode === 'edit') ? 'editedDocument' : 'createdDocument',
+                },
+              });
             }
-            router.push({
-              pathname: '/documents',
-              query: {
-                ...dashboardStateQuery,
-                tab: 'mine',
-                alert: (mode === 'edit') ? 'editedDocument' : 'createdDocument',
-              },
-            });
           })
           .catch((err) => {
             setErrors((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
@@ -492,6 +493,12 @@ const DocumentForm = ({
                                   }}
                                 >
                                   <SlateToolbar
+                                    style={{
+                                      borderTop: 'none',
+                                      borderLeft: 'none',
+                                      borderRight: 'none',
+                                      borderRadius: 0,
+                                    }}
                                     disabled={props.isSubmitting}
                                   />
                                   <div

@@ -42,12 +42,18 @@ import {
 } from '../../utils/slateUtil';
 import styles from './SlateToolbar.module.scss';
 
-const SlateToolbar = ({ disabled, exportButton, exportDocument = () => {} }) => {
+const SlateToolbar = ({
+  style = {},
+  disabled,
+  exportButton,
+  exportDocument = () => {},
+}) => {
   const editor = useSlate();
   return (
     <div
       className={styles['slate-toolbar']}
       data-testid="slate-toolbar"
+      style={style}
     >
       <Dropdown disabled={disabled}>
         <OverlayTrigger overlay={<Tooltip>Styles</Tooltip>}>

@@ -971,6 +971,7 @@ const DocumentPage = ({
               }
 
               #document-container #document-card-container {
+                min-height: 971px;
                 padding: 40px;
                 font-family: 'Times';
                 border-radius: 0px;
