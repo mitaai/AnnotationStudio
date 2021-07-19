@@ -44,6 +44,7 @@ import {
   byTagFilterMatch,
   byGroupFilterMatch,
   byDocumentFilterMatch,
+  byDateCreatedFilterMatch,
 } from '../../utils/annotationFilteringUtil';
 import ISGroupHeader from '../IdeaSpaceComponents/ISGroupHeader/ISGroupHeader';
 import ISOutline from '../IdeaSpaceComponents/ISOutline';
@@ -105,7 +106,7 @@ export default function AnnotationsChannel({
     byGroup: {},
     byDocument: {},
     byTag: {},
-    byDateCreated: { start: undefined, end: undefined },
+    byDateCreated: { start: new Date(), end: new Date(), checked: false },
   });
   const [appliedFilters, setAppliedFilters] = useState({
     byPermissions: { private: false, shared: false },
@@ -113,6 +114,7 @@ export default function AnnotationsChannel({
     byGroup: [],
     byDocument: [],
     byTag: [],
+    byDateCreated: { start: undefined, end: undefined, checked: false },
   });
   const [tab, setTab] = useState('annotations');
 
@@ -249,6 +251,7 @@ export default function AnnotationsChannel({
       && byDocumentFilterMatch(a.target.document.id, f.byDocument)
       && annotatedByFilterMatch(a.creator.id, f.annotatedBy)
       && byTagFilterMatch(a.body.tags, f.byTag)
+      && byDateCreatedFilterMatch(a.created, f.byDateCreated)
     );
 
     const filteredAnnos = [];
@@ -324,6 +327,7 @@ export default function AnnotationsChannel({
       byGroup: selectedGroupId !== undefined ? [selectedGroupId] : [],
       byDocument: slug !== undefined ? [selectedDocumentId] : [],
       byTag: [],
+      byDateCreated: { start: undefined, end: undefined, checked: false },
     };
 
     allFilters.byPermissions.mine = false;
@@ -395,7 +399,7 @@ export default function AnnotationsChannel({
       byGroup: {},
       byDocument: {},
       byTag: {},
-      byDateCreated: { start: undefined, end: undefined },
+      byDateCreated: { start: undefined, end: undefined, checked: false },
     };
     annos.map(({
       creator, created, target: { document: { groups, id: did, title } }, body: { tags },
@@ -434,7 +438,7 @@ export default function AnnotationsChannel({
         af.byDateCreated.start = dateCreated;
       }
 
-      if (dateCreated < af.byDateCreated.end || af.byDateCreated.end === undefined) {
+      if (dateCreated > af.byDateCreated.end || af.byDateCreated.end === undefined) {
         af.byDateCreated.end = dateCreated;
       }
 
@@ -476,6 +480,32 @@ export default function AnnotationsChannel({
     setAllAnnotations(annos);
     setGroupedAnnotations(groupedAnnos);
     setAllFilters(af);
+    setRecalculateAllFilterNumbers(true);
+  };
+
+  const setByDateCreated = ({ start, end, checked }) => {
+    const allF = DeepCopyObj(allFilters);
+    const appliedF = DeepCopyObj(appliedFilters);
+    if (start) {
+      allF.byDateCreated.start = start;
+      appliedF.byDateCreated.start = start;
+    }
+    if (end) {
+      allF.byDateCreated.end = end;
+      appliedF.byDateCreated.end = end;
+    }
+
+    if (checked !== undefined) {
+      allF.byDateCreated.checked = checked;
+      appliedF.byDateCreated.checked = checked;
+      // when we check the box we need to update the value of the applied filters with the value of
+      // allFilters
+      appliedF.byDateCreated.start = allF.byDateCreated.start;
+      appliedF.byDateCreated.end = allF.byDateCreated.end;
+    }
+
+    setAllFilters(allF);
+    setAppliedFilters(appliedF);
     setRecalculateAllFilterNumbers(true);
   };
 
@@ -565,6 +595,21 @@ export default function AnnotationsChannel({
               marginRight={5}
               marginBottom={5}
               onDelete={() => toggleFilters(type, { obj: {} })}
+              fontSize={12}
+            />,
+          );
+        }
+      } else if (type === 'byDateCreated') {
+        if (arr.checked) {
+          tileBadgeFilters.push(
+            <TileBadge
+              key="byDateCreatedTileBadgeFilter"
+              icon={filterIcons[type]}
+              color="blue"
+              text="By Date Created"
+              marginRight={5}
+              marginBottom={5}
+              onDelete={() => setByDateCreated({ checked: false })}
               fontSize={12}
             />,
           );
@@ -1337,6 +1382,7 @@ export default function AnnotationsChannel({
                   total={aa.length}
                   result={filteredAnnotations.length}
                   toggleFilters={toggleFilters}
+                  setByDateCreated={setByDateCreated}
                   filters={allFilters}
                   onClick={() => {
                     if (tab === 'outlines') {

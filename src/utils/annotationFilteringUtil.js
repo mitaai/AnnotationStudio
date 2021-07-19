@@ -1,3 +1,5 @@
+import moment from 'moment';
+
 function byPermissionsDocumentViewFilterMatch(
   userEmail, email, permissions, cf, userId,
 ) { // AND FUNCTION
@@ -89,6 +91,16 @@ function byDocumentFilterMatch(did, filterDids) {
   return filterDids.length === 0 || filterDids.includes(did);
 }
 
+function byDateCreatedFilterMatch(annoDateCreated, byDateCreated) {
+  // if start, end, or checked equal undefined we will just return true otherwise we will check if
+  // the annotation date created is actually inside the date range
+  if (!byDateCreated || !byDateCreated.checked || !byDateCreated.start || !byDateCreated.end) {
+    return true;
+  }
+  return moment(annoDateCreated).isSameOrAfter(byDateCreated.start.toString())
+    && moment(annoDateCreated).isSameOrBefore(byDateCreated.end.toString());
+}
+
 export {
   byPermissionsDocumentViewFilterMatch,
   byPermissionsIdeaSpaceFilterMatch,
@@ -96,4 +108,5 @@ export {
   byTagFilterMatch,
   byGroupFilterMatch,
   byDocumentFilterMatch,
+  byDateCreatedFilterMatch,
 };

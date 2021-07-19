@@ -166,6 +166,7 @@ const DocumentForm = ({
     withDeserializeHTML({ plugins }),
     withDivs(),
   ];
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
   const numRetries = 60;

@@ -1,4 +1,6 @@
 import React, { useContext, useState, useRef } from 'react';
+import DatePicker from 'react-datepicker';
+import { parseISO } from 'date-fns';
 import {
   OverlayTrigger,
   Overlay,
@@ -48,6 +50,7 @@ export default function ISFilterButton({
   total = 0,
   result = 0,
   toggleFilters = () => {},
+  setByDateCreated,
   filters = {
     byPermissions: {
       mine: false,
@@ -63,10 +66,11 @@ export default function ISFilterButton({
     byGroup: {},
     byDocument: {},
     byTag: {},
-    byDateCreated: { start: undefined, end: undefined },
+    byDateCreated: { start: undefined, end: undefined, checked: false },
   },
   onClick = () => {},
 }) {
+  const [calendarOpen, setCalendarOpen] = useState();
   const [tooltipShow, setTooltipShow] = useState();
   const [tooltipTarget, setTooltipTarget] = useState(null);
   const filterToFilterRows = (type) => {
@@ -275,8 +279,62 @@ export default function ISFilterButton({
                     </ContextAwareToggle>
                   </Card.Header>
                   <Accordion.Collapse eventKey="byDateCreated">
-                    <Card.Body className={styles.filterRowsContainer}>
-                      hello
+                    <Card.Body
+                      style={{ maxHeight: 'none' }}
+                      className={styles.filterRowsContainer}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          paddingBottom: calendarOpen ? 265 : 0,
+                          transition: 'padding-bottom 0.15s',
+                        }}
+                      >
+                        <Form.Check
+                          type="radio"
+                          id="createdByDateRadioBtn"
+                          checked={filters.byDateCreated.checked}
+                          onClick={() => setByDateCreated({
+                            checked: !filters.byDateCreated.checked,
+                          })}
+                        />
+                        <div
+                          style={{ display: 'flex', flexDirection: 'column', marginRight: 10 }}
+                        >
+                          <div>Start Date</div>
+                          <DatePicker
+                            selected={(typeof filters.byDateCreated.start === 'string')
+                              ? parseISO(filters.byDateCreated.start)
+                              : filters.byDateCreated.start}
+                            onChange={(date) => setByDateCreated({ start: date })}
+                            onCalendarClose={() => setCalendarOpen()}
+                            onCalendarOpen={() => setCalendarOpen(true)}
+                          />
+                        </div>
+                        <div
+                          style={{ display: 'flex', flexDirection: 'column' }}
+                        >
+                          <div>End Date</div>
+                          {filters.byDateCreated.end
+                            ? (
+                              <DatePicker
+                                selected={(typeof filters.byDateCreated.end === 'string')
+                                  ? parseISO(filters.byDateCreated.end)
+                                  : filters.byDateCreated.end}
+                                onChange={(date) => setByDateCreated({ end: date })}
+                                onCalendarClose={() => setCalendarOpen()}
+                                onCalendarOpen={() => setCalendarOpen(true)}
+                              />
+                            )
+                            : (
+                              <DatePicker
+                                onChange={(date) => setByDateCreated({ end: date })}
+                                onCalendarClose={() => setCalendarOpen()}
+                                onCalendarOpen={() => setCalendarOpen(true)}
+                              />
+                            )}
+                        </div>
+                      </div>
                     </Card.Body>
                   </Accordion.Collapse>
                 </Card>

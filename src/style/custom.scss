@@ -265,6 +265,9 @@ $breadcrumb-bg: transparent;
 /* import react-bootstrap-range-slider */
 @import "~react-bootstrap-typeahead/css/Typeahead.scss";
 
+/* import react-datepicker */
+@import "~react-datepicker/dist/react-datepicker.css";
+
 /* import bootstrap */
 @import "~bootstrap/scss/bootstrap";
 
@@ -333,4 +336,10 @@ $breadcrumb-bg: transparent;
 
 #permission-filter-popover .arrow{
   top: -5px !important;
+}
+
+
+// for react-datepicker
+.react-datepicker__day--selected, .react-datepicker__day--in-selecting-range, .react-datepicker__day--in-range, .react-datepicker__month-text--selected, .react-datepicker__month-text--in-selecting-range, .react-datepicker__month-text--in-range, .react-datepicker__quarter-text--selected, .react-datepicker__quarter-text--in-selecting-range, .react-datepicker__quarter-text--in-range, .react-datepicker__year-text--selected, .react-datepicker__year-text--in-selecting-range, .react-datepicker__year-text--in-range {
+  background-color: theme.$primary !important;
 }
