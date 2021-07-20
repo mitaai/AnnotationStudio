@@ -285,9 +285,11 @@
 }
 
 .filtersContainer {
-  margin-bottom: 15px;
+  margin-top: -10px;
   display: flex;
   flex-wrap: wrap;
+  padding: 5px 3px 1px 2px;
+  border-bottom: 1px solid rgb(218, 220, 225);
 }
 
 .headerText {
@@ -312,6 +314,7 @@
   flex: 1;
   flex-direction: column;
   padding-right: 20px;
+  padding-top: 15px;
   overflow-y: overlay;
   overflow-x: hidden !important;
 }

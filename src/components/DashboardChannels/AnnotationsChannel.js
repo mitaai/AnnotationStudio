@@ -543,10 +543,12 @@ export default function AnnotationsChannel({
 
   const generateFilters = () => {
     const tileBadgeFilters = [];
+    let filtersApplied = false;
     // eslint-disable-next-line no-restricted-syntax
     for (const [type, arr] of Object.entries(appliedFilters)) {
       if (type === 'byPermissions') {
         if (arr.mine) {
+          filtersApplied = true;
           tileBadgeFilters.push(
             <TileBadge
               key="permissionsTileBadgeFilter"
@@ -560,6 +562,7 @@ export default function AnnotationsChannel({
             />,
           );
         } else if (arr.sharedWithMe) {
+          filtersApplied = true;
           tileBadgeFilters.push(
             <TileBadge
               key="permissionsTileBadgeFilter"
@@ -573,6 +576,7 @@ export default function AnnotationsChannel({
             />,
           );
         } else if (arr.private) {
+          filtersApplied = true;
           tileBadgeFilters.push(
             <TileBadge
               key="permissionsTileBadgeFilter"
@@ -586,6 +590,7 @@ export default function AnnotationsChannel({
             />,
           );
         } else if (arr.shared) {
+          filtersApplied = true;
           tileBadgeFilters.push(
             <TileBadge
               key="permissionsTileBadgeFilter"
@@ -601,6 +606,7 @@ export default function AnnotationsChannel({
         }
       } else if (type === 'byDateCreated') {
         if (arr.checked) {
+          filtersApplied = true;
           tileBadgeFilters.push(
             <TileBadge
               key="byDateCreatedTileBadgeFilter"
@@ -615,22 +621,37 @@ export default function AnnotationsChannel({
           );
         }
       } else {
-        tileBadgeFilters.push(arr.map((key) => (
-          <TileBadge
-            key={key}
-            icon={filterIcons[type]}
-            color="blue"
-            text={allFilters[type][key].name}
-            marginRight={5}
-            marginBottom={5}
-            onDelete={() => toggleFilters(type, { key })}
-            fontSize={12}
-          />
-        )));
+        // eslint-disable-next-line no-loop-func
+        tileBadgeFilters.push(arr.map((key) => {
+          filtersApplied = true;
+          return (
+            <TileBadge
+              key={key}
+              icon={filterIcons[type]}
+              color="blue"
+              text={allFilters[type][key].name}
+              marginRight={5}
+              marginBottom={5}
+              onDelete={() => toggleFilters(type, { key })}
+              fontSize={12}
+            />
+          );
+        }));
       }
     }
 
-    return tileBadgeFilters;
+    return filtersApplied
+      ? tileBadgeFilters
+      : (
+        <TileBadge
+          key="no-fitlers-applied-tile-badge"
+          color="grey"
+          text="No Filters Applied"
+          marginRight={5}
+          marginBottom={5}
+          fontSize={12}
+        />
+      );
   };
 
   const toggleISGroupHeader = (gid) => {
