@@ -1144,6 +1144,7 @@ export default function AnnotationsChannel({
             return toAnnotationsTile(aa[i], {
               linkTarget: '_blank',
               maxNumberOfTags: maxNumberOfAnnotationTags,
+              draggable: true,
               shareableLink: `${origin}/documents/${aa[i].target.document.slug}?mine=false&aid=${aa[i]._id}`,
               setAlerts,
             });

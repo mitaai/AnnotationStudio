@@ -409,6 +409,7 @@ export default function IdeaSpacesChannel({
           {
             onDelete: () => deleteAnnotationFromIdeaSpace(anno._id),
             from: 'ideaspaceChannel',
+            draggable: true,
             linkTarget: '_blank',
             maxNumberOfTags: 2,
           },

@@ -112,6 +112,7 @@ export default function Home({
       maxNumberOfTags: 3,
       shareableLink: undefined,
       setAlerts: undefined,
+      draggable: false,
     };
     const {
       dbs,
@@ -123,6 +124,7 @@ export default function Home({
       maxNumberOfTags,
       shareableLink,
       setAlerts: setAlertsFunc,
+      draggable,
     } = extraInfo ? { ...defaultExtraInfo, ...extraInfo } : defaultExtraInfo;
 
     const url = `/documents/${document.slug}?mine=${permissions.private ? 'true' : 'false'}&aid=${_id}&${dbs}`;
@@ -143,7 +145,7 @@ export default function Home({
         annotation={value.length > 0 ? ReactHtmlParser(value, { transform: fixIframes }) : ''}
         activityDate={modified}
         tags={tags}
-        draggable
+        draggable={draggable}
         maxNumberOfAnnotationTags={maxNumberOfTags}
         shareableLink={shareableLink}
         setAlerts={setAlertsFunc}

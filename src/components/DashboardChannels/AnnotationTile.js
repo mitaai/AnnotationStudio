@@ -52,6 +52,7 @@ export default function AnnotationTile({
   return (
     <div
       id={id}
+      style={{ userSelect: 'none' }}
       className={classNames}
       contentEditable={false}
       onClick={(ev) => {
