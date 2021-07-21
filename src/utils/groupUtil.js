@@ -67,9 +67,10 @@ const addGroupToUser = async (group, user) => {
 const addUserToGroup = async (
   group, email, inviteToken,
 ) => getUserByEmail(email).then(async (user) => {
-  let alreadyInGroup = false;
-  alreadyInGroup = user.groups && user.groups.some((userGroup) => (userGroup.id === group.id));
-  const error = (alreadyInGroup === true) ? 'User is already in group' : undefined;
+  // let alreadyInGroup = false;
+  // alreadyInGroup = user.groups && user.groups.some((userGroup) => (userGroup.id === group.id));
+  // const error = (alreadyInGroup === true) ? 'User is already in group' : undefined;
+  const error = false;
   if (!error) {
     const url = `/api/group/${group.id}`;
     const {
