@@ -90,7 +90,7 @@ export default function Home({
   const [documentPermissions, setDocumentPermissions] = useState('shared');
   const dashboardState = `${selectedDocumentId !== undefined && selectedDocumentSlug !== undefined ? `did=${selectedDocumentId}&slug=${selectedDocumentSlug}&dp=${documentPermissions}&` : ''}gid=${selectedGroupId}`;
   const breadcrumbs = [
-    { name: selectedGroupId === 'privateGroup' ? 'Personal' : session.user.groups.find(({ id }) => id === selectedGroupId).name },
+    { name: selectedGroupId === 'privateGroup' ? 'Personal' : session.user.groups.find(({ id }) => id === selectedGroupId)?.name },
   ];
 
   const toAnnotationsTile = ({
@@ -251,6 +251,11 @@ export default function Home({
             session={statefulSession || session}
             selectedGroupId={selectedGroupId}
             setSelectedGroupId={(id) => {
+              if (statefulSession) {
+                console.log(statefulSession);
+              } else if (session) {
+                console.log(session);
+              }
               if (id !== selectedGroupId) {
                 // if a new group is selected the selected document id and
                 // slug should be cleared and set to undefined

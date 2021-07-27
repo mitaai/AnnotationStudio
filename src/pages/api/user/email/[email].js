@@ -13,7 +13,7 @@ const handler = async (req, res) => {
         .collection('users')
         .find({
           $text: {
-            $search: req.query.email,
+            $search: `"${req.query.email}"`,
           },
         }).toArray();
       if (user[0]) {

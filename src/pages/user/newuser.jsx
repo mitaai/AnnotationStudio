@@ -18,7 +18,9 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import { addUserToGroup } from '../../utils/groupUtil';
 import { appendProtocolIfMissing } from '../../utils/fetchUtil';
 
-const NewUser = ({ groupId, updateSession, statefulSession }) => {
+const NewUser = ({
+  groupId, ans_grouptoken, updateSession, statefulSession,
+}) => {
   const [session, loading] = useSession();
   const [pageLoading, setPageLoading] = useState(true);
 
@@ -56,7 +58,7 @@ const NewUser = ({ groupId, updateSession, statefulSession }) => {
       slug: session.user.email.replace(/[*+~.()'"!:@]/g, '-'),
     };
 
-    const regSession = {
+    let regSession = {
       user: {
         name: newName,
         firstName: values.firstName,
@@ -81,10 +83,21 @@ const NewUser = ({ groupId, updateSession, statefulSession }) => {
       await res.json();
       getSession();
       if (groupId !== '') {
-        destroyCookie(null, 'ans_grouptoken', {
-          path: '/',
-        });
-        addUserToGroup({ id: groupId }, session.user.email).then(() => {
+        await addUserToGroup({ id: groupId }, session.user.email, ans_grouptoken).then((data) => {
+          const match = data.filter(({ value }) => value.email === session.user.email);
+          if (match && match.length > 0) {
+            regSession = {
+              ...regSession,
+              user: {
+                ...regSession.user,
+                groups: match[0]?.value?.groups || regSession.groups,
+              },
+            };
+            updateSession(regSession);
+          }
+          destroyCookie(null, 'ans_grouptoken', {
+            path: '/',
+          });
           pushToHome(regSession);
         }).catch((err) => {
           setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
@@ -297,7 +310,10 @@ NewUser.getInitialProps = async (context) => {
       groupId = result.group;
     }
   }
-  return { groupId };
+  return {
+    groupId,
+    ans_grouptoken,
+  };
 };
 
 export default NewUser;
