@@ -154,28 +154,31 @@ const SecondNavbar = ({
               style={{ display: 'flex', alignItems: 'center' }}
             >
               <div style={{ flex: 1 }} />
+              {process.env.NEXT_PUBLIC_IDEA_SPACE_ENABLED === 'true' && (
+              <>
+                <OverlayTrigger
+                  key="ideaspace-popover-info"
+                  placement="bottom"
+                  overlay={(
+                    <Popover id="popover-basic">
+                      <Popover.Content style={{ color: '#636363' }}>
+                        Organizing your ideas has never been this easy! Idea Space is a writting
+                        tool that is  designed to help individuals create outlines from the
+                        annotations they make in just three easy steps.
+                      </Popover.Content>
+                    </Popover>
+                )}
+                >
+                  <InfoCircleFill size={22} className={styles.ideaSpaceInfoIcon} />
+                </OverlayTrigger>
 
-              <OverlayTrigger
-                key="ideaspace-popover-info"
-                placement="bottom"
-                overlay={(
-                  <Popover id="popover-basic">
-                    <Popover.Content style={{ color: '#636363' }}>
-                      Organizing your ideas has never been this easy! Idea Space is a writting tool
-                      that is  designed to help individuals create outlines from the annotations
-                      they make in just three easy steps.
-                    </Popover.Content>
-                  </Popover>
-            )}
-              >
-                <InfoCircleFill size={22} className={styles.ideaSpaceInfoIcon} />
-              </OverlayTrigger>
-
-              <ArrowButton
-                onClick={() => setMode('is')}
-                text="Open Idea Space"
-                marginLeft={5}
-              />
+                <ArrowButton
+                  onClick={() => setMode('is')}
+                  text="Open Idea Space"
+                  marginLeft={5}
+                />
+              </>
+              )}
             </Col>
             )}
             {type === 'document' && document && docView && (
