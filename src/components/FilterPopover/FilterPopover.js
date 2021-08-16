@@ -45,6 +45,7 @@ function FilterPopover({ session }) {
   ] = useContext(DocumentFiltersContext);
   const [byTagsTypeheadMarginTop, setByTagsTypeheadMarginTop] = useState(0);
   const [byTagsTypeheadMarginBottom, setByTagsTypeheadMarginBottom] = useState(0);
+  const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState();
 
   const GetNumberOfMatchesForThisPermission = (permissions) => {
     const ids = FilterAnnotations(channelAnnotations, {
@@ -242,12 +243,14 @@ function FilterPopover({ session }) {
       key={index}
       onRemove={onRemove}
       option={option}
-      className={option.matches === 0 ? 'no-matches-token' : ''}
+      className={option.matches === 0 ? 'no-matches-token' : undefined}
     >
       <span>{option.name}</span>
       <span className="token-badge">{option.matches}</span>
     </Token>
   );
+
+  const byUserDisabled = documentFilters.filters.permissions === 0;
 
   const filterPopoverComponent = (
     <Popover id="filter-popover">
@@ -269,7 +272,7 @@ function FilterPopover({ session }) {
                     multiple
                     clearButton
                     highlightOnlyResult
-                    disabled={documentFilters.filters.permissions === 0}
+                    disabled={byUserDisabled}
                     selected={
                   UpdateSelectedTokensMatchesValue(
                     'annotatedBy',
@@ -288,6 +291,12 @@ function FilterPopover({ session }) {
                     options={filterOptions.annotatedBy}
                     placeholder="Select one or more user(s)"
                   />
+                  {byUserDisabled && (
+                  <Form.Text className="text-muted">
+                    This option is disabled because &quot;Mine&quot; permission view is selected.
+                  </Form.Text>
+                  )}
+
                 </Form.Group>
               </Col>
             </Row>
@@ -402,6 +411,7 @@ function FilterPopover({ session }) {
         trigger="click"
         key="filter-popover"
         placement="bottom"
+        onToggle={(isOpen) => setIsFilterPopoverOpen(isOpen)}
         rootClose
         overlay={annotationIdBeingEdited !== undefined
           ? unsavedChangesPopoverComponent
@@ -410,12 +420,12 @@ function FilterPopover({ session }) {
         <Button
           id="btn-filter-annotation-well"
           size="sm"
-          variant={filterActive ? 'primary' : 'outline-primary'}
+          variant={(filterActive || isFilterPopoverOpen) ? 'primary' : 'outline-primary'}
         >
           <div>
             <Filter size="1em" />
             <span className="text">Filter</span>
-            <Badge className={filterActive && 'active'} variant="light">
+            <Badge className={filterActive ? 'active' : undefined} variant="light">
               {
               `${totalNumberOfFilteredAnnotations}/${numberOfMatchesForPermissions[documentFilters.filters.permissions]}`
               }
@@ -452,7 +462,7 @@ function FilterPopover({ session }) {
         }
 
         #btn-filter-annotation-well.btn.btn-primary {
-          width: ${widthOfActiveFilter}px;
+          width: ${filterActive ? widthOfActiveFilter : widthOfInactiveFilter}px;
         }
 
         #btn-filter-annotation-well svg {

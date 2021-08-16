@@ -1,16 +1,22 @@
 import { useState, useEffect } from 'react';
 import { parseCookies, destroyCookie } from 'nookies';
+import ReactHtmlParser from 'react-html-parser';
 import {
   Button, Card,
 } from 'react-bootstrap';
 import { useSession } from 'next-auth/client';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
+import Router, { useRouter } from 'next/router';
+
+import { fixIframes } from '../utils/parseUtil';
 import Layout from '../components/Layout';
 import LoadingSpinner from '../components/LoadingSpinner';
 import GroupJoinCard from '../components/GroupJoinCard';
 import { appendProtocolIfMissing } from '../utils/fetchUtil';
 import { GroupsChannel, DocumentsChannel, AnnotationsChannel } from '../components/DashboardChannels';
+import IdeaSpacesChannel from '../components/DashboardChannels/IdeaSpacesChannel';
+import AnnotationTile from '../components/DashboardChannels/AnnotationTile';
+import SplashPage from '../components/SplashPage';
 
 export default function Home({
   query,
@@ -22,17 +28,137 @@ export default function Home({
 }) {
   const [session, loading] = useSession();
   const [alerts, setAlerts] = useState(initAlerts || []);
+  const [allAnnotations, setAllAnnotations] = useState();
+  const [mode, setMode] = useState('as');
   const router = useRouter();
   const newReg = query && query.alert && query.alert === 'completeRegistration';
 
+  const ASISChannelPositions = {
+    as: {
+      groups: {
+        width: { vw: 20, px: -20 },
+        left: { vw: 0, px: 0 },
+        opacity: 1,
+      },
+      documents: {
+        width: { vw: 40, px: -40 },
+        left: { vw: 20, px: -5 },
+        opacity: 1,
+      },
+      annotations: {
+        width: { vw: 40, px: -40 },
+        left: { vw: 60, px: -30 },
+        opacity: 1,
+      },
+      ideaspaces: {
+        width: { vw: 30, px: -40 },
+        left: { vw: 100, px: -30 },
+        opacity: 0,
+      },
+    },
+    is: {
+      groups: {
+        width: { vw: 20, px: -20 },
+        left: { vw: -60, px: 30 },
+        opacity: 0,
+      },
+      documents: {
+        width: { vw: 40, px: -40 },
+        left: { vw: -40, px: 25 },
+        opacity: 0,
+      },
+      annotations: {
+        width: { vw: 70, px: -40 },
+        left: { vw: 0, px: 0 },
+        opacity: 1,
+      },
+      ideaspaces: {
+        width: { vw: 30, px: -40 },
+        left: { vw: 70, px: -20 },
+        opacity: 1,
+      },
+    },
+  };
+
+  const channelPositions = ASISChannelPositions[mode];
+
+  const [annotationsBeingDragged, setAnnotationsBeingDragged] = useState();
   const [selectedGroupId, setSelectedGroupId] = useState('privateGroup');
   const [selectedDocumentId, setSelectedDocumentId] = useState();
   const [selectedDocumentSlug, setSelectedDocumentSlug] = useState();
+  const [documents, setDocuments] = useState({});
   const [documentPermissions, setDocumentPermissions] = useState('shared');
   const dashboardState = `${selectedDocumentId !== undefined && selectedDocumentSlug !== undefined ? `did=${selectedDocumentId}&slug=${selectedDocumentSlug}&dp=${documentPermissions}&` : ''}gid=${selectedGroupId}`;
   const breadcrumbs = [
     { name: selectedGroupId === 'privateGroup' ? 'Personal' : session.user.groups.find(({ id }) => id === selectedGroupId)?.name },
   ];
+
+  const toAnnotationsTile = ({
+    _id,
+    oid,
+    permissions,
+    target: { selector, document },
+    creator: { name },
+    modified,
+    body: { value, tags },
+  }, extraInfo) => {
+    const defaultExtraInfo = {
+      dbs: dashboardState,
+      from: 'annotationsChannel',
+      onDelete: undefined,
+      onClick: undefined,
+      linkTarget: undefined,
+      openInAnnotationStudio: false,
+      maxNumberOfTags: 3,
+      shareableLink: undefined,
+      setAlerts: undefined,
+      draggable: false,
+    };
+    const {
+      dbs,
+      from,
+      onDelete,
+      onClick,
+      linkTarget,
+      openInAnnotationStudio,
+      maxNumberOfTags,
+      shareableLink,
+      setAlerts: setAlertsFunc,
+      draggable,
+    } = extraInfo ? { ...defaultExtraInfo, ...extraInfo } : defaultExtraInfo;
+
+    const url = `/documents/${document.slug}?mine=${permissions.private ? 'true' : 'false'}&aid=${_id}&${dbs}`;
+    const openInAS = linkTarget === '_blank'
+      // eslint-disable-next-line no-undef
+      ? () => window.open(url, '_blank')
+      : () => Router.push(url);
+
+    return (
+      <AnnotationTile
+        key={`${oid || _id}-${from}`}
+        id={oid || _id}
+        onClick={onClick || openInAS}
+        openInAnnotationStudio={openInAnnotationStudio ? openInAS : undefined}
+        onDelete={onDelete}
+        text={selector.exact}
+        author={name}
+        annotation={value.length > 0 ? ReactHtmlParser(value, { transform: fixIframes }) : ''}
+        activityDate={modified}
+        tags={tags}
+        draggable={draggable}
+        maxNumberOfAnnotationTags={maxNumberOfTags}
+        shareableLink={shareableLink}
+        setAlerts={setAlertsFunc}
+        setAnnotationsBeingDragged={(ids) => {
+          if (ids) {
+            setAnnotationsBeingDragged({ ids, from });
+          } else {
+            setAnnotationsBeingDragged();
+          }
+        }}
+      />
+    );
+  };
 
   useEffect(() => {
     if (session && query) {
@@ -53,14 +179,19 @@ export default function Home({
   || statefulSession)
   && !loading;
 
+  const splashPage = !session && !loading;
+
   return (
     <Layout
       alerts={alerts}
       type="dashboard"
+      splashPage={splashPage}
       breadcrumbs={showDashboard ? breadcrumbs : undefined}
       dashboardState={dashboardState}
       newReg={newReg}
       statefulSession={statefulSession}
+      mode={mode}
+      setMode={setMode}
     >
       {loading && (
         <Card>
@@ -69,12 +200,7 @@ export default function Home({
           </Card.Body>
         </Card>
       )}
-      {!session && !loading && (
-      <Card>
-        <Card.Header><Card.Title>Welcome to Annotation Studio</Card.Title></Card.Header>
-        <Card.Body>Welcome to Annotation Studio. Please log in to use the application.</Card.Body>
-      </Card>
-      )}
+      {splashPage && <SplashPage />}
       {session && session.user && !session.user.firstName && !statefulSession && (
         <Card>
           <Card.Header><Card.Title>Please complete registration</Card.Title></Card.Header>
@@ -101,7 +227,8 @@ export default function Home({
           </Card.Body>
         </Card>
       )}
-      {session && ((session.user && session.user.firstName) || statefulSession) && !loading && groupId && groupId !== '' && (
+      {session && ((session.user && session.user.firstName) || statefulSession)
+        && !loading && groupId && groupId !== '' && (
         <GroupJoinCard
           alerts={alerts}
           setAlerts={setAlerts}
@@ -114,11 +241,13 @@ export default function Home({
       )}
       {session && ((session.user && session.user.firstName) || statefulSession) && !loading && (
         <div style={{
-          display: 'flex', height: '100%', marginLeft: 15, marginRight: 10,
+          position: 'relative', height: '100%', marginLeft: 30, marginRight: 30,
         }}
         >
           <GroupsChannel
-            flex={1}
+            width={`calc(${channelPositions.groups.width.vw}vw + ${channelPositions.groups.width.px}px)`}
+            left={`calc(${channelPositions.groups.left.vw}vw + ${channelPositions.groups.left.px}px)`}
+            opacity={channelPositions.groups.opacity}
             session={statefulSession || session}
             selectedGroupId={selectedGroupId}
             setSelectedGroupId={(id) => {
@@ -142,7 +271,9 @@ export default function Home({
             documentPermissions={documentPermissions}
           />
           <DocumentsChannel
-            flex={2}
+            width={`calc(${channelPositions.documents.width.vw}vw + ${channelPositions.documents.width.px}px)`}
+            left={`calc(${channelPositions.documents.left.vw}vw + ${channelPositions.documents.left.px}px)`}
+            opacity={channelPositions.documents.opacity}
             session={statefulSession || session}
             selectedGroupId={selectedGroupId}
             setSelectedGroupId={setSelectedGroupId}
@@ -150,20 +281,40 @@ export default function Home({
             setSelectedDocumentId={setSelectedDocumentId}
             selectedDocumentSlug={selectedDocumentSlug}
             setSelectedDocumentSlug={setSelectedDocumentSlug}
+            documents={documents}
+            setDocuments={setDocuments}
             documentPermissions={documentPermissions}
             setDocumentPermissions={setDocumentPermissions}
             setAlerts={setAlerts}
             forceUpdate={!!statefulSession}
           />
           <AnnotationsChannel
-            flex={2}
+            width={`calc(${channelPositions.annotations.width.vw}vw + ${channelPositions.annotations.width.px}px)`}
+            left={`calc(${channelPositions.annotations.left.vw}vw + ${channelPositions.annotations.left.px}px)`}
+            opacity={channelPositions.annotations.opacity}
+            mode={mode}
             session={statefulSession || session}
             setAlerts={setAlerts}
             slug={selectedDocumentSlug}
             selectedGroupId={selectedGroupId}
             selectedDocumentId={selectedDocumentId}
             selectedDocumentSlug={selectedDocumentSlug}
+            documents={documents}
             documentPermissions={documentPermissions}
+            annotationsBeingDragged={annotationsBeingDragged}
+            setAnnotationsBeingDragged={setAnnotationsBeingDragged}
+            toAnnotationsTile={toAnnotationsTile}
+            allAnnotations={allAnnotations}
+            setAllAnnotations={setAllAnnotations}
+          />
+          <IdeaSpacesChannel
+            width={`calc(${channelPositions.ideaspaces.width.vw}vw + ${channelPositions.ideaspaces.width.px}px)`}
+            left={`calc(${channelPositions.ideaspaces.left.vw}vw + ${channelPositions.ideaspaces.left.px}px)`}
+            opacity={channelPositions.ideaspaces.opacity}
+            annotationsBeingDragged={annotationsBeingDragged}
+            setAnnotationsBeingDragged={setAnnotationsBeingDragged}
+            toAnnotationsTile={toAnnotationsTile}
+            allAnnotations={allAnnotations}
           />
         </div>
       )}

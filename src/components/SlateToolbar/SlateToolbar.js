@@ -1,5 +1,5 @@
 import {
-  Button, Dropdown, OverlayTrigger, Tooltip,
+  Button, Dropdown, OverlayTrigger, Tooltip, DropdownButton,
 } from 'react-bootstrap';
 import {
   CameraVideoFill,
@@ -42,12 +42,18 @@ import {
 } from '../../utils/slateUtil';
 import styles from './SlateToolbar.module.scss';
 
-const SlateToolbar = ({ disabled }) => {
+const SlateToolbar = ({
+  style = {},
+  disabled,
+  exportButton,
+  exportDocument = () => {},
+}) => {
   const editor = useSlate();
   return (
     <div
       className={styles['slate-toolbar']}
       data-testid="slate-toolbar"
+      style={style}
     >
       <Dropdown disabled={disabled}>
         <OverlayTrigger overlay={<Tooltip>Styles</Tooltip>}>
@@ -245,7 +251,7 @@ const SlateToolbar = ({ disabled }) => {
       <ToolbarButton
         disabled={disabled}
         type={ELEMENT_MEDIA_EMBED}
-        className={`${styles['button-group-end']} ${styles['toolbar-button']}`}
+        className={`${exportButton ? '' : styles['button-group-end']} ${styles['toolbar-button']}`}
         icon={(
           <OverlayTrigger
             disabled={disabled}
@@ -264,6 +270,32 @@ const SlateToolbar = ({ disabled }) => {
           insertVideoEmbed(editor, embedUrl);
         }}
       />
+      {exportButton && (
+      <ToolbarButton
+        disabled={disabled}
+        className={`${styles['button-group-end']} ${styles['toolbar-button']} ${styles['export-button']}`}
+        icon={(
+          <DropdownButton
+            key="export-button-dropdown"
+            id="export-button-dropdown"
+            className={styles['export-button-dropdown']}
+            variant="outline-secondary"
+            title="Export"
+            onSelect={exportDocument}
+          >
+            <Dropdown.Item
+              eventKey="annotation-studio"
+              className={styles.ideaspacesSortByDropdownItem}
+            >
+              Annotation Stuido
+            </Dropdown.Item>
+          </DropdownButton>
+        )}
+        onMouseDown={(event) => {
+          event.preventDefault();
+        }}
+      />
+      )}
     </div>
   );
 };

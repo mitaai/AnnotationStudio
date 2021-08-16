@@ -234,10 +234,39 @@ $breadcrumb-bg: transparent;
   .arrow::before {
     border-top-color: rgba(0, 0, 0, 0.125) !important;
   }
+  &.permissions-filter-tooltip-right {
+    .arrow {
+      left: -14px !important;
+      top: -2px !important;
+      &::before{
+        border-right-color: rgba(0, 0, 0, 0.5) !important;
+      }
+    }
+  }
+  
+  &.right {
+    .arrow::before {
+      border-right-color: rgba(0, 0, 0, 0.125) !important;
+      border-top-color: transparent !important;
+    }
+  }
+  &.bottom {
+    .arrow::before {
+      border-color: transparent !important;
+      border-bottom-color: rgba(0, 0, 0, 0.125) !important;
+    }
+  }
+  
 }
 
 /* import react-bootstrap-range-slider */
 @import "~react-bootstrap-range-slider/dist/react-bootstrap-range-slider.scss";
+
+/* import react-bootstrap-range-slider */
+@import "~react-bootstrap-typeahead/css/Typeahead.scss";
+
+/* import react-datepicker */
+@import "~react-datepicker/dist/react-datepicker.css";
 
 /* import bootstrap */
 @import "~bootstrap/scss/bootstrap";
@@ -273,8 +302,10 @@ $breadcrumb-bg: transparent;
 
 .annotation-card-container.new-annotation .line1,
 .annotation-card-container.new-annotation .line2 {
-  background-color: color.adjust(theme.$primary, $alpha: -0.5) !important;
   z-index: 3;
+  > div {
+    background-color: color.adjust(theme.$primary, $alpha: -0.5) !important;
+  }
 }
 
 .annotation-card-container.new-annotation .annotation-pointer-background-left {
@@ -292,4 +323,23 @@ $breadcrumb-bg: transparent;
 
 .token-badge {
   border: 1px solid theme.$primary;
+}
+
+.rbt-token {
+  color: theme.$primary !important;
+
+  &.rbt-token-active {
+    background-color: theme.$primary !important;
+    color: white !important;
+  }
+}
+
+#permission-filter-popover .arrow{
+  top: -5px !important;
+}
+
+
+// for react-datepicker
+.react-datepicker__day--selected, .react-datepicker__day--in-selecting-range, .react-datepicker__day--in-range, .react-datepicker__month-text--selected, .react-datepicker__month-text--in-selecting-range, .react-datepicker__month-text--in-range, .react-datepicker__quarter-text--selected, .react-datepicker__quarter-text--in-selecting-range, .react-datepicker__quarter-text--in-range, .react-datepicker__year-text--selected, .react-datepicker__year-text--in-selecting-range, .react-datepicker__year-text--in-range {
+  background-color: theme.$primary !important;
 }

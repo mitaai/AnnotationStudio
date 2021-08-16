@@ -1,9 +1,29 @@
+@use "sass:color";
+@use "../../style/theme";
+
 .tileBadge {
   outline: none;
   border-radius: 5px;
   font-size: 10px;
   font-weight: bold;
   padding: 5px;
+  cursor: pointer;
+  transition: all 0.25s;
+  margin: auto;
+}
+
+.tileBadgeText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.draggableTileBadge {
+  cursor: pointer !important;
+}
+
+.cancelIcon {
+  margin-left: 4px;
   cursor: pointer;
 }
 
@@ -17,7 +37,7 @@
   }
 
   &.blue {
-    border: 1px solid #4568AC;
+    border: 1px solid theme.$primary;
   }
 
   &.yellow {
@@ -36,11 +56,16 @@
 }
 
 .blue {
-  color: #4568AC;
+  color: theme.$primary;
   background: #EBF2FF;
 }
 
 .yellow {
   background: #EFC957;
   color: #575757;
+}
+
+.red {
+  background: #FFEBEB;
+  color: #AC4545;
 }

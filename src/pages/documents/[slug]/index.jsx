@@ -39,12 +39,13 @@ import AnnotationsOverlay from '../../../components/AnnotationsOverlay';
 import UnsavedChangesToast from '../../../components/UnsavedChangesToast/UnsavedChangesToast';
 import adjustLine, { DeepCopyObj } from '../../../utils/docUIUtils';
 import Footer from '../../../components/Footer';
+import { annotatedByFilterMatch, byPermissionsDocumentViewFilterMatch, byTagFilterMatch } from '../../../utils/annotationFilteringUtil';
 
 
 const DocumentPage = ({
   document, annotations, initAlerts, query, statefulSession,
 }) => {
-  const dashboardState = `${query.did !== undefined && query.slug !== undefined ? `did=${query.did}&slug=${query.slug}&dp=${query.dp}&` : ''}gid=${query.gid}`;
+  const dashboardState = `${query && query.did !== undefined && query.slug !== undefined ? `did=${query.did}&slug=${query.slug}&dp=${query.dp}&` : ''}gid=${query && query.gid}`;
   let validQuery = false;
   let defaultPermissions = 0;
   if ((query && (query.mine === 'true' || query.mine === 'false')) && query.aid !== undefined) {
@@ -139,7 +140,6 @@ const DocumentPage = ({
     }, 250),
   ).current;
 
-
   const expandAnnotation = (aid, expand) => {
     const aidExistInList = expandedAnnotations.includes(aid);
     let newExpandedAnnotations = expandedAnnotations.slice();
@@ -153,49 +153,17 @@ const DocumentPage = ({
   };
 
 
-  // functions for filtering
-
-  function ByPermissionsFilterMatch(userEmail, email, permissions, cf, userId) { // AND FUNCTION
-    if (cf.permissions === 0 && userEmail === email) { // mine
-      return true;
-    }
-
-    if (cf.permissions === 1 && !permissions.private && !permissions.sharedTo) { // shared
-      return true;
-    }
-
-    if (cf.permissions === 2 && permissions.sharedTo !== undefined) { // shared with specific people
-      return permissions.sharedTo.includes(userId);
-    }
-  }
-
-  function AnnotatedByFilterMatch(email, cf) { // AND FUNCTION
-    return cf.annotatedBy.length === 0 ? true : cf.annotatedBy.includes(email);
-  }
-
-  function ByTagFilterMatch(tags, cf) { // OR FUNCTION
-    if (cf.byTags.length === 0) {
-      return true;
-    }
-
-    if (tags === undefined) {
-      return false;
-    }
-
-    for (let i = 0; i < tags.length; i += 1) {
-      if (cf.byTags.includes(tags[i])) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-
   const AnnotationMatchesFilters = (
     userEmail, a, filters, userId,
-  ) => AnnotatedByFilterMatch(a.creator.email, filters)
-    && ByTagFilterMatch(a.body.tags, filters)
-    && ByPermissionsFilterMatch(userEmail, a.creator.email, a.permissions, filters, userId);
+  ) => annotatedByFilterMatch(a.creator.email, filters.annotatedBy)
+    && byTagFilterMatch(a.body.tags, filters.byTags)
+    && byPermissionsDocumentViewFilterMatch(
+      userEmail,
+      a.creator.email,
+      a.permissions,
+      filters,
+      userId,
+    );
 
   const FilterAnnotations = (channelAnnos, filters) => {
     const userEmail = session.user.email;
@@ -542,7 +510,7 @@ const DocumentPage = ({
     // when session loaded, get intersection of groups and the users that applies to
     if (session && document && !groupIntersection) {
       const userGroupIds = session.user.groups.map((g) => g.id);
-      const intersection = userGroupIds.filter((id) => document.groups.includes(id));
+      const intersection = userGroupIds.filter((id) => document && document.groups.includes(id));
       const intersectionGroups = await Promise.all(intersection.map((id) => getGroupById(id)));
       let intersectionMembers = [];
       for (let i = 0; i < intersectionGroups.length; i += 1) {
@@ -697,6 +665,11 @@ const DocumentPage = ({
         });
         setInitializedDocumentScrollEventListener(true);
       }
+
+      // another thing we must do is set all the links in the document to target="_blank" so that
+      // if the user clicks on a link it will open the url in another tab and presever the work
+      // they are doing on the document view page
+      $('#document-container a').attr('target', '_blank');
     }
   }, [session, loading, document, documentLoading]);
 
@@ -713,7 +686,7 @@ const DocumentPage = ({
           <p>
             This document is currently
             {' '}
-            {document.state === 'draft' && (
+            {document && document.state === 'draft' && (
             <>
               a
               {' '}
@@ -722,7 +695,7 @@ const DocumentPage = ({
               <strong>Draft</strong>
             </>
             )}
-            {document.state === 'archived' && (
+            {document && document.state === 'archived' && (
             <>
               <ArchiveFill alt="archived" />
               {' '}
@@ -731,14 +704,14 @@ const DocumentPage = ({
             )}
             . Documents in
             {' '}
-            {document.state === 'draft' && (
+            {document && document.state === 'draft' && (
             <>
               <PencilFill alt="draft" />
               {' '}
               <strong>Draft</strong>
             </>
             )}
-            {document.state === 'archived' && (
+            {document && document.state === 'archived' && (
             <>
               <ArchiveFill alt="archived" />
               {' '}
@@ -761,6 +734,10 @@ const DocumentPage = ({
       </Toast>
     </div>
   );
+
+  if (document === undefined) {
+    return <span>Document could not be found</span>;
+  }
 
   return (
     <DocumentActiveAnnotationsContext.Provider value={[activeAnnotations, setActiveAnnotations]}>
@@ -994,6 +971,7 @@ const DocumentPage = ({
               }
 
               #document-container #document-card-container {
+                min-height: 971px;
                 padding: 40px;
                 font-family: 'Times';
                 border-radius: 0px;

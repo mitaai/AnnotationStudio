@@ -56,6 +56,7 @@ import {
 } from '@udecode/slate-plugins';
 import { Button, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import SlateMediaEmbedElement from '../components/SlateMediaEmbedElement';
+import Dropzone from '../components/IdeaSpaceComponents/Dropzone';
 
 // Helper constants
 const SoftBreakPluginOptions = {
@@ -300,6 +301,18 @@ const MarkButton = ({
 // @udecode slate plugins
 
 const plugins = [
+  {
+    renderElement: ({ element }) => {
+      if (element.type === 'dropzone' && element.props) {
+        // eslint-disable-next-line react/jsx-props-no-spreading
+        return <Dropzone {...element.props} />;
+      }
+      if (element.type === 'annotation' && element.annotation) {
+        return element.annotation;
+      }
+      return undefined;
+    },
+  },
   AlignPlugin(DEFAULTS_ALIGN),
   BoldPlugin({
     bold: {

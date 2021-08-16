@@ -32,3 +32,11 @@
 .button-group-end {
   margin-right: 1rem;
 }
+
+.export-button {
+  margin-left: 15px;
+
+  .export-button-dropdown button {
+    font-size: 13px;
+  }
+}

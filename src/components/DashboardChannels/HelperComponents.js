@@ -1,5 +1,4 @@
 import React from 'react';
-import Link from 'next/link';
 import {
   ThreeDotsVertical,
 } from 'react-bootstrap-icons';
@@ -9,22 +8,10 @@ import {
 
 import styles from './DashboardChannels.module.scss';
 
-
-function NewButton({ href }) {
+function ListLoadingSpinner({ variant = 'dark', marginTop = 10 }) {
   return (
-    <Link href={href}>
-      <span className={styles.newButton}>
-        New +
-      </span>
-    </Link>
-
-  );
-}
-
-function ListLoadingSpinner() {
-  return (
-    <div style={{ textAlign: 'center', marginTop: 10 }}>
-      <Spinner animation="border" />
+    <div style={{ textAlign: 'center', marginTop }}>
+      <Spinner animation="border" variant={variant} />
     </div>
   );
 }
@@ -62,5 +49,5 @@ const ThreeDotDropdown = React.forwardRef(({ onClick }, ref) => (
 ));
 
 export {
-  NewButton, ListLoadingSpinner, EmptyListMessage, TilePointer, ThreeDotDropdown,
+  ListLoadingSpinner, EmptyListMessage, TilePointer, ThreeDotDropdown,
 };
