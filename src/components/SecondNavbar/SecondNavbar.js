@@ -154,7 +154,7 @@ const SecondNavbar = ({
               style={{ display: 'flex', alignItems: 'center' }}
             >
               <div style={{ flex: 1 }} />
-              {process.env.NEXT_PUBLIC_IDEA_SPACE_ENABLED === 'true' && (
+              {(process.env.NEXT_PUBLIC_IDEA_SPACE_ENABLED === 'true' || process.env.NEXT_PUBLIC_IDEA_SPACE_ENABLED === true) && (
               <>
                 <OverlayTrigger
                   key="ideaspace-popover-info"
