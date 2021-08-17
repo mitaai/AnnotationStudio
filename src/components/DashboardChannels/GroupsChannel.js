@@ -52,7 +52,7 @@ export default function GroupsChannel({
     <div
       className={styles.channelContainer}
       style={{
-        width, left, opacity,
+        width, left, opacity, minWidth: 300,
       }}
     >
       <div className={styles.dividingLine} />

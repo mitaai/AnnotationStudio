@@ -443,7 +443,7 @@ export default function IdeaSpacesChannel({
       <div
         className={styles.channelContainer}
         style={{
-          width, left, opacity,
+          width, left, opacity, minWidth: 300,
         }}
       >
         <div className={styles.headerContainer} style={{ alignItems: 'center' }}>

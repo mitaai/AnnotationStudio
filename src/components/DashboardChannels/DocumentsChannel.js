@@ -254,7 +254,12 @@ export default function DocumentsChannel({
   const loadMoreDocs = canLoadMoreDocs ? loadComponent : <></>;
 
   return (
-    <div className={styles.channelContainer} style={{ width, left, opacity }}>
+    <div
+      className={styles.channelContainer}
+      style={{
+        width, left, opacity, minWidth: 300,
+      }}
+    >
       <div className={styles.dividingLine} />
       <div className={styles.headerContainer}>
         <div style={{ display: 'flex', flex: 1, flexDirection: 'row' }}>

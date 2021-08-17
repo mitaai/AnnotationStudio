@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { parseCookies, destroyCookie } from 'nookies';
 import ReactHtmlParser from 'react-html-parser';
+import $ from 'jquery';
 import {
   Button, Card,
 } from 'react-bootstrap';
@@ -28,59 +29,116 @@ export default function Home({
 }) {
   const [session, loading] = useSession();
   const [alerts, setAlerts] = useState(initAlerts || []);
+  const [mobileView, setMobileView] = useState();
   const [allAnnotations, setAllAnnotations] = useState();
   const [mode, setMode] = useState('as');
+  const [modeChanged, setModeChanged] = useState();
   const router = useRouter();
   const newReg = query && query.alert && query.alert === 'completeRegistration';
 
+  const channelsMinWidth = 1220;
   const ASISChannelPositions = {
     as: {
       groups: {
         width: { vw: 20, px: -20 },
-        left: { vw: 0, px: 0 },
+        minWidth: 300,
+        left: { vw: 0, px: 30 },
+        minLeft: 30,
         opacity: 1,
       },
       documents: {
         width: { vw: 40, px: -40 },
-        left: { vw: 20, px: -5 },
+        minWidth: 400,
+        left: { vw: 20, px: 25 },
+        minLeft: 350,
         opacity: 1,
       },
       annotations: {
         width: { vw: 40, px: -40 },
-        left: { vw: 60, px: -30 },
+        minWidth: 400,
+        left: { vw: 60, px: 0 },
+        minLeft: 770,
         opacity: 1,
       },
       ideaspaces: {
         width: { vw: 30, px: -40 },
-        left: { vw: 100, px: -30 },
+        minWidth: 300,
+        left: { vw: 100, px: 0 },
+        minLeft: 1230,
         opacity: 0,
       },
     },
     is: {
       groups: {
         width: { vw: 20, px: -20 },
-        left: { vw: -60, px: 30 },
+        minWidth: 300,
+        left: { vw: -60, px: 60 },
+        minLeft: -640,
         opacity: 0,
       },
       documents: {
         width: { vw: 40, px: -40 },
-        left: { vw: -40, px: 25 },
+        minWidth: 400,
+        left: { vw: -40, px: 55 },
+        minLeft: -320,
         opacity: 0,
       },
       annotations: {
         width: { vw: 70, px: -40 },
-        left: { vw: 0, px: 0 },
+        minWidth: 770,
+        left: { vw: 0, px: 30 },
+        minLeft: 30,
         opacity: 1,
       },
       ideaspaces: {
         width: { vw: 30, px: -40 },
-        left: { vw: 70, px: -20 },
+        minWidth: 385,
+        left: { vw: 70, px: 10 },
+        minLeft: 820,
         opacity: 1,
       },
     },
   };
 
-  const channelPositions = ASISChannelPositions[mode];
+  const channelPos = ASISChannelPositions[mode];
+  // eslint-disable-next-line no-undef
+  const channelPositions = mobileView
+    ? {
+      groups: {
+        width: `${channelPos.groups.minWidth}px`,
+        left: `${channelPos.groups.minLeft}px`,
+      },
+      documents: {
+        width: `${channelPos.documents.minWidth}px`,
+        left: `${channelPos.documents.minLeft}px`,
+      },
+      annotations: {
+        width: `${channelPos.annotations.minWidth}px`,
+        left: `${channelPos.annotations.minLeft}px`,
+      },
+      ideaspaces: {
+        width: `${channelPos.ideaspaces.minWidth}px`,
+        left: `${channelPos.ideaspaces.minLeft}px`,
+      },
+    }
+    : {
+      groups: {
+        width: `calc(${channelPos.groups.width.vw}vw + ${channelPos.groups.width.px}px)`,
+        left: `calc(${channelPos.groups.left.vw}vw + ${channelPos.groups.left.px}px)`,
+      },
+      documents: {
+        width: `calc(${channelPos.documents.width.vw}vw + ${channelPos.documents.width.px}px)`,
+        left: `calc(${channelPos.documents.left.vw}vw + ${channelPos.documents.left.px}px)`,
+      },
+      annotations: {
+        width: `calc(${channelPos.annotations.width.vw}vw + ${channelPos.annotations.width.px}px)`,
+        left: `calc(${channelPos.annotations.left.vw}vw + ${channelPos.annotations.left.px}px)`,
+      },
+      ideaspaces: {
+        width: `calc(${channelPos.ideaspaces.width.vw}vw + ${channelPos.ideaspaces.width.px}px)`,
+        left: `calc(${channelPos.ideaspaces.left.vw}vw + ${channelPos.ideaspaces.left.px}px)`,
+      },
+    };
 
   const [annotationsBeingDragged, setAnnotationsBeingDragged] = useState();
   const [selectedGroupId, setSelectedGroupId] = useState('privateGroup');
@@ -161,6 +219,30 @@ export default function Home({
   };
 
   useEffect(() => {
+    // eslint-disable-next-line no-undef
+    const w = window;
+    const checkWindowWidth = () => {
+      if (w.innerWidth < channelsMinWidth) {
+        setMobileView(true);
+      } else if (w.innerWidth >= channelsMinWidth) {
+        setMobileView();
+      }
+    };
+    w.addEventListener('resize', checkWindowWidth);
+    checkWindowWidth();
+  }, []);
+
+  useEffect(() => {
+    // this makes sure that these changes in state came from click on the Open Idea Space button
+    // which triggers setMode and setModeChanged hooks
+    if (modeChanged) {
+      $('#channels-scroll-container').animate({
+        scrollLeft: mode === 'is' ? 0 : channelsMinWidth,
+      }, 500);
+    }
+  }, [mode, modeChanged]);
+
+  useEffect(() => {
     if (session && query) {
       if (query.gid !== undefined && (session.user.groups.some(({ id }) => query.gid === id) || query.gid === 'privateGroup')) {
         setSelectedGroupId(query.gid);
@@ -191,7 +273,12 @@ export default function Home({
       newReg={newReg}
       statefulSession={statefulSession}
       mode={mode}
-      setMode={setMode}
+      setMode={(m) => {
+        setMode(m);
+        if (!modeChanged) {
+          setModeChanged(true);
+        }
+      }}
     >
       {loading && (
         <Card>
@@ -240,82 +327,89 @@ export default function Home({
         />
       )}
       {session && ((session.user && session.user.firstName) || statefulSession) && !loading && (
-        <div style={{
-          position: 'relative', height: '100%', marginLeft: 30, marginRight: 30,
-        }}
+        <div
+          id="channels-scroll-container"
+          style={{
+            position: 'relative', height: '100%', width: '100%', overflowX: 'overlay',
+          }}
         >
-          <GroupsChannel
-            width={`calc(${channelPositions.groups.width.vw}vw + ${channelPositions.groups.width.px}px)`}
-            left={`calc(${channelPositions.groups.left.vw}vw + ${channelPositions.groups.left.px}px)`}
-            opacity={channelPositions.groups.opacity}
-            session={statefulSession || session}
-            selectedGroupId={selectedGroupId}
-            setSelectedGroupId={(id) => {
-              if (statefulSession) {
-                console.log(statefulSession);
-              } else if (session) {
-                console.log(session);
-              }
-              if (id !== selectedGroupId) {
+          <div style={{
+            position: 'relative', height: '100%', width: `max(100%, ${channelsMinWidth}px)`, overflow: 'hidden',
+          }}
+          >
+            <GroupsChannel
+              width={channelPositions.groups.width}
+              left={channelPositions.groups.left}
+              opacity={channelPos.groups.opacity}
+              session={statefulSession || session}
+              selectedGroupId={selectedGroupId}
+              setSelectedGroupId={(id) => {
+                if (statefulSession) {
+                  // console.log(statefulSession);
+                } else if (session) {
+                  // console.log(session);
+                }
+                if (id !== selectedGroupId) {
                 // if a new group is selected the selected document id and
                 // slug should be cleared and set to undefined
-                setSelectedGroupId(id);
-                setSelectedDocumentId();
-                setSelectedDocumentSlug();
-              }
-            }}
-            selectedDocumentId={selectedDocumentId}
-            setSelectedDocumentId={setSelectedDocumentId}
-            selectedDocumentSlug={selectedDocumentSlug}
-            setSelectedDocumentSlug={setSelectedDocumentSlug}
-            documentPermissions={documentPermissions}
-          />
-          <DocumentsChannel
-            width={`calc(${channelPositions.documents.width.vw}vw + ${channelPositions.documents.width.px}px)`}
-            left={`calc(${channelPositions.documents.left.vw}vw + ${channelPositions.documents.left.px}px)`}
-            opacity={channelPositions.documents.opacity}
-            session={statefulSession || session}
-            selectedGroupId={selectedGroupId}
-            setSelectedGroupId={setSelectedGroupId}
-            selectedDocumentId={selectedDocumentId}
-            setSelectedDocumentId={setSelectedDocumentId}
-            selectedDocumentSlug={selectedDocumentSlug}
-            setSelectedDocumentSlug={setSelectedDocumentSlug}
-            documents={documents}
-            setDocuments={setDocuments}
-            documentPermissions={documentPermissions}
-            setDocumentPermissions={setDocumentPermissions}
-            setAlerts={setAlerts}
-            forceUpdate={!!statefulSession}
-          />
-          <AnnotationsChannel
-            width={`calc(${channelPositions.annotations.width.vw}vw + ${channelPositions.annotations.width.px}px)`}
-            left={`calc(${channelPositions.annotations.left.vw}vw + ${channelPositions.annotations.left.px}px)`}
-            opacity={channelPositions.annotations.opacity}
-            mode={mode}
-            session={statefulSession || session}
-            setAlerts={setAlerts}
-            slug={selectedDocumentSlug}
-            selectedGroupId={selectedGroupId}
-            selectedDocumentId={selectedDocumentId}
-            selectedDocumentSlug={selectedDocumentSlug}
-            documents={documents}
-            documentPermissions={documentPermissions}
-            annotationsBeingDragged={annotationsBeingDragged}
-            setAnnotationsBeingDragged={setAnnotationsBeingDragged}
-            toAnnotationsTile={toAnnotationsTile}
-            allAnnotations={allAnnotations}
-            setAllAnnotations={setAllAnnotations}
-          />
-          <IdeaSpacesChannel
-            width={`calc(${channelPositions.ideaspaces.width.vw}vw + ${channelPositions.ideaspaces.width.px}px)`}
-            left={`calc(${channelPositions.ideaspaces.left.vw}vw + ${channelPositions.ideaspaces.left.px}px)`}
-            opacity={channelPositions.ideaspaces.opacity}
-            annotationsBeingDragged={annotationsBeingDragged}
-            setAnnotationsBeingDragged={setAnnotationsBeingDragged}
-            toAnnotationsTile={toAnnotationsTile}
-            allAnnotations={allAnnotations}
-          />
+                  setSelectedGroupId(id);
+                  setSelectedDocumentId();
+                  setSelectedDocumentSlug();
+                }
+              }}
+              selectedDocumentId={selectedDocumentId}
+              setSelectedDocumentId={setSelectedDocumentId}
+              selectedDocumentSlug={selectedDocumentSlug}
+              setSelectedDocumentSlug={setSelectedDocumentSlug}
+              documentPermissions={documentPermissions}
+            />
+            <DocumentsChannel
+              width={channelPositions.documents.width}
+              left={channelPositions.documents.left}
+              opacity={channelPos.documents.opacity}
+              session={statefulSession || session}
+              selectedGroupId={selectedGroupId}
+              setSelectedGroupId={setSelectedGroupId}
+              selectedDocumentId={selectedDocumentId}
+              setSelectedDocumentId={setSelectedDocumentId}
+              selectedDocumentSlug={selectedDocumentSlug}
+              setSelectedDocumentSlug={setSelectedDocumentSlug}
+              documents={documents}
+              setDocuments={setDocuments}
+              documentPermissions={documentPermissions}
+              setDocumentPermissions={setDocumentPermissions}
+              setAlerts={setAlerts}
+              forceUpdate={!!statefulSession}
+            />
+            <AnnotationsChannel
+              width={channelPositions.annotations.width}
+              left={channelPositions.annotations.left}
+              opacity={channelPos.annotations.opacity}
+              mode={mode}
+              session={statefulSession || session}
+              setAlerts={setAlerts}
+              slug={selectedDocumentSlug}
+              selectedGroupId={selectedGroupId}
+              selectedDocumentId={selectedDocumentId}
+              selectedDocumentSlug={selectedDocumentSlug}
+              documents={documents}
+              documentPermissions={documentPermissions}
+              annotationsBeingDragged={annotationsBeingDragged}
+              setAnnotationsBeingDragged={setAnnotationsBeingDragged}
+              toAnnotationsTile={toAnnotationsTile}
+              allAnnotations={allAnnotations}
+              setAllAnnotations={setAllAnnotations}
+            />
+            <IdeaSpacesChannel
+              width={channelPositions.ideaspaces.width}
+              left={channelPositions.ideaspaces.left}
+              opacity={channelPos.ideaspaces.opacity}
+              annotationsBeingDragged={annotationsBeingDragged}
+              setAnnotationsBeingDragged={setAnnotationsBeingDragged}
+              toAnnotationsTile={toAnnotationsTile}
+              allAnnotations={allAnnotations}
+            />
+          </div>
         </div>
       )}
     </Layout>
