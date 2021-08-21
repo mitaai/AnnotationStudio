@@ -138,6 +138,7 @@ export default function DocumentsChannel({
             perPage,
             page: getPageNumber(),
             mine: false,
+            noDrafts: true,
           })
             .then(async (data) => {
               const { docs } = data;
@@ -164,6 +165,7 @@ export default function DocumentsChannel({
             perPage,
             page: getPageNumber(),
             mine: true,
+            noDrafts: true,
           })
             .then(async (data) => {
               const { docs } = data;
