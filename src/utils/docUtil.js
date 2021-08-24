@@ -2,11 +2,11 @@ import unfetch from 'unfetch';
 import { appendProtocolIfMissing } from './fetchUtil';
 
 const getDocumentsByUser = async ({
-  id, limit, page, perPage,
+  id, limit, page, perPage, noDrafts,
 }) => {
-  const url = '/api/documents';
+  const url = '/api/documents2';
   const body = {
-    userId: id, limit, page, perPage,
+    userId: id, limit, page, perPage, noDrafts,
   };
   const res = await unfetch(url, {
     method: 'POST',
@@ -39,7 +39,7 @@ const prefetchDocumentBySlug = async (slug, cookie) => {
 };
 
 const getAllDocumentsByGroup = async (groups) => {
-  const url = '/api/documents';
+  const url = '/api/documents2';
   const body = { groupIds: groups.map((group) => group.id) };
   const res = await unfetch(url, {
     method: 'POST',
@@ -63,12 +63,13 @@ const getSharedDocumentsByGroup = async ({
   page,
   perPage,
 }) => {
-  const url = '/api/documents';
+  const url = '/api/documents2';
   const body = {
     groupIds: groups.map((group) => group.id),
     limit,
     page,
     perPage,
+    noDrafts: true,
   };
   const res = await unfetch(url, {
     method: 'POST',
@@ -80,7 +81,7 @@ const getSharedDocumentsByGroup = async ({
   if (res.status === 200) {
     const response = await res.json();
     const { documents, count } = response;
-    return Promise.resolve({ docs: documents.filter((document) => document.state !== 'draft'), count });
+    return Promise.resolve({ docs: documents, count });
   } return Promise.reject(Error(`Unable to retrieve documents: error ${res.status} received from server`));
 };
 
@@ -90,6 +91,7 @@ const getDocumentsByGroupByUser = async ({
   perPage,
   id,
   mine,
+  noDrafts,
 }) => {
   const url = '/api/documents2';
   const body = {
@@ -97,6 +99,7 @@ const getDocumentsByGroupByUser = async ({
     groupIds: groups.map((group) => group.id),
     page,
     perPage,
+    noDrafts,
   };
   const res = await unfetch(url, {
     method: 'POST',
@@ -108,7 +111,7 @@ const getDocumentsByGroupByUser = async ({
   if (res.status === 200) {
     const response = await res.json();
     const { documents, count } = response;
-    return Promise.resolve({ docs: documents.filter((document) => document.state !== 'draft'), count });
+    return Promise.resolve({ docs: documents, count });
   } return Promise.reject(Error(`Unable to retrieve documents: error ${res.status} received from server`));
 };
 

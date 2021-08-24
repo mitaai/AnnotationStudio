@@ -138,6 +138,7 @@ export default function DocumentsChannel({
             perPage,
             page: getPageNumber(),
             mine: false,
+            noDrafts: true,
           })
             .then(async (data) => {
               const { docs } = data;
@@ -164,6 +165,7 @@ export default function DocumentsChannel({
             perPage,
             page: getPageNumber(),
             mine: true,
+            noDrafts: true,
           })
             .then(async (data) => {
               const { docs } = data;
@@ -254,7 +256,12 @@ export default function DocumentsChannel({
   const loadMoreDocs = canLoadMoreDocs ? loadComponent : <></>;
 
   return (
-    <div className={styles.channelContainer} style={{ width, left, opacity }}>
+    <div
+      className={styles.channelContainer}
+      style={{
+        width, left, opacity, minWidth: 300,
+      }}
+    >
       <div className={styles.dividingLine} />
       <div className={styles.headerContainer}>
         <div style={{ display: 'flex', flex: 1, flexDirection: 'row' }}>
