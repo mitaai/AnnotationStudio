@@ -1,3 +1,23 @@
+# Annotation Studio
+
+Web application for collaborative annotation
+
+### Contents
+
+- [Getting started](#getting-started)
+  * [Clone the project](#clone-the-project)
+  * [Install Node.js](#install-nodejs)
+  * [Install MongoDB](#install-mongodb)
+  * [Install project dependencies](#install-project-dependencies)
+  * [Environment variables](#environment-variables)
+  * [Available scripts](#available-scripts)
+- [Quality management](#quality-management)
+  * [Code style](#code-style)
+  * [Unit testing](#unit-testing)
+- [Deployment](#deployment)
+  * [To AWS via Severless and GitHub Workflows](#to-aws-via-severless-and-github-workflows)
+  * [To Vercel](#to-vercel)
+
 # Getting started
 ## Clone the project
 First, clone the project locally and move into the folder. To do this, open your terminal and run:
@@ -91,7 +111,7 @@ Your app is ready to be deployed.
 ### `npm run start`
 Serves the build on http://localhost:3000. Will only run after `npm run build` has completed successfully.
 
-*** 
+***
 
 # Quality management
 ## Code style
@@ -126,6 +146,51 @@ Runs the tests in interactive mode. Useful when developing. Runs by default only
 
 #### `npm run test-latest`
 This command is the equivalent of `npm run test`, but doesn't run in interactive mode and only the tests related to the files changed since the last commit are tested.
+
+***
+
+# Deployment
+
+## To AWS via Severless and GitHub Workflows
+
+This project is deployed to AWS CloudFront/S3/Lambda using the [Serverless Framework](https://www.serverless.com/) and GitHub Workflows. 
+
+### Configuration
+
+There are currently two environments, Preview and Production. They are configured with the following YAML files:
+
+- `serverless-preview.yml`
+- `serverless-prod.yml`
+- `.github/workflows/preview.yml`
+- `.github/workflows/production.yml`
+
+In the former two files, bucket names and distribution IDs are hard coded and must be changed for different AWS deployments. Normally these would not be checked into version control, but since our workflow relies on GitHub automation, it was required.
+
+### Environment variables
+
+In these deployments, environment variables are pulled from [GitHub Environments](https://docs.github.com/en/actions/reference/environments). Note that **any environment variables added to the project** must be manually added to the appropriate steps of `.github/workflows/preview.yml` and `.github/workflows/production.yml`, in addition to the GitHub Environments, to become available to deployments. They will be pulled from the relevant GitHub Environments and made available to the `secrets` object.
+
+For example, a developer might wish to add two environment variables: `ADMIN_EMAIL`, which they want made available to the app backend at build time; and `AWS_ACCESS_KEY_ID`, which they want made available to AWS at deploy time.
+
+First, the developer should go to the Settings for this GitHub repo and navigate to Environments on the sidebar. Values for both of these environment variables should be added to both the "Preview" and "Production" environments.
+
+Then, in code, the developer should add the following line to `.github/workflows/preview.yml` and `.github/workflows/production.yml` in the "Create .env.local" step, within the `run` block:
+
+```yml
+echo "ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}" > .env.local
+```
+
+And add the follwoing line to the `env` block in the "Deploy to AWS" step:
+
+```yml
+AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+```
+
+That way, each of these environment variables will be made available to the deployment in the appropriate steps.
+
+## To Vercel
+
+Since this project is built on Next.js, it can also be deployed directly to Vercel using their automated GitHub integrations. However, the official instance of this project has shifted toward AWS deployments.
 
 ***
 
