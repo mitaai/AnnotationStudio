@@ -2,6 +2,7 @@
 
 name: Deploy as4-preview
 on:
+  workflow_dispatch
   push:
     branches: [preview]
 jobs:
