@@ -2,6 +2,7 @@
 
 name: Deploy as4-production
 on:
+  workflow_dispatch:
   push:
     branches: [master]
 jobs:
