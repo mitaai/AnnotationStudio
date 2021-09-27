@@ -15,6 +15,7 @@ export default function GroupsChannel({
   selectedDocumentId,
   selectedDocumentSlug,
   documentPermissions,
+  setDocumentPermissions,
 }) {
   const [groups, setGroups] = useState([]);
   const dashboardState = `${selectedDocumentId !== undefined && selectedDocumentSlug !== undefined ? `did=${selectedDocumentId}&slug=${selectedDocumentSlug}&dp=${documentPermissions}&` : ''}gid=${selectedGroupId}`;
@@ -38,7 +39,7 @@ export default function GroupsChannel({
       memberCount={memberCount}
       position={role.charAt(0).toUpperCase() + role.slice(1)}
       selected={id === selectedGroupId}
-      onClick={() => setSelectedGroupId(id)}
+      onClick={() => {setSelectedGroupId(id); setDocumentPermissions('shared');}}
     />
   )));
 
