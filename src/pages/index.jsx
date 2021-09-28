@@ -352,42 +352,64 @@ export default function Home({
                 if (id !== selectedGroupId) {
                 // if a new group is selected the selected document id and
                 // slug should be cleared and set to undefined
-                setSelectedGroupId(id);
-                setSelectedDocumentId();
-                setSelectedDocumentSlug();
-              }
-            }}
-            selectedDocumentId={selectedDocumentId}
-            setSelectedDocumentId={setSelectedDocumentId}
-            selectedDocumentSlug={selectedDocumentSlug}
-            setSelectedDocumentSlug={setSelectedDocumentSlug}
-            documentPermissions={documentPermissions}
-            setDocumentPermissions={setDocumentPermissions}
-          />
-          <DocumentsChannel
-            flex={2}
-            session={statefulSession || session}
-            selectedGroupId={selectedGroupId}
-            setSelectedGroupId={setSelectedGroupId}
-            selectedDocumentId={selectedDocumentId}
-            setSelectedDocumentId={setSelectedDocumentId}
-            selectedDocumentSlug={selectedDocumentSlug}
-            setSelectedDocumentSlug={setSelectedDocumentSlug}
-            documentPermissions={documentPermissions}
-            setDocumentPermissions={setDocumentPermissions}
-            setAlerts={setAlerts}
-            forceUpdate={!!statefulSession}
-          />
-          <AnnotationsChannel
-            flex={2}
-            session={statefulSession || session}
-            setAlerts={setAlerts}
-            slug={selectedDocumentSlug}
-            selectedGroupId={selectedGroupId}
-            selectedDocumentId={selectedDocumentId}
-            selectedDocumentSlug={selectedDocumentSlug}
-            documentPermissions={documentPermissions}
-          />
+                  setSelectedGroupId(id);
+                  setSelectedDocumentId();
+                  setSelectedDocumentSlug();
+                }
+              }}
+              selectedDocumentId={selectedDocumentId}
+              setSelectedDocumentId={setSelectedDocumentId}
+              selectedDocumentSlug={selectedDocumentSlug}
+              setSelectedDocumentSlug={setSelectedDocumentSlug}
+              documentPermissions={documentPermissions}
+            />
+            <DocumentsChannel
+              width={channelPositions.documents.width}
+              left={channelPositions.documents.left}
+              opacity={channelPos.documents.opacity}
+              session={statefulSession || session}
+              selectedGroupId={selectedGroupId}
+              setSelectedGroupId={setSelectedGroupId}
+              selectedDocumentId={selectedDocumentId}
+              setSelectedDocumentId={setSelectedDocumentId}
+              selectedDocumentSlug={selectedDocumentSlug}
+              setSelectedDocumentSlug={setSelectedDocumentSlug}
+              documents={documents}
+              setDocuments={setDocuments}
+              documentPermissions={documentPermissions}
+              setDocumentPermissions={setDocumentPermissions}
+              setAlerts={setAlerts}
+              forceUpdate={!!statefulSession}
+            />
+            <AnnotationsChannel
+              width={channelPositions.annotations.width}
+              left={channelPositions.annotations.left}
+              opacity={channelPos.annotations.opacity}
+              mode={mode}
+              session={statefulSession || session}
+              setAlerts={setAlerts}
+              slug={selectedDocumentSlug}
+              selectedGroupId={selectedGroupId}
+              selectedDocumentId={selectedDocumentId}
+              selectedDocumentSlug={selectedDocumentSlug}
+              documents={documents}
+              documentPermissions={documentPermissions}
+              annotationsBeingDragged={annotationsBeingDragged}
+              setAnnotationsBeingDragged={setAnnotationsBeingDragged}
+              toAnnotationsTile={toAnnotationsTile}
+              allAnnotations={allAnnotations}
+              setAllAnnotations={setAllAnnotations}
+            />
+            <IdeaSpacesChannel
+              width={channelPositions.ideaspaces.width}
+              left={channelPositions.ideaspaces.left}
+              opacity={channelPos.ideaspaces.opacity}
+              annotationsBeingDragged={annotationsBeingDragged}
+              setAnnotationsBeingDragged={setAnnotationsBeingDragged}
+              toAnnotationsTile={toAnnotationsTile}
+              allAnnotations={allAnnotations}
+            />
+          </div>
         </div>
       )}
     </Layout>
