@@ -350,45 +350,44 @@ export default function Home({
                   // console.log(session);
                 }
                 if (id !== selectedGroupId) {
-                  // if a new group is selected the selected document id and
-                  // slug should be cleared and set to undefined
-                  setSelectedGroupId(id);
-                  setSelectedDocumentId();
-                  setSelectedDocumentSlug();
-                }
-              }}
-              selectedDocumentId={selectedDocumentId}
-              setSelectedDocumentId={setSelectedDocumentId}
-              selectedDocumentSlug={selectedDocumentSlug}
-              setSelectedDocumentSlug={setSelectedDocumentSlug}
-              documentPermissions={documentPermissions}
-              setDocumentPermissions={setDocumentPermissions}
-            />
-            <DocumentsChannel
-              flex={2}
-              session={statefulSession || session}
-              selectedGroupId={selectedGroupId}
-              setSelectedGroupId={setSelectedGroupId}
-              selectedDocumentId={selectedDocumentId}
-              setSelectedDocumentId={setSelectedDocumentId}
-              selectedDocumentSlug={selectedDocumentSlug}
-              setSelectedDocumentSlug={setSelectedDocumentSlug}
-              documentPermissions={documentPermissions}
-              setDocumentPermissions={setDocumentPermissions}
-              setAlerts={setAlerts}
-              forceUpdate={!!statefulSession}
-            />
-            <AnnotationsChannel
-              flex={2}
-              session={statefulSession || session}
-              setAlerts={setAlerts}
-              slug={selectedDocumentSlug}
-              selectedGroupId={selectedGroupId}
-              selectedDocumentId={selectedDocumentId}
-              selectedDocumentSlug={selectedDocumentSlug}
-              documentPermissions={documentPermissions}
-            />
-          </div>
+                // if a new group is selected the selected document id and
+                // slug should be cleared and set to undefined
+                setSelectedGroupId(id);
+                setSelectedDocumentId();
+                setSelectedDocumentSlug();
+              }
+            }}
+            selectedDocumentId={selectedDocumentId}
+            setSelectedDocumentId={setSelectedDocumentId}
+            selectedDocumentSlug={selectedDocumentSlug}
+            setSelectedDocumentSlug={setSelectedDocumentSlug}
+            documentPermissions={documentPermissions}
+            setDocumentPermissions={setDocumentPermissions}
+          />
+          <DocumentsChannel
+            flex={2}
+            session={statefulSession || session}
+            selectedGroupId={selectedGroupId}
+            setSelectedGroupId={setSelectedGroupId}
+            selectedDocumentId={selectedDocumentId}
+            setSelectedDocumentId={setSelectedDocumentId}
+            selectedDocumentSlug={selectedDocumentSlug}
+            setSelectedDocumentSlug={setSelectedDocumentSlug}
+            documentPermissions={documentPermissions}
+            setDocumentPermissions={setDocumentPermissions}
+            setAlerts={setAlerts}
+            forceUpdate={!!statefulSession}
+          />
+          <AnnotationsChannel
+            flex={2}
+            session={statefulSession || session}
+            setAlerts={setAlerts}
+            slug={selectedDocumentSlug}
+            selectedGroupId={selectedGroupId}
+            selectedDocumentId={selectedDocumentId}
+            selectedDocumentSlug={selectedDocumentSlug}
+            documentPermissions={documentPermissions}
+          />
         </div>
       )}
     </Layout>
