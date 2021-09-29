@@ -355,6 +355,7 @@ export default function Home({
                   setSelectedGroupId(id);
                   setSelectedDocumentId();
                   setSelectedDocumentSlug();
+                  setDocumentPermissions('shared');
                 }
               }}
               selectedDocumentId={selectedDocumentId}
