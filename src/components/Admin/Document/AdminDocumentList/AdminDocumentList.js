@@ -48,25 +48,27 @@ const AdminDocumentList = (props) => {
       data-testid="admin-docs-table"
     >
       <thead>
-        <tr>
+        <tr style={{ display: 'flex' }}>
           <SortableHeader
             field="title"
             sortState={sortState}
             setSortState={setSortState}
             SortIcon={SortIcon}
+            style={{ flex: 8 }}
           >
             Title
           </SortableHeader>
-          <th>Owner</th>
+          <th style={{ flex: 5 }}>Owner</th>
           <SortableHeader
             field="createdAt"
             sortState={sortState}
             setSortState={setSortState}
             SortIcon={SortIcon}
+            style={{ flex: 5 }}
           >
             Created
           </SortableHeader>
-          <th>Actions</th>
+          <th style={{ flex: 2 }}>Actions</th>
         </tr>
       </thead>
       <tbody style={{ overflowY: 'overlay' }}>
