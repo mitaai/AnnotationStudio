@@ -22,16 +22,17 @@ const AdminUserList = (props) => {
       hover
       size="sm"
       variant="light"
-      style={{ borderCollapse: 'unset' }}
+      style={{ borderCollapse: 'unset', display: 'flex', flexDirection: 'column' }}
       data-testid="admin-users-table"
     >
       <thead>
-        <tr>
+        <tr style={{ display: 'flex' }}>
           <SortableHeader
             field="name"
             sortState={sortState}
             setSortState={setSortState}
             SortIcon={SortIcon}
+            style={{ flex: 8 }}
           >
             Name
           </SortableHeader>
@@ -40,6 +41,7 @@ const AdminUserList = (props) => {
             sortState={sortState}
             setSortState={setSortState}
             SortIcon={SortIcon}
+            style={{ flex: 7 }}
           >
             Email
           </SortableHeader>
@@ -48,6 +50,7 @@ const AdminUserList = (props) => {
             sortState={sortState}
             setSortState={setSortState}
             SortIcon={SortIcon}
+            style={{ flex: 7 }}
           >
             Role
           </SortableHeader>
@@ -56,6 +59,7 @@ const AdminUserList = (props) => {
             sortState={sortState}
             setSortState={setSortState}
             SortIcon={SortIcon}
+            style={{ flex: 7 }}
           >
             Affiliation
           </SortableHeader>
@@ -64,13 +68,14 @@ const AdminUserList = (props) => {
             sortState={sortState}
             setSortState={setSortState}
             SortIcon={SortIcon}
+            style={{ flex: 7 }}
           >
             Created
           </SortableHeader>
           <th>Actions</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody style={{ overflowY: 'overlay' }}>
         {users.map((user) => (
           <tr key={user._id}>
             <td style={{ width: '16%' }}>

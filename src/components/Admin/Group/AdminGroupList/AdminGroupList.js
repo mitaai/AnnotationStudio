@@ -21,15 +21,16 @@ const AdminGroupList = (props) => {
       hover
       size="sm"
       variant="light"
-      style={{ borderCollapse: 'unset' }}
+      style={{ borderCollapse: 'unset', display: 'flex', flexDirection: 'column' }}
     >
       <thead>
-        <tr>
+        <tr style={{ display: 'flex' }}>
           <SortableHeader
             field="name"
             sortState={sortState}
             setSortState={setSortState}
             SortIcon={SortIcon}
+            style={{ flex: 7 }}
           >
             Name
           </SortableHeader>
@@ -38,10 +39,11 @@ const AdminGroupList = (props) => {
             sortState={sortState}
             setSortState={setSortState}
             SortIcon={SortIcon}
+            style={{ flex: 6 }}
           >
             Owner
           </SortableHeader>
-          <th>
+          <th style={{ flex: 2 }}>
             Members
           </th>
           <SortableHeader
@@ -49,13 +51,14 @@ const AdminGroupList = (props) => {
             sortState={sortState}
             setSortState={setSortState}
             SortIcon={SortIcon}
+            style={{ flex: 3 }}
           >
             Created
           </SortableHeader>
-          <th>Actions</th>
+          <th style={{ flex: 2 }}>Actions</th>
         </tr>
       </thead>
-      <tbody data-testid="admin-groups-table">
+      <tbody style={{ overflowY: 'overlay' }} data-testid="admin-groups-table">
         {groups.map((group) => (
           <tr key={group._id}>
             <td style={{ width: '35%' }}>
