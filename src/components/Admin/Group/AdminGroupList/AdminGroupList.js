@@ -60,7 +60,7 @@ const AdminGroupList = (props) => {
       </thead>
       <tbody style={{ overflowY: 'overlay' }} data-testid="admin-groups-table">
         {groups.map((group) => (
-          <tr key={group._id}>
+          <tr style={{ display: 'flex' }} key={group._id}>
             <td style={{ width: '35%' }}>
               {group.name}
             </td>
