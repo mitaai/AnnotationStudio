@@ -19,7 +19,7 @@ const AdminPanel = ({
   const [listLoading, setListLoading] = useState(true);
   const [data, setData] = useState([]);
   const [sortState, setSortState] = useState({ field: 'createdAt', direction: 'desc' });
-  const perPage = 10;
+  const perPage = 50;
 
   const SortIcon = ({ field }) => {
     if (field === sortState.field) {
@@ -61,7 +61,7 @@ const AdminPanel = ({
   useEffect(() => { fetchData('page'); }, [page]);
   useEffect(() => { fetchData('sortState'); }, [sortState]);
 
-  return (
+  return (<>
     <Card data-testid="admin-panel">
       <AdminHeader activeKey={activeKey} setKey={setKey} />
       <Card.Body>
@@ -69,15 +69,8 @@ const AdminPanel = ({
           <LoadingSpinner />
         )}
         {activeKey === 'dashboard' && (<AdminDashboard />)}
-        {!listLoading && activeKey !== 'dashboard' && false && (
-          <Paginator
-            page={page}
-            totalPages={totalPages}
-            setPage={setPage}
-          />
-        )}
         {!listLoading && activeKey !== 'dashboard' && <InputGroup className="mb-3">
-          <InputGroup.Text id="basic-addon1">
+          <InputGroup.Text id="search-icon-container">
             <Search size={14} />
           </InputGroup.Text>
           <FormControl
@@ -113,6 +106,16 @@ const AdminPanel = ({
         )}
       </Card.Body>
     </Card>
+    <style jsx global>
+      {`
+        #search-icon-container {
+          border-right-width: 0px;
+          border-top-right-radius: 0px;
+          border-bottom-right-radius: 0px;
+        }
+      `}
+    </style>
+  </>
   );
 };
 
