@@ -10,6 +10,7 @@ import AdminHeader from '../AdminHeader';
 import { adminGetList } from '../../../utils/adminUtil';
 import LoadingSpinner from '../../LoadingSpinner';
 import Paginator from '../../Paginator';
+import { getUsersByIds } from '../../../utils/userUtil';
 
 const AdminPanel = ({
   setAlerts, session, activeKey, setKey,
@@ -19,6 +20,7 @@ const AdminPanel = ({
   const [listLoading, setListLoading] = useState(true);
   const [data, setData] = useState([]);
   const [sortState, setSortState] = useState({ field: 'createdAt', direction: 'desc' });
+  const [namesState, setNamesState] = useState({});
   const perPage = 50;
 
   const SortIcon = ({ field }) => {
@@ -45,7 +47,6 @@ const AdminPanel = ({
         await adminGetList(activeKey, params)
           .then((results) => {
             if (effect !== 'sortState') setTotalPages(Math.ceil((results.count) / perPage));
-            console.log(results);
             setData(results);
             setListLoading(false);
           })
@@ -60,6 +61,30 @@ const AdminPanel = ({
   useEffect(() => { fetchData('activeKey'); }, [activeKey]);
   useEffect(() => { fetchData('page'); }, [page]);
   useEffect(() => { fetchData('sortState'); }, [sortState]);
+  useEffect(() => {
+    async function fetchData() {
+      const { documents } = data;
+      if (documents && Array.isArray(documents) && documents.length > 0) {
+        // first we need to filter document owners by if !namesState[doc.owner] is true and map them to a list of user ids
+        const userIds = documents.filter((doc) => !namesState[doc.owner]).map((doc) => doc.owner);
+        const defaultUserObj = userIds.reduce((obj, item) => {
+          obj[item] = '[user not found]';
+          return obj;
+        }, {});
+        let userObj = undefined;
+        await getUsersByIds(userIds).then((result) => {
+          const { users } = result;
+          // the function inside the reduce method reduces the array to an object mapping user id to user name
+          usersObj = users.reduce((obj, { _id, name }) => {
+            obj[_id] = name;
+            return obj;
+          }, defaultUserObj); 
+        }).catch(() => {});
+        setNamesState(userObj || defaultUserObj);
+      }
+    }
+    fetchData();
+  }, [data]);
 
   return (<>
     <Card id="admin-panel-card" data-testid="admin-panel">
@@ -69,7 +94,7 @@ const AdminPanel = ({
           <LoadingSpinner />
         )}
         {activeKey === 'dashboard' && (<AdminDashboard />)}
-        {!listLoading && activeKey !== 'dashboard' && <div style={{ position: 'relative'}}>
+        {!listLoading && activeKey !== 'dashboard' && <div style={{ position: 'relative' }}>
           <InputGroup className="mb-3">
             <InputGroup.Text id="search-icon-container">
               <Search size={14} />
@@ -94,6 +119,7 @@ const AdminPanel = ({
           {!listLoading && activeKey === 'documents' && data.documents && (
             <AdminDocumentList
               documents={data.documents}
+              namesState={namesState}
               sortState={sortState}
               setSortState={setSortState}
               SortIcon={SortIcon}
@@ -108,7 +134,7 @@ const AdminPanel = ({
             />
           )}
         </div>
-        
+
       </Card.Body>
     </Card>
     <style jsx global>

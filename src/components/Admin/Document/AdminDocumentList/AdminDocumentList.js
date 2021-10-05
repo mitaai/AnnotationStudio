@@ -11,32 +11,12 @@ import SortableHeader from '../../SortableHeader';
 const AdminDocumentList = (props) => {
   const {
     documents,
+    namesState,
     sortState,
     setSortState,
     SortIcon,
   } = props;
-  const [namesState, setNamesState] = useState({});
-
-  useEffect(() => {
-    async function fetchData() {
-      if (documents && Array.isArray(documents) && documents.length > 0) {
-        documents.map(async (document) => {
-          if (!namesState[document.owner]) {
-            await getUserById(document.owner)
-              .then((result) => setNamesState((prevState) => ({
-                ...prevState,
-                [document.owner]: result.name,
-              })))
-              .catch(() => setNamesState((prevState) => ({
-                ...prevState,
-                [document.owner]: '[user not found]',
-              })));
-          }
-        });
-      }
-    }
-    fetchData();
-  }, [documents, namesState]);
+  
   return (
     <Table
       striped
@@ -73,7 +53,7 @@ const AdminDocumentList = (props) => {
       </thead>
       <tbody style={{ overflowY: 'overlay' }}>
         {documents.map((document) => (
-          <tr key={document._id}>
+          <tr key={document._id} style={{ display: 'flex' }}>
             <td style={{ width: '40%' }}>
               {document.title}
             </td>

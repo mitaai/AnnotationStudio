@@ -32,7 +32,7 @@ const AdminUserList = (props) => {
             sortState={sortState}
             setSortState={setSortState}
             SortIcon={SortIcon}
-            style={{ flex: 8 }}
+            style={{ flex: 11 }}
           >
             Name
           </SortableHeader>
@@ -41,7 +41,7 @@ const AdminUserList = (props) => {
             sortState={sortState}
             setSortState={setSortState}
             SortIcon={SortIcon}
-            style={{ flex: 7 }}
+            style={{ flex: 11 }}
           >
             Email
           </SortableHeader>
@@ -72,16 +72,16 @@ const AdminUserList = (props) => {
           >
             Created
           </SortableHeader>
-          <th>Actions</th>
+          <th style={{ flex: 7 }}>Actions</th>
         </tr>
       </thead>
       <tbody style={{ overflowY: 'overlay' }}>
         {users.map((user) => (
-          <tr key={user._id}>
-            <td style={{ width: '16%' }}>
+          <tr key={user._id} style={{ display: 'flex' }}>
+            <td style={{ width: '22%' }}>
               {user.name}
             </td>
-            <td style={{ width: '14%' }}>
+            <td style={{ width: '22%' }}>
               {user.email}
             </td>
             <td style={{ width: '14%' }}>
