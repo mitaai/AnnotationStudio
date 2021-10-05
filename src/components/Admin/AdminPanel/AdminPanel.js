@@ -64,7 +64,7 @@ const AdminPanel = ({
   return (<>
     <Card id="admin-panel-card" data-testid="admin-panel">
       <AdminHeader activeKey={activeKey} setKey={setKey} />
-      <Card.Body style={{ display: 'flex', flexDirection: 'row' }}>
+      <Card.Body style={{ display: 'flex', flexDirection: 'column' }}>
         {listLoading && activeKey !== 'dashboard' && (
           <LoadingSpinner />
         )}
@@ -82,7 +82,7 @@ const AdminPanel = ({
             />
           </InputGroup>
         </div>}
-        <div style={{ flex: 1, overflowY: 'overlay' }}>
+        <div style={{ flex: 1, overflowY: 'overlay', display: 'flex' }}>
           {!listLoading && activeKey === 'users' && data.users && (
             <AdminUserList
               users={data.users}

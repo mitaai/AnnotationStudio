@@ -44,7 +44,7 @@ const AdminDocumentList = (props) => {
       hover
       size="sm"
       variant="light"
-      style={{ borderCollapse: 'unset' }}
+      style={{ borderCollapse: 'unset', display: 'flex', flexDirection: 'column' }}
       data-testid="admin-docs-table"
     >
       <thead>
@@ -69,7 +69,7 @@ const AdminDocumentList = (props) => {
           <th>Actions</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody style={{ overflowY: 'overlay' }}>
         {documents.map((document) => (
           <tr key={document._id}>
             <td style={{ width: '40%' }}>
