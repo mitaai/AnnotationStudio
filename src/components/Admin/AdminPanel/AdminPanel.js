@@ -62,9 +62,9 @@ const AdminPanel = ({
   useEffect(() => { fetchData('sortState'); }, [sortState]);
 
   return (<>
-    <Card data-testid="admin-panel">
+    <Card id="admin-panel-card" data-testid="admin-panel">
       <AdminHeader activeKey={activeKey} setKey={setKey} />
-      <Card.Body>
+      <Card.Body style={{ display: 'flex', flexDirection: 'row' }}>
         {listLoading && activeKey !== 'dashboard' && (
           <LoadingSpinner />
         )}
@@ -80,34 +80,40 @@ const AdminPanel = ({
             aria-describedby="basic-addon1"
           />
         </InputGroup>}
-        {!listLoading && activeKey === 'users' && data.users && (
-          <AdminUserList
-            users={data.users}
-            sortState={sortState}
-            setSortState={setSortState}
-            SortIcon={SortIcon}
-          />
-        )}
-        {!listLoading && activeKey === 'documents' && data.documents && (
-          <AdminDocumentList
-            documents={data.documents}
-            sortState={sortState}
-            setSortState={setSortState}
-            SortIcon={SortIcon}
-          />
-        )}
-        {!listLoading && activeKey === 'groups' && data.groups && (
-          <AdminGroupList
-            groups={data.groups}
-            sortState={sortState}
-            setSortState={setSortState}
-            SortIcon={SortIcon}
-          />
-        )}
+        <div style={{ flex: 1, overflowY: 'overlay' }}>
+          {!listLoading && activeKey === 'users' && data.users && (
+            <AdminUserList
+              users={data.users}
+              sortState={sortState}
+              setSortState={setSortState}
+              SortIcon={SortIcon}
+            />
+          )}
+          {!listLoading && activeKey === 'documents' && data.documents && (
+            <AdminDocumentList
+              documents={data.documents}
+              sortState={sortState}
+              setSortState={setSortState}
+              SortIcon={SortIcon}
+            />
+          )}
+          {!listLoading && activeKey === 'groups' && data.groups && (
+            <AdminGroupList
+              groups={data.groups}
+              sortState={sortState}
+              setSortState={setSortState}
+              SortIcon={SortIcon}
+            />
+          )}
+        </div>
+        
       </Card.Body>
     </Card>
     <style jsx global>
       {`
+        #admin-panel-card {
+          height: 100%;
+        }
         #search-icon-container {
           border-right-width: 0px;
           border-top-right-radius: 0px;

@@ -31,7 +31,9 @@ function Layout({
   } else if (type === 'dashboard') {
     innerContent = content;
   } else {
-    innerContent = <Container>{content}</Container>;
+    innerContent = <Container style={type === 'admin' ? {
+      height: '100%',
+    } : {}}>{content}</Container>;
   }
   return (
     <>
