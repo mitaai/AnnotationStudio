@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import { useState, useEffect } from 'react';
-import { Card } from 'react-bootstrap';
+import { Card, InputGroup } from 'react-bootstrap';
 import { ArrowDown, ArrowDownUp, ArrowUp } from 'react-bootstrap-icons';
 import AdminDashboard from '../AdminDashboard';
 import AdminUserList from '../User/AdminUserList';
@@ -45,6 +45,7 @@ const AdminPanel = ({
         await adminGetList(activeKey, params)
           .then((results) => {
             if (effect !== 'sortState') setTotalPages(Math.ceil((results.count) / perPage));
+            console.log(results);
             setData(results);
             setListLoading(false);
           })
@@ -68,13 +69,22 @@ const AdminPanel = ({
           <LoadingSpinner />
         )}
         {activeKey === 'dashboard' && (<AdminDashboard />)}
-        {!listLoading && activeKey !== 'dashboard' && (
+        {!listLoading && activeKey !== 'dashboard' && false && (
           <Paginator
             page={page}
             totalPages={totalPages}
             setPage={setPage}
           />
         )}
+        <InputGroup className="mb-3">
+          <InputGroup.Text id="basic-addon1">@</InputGroup.Text>
+          <FormControl
+            placeholder="Username"
+            onChange={console.log}
+            aria-label="Username"
+            aria-describedby="basic-addon1"
+          />
+        </InputGroup>
         {!listLoading && activeKey === 'users' && data.users && (
           <AdminUserList
             users={data.users}
