@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import { useState, useEffect } from 'react';
 import { Card, InputGroup, FormControl } from 'react-bootstrap';
-import { ArrowDown, ArrowDownUp, ArrowUp } from 'react-bootstrap-icons';
+import { ArrowDown, ArrowDownUp, ArrowUp, Search } from 'react-bootstrap-icons';
 import AdminDashboard from '../AdminDashboard';
 import AdminUserList from '../User/AdminUserList';
 import AdminDocumentList from '../Document/AdminDocumentList';
@@ -76,15 +76,17 @@ const AdminPanel = ({
             setPage={setPage}
           />
         )}
-        <InputGroup className="mb-3">
-          <InputGroup.Text id="basic-addon1">@</InputGroup.Text>
+        {!listLoading && activeKey !== 'dashboard' && <InputGroup className="mb-3">
+          <InputGroup.Text id="basic-addon1">
+            <Search size={14} />
+          </InputGroup.Text>
           <FormControl
-            placeholder="Username"
+            placeholder={`Search ${activeKey}`}
             onChange={console.log}
             aria-label="Username"
             aria-describedby="basic-addon1"
           />
-        </InputGroup>
+        </InputGroup>}
         {!listLoading && activeKey === 'users' && data.users && (
           <AdminUserList
             users={data.users}
