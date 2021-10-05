@@ -69,17 +69,19 @@ const AdminPanel = ({
           <LoadingSpinner />
         )}
         {activeKey === 'dashboard' && (<AdminDashboard />)}
-        {!listLoading && activeKey !== 'dashboard' && <InputGroup className="mb-3">
-          <InputGroup.Text id="search-icon-container">
-            <Search size={14} />
-          </InputGroup.Text>
-          <FormControl
-            placeholder={`Search ${activeKey}`}
-            onChange={console.log}
-            aria-label="Username"
-            aria-describedby="basic-addon1"
-          />
-        </InputGroup>}
+        {!listLoading && activeKey !== 'dashboard' && <div style={{ position: 'relative'}}>
+          <InputGroup className="mb-3">
+            <InputGroup.Text id="search-icon-container">
+              <Search size={14} />
+            </InputGroup.Text>
+            <FormControl
+              placeholder={`Search ${activeKey}`}
+              onChange={console.log}
+              aria-label="Username"
+              aria-describedby="basic-addon1"
+            />
+          </InputGroup>
+        </div>}
         <div style={{ flex: 1, overflowY: 'overlay' }}>
           {!listLoading && activeKey === 'users' && data.users && (
             <AdminUserList
