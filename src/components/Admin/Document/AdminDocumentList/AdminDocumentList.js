@@ -16,6 +16,8 @@ const AdminDocumentList = (props) => {
     setSortState,
     SortIcon,
   } = props;
+
+  console.log('namesState', namesState);
   
   return (
     <Table
