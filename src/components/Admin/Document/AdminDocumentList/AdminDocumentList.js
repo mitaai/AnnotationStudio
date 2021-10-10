@@ -5,19 +5,50 @@ import {
   Table,
 } from 'react-bootstrap';
 import { format } from 'date-fns';
-import { getUserById } from '../../../../utils/userUtil';
 import SortableHeader from '../../SortableHeader';
+import LoadingSpinner from '../../../LoadingSpinner';
 
 const AdminDocumentList = (props) => {
   const {
     documents,
+    loading,
     namesState,
     sortState,
     setSortState,
+    loadMoreResults,
     SortIcon,
   } = props;
 
-  console.log('namesState', namesState);
+  let content;
+  let loadMoreResultsContent = null;
+  if (loading) {
+    content = <LoadingSpinner />;
+  } else if (documents === undefined || documents.length === 0) {
+    content = <div style={{ textAlign: 'center', color: '#616161', marginTop: 10 }}>
+      {documents ? '0 Search Results' : 'No Search'}
+    </div>;
+  } else {
+    loadMoreResultsContent = loadMoreResults ? <div
+    onClick={loadMoreResults}
+    style={{ textAlign: 'center', marginTop: 10 }}>
+      <span style={{ color: '#039be5', cursor: 'pointer' }}>Load More Results</span>
+    </div> : null;
+    content = documents.map((document) => (
+      <Link key={document._id} href={`/admin/document/${document.slug}`}>
+        <tr style={{ display: 'flex', cursor: 'pointer' }}>
+          <td style={{ width: '50%' }}>
+            {document.title}
+          </td>
+          <td style={{ width: '25%' }}>
+            {namesState[document.owner] || 'Loading...'}
+          </td>
+          <td style={{ width: '25%' }}>
+            {format(new Date(document.createdAt), 'MM/dd/yyyy')}
+          </td>
+        </tr>
+      </Link>
+    ));
+  }
   
   return (
     <Table
@@ -36,40 +67,25 @@ const AdminDocumentList = (props) => {
             sortState={sortState}
             setSortState={setSortState}
             SortIcon={SortIcon}
-            style={{ flex: 8 }}
+            style={{ flex: 2 }}
           >
             Title
           </SortableHeader>
-          <th style={{ flex: 5 }}>Owner</th>
+          <th style={{ flex: 1 }}>Owner</th>
           <SortableHeader
             field="createdAt"
             sortState={sortState}
             setSortState={setSortState}
             SortIcon={SortIcon}
-            style={{ flex: 5 }}
+            style={{ flex: 1 }}
           >
             Created
           </SortableHeader>
-          <th style={{ flex: 2 }}>Actions</th>
         </tr>
       </thead>
       <tbody style={{ overflowY: 'overlay' }}>
-        {documents.map((document) => (
-          <tr key={document._id} style={{ display: 'flex' }}>
-            <td style={{ width: '40%' }}>
-              {document.title}
-            </td>
-            <td style={{ width: '25%' }}>
-              {namesState[document.owner] || 'Loading...'}
-            </td>
-            <td style={{ width: '25%' }}>
-              {format(new Date(document.createdAt), 'MM/dd/yyyy')}
-            </td>
-            <td style={{ width: '10%' }}>
-              <Link href={`/admin/document/${document.slug}`}>View</Link>
-            </td>
-          </tr>
-        ))}
+        {content}
+        {loadMoreResultsContent}
       </tbody>
     </Table>
   );
