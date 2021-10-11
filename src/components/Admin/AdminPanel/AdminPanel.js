@@ -120,7 +120,15 @@ const AdminPanel = ({
 
   const updateSearchResults = (q) => {
     // first search
-    searchDataDebounced({ query: q, activeKey, page: 1, perPage, sort: documentsSortState });
+    let sortState = {};
+    if (activeKey === 'users') {
+      sortState = usersSortState;
+    } else if (activeKey === 'documents') {
+      sortState = documentsSortState;
+    } else if (activeKey === 'groups') {
+      sortState = groupsSortState;
+    }
+    searchDataDebounced({ query: q, activeKey, page: 1, perPage, sort: sortState });
     
     if (activeKey === 'users') {
       setUsersListData();
@@ -225,7 +233,7 @@ const AdminPanel = ({
               loading={queryData[activeKey].loading}
               loadMoreResults={queryData[activeKey].nextPage
                 ? () => {
-                  searchData({ query: queryData[activeKey]?.query, activeKey, page: queryData[activeKey]?.page + 1, perPage });
+                  searchData({ query: queryData[activeKey]?.query, activeKey, page: queryData[activeKey]?.page + 1, perPage, sort: usersSortState });
                   setQueryData((prevQueryData) => {
                     const newQueryData = { ...prevQueryData };
                     // we need to increment the page count
@@ -248,7 +256,7 @@ const AdminPanel = ({
               loading={queryData[activeKey].loading}
               loadMoreResults={queryData[activeKey].nextPage
                 ? () => {
-                  searchData({ query: queryData[activeKey]?.query, activeKey, page: queryData[activeKey]?.page + 1, perPage });
+                  searchData({ query: queryData[activeKey]?.query, activeKey, page: queryData[activeKey]?.page + 1, perPage, sort: documentsSortState });
                   setQueryData((prevQueryData) => {
                     const newQueryData = { ...prevQueryData };
                     // we need to increment the page count
@@ -272,7 +280,7 @@ const AdminPanel = ({
               loading={queryData[activeKey].loading}
               loadMoreResults={queryData[activeKey].nextPage
                 ? () => {
-                  searchData({ query: queryData[activeKey]?.query, activeKey, page: queryData[activeKey]?.page + 1, perPage });
+                  searchData({ query: queryData[activeKey]?.query, activeKey, page: queryData[activeKey]?.page + 1, perPage, sort: groupsSortState });
                   setQueryData((prevQueryData) => {
                     const newQueryData = { ...prevQueryData };
                     // we need to increment the page count
