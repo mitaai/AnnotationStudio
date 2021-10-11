@@ -157,8 +157,16 @@ const AdminPanel = ({
   }, [usersSortState]);
   useEffect(() => {
     if (!Object.keys(queryData).includes(activeKey)) return;
+    let sortState = {};
+    if (activeKey === 'users') {
+      sortState = usersSortState;
+    } else if (activeKey === 'documents') {
+      sortState = documentsSortState;
+    } else if (activeKey === 'groups') {
+      sortState = groupsSortState;
+    }
     const  q = queryData[activeKey].query;
-    searchData({ query: q || '', activeKey, page: 1, perPage, sort: documentsSortState});
+    searchData({ query: q || '', activeKey, page: 1, perPage, sort: sortState});
     setQueryData((prevQueryData) => {
       const newQueryData = { ...prevQueryData };
       // if we change the sort state we go back to page 1
@@ -167,7 +175,7 @@ const AdminPanel = ({
       // newQueryData[activeKey].loading = q.length > 0;
       return newQueryData;
     });
-  }, [documentsSortState]);
+  }, [usersSortState, documentsSortState, groupsSortState]);
   useEffect(() => {
 
   }, [groupsSortState]);
