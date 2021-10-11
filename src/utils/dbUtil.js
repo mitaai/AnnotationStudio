@@ -47,6 +47,9 @@ export async function connectToDatabase() {
         db.collection('users').createIndex({ email: 'text' });
         db.collection('documents').createIndex({ groups: 1 });
         db.collection('documents').createIndex({ owner: 1 });
+        db.collection('documents').createIndex({ title: 1 }, { collation: { locale: 'en'} });
+        db.collection('documents').createIndex({ title: 'text' });
+
         conn.db = db;
         cached.conn = conn;
       });

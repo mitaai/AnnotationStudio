@@ -92,7 +92,6 @@ const DocumentsIndex = ({
           })
             .then(async (data) => {
               const { count, docs } = data;
-              console.log('docs', docs);
               setTotalPages(Math.ceil((count) / perPage));
               await addGroupNamesToDocuments(docs)
                 .then((docsWithGroupNames) => {

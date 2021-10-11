@@ -1,6 +1,6 @@
 const SortableHeader = (props) => {
   const {
-    field, children, sortState, setSortState, SortIcon,
+    field, children, sortState, setSortState, SortIcon, style
   } = props;
   return (
     <th
@@ -10,7 +10,7 @@ const SortableHeader = (props) => {
           direction: sortState.direction === 'desc' ? 'asc' : 'desc',
         });
       }}
-      style={{ cursor: 'pointer' }}
+      style={{ cursor: 'pointer', ...style }}
       data-testid="sortable-header"
     >
       {children}

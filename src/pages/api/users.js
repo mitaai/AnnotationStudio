@@ -38,6 +38,21 @@ const handler = async (req, res) => {
         res.status(200).json(doc);
       } else res.status(403).end('Unauthorized');
     } else res.status(403).end('Invalid or expired token');
+  } else if (method === 'POST') {
+    const token = await jwt.getToken({ req, secret });
+    if (token && token.exp > 0) {
+      const { userIds } = req.body;
+      if (userIds) {
+        const { db } = await connectToDatabase();
+        const userObjectIds = userIds.map((id) => ObjectID(id));
+        const findCondition = { _id: { $in: userObjectIds } };
+        const arr = await db
+          .collection('users')
+          .find(findCondition)
+          .toArray();
+        res.status(200).json({ users: arr });
+      } else res.status(400).end('Bad request');
+    } else res.status(403).end('Invalid or expired token');
   } else res.status(405).end(`Method ${method} Not Allowed`);
 };
 

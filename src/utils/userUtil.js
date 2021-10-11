@@ -29,6 +29,21 @@ const getUserById = async (id) => {
   } return Promise.reject(Error(`Unable to get user: error ${res.status} received from server`));
 };
 
+const getUsersByIds = async (userIds) => {
+  const url = `/api/users`;
+  const body = { userIds };
+  const res = await unfetch(url, {
+    method: 'POST',
+    body: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (res.status === 200) {
+    return Promise.resolve(res.json());
+  } return Promise.reject(Error(`Unable to get user: error ${res.status} received from server`));
+};
+
 const prefetchUserById = async (id, cookie) => {
   const url = `${appendProtocolIfMissing(process.env.SITE)}/api/user/${id}`;
   // eslint-disable-next-line no-undef
@@ -89,5 +104,6 @@ export {
   deleteUserById,
   getUserByEmail,
   getUserById,
+  getUsersByIds,
   prefetchUserById,
 };

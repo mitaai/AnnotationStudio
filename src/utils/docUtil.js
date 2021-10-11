@@ -163,6 +163,54 @@ const getManyGroupNamesById = async (groupIds) => {
   } return Promise.reject(Error(`Unable to fecth group names: error ${res.status} received from server`));
 };
 
+const searchForUsers = async ({ query, page, perPage, sort }) => {
+  const url = '/api/search/users';
+  const body = { query, page, perPage, sort };
+  const res = await unfetch(url, {
+    method: 'POST',
+    body: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (res.status === 200) {
+    const response = await res.json();
+    return Promise.resolve(response);
+  } return Promise.reject(Error(`Unable to fecth group names: error ${res.status} received from server`));
+};
+
+const searchForDocuments = async ({ query, page, perPage, sort }) => {
+  const url = '/api/search/documents';
+  const body = { query, page, perPage, sort };
+  const res = await unfetch(url, {
+    method: 'POST',
+    body: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (res.status === 200) {
+    const response = await res.json();
+    return Promise.resolve(response);
+  } return Promise.reject(Error(`Unable to fecth group names: error ${res.status} received from server`));
+};
+
+const searchForGroups = async ({ query, page, perPage, sort }) => {
+  const url = '/api/search/groups';
+  const body = { query, page, perPage, sort };
+  const res = await unfetch(url, {
+    method: 'POST',
+    body: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (res.status === 200) {
+    const response = await res.json();
+    return Promise.resolve(response);
+  } return Promise.reject(Error(`Unable to fecth group names: error ${res.status} received from server`));
+};
+
 const addGroupNamesToDocuments = async (docsToAlter) => {
   const allGroupIds = [];
   if (docsToAlter
@@ -201,6 +249,9 @@ export {
   getDocumentsByUser,
   getManyGroupNamesById,
   getSharedDocumentsByGroup,
+  searchForUsers,
+  searchForDocuments,
+  searchForGroups,
   getDocumentsByGroupByUser,
   prefetchDocumentBySlug,
   prefetchManyGroupNamesById,
