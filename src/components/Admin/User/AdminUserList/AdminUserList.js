@@ -29,7 +29,7 @@ const AdminUserList = (props) => {
   } else {
     loadMoreResultsContent = loadMoreResults ? <div
     onClick={loadMoreResults}
-    style={{ textAlign: 'center', marginTop: 10 }}>
+    style={{ textAlign: 'center', marginTop: 10, marginBottom: 10 }}>
       <span style={{ color: '#039be5', cursor: 'pointer' }}>Load More Results</span>
     </div> : null;
     content = users.map((user) => (
