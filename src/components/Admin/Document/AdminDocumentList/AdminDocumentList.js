@@ -5,38 +5,51 @@ import {
   Table,
 } from 'react-bootstrap';
 import { format } from 'date-fns';
-import { getUserById } from '../../../../utils/userUtil';
 import SortableHeader from '../../SortableHeader';
+import LoadingSpinner from '../../../LoadingSpinner';
 
 const AdminDocumentList = (props) => {
   const {
     documents,
+    loading,
+    namesState,
     sortState,
     setSortState,
+    loadMoreResults,
     SortIcon,
   } = props;
-  const [namesState, setNamesState] = useState({});
 
-  useEffect(() => {
-    async function fetchData() {
-      if (documents && Array.isArray(documents) && documents.length > 0) {
-        documents.map(async (document) => {
-          if (!namesState[document.owner]) {
-            await getUserById(document.owner)
-              .then((result) => setNamesState((prevState) => ({
-                ...prevState,
-                [document.owner]: result.name,
-              })))
-              .catch(() => setNamesState((prevState) => ({
-                ...prevState,
-                [document.owner]: '[user not found]',
-              })));
-          }
-        });
-      }
-    }
-    fetchData();
-  }, [documents, namesState]);
+  let content;
+  let loadMoreResultsContent = null;
+  if (loading) {
+    content = <LoadingSpinner />;
+  } else if (documents === undefined || documents.length === 0) {
+    content = <div style={{ textAlign: 'center', color: '#616161', marginTop: 10 }}>
+      {documents ? '0 Search Results' : 'No Search'}
+    </div>;
+  } else {
+    loadMoreResultsContent = loadMoreResults ? <div
+    onClick={loadMoreResults}
+    style={{ textAlign: 'center', marginTop: 10, marginBottom: 10 }}>
+      <span style={{ color: '#039be5', cursor: 'pointer' }}>Load More Results</span>
+    </div> : null;
+    content = documents.map((document) => (
+      <Link key={document._id} href={`/admin/document/${document.slug}`}>
+        <tr style={{ display: 'flex', cursor: 'pointer' }}>
+          <td style={{ width: '50%' }}>
+            {document.title}
+          </td>
+          <td style={{ width: '25%' }}>
+            {namesState[document.owner] || 'Loading...'}
+          </td>
+          <td style={{ width: '25%' }}>
+            {format(new Date(document.createdAt), 'MM/dd/yyyy')}
+          </td>
+        </tr>
+      </Link>
+    ));
+  }
+  
   return (
     <Table
       striped
@@ -44,48 +57,35 @@ const AdminDocumentList = (props) => {
       hover
       size="sm"
       variant="light"
-      style={{ borderCollapse: 'unset' }}
+      style={{ borderCollapse: 'unset', display: 'flex', flexDirection: 'column' }}
       data-testid="admin-docs-table"
     >
       <thead>
-        <tr>
+        <tr style={{ display: 'flex' }}>
           <SortableHeader
             field="title"
             sortState={sortState}
             setSortState={setSortState}
             SortIcon={SortIcon}
+            style={{ flex: 2 }}
           >
             Title
           </SortableHeader>
-          <th>Owner</th>
+          <th style={{ flex: 1 }}>Owner</th>
           <SortableHeader
             field="createdAt"
             sortState={sortState}
             setSortState={setSortState}
             SortIcon={SortIcon}
+            style={{ flex: 1 }}
           >
             Created
           </SortableHeader>
-          <th>Actions</th>
         </tr>
       </thead>
-      <tbody>
-        {documents.map((document) => (
-          <tr key={document._id}>
-            <td style={{ width: '40%' }}>
-              {document.title}
-            </td>
-            <td style={{ width: '25%' }}>
-              {namesState[document.owner] || 'Loading...'}
-            </td>
-            <td style={{ width: '25%' }}>
-              {format(new Date(document.createdAt), 'MM/dd/yyyy')}
-            </td>
-            <td style={{ width: '10%' }}>
-              <Link href={`/admin/document/${document.slug}`}>View</Link>
-            </td>
-          </tr>
-        ))}
+      <tbody style={{ overflowY: 'overlay' }}>
+        {content}
+        {loadMoreResultsContent}
       </tbody>
     </Table>
   );

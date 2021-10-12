@@ -7,6 +7,7 @@ import Alerts from '../Alerts';
 function Layout({
   children,
   type,
+  splashPage,
   document,
   breadcrumbs,
   alerts,
@@ -15,6 +16,8 @@ function Layout({
   newReg,
   statefulSession,
   dashboardState = '',
+  mode,
+  setMode,
 }) {
   const content = (
     <>
@@ -28,7 +31,9 @@ function Layout({
   } else if (type === 'dashboard') {
     innerContent = content;
   } else {
-    innerContent = <Container>{content}</Container>;
+    innerContent = <Container style={type === 'admin' ? {
+      height: '100%',
+    } : {}}>{content}</Container>;
   }
   return (
     <>
@@ -46,6 +51,8 @@ function Layout({
           newReg={newReg}
           statefulSession={statefulSession}
           dashboardState={dashboardState}
+          mode={mode}
+          setMode={setMode}
         />
         <div style={{
           flex: 1,
@@ -65,7 +72,7 @@ function Layout({
             height: 100% !important
           }
           body {
-            background-color: #f5f5f5;
+            background-color: ${splashPage ? 'white' : '#f5f5f5'};
           }
           #__next {
             flex-direction: column !important;

@@ -50,6 +50,15 @@ export function DeepCopyObj(obj) {
   return JSON.parse(JSON.stringify(obj));
 }
 
+export function copyToClipboard(document, str) {
+  const el = document.createElement('textarea');
+  el.value = str;
+  document.body.appendChild(el);
+  el.select();
+  document.execCommand('copy');
+  document.body.removeChild(el);
+}
+
 export const RID = () => {
   const c = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let rid = '';

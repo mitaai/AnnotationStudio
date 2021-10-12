@@ -57,6 +57,8 @@ import styles from './DocumentForm.module.scss';
 const DocumentForm = ({
   session,
   mode,
+  exportDocument,
+  dashboardStateQuery,
   data,
   setErrors,
 }) => {
@@ -164,6 +166,7 @@ const DocumentForm = ({
     withDeserializeHTML({ plugins }),
     withDivs(),
   ];
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
   const numRetries = 60;
@@ -345,23 +348,35 @@ const DocumentForm = ({
     <Formik
       onSubmit={(values, actions) => {
         const submitFunction = mode === 'edit' ? editDocument : createDocument;
-        setTimeout(() => {
-          submitFunction(values)
-            .then(() => {
-              setErrors([]);
+        submitFunction(values)
+          .then((result) => {
+            const { slug } = mode === 'edit' ? data : result.ops[0];
+            setErrors([]);
+            if (exportDocument || mode !== 'edit') {
+              // in the scenario where the user has created a new document or is saving changes
+              // from a document that has just been exported we want to redirect them to the
+              // document view so they can start working with the document immediately
+              router.push({
+                pathname: `/documents/${slug || ''}`,
+                query: {
+                  ...dashboardStateQuery,
+                },
+              });
+            } else {
               router.push({
                 pathname: '/documents',
                 query: {
+                  ...dashboardStateQuery,
                   tab: 'mine',
                   alert: (mode === 'edit') ? 'editedDocument' : 'createdDocument',
                 },
               });
-            })
-            .catch((err) => {
-              setErrors((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
-            });
-          actions.setSubmitting(false);
-        }, 1000);
+            }
+          })
+          .catch((err) => {
+            setErrors((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
+          });
+        actions.setSubmitting(false);
       }}
       validationSchema={schema}
       initialValues={initialValues}
@@ -479,38 +494,53 @@ const DocumentForm = ({
                                   }}
                                 >
                                   <SlateToolbar
+                                    style={{
+                                      borderTop: 'none',
+                                      borderLeft: 'none',
+                                      borderRight: 'none',
+                                      borderRadius: 0,
+                                    }}
                                     disabled={props.isSubmitting}
                                   />
-                                  {slateLoading && (
-                                    <div className={styles['slate-loader']}>
-                                      <Spinner animation="border" role="status">
-                                        <span className="sr-only">Loading...</span>
-                                      </Spinner>
-                                      <div className="text-center">
-                                        <h4 className="text-muted">
-                                          <em>Please wait, processing pasted content.</em>
-                                        </h4>
-                                        <small className="text-muted">
-                                          The page may become unresponsive. Please do not
-                                          close or navigate away from the page.
-                                        </small>
+                                  <div
+                                    style={{
+                                      width: '100%',
+                                      padding: '20px 0px',
+                                      height: 450,
+                                      overflow: 'scroll',
+                                    }}
+                                  >
+                                    {slateLoading && (
+                                      <div className={styles['slate-loader']}>
+                                        <Spinner animation="border" role="status">
+                                          <span className="sr-only">Loading...</span>
+                                        </Spinner>
+                                        <div className="text-center">
+                                          <h4 className="text-muted">
+                                            <em>Please wait, processing pasted content.</em>
+                                          </h4>
+                                          <small className="text-muted">
+                                            The page may become unresponsive. Please do not
+                                            close or navigate away from the page.
+                                          </small>
+                                        </div>
                                       </div>
-                                    </div>
-                                  )}
-                                  <EditablePlugins
-                                    plugins={plugins}
-                                    disabled={props.isSubmitting}
-                                    onKeyDown={[(e) => {
-                                      const isPasteCapture = (e.ctrlKey || e.metaKey)
-                                        && e.keyCode === 86;
-                                      if (isPasteCapture) {
-                                        setSlateLoading(true);
-                                      }
-                                    }]}
-                                    placeholder="Paste or type here"
-                                    id={field.name}
-                                    className={styles['slate-editor']}
-                                  />
+                                    )}
+                                    <EditablePlugins
+                                      plugins={plugins}
+                                      disabled={props.isSubmitting}
+                                      onKeyDown={[(e) => {
+                                        const isPasteCapture = (e.ctrlKey || e.metaKey)
+                                          && e.keyCode === 86;
+                                        if (isPasteCapture) {
+                                          setSlateLoading(true);
+                                        }
+                                      }]}
+                                      placeholder="Paste or type here"
+                                      id={field.name}
+                                      className={styles['slate-editor']}
+                                    />
+                                  </div>
                                 </Slate>
                               )}
                             </Field>

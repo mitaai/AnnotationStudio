@@ -12,7 +12,7 @@ const handler = async (req, res) => {
     const token = await jwt.getToken({ req, secret });
     if (token && token.exp > 0) {
       const {
-        page, perPage, userId, groupIds = [],
+        page, perPage, userId, groupIds, noDrafts,
       } = req.body;
       if (userId || groupIds) {
         const { db } = await connectToDatabase();
@@ -29,15 +29,18 @@ const handler = async (req, res) => {
           condition.owner = userId;
         }
 
-        if (groupIds.length === 0) {
-          // the uscondition.groupser wants documents from the psuedo group Private
-          condition.groups = [];
-        } else {
-          condition.groups = { $in: req.body.groupIds };
-          if (userId === undefined) {
-            // we are looking at shared documents meaning that we don't want to see drafts
-            condition.state = state;
+        if (groupIds) {
+          if (groupIds.length === 0) {
+            // the uscondition.groupser wants documents from the psuedo group Private
+            condition.groups = [];
+          } else {
+            condition.groups = { $in: req.body.groupIds };
           }
+        }
+
+        if (userId === undefined || noDrafts) {
+          // we are looking at shared documents meaning that we don't want to see drafts
+          condition.state = state;
         }
 
         let arr;

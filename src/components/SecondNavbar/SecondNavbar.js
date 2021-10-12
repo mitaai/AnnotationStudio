@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Nav, Navbar, Breadcrumb, Container, Modal, Table, Row, Col,
+  Nav, Navbar, Breadcrumb, Container, Modal, Table, Row, Col, OverlayTrigger, Popover,
 } from 'react-bootstrap';
-import { InfoSquare } from 'react-bootstrap-icons';
+import { InfoCircleFill, InfoSquare } from 'react-bootstrap-icons';
 import FilterPopover from '../FilterPopover';
 import { publicationFieldName } from '../../utils/metadataUtil';
 import DocumentZoomSlider from '../DocumentZoomSlider/DocumentZoomSlider';
 import styles from './SecondNavbar.module.scss';
+import ArrowButton from '../ArrowButtton/ArrowButton';
 
 const SecondNavbar = ({
   session,
@@ -15,6 +16,8 @@ const SecondNavbar = ({
   document,
   docView,
   dashboardState,
+  mode,
+  setMode,
 }) => {
   const metadataFields = {
     title: 'Title',
@@ -105,20 +108,79 @@ const SecondNavbar = ({
       </>
     );
 
+  const size = mode === 'is' ? 12 : 8;
 
   return (
     <>
       <Navbar bg="light" variant="light" className={`px-0 ${styles.secondnav}`} data-testid="second-navbar">
         <Container fluid className="px-5">
-          <Row className={styles.row}>
-            <Col md={type === 'document' ? documentColumnSize : 12}>
-              <Nav>
-                <Breadcrumb className={styles.breadcontainer}>
-                  <Breadcrumb.Item active={type === 'dashboard'} href={`/?${dashboardState}`}>Dashboard</Breadcrumb.Item>
-                  {breadcrumbsContent}
-                </Breadcrumb>
-              </Nav>
+          <Row className={styles.row} style={{ height: 48 }}>
+            <Col
+              md={type === 'document' ? documentColumnSize : size}
+              style={{ display: 'flex' }}
+            >
+              {mode === 'is' ? (
+                <>
+                  <div style={{ position: 'absolute' }}>
+                    <ArrowButton
+                      onClick={() => setMode('as')}
+                      text="Back To Dashboard"
+                      direction="left"
+                      marginLeft={30}
+                      marginRight={0}
+                      marginTop={7}
+                      marginBottom={7}
+                    />
+                  </div>
+                  <div style={{
+                    fontSize: 18, color: '#424242', flex: 1, justifyContent: 'center', alignItems: 'center', display: 'flex',
+                  }}
+                  >
+                    <span>Idea Space</span>
+                  </div>
+                </>
+              ) : (
+                <Nav>
+                  <Breadcrumb className={styles.breadcontainer}>
+                    <Breadcrumb.Item active={type === 'dashboard'} href={`/?${dashboardState}`}>Dashboard</Breadcrumb.Item>
+                    {breadcrumbsContent}
+                  </Breadcrumb>
+                </Nav>
+              )}
             </Col>
+            {type === 'dashboard' && mode === 'as' && (
+            <Col
+              md={mobileView ? 12 : 4}
+              style={{ display: 'flex', alignItems: 'center' }}
+            >
+              <div style={{ flex: 1 }} />
+              {(process.env.NEXT_PUBLIC_IDEA_SPACE_ENABLED === 'true' || process.env.NEXT_PUBLIC_IDEA_SPACE_ENABLED === true) && (
+              <>
+                <OverlayTrigger
+                  key="ideaspace-popover-info"
+                  placement="bottom"
+                  overlay={(
+                    <Popover id="popover-basic">
+                      <Popover.Content style={{ color: '#636363' }}>
+                        Organizing your ideas has never been this easy! Idea Space is a writting
+                        tool that is  designed to help individuals create outlines from the
+                        annotations they make in just three easy steps.
+                      </Popover.Content>
+                    </Popover>
+                )}
+                >
+                  <InfoCircleFill size={22} className={styles.ideaSpaceInfoIcon} />
+                </OverlayTrigger>
+
+                <ArrowButton
+                  onClick={() => setMode('is')}
+                  text="Open Idea Space"
+                  marginLeft={5}
+                />
+              </>
+              )}
+            </Col>
+            )}
             {type === 'document' && document && docView && (
               <Col
                 md={mobileView ? 12 : 5}

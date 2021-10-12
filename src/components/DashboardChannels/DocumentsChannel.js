@@ -18,16 +18,19 @@ import {
 
 import PermissionsButtonGroup from '../PermissionsButtonGroup';
 import {
-  NewButton, ListLoadingSpinner, EmptyListMessage,
+  ListLoadingSpinner, EmptyListMessage,
 } from './HelperComponents';
 
 import DocumentTile from './DocumentTile';
 
 import styles from './DashboardChannels.module.scss';
 import { DeepCopyObj, RID } from '../../utils/docUIUtils';
+import TileBadge from '../TileBadge';
 
 export default function DocumentsChannel({
-  flex,
+  width,
+  left,
+  opacity,
   session,
   setAlerts,
   forceUpdate,
@@ -37,13 +40,14 @@ export default function DocumentsChannel({
   setSelectedDocumentId,
   selectedDocumentSlug,
   setSelectedDocumentSlug,
+  documents,
+  setDocuments,
   documentPermissions,
   setDocumentPermissions,
   maxNumberOfDocumentGroups = 3,
 }) {
   const dashboardState = `${selectedDocumentId !== undefined && selectedDocumentSlug !== undefined ? `did=${selectedDocumentId}&slug=${selectedDocumentSlug}&dp=${documentPermissions}&` : ''}gid=${selectedGroupId}`;
   const [listLoading, setListLoading] = useState(true);
-  const [documents, setDocuments] = useState({});
   const [loadMore, setLoadMore] = useState();
   const [refresh, setRefresh] = useState();
   const [lastUpdated, setLastUpdated] = useState(new Date());
@@ -134,6 +138,7 @@ export default function DocumentsChannel({
             perPage,
             page: getPageNumber(),
             mine: false,
+            noDrafts: true,
           })
             .then(async (data) => {
               const { docs } = data;
@@ -160,6 +165,7 @@ export default function DocumentsChannel({
             perPage,
             page: getPageNumber(),
             mine: true,
+            noDrafts: true,
           })
             .then(async (data) => {
               const { docs } = data;
@@ -250,7 +256,12 @@ export default function DocumentsChannel({
   const loadMoreDocs = canLoadMoreDocs ? loadComponent : <></>;
 
   return (
-    <div className={styles.channelContainer} style={{ flex }}>
+    <div
+      className={styles.channelContainer}
+      style={{
+        width, left, opacity, minWidth: 300,
+      }}
+    >
       <div className={styles.dividingLine} />
       <div className={styles.headerContainer}>
         <div style={{ display: 'flex', flex: 1, flexDirection: 'row' }}>
@@ -259,7 +270,7 @@ export default function DocumentsChannel({
               Documents
             </span>
           </Link>
-          <NewButton href="/documents/new" />
+          <TileBadge text="New +" href="/documents/new" color="yellow" />
           <OverlayTrigger
             key="refresh-documents"
             placement="bottom"

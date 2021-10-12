@@ -184,6 +184,29 @@ const getSharedAnnotations = async ({
   } return Promise.reject(Error(`Unable to retrieve annotations: error ${res.status} received from server`));
 };
 
+const getAllAnnotations = async ({
+  userId, groups,
+}) => {
+  let url = `/api/allAnnotations?userId=${userId}`;
+  groups.map((group) => {
+    url = `${url}&groupIds[]=${group.id}`;
+    return null;
+  });
+  const res = await unfetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (res.status === 200) {
+    const response = await res.json();
+    const { annotations, count } = response;
+    return Promise.resolve({ annotations, count });
+  } if (res.status === 404) {
+    return Promise.resolve([]);
+  } return Promise.reject(Error(`Unable to retrieve annotations: error ${res.status} received from server`));
+};
+
 const getOwnAnnotations = async ({
   userId, limit, page, perPage,
 }) => {
@@ -243,6 +266,7 @@ export {
   getAnnotationById,
   getOwnAnnotations,
   getSharedAnnotations,
+  getAllAnnotations,
   postAnnotation,
   fetchSharedAnnotationsOnDocument,
   reassignAnnotationsToUser,

@@ -4,6 +4,7 @@ import {
   Table,
 } from 'react-bootstrap';
 import { format } from 'date-fns';
+import LoadingSpinner from '../../../LoadingSpinner';
 import AdminRoleBadge from '../../AdminRoleBadge';
 import SortableHeader from '../../SortableHeader';
 
@@ -11,9 +12,48 @@ const AdminUserList = (props) => {
   const {
     users,
     sortState,
+    loading,
+    loadMoreResults,
     setSortState,
     SortIcon,
   } = props;
+
+  let content;
+  let loadMoreResultsContent = null;
+  if (loading) {
+    content = <LoadingSpinner />;
+  } else if (users === undefined || users.length === 0) {
+    content = <div style={{ textAlign: 'center', color: '#616161', marginTop: 10 }}>
+      {users ? '0 Search Results' : 'No Search'}
+    </div>;
+  } else {
+    loadMoreResultsContent = loadMoreResults ? <div
+    onClick={loadMoreResults}
+    style={{ textAlign: 'center', marginTop: 10 }}>
+      <span style={{ color: '#039be5', cursor: 'pointer' }}>Load More Results</span>
+    </div> : null;
+    content = users.map((user) => (
+      <Link key={user._id} href={`/admin/user/${user._id}`}>
+        <tr style={{ display: 'flex', cursor: 'pointer' }}>
+          <td style={{ width: '31%' }}>
+            {user.name}
+          </td>
+          <td style={{ width: '30%' }}>
+            {user.email}
+          </td>
+          <td style={{ width: '13%' }}>
+            <AdminRoleBadge role={user.role} />
+          </td>
+          <td style={{ width: '13%' }}>
+            {user.affiliation}
+          </td>
+          <td style={{ width: '13%' }}>
+            {format(new Date(user.createdAt), 'MM/dd/yyyy')}
+          </td>
+        </tr>
+      </Link>
+    ));
+  }
 
   return (
     <Table
@@ -22,16 +62,17 @@ const AdminUserList = (props) => {
       hover
       size="sm"
       variant="light"
-      style={{ borderCollapse: 'unset' }}
+      style={{ borderCollapse: 'unset', display: 'flex', flexDirection: 'column' }}
       data-testid="admin-users-table"
     >
       <thead>
-        <tr>
+        <tr style={{ display: 'flex' }}>
           <SortableHeader
             field="name"
             sortState={sortState}
             setSortState={setSortState}
             SortIcon={SortIcon}
+            style={{ flex: 31, marginRight: 8 }}
           >
             Name
           </SortableHeader>
@@ -40,6 +81,7 @@ const AdminUserList = (props) => {
             sortState={sortState}
             setSortState={setSortState}
             SortIcon={SortIcon}
+            style={{ flex: 30, marginRight: 10 }}
           >
             Email
           </SortableHeader>
@@ -48,6 +90,7 @@ const AdminUserList = (props) => {
             sortState={sortState}
             setSortState={setSortState}
             SortIcon={SortIcon}
+            style={{ flex: 13 }}
           >
             Role
           </SortableHeader>
@@ -56,6 +99,7 @@ const AdminUserList = (props) => {
             sortState={sortState}
             setSortState={setSortState}
             SortIcon={SortIcon}
+            style={{ flex: 13 }}
           >
             Affiliation
           </SortableHeader>
@@ -64,35 +108,15 @@ const AdminUserList = (props) => {
             sortState={sortState}
             setSortState={setSortState}
             SortIcon={SortIcon}
+            style={{ flex: 13 }}
           >
             Created
           </SortableHeader>
-          <th>Actions</th>
         </tr>
       </thead>
-      <tbody>
-        {users.map((user) => (
-          <tr key={user._id}>
-            <td style={{ width: '16%' }}>
-              {user.name}
-            </td>
-            <td style={{ width: '14%' }}>
-              {user.email}
-            </td>
-            <td style={{ width: '14%' }}>
-              <AdminRoleBadge role={user.role} />
-            </td>
-            <td style={{ width: '14%' }}>
-              {user.affiliation}
-            </td>
-            <td style={{ width: '14%' }}>
-              {format(new Date(user.createdAt), 'MM/dd/yyyy')}
-            </td>
-            <td style={{ width: '14%' }}>
-              <Link href={`/admin/user/${user._id}`}>View</Link>
-            </td>
-          </tr>
-        ))}
+      <tbody style={{ overflowY: 'overlay' }}>
+        {content}
+        {loadMoreResultsContent}
       </tbody>
     </Table>
   );
