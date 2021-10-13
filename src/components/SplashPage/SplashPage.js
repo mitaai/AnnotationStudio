@@ -23,13 +23,13 @@ export default function SplashPage() {
             <Col style={{ fontSize: 36, fontFamily: 'Arial', marginBottom: 10 }}>
               <div>Welcome to</div>
               <div>Annotation Studio</div>
+              <span style={{ fontSize: 16, borderRadius: 5, backgroundColor: '#F5CE49', color: '#424242', padding: '5px 10px' }}>BETA Version</span>
             </Col>
           </Row>
           <Row>
             <Col style={{ marginBottom: 20 }}>
               <span style={{ fontSize: 16, color: '#768399', lineHeight: '28px' }}>
-                Facilitating the reading and writing process by giving students and teachers
-                tools to collaboratively annotate literary documents
+                Annotation Studio supports and connects collaborative annotation, source-based composition, and in-depth review in a flexible, web-based environment
               </span>
             </Col>
           </Row>
@@ -60,30 +60,10 @@ export default function SplashPage() {
         </Col>
       </Row>
       <Row>
-        <Col style={{ marginTop: 30 }} xs={12} sm={12} md={4}>
+        <Col style={{ marginTop: 30 }} xs={12} sm={6} md={3}>
           <Row>
-            <Col style={{ marginBottom: 5, display: 'flex', justifyContent: 'center' }}>
-              <span style={{ fontSize: 18, fontWeight: 'bold' }}>Collaboration</span>
-            </Col>
-          </Row>
-          <Row>
-            <Col style={{ padding: '0% 25%', marginBottom: 20, minHeight: 100 }}>
-              <Image src="/splashpagepic3.svg" alt="picture 1" fluid />
-            </Col>
-          </Row>
-          <Row>
-            <Col>
-              <span>
-                Landkit is built to make  your life easier.. Variables, build tooling,
-                documentation, and reusable components
-              </span>
-            </Col>
-          </Row>
-        </Col>
-        <Col style={{ marginTop: 30 }} xs={12} sm={12} md={4}>
-          <Row>
-            <Col style={{ marginBottom: 5, display: 'flex', justifyContent: 'center' }}>
-              <span style={{ fontSize: 18, fontWeight: 'bold' }}>Close Reading</span>
+            <Col style={{ marginBottom: 15, display: 'flex', justifyContent: 'center' }}>
+              <span style={{ fontSize: 18, fontWeight: 'bold' }}>Read</span>
             </Col>
           </Row>
           <Row style={{ marginTop: -27 }}>
@@ -94,24 +74,69 @@ export default function SplashPage() {
                   left: 15,
                 }}
                 src="/splashpagepic2.svg"
-                alt="picture 1"
+                alt="Read"
                 fluid
               />
             </Col>
           </Row>
           <Row>
             <Col>
-              <span>
-                Landkit is built to make  your life easier.. Variables, build tooling,
-                documentation, and reusable components
+              <span style={{ fontSize: 16 }}>
+                Engage more deeply and reflect more critically upon texts through close reading
               </span>
             </Col>
           </Row>
         </Col>
-        <Col style={{ marginTop: 30 }} xs={12} sm={12} md={4}>
+        <Col style={{ marginTop: 30 }} xs={12} sm={6} md={3}>
           <Row>
-            <Col style={{ marginBottom: 5, display: 'flex', justifyContent: 'center' }}>
-              <span style={{ fontSize: 18, fontWeight: 'bold' }}>Private Library</span>
+            <Col style={{ marginBottom: 15, display: 'flex', justifyContent: 'center' }}>
+              <span style={{ fontSize: 18, fontWeight: 'bold' }}>Annotate</span>
+            </Col>
+          </Row>
+          <Row style={{ marginTop: 10 }}>
+            <Col style={{ padding: '0px 34% 0px 16%', marginBottom: 20, minHeight: 100 }}>
+              <Image
+                style={{
+                  position: 'relative',
+                  left: 15,
+                }}
+                src="/splashpagepic4.svg"
+                alt="Annotate"
+                fluid
+              />
+            </Col>
+          </Row>
+          <Row>
+            <Col>
+              <span style={{ fontSize: 16 }}>
+                Extend the millennia old humanistic tradition of writing in the margins to digital texts and media
+              </span>
+            </Col>
+          </Row>
+        </Col>
+        <Col style={{ marginTop: 30 }} xs={12} sm={6} md={3}>
+          <Row>
+            <Col style={{ marginBottom: 15, display: 'flex', justifyContent: 'center' }}>
+              <span style={{ fontSize: 18, fontWeight: 'bold' }}>Collaborate</span>
+            </Col>
+          </Row>
+          <Row>
+            <Col style={{ padding: '0% 25%', marginBottom: 20, minHeight: 100 }}>
+              <Image src="/splashpagepic3.svg" alt="Collaborate" fluid />
+            </Col>
+          </Row>
+          <Row>
+            <Col>
+              <span style={{ fontSize: 16 }}>
+                Share your insights with others, create reading groups, and build a library of texts for education, research, and more
+              </span>
+            </Col>
+          </Row>
+        </Col>
+        <Col style={{ marginTop: 30 }} xs={12} sm={6} md={3}>
+          <Row>
+            <Col style={{ marginBottom: 15, display: 'flex', justifyContent: 'center' }}>
+              <span style={{ fontSize: 18, fontWeight: 'bold' }}>Compose</span>
             </Col>
           </Row>
           <Row style={{ marginTop: -27 }}>
@@ -122,16 +147,15 @@ export default function SplashPage() {
                   left: -8,
                 }}
                 src="/splashpagepic1.svg"
-                alt="picture 1"
+                alt="Compose"
                 fluid
               />
             </Col>
           </Row>
           <Row>
             <Col>
-              <span>
-                Landkit is built to make  your life easier.. Variables, build tooling,
-                documentation, and reusable components
+              <span style={{ fontSize: 16 }}>
+                Use your annotations to engage in the entire writing process, from initial reading to brainstorming, writing, and review
               </span>
             </Col>
           </Row>
