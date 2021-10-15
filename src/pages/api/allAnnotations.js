@@ -14,6 +14,8 @@ const handler = async (req, res) => {
       let groupIds = req.query['groupIds[]'];
       if (groupIds && !Array.isArray(groupIds)) {
         groupIds = [req.query['groupIds[]']];
+      } else if (!groupIds) {
+        groupIds = []
       }
       if (userId) {
         if (userId === token.id) {
