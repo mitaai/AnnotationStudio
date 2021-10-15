@@ -343,7 +343,7 @@ export default function AnnotationsChannel({
       allFilters.byPermissions.shared = true;
     }
 
-    if (selectedGroupId) {
+    if (selectedGroupId && allFilters.byGroup[selectedGroupId]) {
       allFilters.byGroup[selectedGroupId].checked = true;
       // if we are applying default dashboard filters that means user is come from AS to IS and
       // they need to make sure they still see their annotations when moving from AS to IS
@@ -629,7 +629,7 @@ export default function AnnotationsChannel({
               key={key}
               icon={filterIcons[type]}
               color="blue"
-              text={allFilters[type][key].name}
+              text={allFilters[type][key]?.name}
               marginRight={5}
               marginBottom={5}
               onDelete={() => toggleFilters(type, { key })}
