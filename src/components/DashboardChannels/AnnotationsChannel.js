@@ -629,7 +629,7 @@ export default function AnnotationsChannel({
               key={key}
               icon={filterIcons[type]}
               color="blue"
-              text={allFilters[type][key].name}
+              text={allFilters[type][key]?.name}
               marginRight={5}
               marginBottom={5}
               onDelete={() => toggleFilters(type, { key })}
