@@ -344,7 +344,7 @@ export default function AnnotationsChannel({
     }
 
     if (selectedGroupId) {
-      allFilters.byGroup[selectedGroupId].checked = true;
+      allFilters.byGroup[selectedGroupId]?.checked = true;
       // if we are applying default dashboard filters that means user is come from AS to IS and
       // they need to make sure they still see their annotations when moving from AS to IS
       setActiveISGroupHeaders([selectedGroupId]);
@@ -352,7 +352,7 @@ export default function AnnotationsChannel({
 
     if (slug) {
       if (allFilters.byDocument[selectedDocumentId]) {
-        allFilters.byDocument[selectedDocumentId].checked = true;
+        allFilters.byDocument[selectedDocumentId]?.checked = true;
       } else {
         // this means that there is a document that exists in the dashboard that doesn't exist in
         // the allFilters.byDocument object so we will try to get that data and update the object
@@ -409,7 +409,7 @@ export default function AnnotationsChannel({
         af.annotatedBy[creator.id] = {
           name: creator.name,
           number: 0,
-          checked: allFilters.annotatedBy[creator.id] && allFilters.annotatedBy[creator.id].checked,
+          checked: allFilters.annotatedBy[creator.id] && allFilters.annotatedBy[creator.id]?.checked,
         };
       }
 
@@ -417,7 +417,7 @@ export default function AnnotationsChannel({
         af.byDocument[did] = {
           name: title,
           number: 0,
-          checked: allFilters.byDocument[did] && allFilters.byDocument[did].checked,
+          checked: allFilters.byDocument[did] && allFilters.byDocument[did]?.checked,
         };
       }
 
@@ -426,7 +426,7 @@ export default function AnnotationsChannel({
           af.byTag[t] = {
             name: t,
             number: 0,
-            checked: allFilters.byTag[t] && allFilters.byTag[t].checked,
+            checked: allFilters.byTag[t] && allFilters.byTag[t]?.checked,
           };
         }
         return null;
@@ -496,8 +496,8 @@ export default function AnnotationsChannel({
     }
 
     if (checked !== undefined) {
-      allF.byDateCreated.checked = checked;
-      appliedF.byDateCreated.checked = checked;
+      allF.byDateCreated?.checked = checked;
+      appliedF.byDateCreated?.checked = checked;
       // when we check the box we need to update the value of the applied filters with the value of
       // allFilters
       appliedF.byDateCreated.start = allF.byDateCreated.start;
@@ -525,7 +525,7 @@ export default function AnnotationsChannel({
       appliedF.byPermissions.private = obj.private;
       appliedF.byPermissions.shared = obj.shared;
     } else {
-      allF[type][key].checked = !allFilters[type][key].checked;
+      allF[type][key]?.checked = !allFilters[type][key].checked;
       if (allF[type][key].checked) {
         appliedF[type].push(key);
       } else {
