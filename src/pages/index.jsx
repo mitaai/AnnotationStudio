@@ -123,20 +123,20 @@ export default function Home({
     }
     : {
       groups: {
-        width: `calc(${channelPos.groups.width.vw}vw + ${channelPos.groups.width.px}px)`,
-        left: `calc(${channelPos.groups.left.vw}vw + ${channelPos.groups.left.px}px)`,
+        width: `calc(${channelPos.groups.width.vw}% + ${channelPos.groups.width.px}px)`,
+        left: `calc(${channelPos.groups.left.vw}% + ${channelPos.groups.left.px}px)`,
       },
       documents: {
-        width: `calc(${channelPos.documents.width.vw}vw + ${channelPos.documents.width.px}px)`,
-        left: `calc(${channelPos.documents.left.vw}vw + ${channelPos.documents.left.px}px)`,
+        width: `calc(${channelPos.documents.width.vw}% + ${channelPos.documents.width.px}px)`,
+        left: `calc(${channelPos.documents.left.vw}% + ${channelPos.documents.left.px}px)`,
       },
       annotations: {
-        width: `calc(${channelPos.annotations.width.vw}vw + ${channelPos.annotations.width.px}px)`,
-        left: `calc(${channelPos.annotations.left.vw}vw + ${channelPos.annotations.left.px}px)`,
+        width: `calc(${channelPos.annotations.width.vw}% + ${channelPos.annotations.width.px}px)`,
+        left: `calc(${channelPos.annotations.left.vw}% + ${channelPos.annotations.left.px}px)`,
       },
       ideaspaces: {
-        width: `calc(${channelPos.ideaspaces.width.vw}vw + ${channelPos.ideaspaces.width.px}px)`,
-        left: `calc(${channelPos.ideaspaces.left.vw}vw + ${channelPos.ideaspaces.left.px}px)`,
+        width: `calc(${channelPos.ideaspaces.width.vw}% + ${channelPos.ideaspaces.width.px}px)`,
+        left: `calc(${channelPos.ideaspaces.left.vw}% + ${channelPos.ideaspaces.left.px}px)`,
       },
     };
 
