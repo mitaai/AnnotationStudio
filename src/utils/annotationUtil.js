@@ -187,13 +187,12 @@ const getSharedAnnotations = async ({
 const getAllAnnotations = async ({
   userId, groups,
 }) => {
-  let url = `/api/allAnnotations?userId=${userId}`;
-  groups.map((group) => {
-    url = `${url}&groupIds[]=${group.id}`;
-    return null;
-  });
+  const url = '/api/allAnnotations';
+  const groupIds = groups ? groups.map((g) => g.id) : [];
+  const body = { userId, groupIds };
   const res = await unfetch(url, {
-    method: 'GET',
+    method: 'POST',
+    body: JSON.stringify(body),
     headers: {
       'Content-Type': 'application/json',
     },
