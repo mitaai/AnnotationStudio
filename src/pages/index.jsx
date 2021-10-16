@@ -36,7 +36,7 @@ export default function Home({
   const router = useRouter();
   const newReg = query && query.alert && query.alert === 'completeRegistration';
 
-  const channelsMinWidth = 1220;
+  const channelsMinWidth = 1575;
   const ASISChannelPositions = {
     as: {
       groups: {
