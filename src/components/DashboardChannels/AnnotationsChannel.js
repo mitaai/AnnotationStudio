@@ -669,6 +669,7 @@ export default function AnnotationsChannel({
     if (session) {
       setListLoading(true);
       if (session && (session.user.groups || session.user.id)) {
+        console.log('session.user', session.user)
         await getAllAnnotations({
           groups: session.user.groups, userId: session.user.id,
         })
