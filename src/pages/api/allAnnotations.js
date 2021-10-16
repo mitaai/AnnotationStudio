@@ -5,18 +5,13 @@ const secret = process.env.AUTH_SECRET;
 
 const handler = async (req, res) => {
   const { method } = req;
-  if (method === 'GET') {
+  if (method === 'POST') {
     const token = await jwt.getToken({ req, secret });
     if (token && token.exp > 0) {
       const {
         userId,
-      } = req.query;
-      let groupIds = req.query['groupIds[]'];
-      if (groupIds && !Array.isArray(groupIds)) {
-        groupIds = [req.query['groupIds[]']];
-      } else if (!groupIds) {
-        groupIds = []
-      }
+        groupIds,
+      } = req.body;
       if (userId) {
         if (userId === token.id) {
           const { db } = await connectToDatabase();
