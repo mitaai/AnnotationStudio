@@ -258,7 +258,6 @@ export default function AnnotationsChannel({
     if (appliedFilters.byGroup.length === 0) {
       // this means that we have to filter all annotations to generate the list of annotations
       // that match the filter
-      console.log('aa', aa);
       aa.map((a, i) => {
         if (annotationMatchesFilters(a)) {
           filteredAnnos.push(i);
@@ -267,15 +266,16 @@ export default function AnnotationsChannel({
       });
     } else {
       // this means there are specific groups that we only have to look at and not all annotations
-      console.log('appliedFilters.byGroup', appliedFilters.byGroup);
       appliedFilters.byGroup.map((gid) => {
-        console.log('groupedAnnotations[gid]', groupedAnnotations[gid]);
-        groupedAnnotations[gid].map((index) => {
-          if (!filteredAnnos.includes(index) && annotationMatchesFilters(aa[index])) {
-            filteredAnnos.push(index);
-          }
-          return null;
-        });
+        if (groupedAnnotations[gid]) {
+          groupedAnnotations[gid].map((index) => {
+            if (!filteredAnnos.includes(index) && annotationMatchesFilters(aa[index])) {
+              filteredAnnos.push(index);
+            }
+            return null;
+          });
+        }
+        
         return null;
       });
     }
@@ -290,7 +290,6 @@ export default function AnnotationsChannel({
     for (const [groupId, { shared, mine }] of Object.entries(documents)) {
       const permissions = [].concat(shared ? ['shared'] : []).concat(mine ? ['mine'] : []);
       permissions.map((p) => {
-        console.log('documents[groupId][p].docs', documents[groupId][p].docs);
         documents[groupId][p].docs.map(({ _id, title }) => {
           if (!documentIdsIncluded.includes(_id)) {
             // this means that the user has access to this document but not any annotations in this
@@ -404,7 +403,6 @@ export default function AnnotationsChannel({
       byTag: {},
       byDateCreated: { start: undefined, end: undefined, checked: false },
     };
-    console.log('annos2', annos);
     annos.map(({
       creator, created, target: { document: { groups, id: did, title } }, body: { tags },
     }, i) => {
@@ -673,7 +671,6 @@ export default function AnnotationsChannel({
     if (session) {
       setListLoading(true);
       if (session && (session.user.groups || session.user.id)) {
-        console.log('session.user', session.user);
         await getAllAnnotations({
           groups: session.user.groups, userId: session.user.id,
         })
@@ -740,7 +737,6 @@ export default function AnnotationsChannel({
   };
 
   const updateOutlines = (o) => {
-    console.log('outlines', outlines);
     const newOutlines = outlines.map(
       // eslint-disable-next-line no-underscore-dangle
       (outline) => (outline._id === o._id ? o : outline),
@@ -1000,7 +996,6 @@ export default function AnnotationsChannel({
     setListLoading(true);
     fetchSharedAnnotationsOnDocument({ slug, prefetch: false })
       .then((annos) => {
-        console.log('annos', annos);
         const sortedAnnos = annos.sort((a, b) => new Date(b.modified) - new Date(a.modified));
         const a = {
           mine: sortedAnnos
@@ -1092,7 +1087,6 @@ export default function AnnotationsChannel({
     af.byPermissions.sharedNumber = filterAnnotations(permissionsTempFilter).length;
 
     const annotatedByTempFilter = DeepCopyObj(appliedFilters);
-    console.log('Object.keys(af.annotatedBy)', Object.keys(af.annotatedBy));
     Object.keys(af.annotatedBy).map((creatorId) => {
       annotatedByTempFilter.annotatedBy = [creatorId];
       af.annotatedBy[creatorId].number = filterAnnotations(annotatedByTempFilter).length;
@@ -1100,7 +1094,6 @@ export default function AnnotationsChannel({
     });
 
     const byGroupTempFilter = DeepCopyObj(appliedFilters);
-    console.log('Object.keys(af.byGroup)', Object.keys(af.byGroup));
     Object.keys(af.byGroup).map((groupId) => {
       byGroupTempFilter.byGroup = [groupId];
       af.byGroup[groupId].number = filterAnnotations(byGroupTempFilter).length;
@@ -1108,7 +1101,6 @@ export default function AnnotationsChannel({
     });
 
     const byDocumentTempFilter = DeepCopyObj(appliedFilters);
-    console.log('Object.keys(af.byDocument)', Object.keys(af.byDocument));
     Object.keys(af.byDocument).map((documentId) => {
       byDocumentTempFilter.byDocument = [documentId];
       af.byDocument[documentId].number = filterAnnotations(byDocumentTempFilter).length;
@@ -1116,7 +1108,6 @@ export default function AnnotationsChannel({
     });
 
     const byTagTempFilter = DeepCopyObj(appliedFilters);
-    console.log('Object.keys(af.byTag)', Object.keys(af.byTag));
     Object.keys(af.byTag).map((t) => {
       byTagTempFilter.byTag = [t];
       af.byTag[t].number = filterAnnotations(byTagTempFilter).length;
@@ -1148,7 +1139,6 @@ export default function AnnotationsChannel({
       const aids = [];
       if ((appliedFilters.byGroup.length > 0 && appliedFilters.byGroup.includes(gid))
       || appliedFilters.byGroup.length === 0) {
-        console.log('annosIndexes', annosIndexes);
         const aTiles = annosIndexes.map((i) => {
           if (filteredAnnotations.includes(i)) {
             // eslint-disable-next-line no-underscore-dangle
