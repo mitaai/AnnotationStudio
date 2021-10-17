@@ -275,7 +275,7 @@ export default function AnnotationsChannel({
             return null;
           });
         }
-        
+
         return null;
       });
     }
