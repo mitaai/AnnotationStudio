@@ -267,7 +267,9 @@ export default function AnnotationsChannel({
       });
     } else {
       // this means there are specific groups that we only have to look at and not all annotations
+      console.log('appliedFilters.byGroup', appliedFilters.byGroup)
       appliedFilters.byGroup.map((gid) => {
+        console.log('groupedAnnotations[gid]', groupedAnnotations[gid])
         groupedAnnotations[gid].map((index) => {
           if (!filteredAnnos.includes(index) && annotationMatchesFilters(aa[index])) {
             filteredAnnos.push(index);
@@ -738,6 +740,7 @@ export default function AnnotationsChannel({
   };
 
   const updateOutlines = (o) => {
+    console.log('outlines', outlines);
     const newOutlines = outlines.map(
       // eslint-disable-next-line no-underscore-dangle
       (outline) => (outline._id === o._id ? o : outline),
@@ -1089,6 +1092,7 @@ export default function AnnotationsChannel({
     af.byPermissions.sharedNumber = filterAnnotations(permissionsTempFilter).length;
 
     const annotatedByTempFilter = DeepCopyObj(appliedFilters);
+    console.log('Object.keys(af.annotatedBy)', Object.keys(af.annotatedBy))
     Object.keys(af.annotatedBy).map((creatorId) => {
       annotatedByTempFilter.annotatedBy = [creatorId];
       af.annotatedBy[creatorId].number = filterAnnotations(annotatedByTempFilter).length;
@@ -1096,6 +1100,7 @@ export default function AnnotationsChannel({
     });
 
     const byGroupTempFilter = DeepCopyObj(appliedFilters);
+    console.log('Object.keys(af.byGroup)', Object.keys(af.byGroup));
     Object.keys(af.byGroup).map((groupId) => {
       byGroupTempFilter.byGroup = [groupId];
       af.byGroup[groupId].number = filterAnnotations(byGroupTempFilter).length;
@@ -1103,6 +1108,7 @@ export default function AnnotationsChannel({
     });
 
     const byDocumentTempFilter = DeepCopyObj(appliedFilters);
+    console.log('Object.keys(af.byDocument)', Object.keys(af.byDocument));
     Object.keys(af.byDocument).map((documentId) => {
       byDocumentTempFilter.byDocument = [documentId];
       af.byDocument[documentId].number = filterAnnotations(byDocumentTempFilter).length;
@@ -1110,6 +1116,7 @@ export default function AnnotationsChannel({
     });
 
     const byTagTempFilter = DeepCopyObj(appliedFilters);
+    console.log('Object.keys(af.byTag)', Object.keys(af.byTag));
     Object.keys(af.byTag).map((t) => {
       byTagTempFilter.byTag = [t];
       af.byTag[t].number = filterAnnotations(byTagTempFilter).length;
