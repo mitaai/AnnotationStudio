@@ -223,6 +223,8 @@ export default function Home({
     const w = window;
     const checkWindowWidth = () => {
       const minLeft = w.innerWidth * channelPos.documents.width.vw + channelPos.documents.left.px;
+      console.log('minLeft', minLeft);
+      console.log('minLeft < channelPos.documents.minLeft', minLeft < channelPos.documents.minLeft)
       if (w.innerWidth < channelsMinWidth || minLeft < channelPos.documents.minLeft) {
         setMobileView(true);
       } else if (w.innerWidth >= channelsMinWidth) {
