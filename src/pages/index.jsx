@@ -30,6 +30,7 @@ export default function Home({
   const [session, loading] = useSession();
   const [alerts, setAlerts] = useState(initAlerts || []);
   const [mobileView, setMobileView] = useState();
+  const [offsetLeft, setOffsetLeft] = useState();
   const [allAnnotations, setAllAnnotations] = useState();
   const [mode, setMode] = useState('as');
   const [modeChanged, setModeChanged] = useState();
@@ -106,19 +107,19 @@ export default function Home({
     ? {
       groups: {
         width: `${channelPos.groups.minWidth}px`,
-        left: `${channelPos.groups.minLeft}px`,
+        left: `${channelPos.groups.minLeft + offsetLeft}px`,
       },
       documents: {
         width: `${channelPos.documents.minWidth}px`,
-        left: `${channelPos.documents.minLeft}px`,
+        left: `${channelPos.documents.minLeft + offsetLeft}px`,
       },
       annotations: {
         width: `${channelPos.annotations.minWidth}px`,
-        left: `${channelPos.annotations.minLeft}px`,
+        left: `${channelPos.annotations.minLeft + offsetLeft}px`,
       },
       ideaspaces: {
         width: `${channelPos.ideaspaces.minWidth}px`,
-        left: `${channelPos.ideaspaces.minLeft}px`,
+        left: `${channelPos.ideaspaces.minLeft + offsetLeft}px`,
       },
     }
     : {
@@ -225,10 +226,12 @@ export default function Home({
       const minLeft = w.innerWidth
         * (channelPos.groups.width.vw / 100)
         + channelPos.groups.left.px;
-      console.log('minLeft', minLeft);
-      console.log('channelPos.documents.minLeft', channelPos.documents.minLeft);
-      if (w.innerWidth < channelsMinWidth || minLeft < channelPos.documents.minLeft) {
+      if (w.innerWidth < channelsMinWidth) {
         setMobileView(true);
+        setOffsetLeft(0)
+      } else if (channelsMinWidth || minLeft < channelPos.documents.minLeft) {
+        setMobileView(true);
+        setOffsetLeft((w.innerWidth - channelsMinWidth) / 2)
       } else if (w.innerWidth >= channelsMinWidth) {
         setMobileView();
       }
