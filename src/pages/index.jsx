@@ -223,10 +223,10 @@ export default function Home({
     const w = window;
     const checkWindowWidth = () => {
       const minLeft = w.innerWidth
-        * (channelPos.documents.width.vw / 100)
-        + channelPos.documents.left.px;
+        * (channelPos.groups.width.vw / 100)
+        + channelPos.groups.left.px;
       console.log('minLeft', minLeft);
-      console.log('channelPos.documents.minLeft', channelPos.documents.minLeft)
+      console.log('channelPos.documents.minLeft', channelPos.documents.minLeft);
       if (w.innerWidth < channelsMinWidth || minLeft < channelPos.documents.minLeft) {
         setMobileView(true);
       } else if (w.innerWidth >= channelsMinWidth) {
