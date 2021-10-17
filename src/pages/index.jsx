@@ -102,7 +102,9 @@ export default function Home({
 
   const channelPos = ASISChannelPositions[mode];
   // eslint-disable-next-line no-undef
-  const channelPositions = mobileView
+  const minLeft = window.innerWidth * channelPos.documents.width.vw + channelPos.documents.left.px
+  // eslint-disable-next-line no-undef
+  const channelPositions = mobileView || minLeft < channelPos.documents.minLeft
     ? {
       groups: {
         width: `${channelPos.groups.minWidth}px`,
