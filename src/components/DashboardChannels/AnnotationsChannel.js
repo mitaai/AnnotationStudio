@@ -267,9 +267,9 @@ export default function AnnotationsChannel({
       });
     } else {
       // this means there are specific groups that we only have to look at and not all annotations
-      console.log('appliedFilters.byGroup', appliedFilters.byGroup)
+      console.log('appliedFilters.byGroup', appliedFilters.byGroup);
       appliedFilters.byGroup.map((gid) => {
-        console.log('groupedAnnotations[gid]', groupedAnnotations[gid])
+        console.log('groupedAnnotations[gid]', groupedAnnotations[gid]);
         groupedAnnotations[gid].map((index) => {
           if (!filteredAnnos.includes(index) && annotationMatchesFilters(aa[index])) {
             filteredAnnos.push(index);
@@ -1092,7 +1092,7 @@ export default function AnnotationsChannel({
     af.byPermissions.sharedNumber = filterAnnotations(permissionsTempFilter).length;
 
     const annotatedByTempFilter = DeepCopyObj(appliedFilters);
-    console.log('Object.keys(af.annotatedBy)', Object.keys(af.annotatedBy))
+    console.log('Object.keys(af.annotatedBy)', Object.keys(af.annotatedBy));
     Object.keys(af.annotatedBy).map((creatorId) => {
       annotatedByTempFilter.annotatedBy = [creatorId];
       af.annotatedBy[creatorId].number = filterAnnotations(annotatedByTempFilter).length;
