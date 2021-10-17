@@ -228,10 +228,10 @@ export default function Home({
         + channelPos.groups.left.px;
       if (w.innerWidth < channelsMinWidth) {
         setMobileView(true);
-        setOffsetLeft(0)
+        setOffsetLeft(0);
       } else if (channelsMinWidth || minLeft < channelPos.documents.minLeft) {
         setMobileView(true);
-        setOffsetLeft((w.innerWidth - channelsMinWidth) / 2)
+        setOffsetLeft((w.innerWidth - channelsMinWidth) / 2);
       } else if (w.innerWidth >= channelsMinWidth) {
         setMobileView();
       }
