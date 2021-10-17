@@ -102,9 +102,7 @@ export default function Home({
 
   const channelPos = ASISChannelPositions[mode];
   // eslint-disable-next-line no-undef
-  const minLeft = window.innerWidth * channelPos.documents.width.vw + channelPos.documents.left.px;
-  // eslint-disable-next-line no-undef
-  const channelPositions = mobileView || minLeft < channelPos.documents.minLeft
+  const channelPositions = mobileView
     ? {
       groups: {
         width: `${channelPos.groups.minWidth}px`,
@@ -224,7 +222,8 @@ export default function Home({
     // eslint-disable-next-line no-undef
     const w = window;
     const checkWindowWidth = () => {
-      if (w.innerWidth < channelsMinWidth) {
+      const minLeft = w.innerWidth * channelPos.documents.width.vw + channelPos.documents.left.px;
+      if (w.innerWidth < channelsMinWidth || minLeft < channelPos.documents.minLeft) {
         setMobileView(true);
       } else if (w.innerWidth >= channelsMinWidth) {
         setMobileView();
