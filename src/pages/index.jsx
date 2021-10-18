@@ -30,6 +30,7 @@ export default function Home({
   const [session, loading] = useSession();
   const [alerts, setAlerts] = useState(initAlerts || []);
   const [mobileView, setMobileView] = useState();
+  const [offsetLeft, setOffsetLeft] = useState();
   const [allAnnotations, setAllAnnotations] = useState();
   const [mode, setMode] = useState('as');
   const [modeChanged, setModeChanged] = useState();
@@ -106,37 +107,37 @@ export default function Home({
     ? {
       groups: {
         width: `${channelPos.groups.minWidth}px`,
-        left: `${channelPos.groups.minLeft}px`,
+        left: `${channelPos.groups.minLeft + offsetLeft}px`,
       },
       documents: {
         width: `${channelPos.documents.minWidth}px`,
-        left: `${channelPos.documents.minLeft}px`,
+        left: `${channelPos.documents.minLeft + offsetLeft}px`,
       },
       annotations: {
         width: `${channelPos.annotations.minWidth}px`,
-        left: `${channelPos.annotations.minLeft}px`,
+        left: `${channelPos.annotations.minLeft + offsetLeft}px`,
       },
       ideaspaces: {
         width: `${channelPos.ideaspaces.minWidth}px`,
-        left: `${channelPos.ideaspaces.minLeft}px`,
+        left: `${channelPos.ideaspaces.minLeft + offsetLeft}px`,
       },
     }
     : {
       groups: {
-        width: `calc(${channelPos.groups.width.vw}vw + ${channelPos.groups.width.px}px)`,
-        left: `calc(${channelPos.groups.left.vw}vw + ${channelPos.groups.left.px}px)`,
+        width: `calc(${channelPos.groups.width.vw}% + ${channelPos.groups.width.px}px)`,
+        left: `calc(${channelPos.groups.left.vw}% + ${channelPos.groups.left.px}px)`,
       },
       documents: {
-        width: `calc(${channelPos.documents.width.vw}vw + ${channelPos.documents.width.px}px)`,
-        left: `calc(${channelPos.documents.left.vw}vw + ${channelPos.documents.left.px}px)`,
+        width: `calc(${channelPos.documents.width.vw}% + ${channelPos.documents.width.px}px)`,
+        left: `calc(${channelPos.documents.left.vw}% + ${channelPos.documents.left.px}px)`,
       },
       annotations: {
-        width: `calc(${channelPos.annotations.width.vw}vw + ${channelPos.annotations.width.px}px)`,
-        left: `calc(${channelPos.annotations.left.vw}vw + ${channelPos.annotations.left.px}px)`,
+        width: `calc(${channelPos.annotations.width.vw}% + ${channelPos.annotations.width.px}px)`,
+        left: `calc(${channelPos.annotations.left.vw}% + ${channelPos.annotations.left.px}px)`,
       },
       ideaspaces: {
-        width: `calc(${channelPos.ideaspaces.width.vw}vw + ${channelPos.ideaspaces.width.px}px)`,
-        left: `calc(${channelPos.ideaspaces.left.vw}vw + ${channelPos.ideaspaces.left.px}px)`,
+        width: `calc(${channelPos.ideaspaces.width.vw}% + ${channelPos.ideaspaces.width.px}px)`,
+        left: `calc(${channelPos.ideaspaces.left.vw}% + ${channelPos.ideaspaces.left.px}px)`,
       },
     };
 
@@ -222,8 +223,15 @@ export default function Home({
     // eslint-disable-next-line no-undef
     const w = window;
     const checkWindowWidth = () => {
+      const minLeft = w.innerWidth
+        * (channelPos.groups.width.vw / 100)
+        + channelPos.groups.left.px;
       if (w.innerWidth < channelsMinWidth) {
         setMobileView(true);
+        setOffsetLeft(0);
+      } else if (minLeft < channelPos.documents.minLeft) {
+        setMobileView(true);
+        setOffsetLeft((w.innerWidth - channelsMinWidth) / 2);
       } else if (w.innerWidth >= channelsMinWidth) {
         setMobileView();
       }

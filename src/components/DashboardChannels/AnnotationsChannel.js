@@ -258,7 +258,6 @@ export default function AnnotationsChannel({
     if (appliedFilters.byGroup.length === 0) {
       // this means that we have to filter all annotations to generate the list of annotations
       // that match the filter
-
       aa.map((a, i) => {
         if (annotationMatchesFilters(a)) {
           filteredAnnos.push(i);
@@ -268,12 +267,15 @@ export default function AnnotationsChannel({
     } else {
       // this means there are specific groups that we only have to look at and not all annotations
       appliedFilters.byGroup.map((gid) => {
-        groupedAnnotations[gid].map((index) => {
-          if (!filteredAnnos.includes(index) && annotationMatchesFilters(aa[index])) {
-            filteredAnnos.push(index);
-          }
-          return null;
-        });
+        if (groupedAnnotations[gid]) {
+          groupedAnnotations[gid].map((index) => {
+            if (!filteredAnnos.includes(index) && annotationMatchesFilters(aa[index])) {
+              filteredAnnos.push(index);
+            }
+            return null;
+          });
+        }
+
         return null;
       });
     }
@@ -669,7 +671,6 @@ export default function AnnotationsChannel({
     if (session) {
       setListLoading(true);
       if (session && (session.user.groups || session.user.id)) {
-        console.log('session.user', session.user);
         await getAllAnnotations({
           groups: session.user.groups, userId: session.user.id,
         })
