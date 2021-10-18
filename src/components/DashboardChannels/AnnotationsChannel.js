@@ -458,7 +458,7 @@ export default function AnnotationsChannel({
           const g = gid === 'privateGroup'
             ? { name: 'Personal' }
             : session.user.groups.find(({ id }) => id === gid);
-          af.byGroup[gid] = { name: g.name, number: 0, checked: false };
+          af.byGroup[gid] = { name: g?.name, number: 0, checked: false };
         }
 
         if (groupedAnnos[gid] === undefined) {
@@ -897,8 +897,8 @@ export default function AnnotationsChannel({
         setOutlines(newOutlines);
         // opening new outline
         setOpenOutline({
-          id: newOutline._id,
-          name: newOutline.name,
+          id: newOutline?._id,
+          name: newOutline?.name,
           document: hydrateOutlineData(newOutline.document),
           callback: forceUpdate,
         });
@@ -1160,7 +1160,7 @@ export default function AnnotationsChannel({
           annotationTiles.push(
             <ISGroupHeader
               key={`${gid}-isgroupheader`}
-              name={g ? g.name : ''}
+              name={(g && g?.name) ? g.name : ''}
               annotationIds={aids}
               active={activeISGroupHeaders.includes(gid)}
               toggle={() => toggleISGroupHeader(gid)}
