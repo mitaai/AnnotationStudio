@@ -994,7 +994,7 @@ export default function AnnotationsChannel({
     }
 
     setListLoading(true);
-    fetchSharedAnnotationsOnDocument({ slug, prefetch: false })
+    fetchSharedAnnotationsOnDocument({ slug, prefetch: false, page: 1, perPage: 50 })
       .then((annos) => {
         const sortedAnnos = annos.sort((a, b) => new Date(b.modified) - new Date(a.modified));
         const a = {
