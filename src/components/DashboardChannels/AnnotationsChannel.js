@@ -82,6 +82,7 @@ export default function AnnotationsChannel({
   // for AS annotations
   const [annotations, setAnnotations] = useState({});
   const aa = allAnnotations || [];
+  const perPage = 50;
   const [groupedAnnotations, setGroupedAnnotations] = useState({});
   const [filteredAnnotations, setFilteredAnnotations] = useState([]);
 
@@ -236,7 +237,22 @@ export default function AnnotationsChannel({
   ];
 
   const updateAnnotations = (annos) => {
-    annotations[slug] = annos;
+    const {
+      canLoadMore,
+      page,
+      mine,
+      shared,
+      ['shared-with-me']: sharedWithMe,
+    } = annos;
+    if (annotations[slug]) {
+      annotations[slug].canLoadMore = canLoadMore;
+      annotations[slug].page = page;
+      annotations[slug].mine.push(...mine);
+      annotations[slug].shared.push(...shared);
+      annotations[slug]['shared-with-me'].push(...sharedWithMe);
+    } else {
+      annotations[slug] = annos;
+    }
     setAnnotations(annotations);
   };
 
@@ -994,10 +1010,15 @@ export default function AnnotationsChannel({
     }
 
     setListLoading(true);
-    fetchSharedAnnotationsOnDocument({ slug, prefetch: false, page: 1, perPage: 50 })
+    fetchSharedAnnotationsOnDocument({
+      slug, prefetch: false, page: 0, perPage,
+    })
       .then((annos) => {
-        const sortedAnnos = annos.sort((a, b) => new Date(b.modified) - new Date(a.modified));
+        const sortedAnnos = annos;
+        //const sortedAnnos = annos.sort((a, b) => new Date(b.modified) - new Date(a.modified));
         const a = {
+          canLoadMore: annos.length < perPage,
+          page: 0,
           mine: sortedAnnos
             .filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'mine' }))
             .map((anno) => toAnnotationsTile(anno,

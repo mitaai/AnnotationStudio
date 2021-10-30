@@ -25,6 +25,7 @@ const handler = async (req, res) => {
             .find({
               'target.document.slug': slug,
             })
+            .sort({ modified: -1 })
             .skip(page > 0 ? ((page - 1) * perPage) : 0)
             .limit(parseInt(perPage, 10))
             .toArray();

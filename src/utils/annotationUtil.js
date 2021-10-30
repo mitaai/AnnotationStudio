@@ -51,10 +51,12 @@ const postAnnotation = async ({
   } return Promise.reject(Error(`Unable to create annotation: error ${res.status} received from server`));
 };
 
-const fetchSharedAnnotationsOnDocument = async ({ slug, page, perPage, cookie, prefetch }) => {
+const fetchSharedAnnotationsOnDocument = async ({
+  slug, page, perPage, cookie, prefetch,
+}) => {
   let url = `${prefetch ? appendProtocolIfMissing(process.env.SITE) : ''}/api/annotations?slug=${slug}`;
   if (page && perPage) {
-    url += `&page=${page}&perPage=${perPage}`
+    url += `&page=${page}&perPage=${perPage}`;
   }
   // eslint-disable-next-line no-undef
   const f = prefetch ? fetch : unfetch;
