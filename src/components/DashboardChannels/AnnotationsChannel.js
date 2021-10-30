@@ -242,7 +242,7 @@ export default function AnnotationsChannel({
       page,
       mine,
       shared,
-      ['shared-with-me']: sharedWithMe,
+      'shared-with-me': sharedWithMe,
     } = annos;
     if (annotations[slug]) {
       annotations[slug].canLoadMore = canLoadMore;
@@ -1015,7 +1015,7 @@ export default function AnnotationsChannel({
     })
       .then((annos) => {
         const sortedAnnos = annos;
-        //const sortedAnnos = annos.sort((a, b) => new Date(b.modified) - new Date(a.modified));
+        // const sortedAnnos = annos.sort((a, b) => new Date(b.modified) - new Date(a.modified));
         const a = {
           canLoadMore: annos.length < perPage,
           page: 0,
