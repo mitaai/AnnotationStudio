@@ -81,6 +81,7 @@ export default function AnnotationsChannel({
   const [listLoading, setListLoading] = useState();
   // for AS annotations
   const [annotations, setAnnotations] = useState({});
+  const [loadMore, setLoadMore] = useState();
   const aa = allAnnotations || [];
   const perPage = 50;
   const [groupedAnnotations, setGroupedAnnotations] = useState({});
@@ -159,6 +160,22 @@ export default function AnnotationsChannel({
     }
     callback();
   }).current;
+
+  const loadComponent = loadMore
+    ? <ListLoadingSpinner />
+    : (
+      <div
+        className={styles.loadMoreDocs}
+        onClick={() => setLoadMore(true)}
+        onKeyDown={() => {}}
+        tabIndex={-1}
+        role="button"
+      >
+        Load more documents
+      </div>
+    );
+
+  const loadMoreDocs = annotations[slug]?.canLoadMore ? loadComponent : <></>;
 
   const [, setForceUpdate] = useState();
   const forceUpdate = () => setForceUpdate(RID());
@@ -1009,16 +1026,18 @@ export default function AnnotationsChannel({
       return;
     }
 
+    const pageNumber = loadMore && annotations[slug]?.page ? annotations[slug]?.page + 1 : 0
+
     setListLoading(true);
     fetchSharedAnnotationsOnDocument({
-      slug, prefetch: false, page: 0, perPage,
+      slug, prefetch: false, page: pageNumber, perPage,
     })
       .then((annos) => {
         const sortedAnnos = annos;
         // const sortedAnnos = annos.sort((a, b) => new Date(b.modified) - new Date(a.modified));
         const a = {
           canLoadMore: annos.length < perPage,
-          page: 0,
+          page: pageNumber,
           mine: sortedAnnos
             .filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'mine' }))
             .map((anno) => toAnnotationsTile(anno,
@@ -1048,6 +1067,7 @@ export default function AnnotationsChannel({
         updateAnnotations(a);
         setListLoading();
         setRefresh();
+        setLoadMore();
         setLastUpdated(new Date());
 
         if ((a.shared.length === 0 && a.mine.length > 0) || selectedGroupId === 'privateGroup') {
@@ -1062,7 +1082,7 @@ export default function AnnotationsChannel({
         setLastUpdated(new Date());
       });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug, refresh]);
+  }, [slug, refresh, loadMore]);
 
   useEffect(() => {
     // this keeps the refresh popover text up-to-date
@@ -1274,6 +1294,7 @@ export default function AnnotationsChannel({
     )}
     <div className={styles.tileContainer}>
       {(listLoading || refresh) ? <ListLoadingSpinner /> : annotationTiles}
+      {loadMoreDocs}
     </div>
   </>,
     outlines: openOutline.current.id ? (
