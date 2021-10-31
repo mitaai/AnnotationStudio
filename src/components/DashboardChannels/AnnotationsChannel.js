@@ -1026,7 +1026,7 @@ export default function AnnotationsChannel({
       return;
     }
 
-    const pageNumber = loadMore && annotations[slug]?.page ? annotations[slug]?.page + 1 : 0
+    const pageNumber = loadMore && annotations[slug]?.page ? annotations[slug]?.page + 1 : 0;
 
     setListLoading(true);
     fetchSharedAnnotationsOnDocument({
