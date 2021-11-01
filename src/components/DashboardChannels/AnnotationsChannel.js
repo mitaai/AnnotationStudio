@@ -171,7 +171,7 @@ export default function AnnotationsChannel({
         tabIndex={-1}
         role="button"
       >
-        Load more documents
+        Load more annotations
       </div>
     );
 
