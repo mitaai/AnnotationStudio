@@ -83,7 +83,7 @@ export default function AnnotationsChannel({
   const [annotations, setAnnotations] = useState({});
   const [loadMore, setLoadMore] = useState();
   const aa = allAnnotations || [];
-  const perPage = 50;
+  const perPage = 5;
   const [groupedAnnotations, setGroupedAnnotations] = useState({});
   const [filteredAnnotations, setFilteredAnnotations] = useState([]);
 
