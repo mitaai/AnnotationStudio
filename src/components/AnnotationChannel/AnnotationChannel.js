@@ -74,6 +74,7 @@ const AnnotationChannel = ({
   focusedAnnotation,
   showMoreInfoShareModal,
   setShowMoreInfoShareModal,
+  setShowMaxedAnnotationLengthToast,
   membersIntersection,
   show,
   alerts,
@@ -155,6 +156,7 @@ const AnnotationChannel = ({
             user={user}
             showMoreInfoShareModal={showMoreInfoShareModal}
             setShowMoreInfoShareModal={setShowMoreInfoShareModal}
+            setShowMaxedAnnotationLengthToast={setShowMaxedAnnotationLengthToast}
             membersIntersection={membersIntersection}
             alerts={alerts}
             setAlerts={setAlerts}

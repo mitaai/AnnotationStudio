@@ -9,13 +9,16 @@ import { RID } from '../../utils/docUIUtils';
 export default function AnnotateButton({
   annotationIdBeingEdited,
   annotateDocument,
+  selector,
   setShowUnsavedChangesToast,
+  setShowMaxTextLengthReached,
   addNewAnnotationToDom,
   setShowCannotAnnotateDocumentToast,
   documentToAnnotate,
   position,
   setPosition,
 }) {
+  const maxTextLength = 1250;
   const topAdjustment = 40;
   const leftAdjustment = 16;
   let top = 0;
@@ -36,9 +39,11 @@ export default function AnnotateButton({
         onMouseDown={async () => {
           if (annotationIdBeingEdited !== undefined) {
             setShowUnsavedChangesToast(true);
+          } else if (selector.exact.length > maxTextLength) {
+            setShowMaxTextLengthReached(true);
           } else if (!['draft', 'archived'].includes(documentToAnnotate.state) && position !== undefined) {
             const rid = RID();
-            await annotateDocument(rid);
+            await annotateDocument(selector, rid);
 
             // when the user clicks to annotate the piece of text that is selected
             // we need to grab information about all the annotations currently

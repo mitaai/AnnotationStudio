@@ -87,6 +87,7 @@ const customDescibeTextQuote = async (range, scope) => {
 
 export default function Document({
   setShowUnsavedChangesToast,
+  setShowMaxTextLengthReached,
   annotationIdBeingEdited,
   annotations,
   setChannelAnnotations,
@@ -416,8 +417,10 @@ export default function Document({
       {documentContentContainer}
       <AnnotateButton
         annotationIdBeingEdited={annotationIdBeingEdited}
-        annotateDocument={(rid) => annotateDocument(selector, rid)}
+        annotateDocument={(s, rid) => annotateDocument(s, rid)}
+        selector={selector}
         setShowUnsavedChangesToast={setShowUnsavedChangesToast}
+        setShowMaxTextLengthReached={setShowMaxTextLengthReached}
         addNewAnnotationToDom={addNewAnnotationToDom}
         setShowCannotAnnotateDocumentToast={setShowCannotAnnotateDocumentToast}
         documentToAnnotate={documentToAnnotate}
