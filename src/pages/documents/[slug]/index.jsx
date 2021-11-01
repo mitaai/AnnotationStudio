@@ -40,6 +40,8 @@ import UnsavedChangesToast from '../../../components/UnsavedChangesToast/Unsaved
 import adjustLine, { DeepCopyObj } from '../../../utils/docUIUtils';
 import Footer from '../../../components/Footer';
 import { annotatedByFilterMatch, byPermissionsDocumentViewFilterMatch, byTagFilterMatch } from '../../../utils/annotationFilteringUtil';
+import MaxedTextLengthToast from '../../../components/MaxedTextLengthToast';
+import MaxedAnnotationLengthToast from '../../../components/MaxedAnnotationLengthToast';
 
 
 const DocumentPage = ({
@@ -85,6 +87,7 @@ const DocumentPage = ({
   const [documentHighlightedAndLoaded, setDocumentHighlightedAndLoaded] = useState(false);
   const [annotationIdBeingEdited, setAnnotationIdBeingEdited] = useState();
   const [showUnsavedChangesToast, setShowUnsavedChangesToast] = useState();
+  const [showMaxTextLengthReached, setShowMaxTextLengthReached] = useState();
   const [documentZoom, setDocumentZoom] = useState(100);
   const [activeAnnotations, setActiveAnnotations] = useState({ annotations: [], target: null });
   const [channelAnnotations, setChannelAnnotations] = useState({ left: null, right: null });
@@ -116,6 +119,7 @@ const DocumentPage = ({
 
   const [showMoreInfoShareModal, setShowMoreInfoShareModal] = useState();
   const [showCannotAnnotateDocumentToast, setShowCannotAnnotateDocumentToast] = useState(false);
+  const [showMaxedAnnotationLengthToast, setShowMaxedAnnotationLengthToast] = useState();
 
   const [session, loading] = useSession();
   // interesection between user's groups and groups the document is shared to
@@ -782,6 +786,14 @@ const DocumentPage = ({
                     onClose={() => { setShowUnsavedChangesToast(); }}
                     scrollToAnnotation={scrollToAnnotation}
                   />
+                  <MaxedTextLengthToast
+                    show={showMaxTextLengthReached}
+                    onClose={() => { setShowMaxTextLengthReached(); }}
+                  />
+                  <MaxedAnnotationLengthToast
+                    show={showMaxedAnnotationLengthToast}
+                    onClose={() => { setShowMaxedAnnotationLengthToast(); }}
+                  />
                   <HeatMap
                     annotationsLoaded={annotationChannel1Loaded && annotationChannel2Loaded}
                     documentZoom={documentZoom}
@@ -802,6 +814,7 @@ const DocumentPage = ({
                         user={session ? session.user : undefined}
                         showMoreInfoShareModal={showMoreInfoShareModal}
                         setShowMoreInfoShareModal={setShowMoreInfoShareModal}
+                        setShowMaxedAnnotationLengthToast={setShowMaxedAnnotationLengthToast}
                         membersIntersection={membersIntersection}
                         alerts={alerts}
                         setAlerts={setAlerts}
@@ -819,6 +832,7 @@ const DocumentPage = ({
                       >
                         <Document
                           setShowUnsavedChangesToast={setShowUnsavedChangesToast}
+                          setShowMaxTextLengthReached={setShowMaxTextLengthReached}
                           annotationIdBeingEdited={annotationIdBeingEdited}
                           addActiveAnnotation={addActiveAnnotation}
                           removeActiveAnnotation={removeActiveAnnotation}
@@ -857,6 +871,7 @@ const DocumentPage = ({
                         user={session ? session.user : undefined}
                         showMoreInfoShareModal={showMoreInfoShareModal}
                         setShowMoreInfoShareModal={setShowMoreInfoShareModal}
+                        setShowMaxedAnnotationLengthToast={setShowMaxedAnnotationLengthToast}
                         membersIntersection={membersIntersection}
                         alerts={alerts}
                         setAlerts={setAlerts}

@@ -64,6 +64,7 @@ function AnnotationCard({
   user,
   expanded,
   setShowMoreInfoShareModal,
+  setShowMaxedAnnotationLengthToast,
   membersIntersection,
   setAlerts,
 }) {
@@ -104,6 +105,8 @@ function AnnotationCard({
 
     return permissions;
   };
+
+  const maxAnnotationTextLength = 500;
 
   const [annotationData, setAnnotationData] = useState(annotation.new
     ? { ...annotation, permissions: initPermissions(documentFilters.filters.permissions) }
@@ -183,6 +186,12 @@ function AnnotationCard({
 
   function SaveAnnotation() {
     if (savingAnnotation || cancelingAnnotation) {
+      return;
+    }
+
+    // we need to check if there are too many characters in the annotation
+    if (newAnnotationText !== null && newAnnotationText.length > maxAnnotationTextLength) {
+      setShowMaxedAnnotationLengthToast(true);
       return;
     }
     setSavingAnnotation(true);
