@@ -18,12 +18,25 @@ const handler = async (req, res) => {
       }
       if (slug) {
         const { db } = await connectToDatabase();
-        const arr = await db
-          .collection('annotations')
-          .find({
-            'target.document.slug': slug,
-          })
-          .toArray();
+        let arr = [];
+        if (page && perPage) {
+          arr = await db
+            .collection('annotations')
+            .find({
+              'target.document.slug': slug,
+            })
+            .sort({ modified: -1 })
+            .skip(page > 0 ? ((page - 1) * perPage) : 0)
+            .limit(parseInt(perPage, 10))
+            .toArray();
+        } else {
+          arr = await db
+            .collection('annotations')
+            .find({
+              'target.document.slug': slug,
+            })
+            .toArray();
+        }
         res.status(200).json({ annotations: arr });
       } else if (userId) {
         if (userId === token.id) {
@@ -41,9 +54,8 @@ const handler = async (req, res) => {
           } else if (page && perPage) {
             const arr = await db
               .collection('annotations')
-              .find(condition, {
-                sort: [['_id', -1]],
-              })
+              .find(condition)
+              .sort({ createdAt: -1 })
               .skip(page > 0 ? ((page - 1) * perPage) : 0)
               .limit(parseInt(perPage, 10))
               .toArray();
