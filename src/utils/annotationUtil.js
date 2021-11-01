@@ -55,7 +55,7 @@ const fetchSharedAnnotationsOnDocument = async ({
   slug, page, perPage, cookie, prefetch,
 }) => {
   let url = `${prefetch ? appendProtocolIfMissing(process.env.SITE) : ''}/api/annotations?slug=${slug}`;
-  if (page && perPage) {
+  if (page !== undefined && perPage !== undefined) {
     url += `&page=${page}&perPage=${perPage}`;
   }
   // eslint-disable-next-line no-undef
