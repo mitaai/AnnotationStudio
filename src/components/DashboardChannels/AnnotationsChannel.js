@@ -1036,7 +1036,7 @@ export default function AnnotationsChannel({
         const sortedAnnos = annos;
         // const sortedAnnos = annos.sort((a, b) => new Date(b.modified) - new Date(a.modified));
         const a = {
-          canLoadMore: annos.length < perPage,
+          canLoadMore: annos.length === perPage,
           page: pageNumber,
           mine: sortedAnnos
             .filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'mine' }))
