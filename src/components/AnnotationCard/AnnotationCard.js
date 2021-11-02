@@ -106,7 +106,7 @@ function AnnotationCard({
     return permissions;
   };
 
-  const maxAnnotationTextLength = 500;
+  const maxAnnotationTextLength = 750;
 
   const [annotationData, setAnnotationData] = useState(annotation.new
     ? { ...annotation, permissions: initPermissions(documentFilters.filters.permissions) }

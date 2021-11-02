@@ -18,7 +18,7 @@ export default function AnnotateButton({
   position,
   setPosition,
 }) {
-  const maxTextLength = 1250;
+  const maxTextLength = 1500;
   const topAdjustment = 40;
   const leftAdjustment = 16;
   let top = 0;

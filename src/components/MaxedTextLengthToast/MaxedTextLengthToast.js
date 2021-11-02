@@ -18,7 +18,7 @@ export default function MaxedTextLengthToast({
             <strong className="mr-auto">Maxed Text Length Reached</strong>
           </Toast.Header>
           <Toast.Body>
-            You can only annotate a maximum of 1250 characters
+            You can only annotate a maximum of 1500 characters
           </Toast.Body>
         </Toast>
       </div>
