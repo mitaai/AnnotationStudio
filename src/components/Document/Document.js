@@ -310,6 +310,7 @@ export default function Document({
         document: {
           ...documentToAnnotate,
           text: undefined,
+          textSlate: undefined,
           format: 'text/html',
         },
         selector: {
