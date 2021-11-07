@@ -110,6 +110,8 @@ const handler = async (req, res) => {
   } else if (method === 'PATCH') {
     if (req.body.mode === 'documentMetadata' && req.body.documentToUpdate) {
       const { documentToUpdate } = req.body;
+      documentToUpdate.text = undefined;
+      documentToUpdate.textSlate = undefined;
       const token = await jwt.getToken({ req, secret });
       if (token && token.exp > 0) {
         const { db } = await connectToDatabase();
