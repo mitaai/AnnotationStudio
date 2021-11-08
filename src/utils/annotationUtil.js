@@ -69,8 +69,8 @@ const fetchSharedAnnotationsOnDocument = async ({
   });
   if (res.status === 200) {
     const response = await res.json();
-    const { annotations } = response;
-    return Promise.resolve(annotations);
+    const { annotations, count } = response;
+    return Promise.resolve({ annotations, count });
   } if (res.status === 404) {
     return Promise.resolve([]);
   } return Promise.reject(Error(`Unable to retrieve annotations: error ${res.status} received from server`));
@@ -334,7 +334,10 @@ const calculatePacketSizes = (data, limit = 0.9) => {
   return packets;
 };
 
+const MAX_NUMBER_OF_ANNOTATIONS_REQUESTED = 305;
+
 export {
+  MAX_NUMBER_OF_ANNOTATIONS_REQUESTED,
   calculatePacketSizes,
   addGroupNamesToAnnotations,
   deleteAnnotationById,

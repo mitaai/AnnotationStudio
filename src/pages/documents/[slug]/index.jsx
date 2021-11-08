@@ -26,7 +26,7 @@ import LoadingSpinner from '../../../components/LoadingSpinner';
 import AnnotationChannel from '../../../components/AnnotationChannel';
 import Document from '../../../components/Document';
 import { prefetchDocumentBySlug } from '../../../utils/docUtil';
-import { fetchSharedAnnotationsOnDocument } from '../../../utils/annotationUtil';
+import { fetchSharedAnnotationsOnDocument, MAX_NUMBER_OF_ANNOTATIONS_REQUESTED } from '../../../utils/annotationUtil';
 import {
   DocumentAnnotationsContext,
   DocumentFiltersContext,
@@ -1073,16 +1073,44 @@ export async function getServerSideProps(context) {
   });
 
   // after we get the document data we need to get the annotations on this document data
+  let d = {};
   await fetchSharedAnnotationsOnDocument({
     slug, cookie: context.req.headers.cookie, prefetch: true,
   })
-    .then((annotations) => {
-      props.annotations = annotations;
+    .then((data) => {
+      d = data;
+      props.annotations = data.annotations;
     }).catch((err) => {
       props = {
         initAlerts: [{ text: err.message, variant: 'danger' }],
       };
     });
+
+  if (props.annotations && d.count > props.annotations.length) {
+    const numOfPages = Math.ceil(d.count / MAX_NUMBER_OF_ANNOTATIONS_REQUESTED);
+    const unresolved = [];
+    for (let i = 1; i < numOfPages; i += 1) {
+      unresolved.push(fetchSharedAnnotationsOnDocument({
+        slug,
+        cookie: context.req.headers.cookie,
+        prefetch: true,
+        page: i + 1,
+        perPage: MAX_NUMBER_OF_ANNOTATIONS_REQUESTED,
+      }));
+    }
+
+    await Promise.all(unresolved).then((dataArray) => {
+      props.annotations = dataArray.reduce(
+        (prev, current) => prev.concat(current.annotations),
+        props.annotations,
+      );
+    }).catch((err) => {
+      props = {
+        initAlerts: [{ text: err.message, variant: 'danger' }],
+      };
+    });
+  }
+
 
   return { props };
 }

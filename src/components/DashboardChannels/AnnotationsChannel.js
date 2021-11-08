@@ -26,7 +26,7 @@ import {
   DEFAULTS_PARAGRAPH,
 } from '@udecode/slate-plugins';
 import { toPng } from 'html-to-image';
-import { fetchSharedAnnotationsOnDocument, getAllAnnotations } from '../../utils/annotationUtil';
+import { fetchSharedAnnotationsOnDocument, getAllAnnotations, MAX_NUMBER_OF_ANNOTATIONS_REQUESTED } from '../../utils/annotationUtil';
 
 import PermissionsButtonGroup from '../PermissionsButtonGroup';
 import {
@@ -84,7 +84,6 @@ export default function AnnotationsChannel({
   const [loadMore, setLoadMore] = useState();
   const aa = allAnnotations || [];
   const perPage = 25;
-  const getAllAnnotationsPerPage = 305;
   const [groupedAnnotations, setGroupedAnnotations] = useState({});
   const [filteredAnnotations, setFilteredAnnotations] = useState([]);
 
@@ -715,30 +714,27 @@ export default function AnnotationsChannel({
         await getAllAnnotations({
           groups: session.user.groups,
           userId: session.user.id,
-          perPage: getAllAnnotationsPerPage,
+          perPage: MAX_NUMBER_OF_ANNOTATIONS_REQUESTED,
         })
           .then(async (data) => {
-            console.log(data.count);
             let annos = data.annotations;
             if (data.count > annos.length) {
-              const numOfPages = Math.ceil(data.count / getAllAnnotationsPerPage);
+              const numOfPages = Math.ceil(data.count / MAX_NUMBER_OF_ANNOTATIONS_REQUESTED);
               const unresolved = [];
               for (let i = 1; i < numOfPages; i += 1) {
                 unresolved.push(getAllAnnotations({
                   groups: session.user.groups,
                   userId: session.user.id,
                   page: i + 1,
-                  perPage: getAllAnnotationsPerPage,
+                  perPage: MAX_NUMBER_OF_ANNOTATIONS_REQUESTED,
                 }));
               }
 
               Promise.all(unresolved).then((dataArray) => {
-                console.log(dataArray);
                 annos = dataArray.reduce(
                   (prev, current) => prev.concat(current.annotations),
                   annos,
                 );
-                console.log('annos.length', annos.length);
                 doneLoadingAllAnnotations(annos);
               }).catch((err) => {
                 setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
@@ -1066,11 +1062,11 @@ export default function AnnotationsChannel({
     fetchSharedAnnotationsOnDocument({
       slug, prefetch: false, page: pageNumber, perPage,
     })
-      .then((annos) => {
-        const sortedAnnos = annos;
+      .then((data) => {
+        const sortedAnnos = data.annotations;
         // const sortedAnnos = annos.sort((a, b) => new Date(b.modified) - new Date(a.modified));
         const a = {
-          canLoadMore: annos.length === perPage,
+          canLoadMore: sortedAnnos.length === perPage,
           page: pageNumber,
           mine: sortedAnnos
             .filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'mine' }))

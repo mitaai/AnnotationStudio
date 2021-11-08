@@ -1,5 +1,6 @@
 import { ObjectID } from 'mongodb';
 import jwt from 'next-auth/jwt';
+import { MAX_NUMBER_OF_ANNOTATIONS_REQUESTED } from '../../utils/annotationUtil';
 import { connectToDatabase } from '../../utils/dbUtil';
 
 const secret = process.env.AUTH_SECRET;
@@ -10,7 +11,7 @@ const handler = async (req, res) => {
     const token = await jwt.getToken({ req, secret });
     if (token && token.exp > 0) {
       const {
-        slug, userId, limit, page, perPage,
+        slug, userId, limit, page, perPage = MAX_NUMBER_OF_ANNOTATIONS_REQUESTED,
       } = req.query;
       let groupIds = req.query['groupIds[]'];
       if (groupIds && !Array.isArray(groupIds)) {
@@ -29,15 +30,24 @@ const handler = async (req, res) => {
             .skip(page > 0 ? ((page - 1) * perPage) : 0)
             .limit(parseInt(perPage, 10))
             .toArray();
+
+          res.status(200).json({
+            annotations: arr,
+          });
         } else {
           arr = await db
             .collection('annotations')
             .find({
               'target.document.slug': slug,
             })
+            .sort({ modified: -1 })
             .toArray();
+
+          res.status(200).json({
+            annotations: arr.slice(0, perPage),
+            count: arr.length,
+          });
         }
-        res.status(200).json({ annotations: arr });
       } else if (userId) {
         if (userId === token.id) {
           const { db } = await connectToDatabase();
