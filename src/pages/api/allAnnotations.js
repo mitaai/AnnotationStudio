@@ -1,5 +1,6 @@
 import { ObjectID } from 'mongodb';
 import jwt from 'next-auth/jwt';
+import { calculatePacketSizes } from '../../utils/annotationUtil';
 import { connectToDatabase } from '../../utils/dbUtil';
 
 const secret = process.env.AUTH_SECRET;
@@ -70,7 +71,12 @@ const handler = async (req, res) => {
             .collection('annotations')
             .find(condition)
             .toArray();
-          res.status(200).json({ annotations: arr });
+
+          const packets = calculatePacketSizes(arr);
+          res.status(200).json({
+            annotations: arr.slice(packets[0].start, packets[0].end),
+            packets,
+          });
         } else res.status(403).end('Unauthorized');
       } else res.status(400).end('Bad request');
     } else res.status(403).end('Invalid or expired token');

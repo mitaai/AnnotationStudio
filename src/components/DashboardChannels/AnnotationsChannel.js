@@ -708,6 +708,7 @@ export default function AnnotationsChannel({
           groups: session.user.groups, userId: session.user.id,
         })
           .then(async (data) => {
+            console.log('data.packets', data.packets);
             saveAndOrganizeAnnotationsByGroup(data.annotations);
             setRefresh();
             setLastUpdated(new Date());
