@@ -296,7 +296,7 @@ const calculatePacketSizes = (data, limit = 0.9) => {
   let percentageResize = null;
   let amountOfIndexesToMove = 0;
   let diff = 0;
-  const minimumIndexesToRemove = 5
+  const minimumIndexesToRemove = 5;
   while (resizePackets) {
     percentageResize = limit / sizeOfPacket;
     diff = packets[removeIndex].end - packets[removeIndex].start;
