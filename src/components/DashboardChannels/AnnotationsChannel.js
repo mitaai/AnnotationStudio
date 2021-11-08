@@ -718,23 +718,28 @@ export default function AnnotationsChannel({
           perPage: getAllAnnotationsPerPage,
         })
           .then(async (data) => {
-            console.log('data', data);
+            console.log(data.count);
             let annos = data.annotations;
             if (data.count > annos.length) {
-              const numOfPages = Math.ceil(annos.length / getAllAnnotationsPerPage);
-              const a = Array(numOfPages - 1);
-              await Promise.all(a.map((v, i) => getAllAnnotations({
-                groups: session.user.groups,
-                userId: session.user.id,
-                page: i + 1,
-                perPage: getAllAnnotationsPerPage,
-              }))).then((dataArray) => {
+              const numOfPages = Math.ceil(data.count / getAllAnnotationsPerPage);
+              const a = new Array(numOfPages - 1);
+              const unresolved = [];
+              for (let i = 0; i < a.length; i += 1) {
+                unresolved.push(getAllAnnotations({
+                  groups: session.user.groups,
+                  userId: session.user.id,
+                  page: 1,
+                  perPage: getAllAnnotationsPerPage,
+                }));
+              }
+
+              Promise.all(unresolved).then((dataArray) => {
                 console.log(dataArray);
                 annos = dataArray.reduce(
                   (prev, current) => prev.concat(current.annotations),
                   annos,
                 );
-                console.log('annos', annos);
+                console.log('annos.length', annos.length);
                 doneLoadingAllAnnotations(annos);
               }).catch((err) => {
                 setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
