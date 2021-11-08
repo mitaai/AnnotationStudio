@@ -1,6 +1,6 @@
 import { ObjectID } from 'mongodb';
 import jwt from 'next-auth/jwt';
-import { calculatePacketSizes } from '../../utils/annotationUtil';
+// import { calculatePacketSizes } from '../../utils/annotationUtil';
 import { connectToDatabase } from '../../utils/dbUtil';
 
 const secret = process.env.AUTH_SECRET;
@@ -48,7 +48,7 @@ const handler = async (req, res) => {
       const {
         userId,
         groupIds,
-        range,
+        // range,
       } = req.body;
       if (userId) {
         if (userId === token.id) {
@@ -68,8 +68,8 @@ const handler = async (req, res) => {
             ],
           };
           let arr = [];
-          if (range) {
-            arr = await db
+          // if (range) {
+          /* arr = await db
               .collection('annotations')
               .find(condition)
               .sort({ createdAt: -1 })
@@ -79,22 +79,22 @@ const handler = async (req, res) => {
 
             res.status(200).json({
               annotations: arr,
-            });
-          } else {
-            arr = await db
-              .collection('annotations')
-              .find(condition)
-              .sort({ createdAt: -1 })
-              .toArray();
+            }); */
+          // } else {
+          arr = await db
+            .collection('annotations')
+            .find(condition)
+            .sort({ createdAt: -1 })
+            .toArray();
 
-            const packets = calculatePacketSizes(arr);
-            const firstPacket = arr.slice(packets[0].start, packets[0].end);
-            res.status(200).json({
-              annotations: firstPacket,
-              packets,
-              count: arr.length,
-            });
-          }
+          // const packets = calculatePacketSizes(arr);
+          // const firstPacket = arr.slice(packets[0].start, packets[0].end);
+          res.status(200).json({
+            annotations: [],
+            packets: [],
+            count: arr.length,
+          });
+          // }
         } else res.status(403).end('Unauthorized');
       } else res.status(400).end('Bad request');
     } else res.status(403).end('Invalid or expired token');
