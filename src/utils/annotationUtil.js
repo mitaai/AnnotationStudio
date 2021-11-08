@@ -296,11 +296,14 @@ const calculatePacketSizes = (data, limit = 0.9) => {
   let percentageResize = null;
   let amountOfIndexesToMove = 0;
   let diff = 0;
+  const minimumIndexesToRemove = 5
   while (resizePackets) {
     percentageResize = limit / sizeOfPacket;
     diff = packets[removeIndex].end - packets[removeIndex].start;
-    amountOfIndexesToMove = Math.floor(diff * percentageResize);
-    packets[removeIndex].end -= amountOfIndexesToMove;
+    amountOfIndexesToMove = Math.ceil(diff * percentageResize);
+    packets[removeIndex].end -= amountOfIndexesToMove < minimumIndexesToRemove
+      ? minimumIndexesToRemove
+      : amountOfIndexesToMove;
     sizeOfPacket = calculateSizeOfDataInMB({ data, range: packets[removeIndex] });
 
     if (sizeOfPacket > limit) {
