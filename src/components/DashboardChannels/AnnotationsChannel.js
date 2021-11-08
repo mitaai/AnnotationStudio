@@ -84,7 +84,7 @@ export default function AnnotationsChannel({
   const [loadMore, setLoadMore] = useState();
   const aa = allAnnotations || [];
   const perPage = 25;
-  const getAllAnnotationsPerPage = 300;
+  const getAllAnnotationsPerPage = 305;
   const [groupedAnnotations, setGroupedAnnotations] = useState({});
   const [filteredAnnotations, setFilteredAnnotations] = useState([]);
 
@@ -705,8 +705,17 @@ export default function AnnotationsChannel({
     if (session) {
       setListLoading(true);
       if (session && (session.user.groups || session.user.id)) {
+        const doneLoadingAllAnnotations = (annos) => {
+          saveAndOrganizeAnnotationsByGroup(annos);
+          setRefresh();
+          setLastUpdated(new Date());
+          callback();
+          setListLoading(false);
+        };
         await getAllAnnotations({
-          groups: session.user.groups, userId: session.user.id,
+          groups: session.user.groups,
+          userId: session.user.id,
+          perPage: getAllAnnotationsPerPage,
         })
           .then(async (data) => {
             console.log('data', data);
@@ -714,21 +723,26 @@ export default function AnnotationsChannel({
             if (data.count > annos.length) {
               const numOfPages = Math.ceil(annos.length / getAllAnnotationsPerPage);
               const a = Array(numOfPages - 1);
-              const dataArray = await Promise.all(a.map((v, i) => getAllAnnotations({
+              await Promise.all(a.map((v, i) => getAllAnnotations({
                 groups: session.user.groups,
                 userId: session.user.id,
                 page: i + 1,
                 perPage: getAllAnnotationsPerPage,
-              })));
-              console.log(dataArray);
-              annos = dataArray.reduce((prev, current) => prev.concat(current.annotations), annos);
-              console.log('annos', annos);
+              }))).then((dataArray) => {
+                console.log(dataArray);
+                annos = dataArray.reduce(
+                  (prev, current) => prev.concat(current.annotations),
+                  annos,
+                );
+                console.log('annos', annos);
+                doneLoadingAllAnnotations(annos);
+              }).catch((err) => {
+                setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
+                setListLoading(false);
+              });
+            } else {
+              doneLoadingAllAnnotations(annos);
             }
-            saveAndOrganizeAnnotationsByGroup(annos);
-            setRefresh();
-            setLastUpdated(new Date());
-            callback();
-            setListLoading(false);
           })
           .catch((err) => {
             setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
