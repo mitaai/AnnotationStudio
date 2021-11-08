@@ -190,11 +190,11 @@ const getSharedAnnotations = async ({
 };
 
 const getAllAnnotations = async ({
-  userId, groups,
+  userId, groups, range,
 }) => {
   const url = '/api/allAnnotations';
   const groupIds = groups ? groups.map((g) => g.id) : [];
-  const body = { userId, groupIds };
+  const body = { userId, groupIds, range };
   const res = await unfetch(url, {
     method: 'POST',
     body: JSON.stringify(body),
@@ -204,8 +204,8 @@ const getAllAnnotations = async ({
   });
   if (res.status === 200) {
     const response = await res.json();
-    const { annotations, count } = response;
-    return Promise.resolve({ annotations, count });
+    const { annotations, count, packets } = response;
+    return Promise.resolve({ annotations, count, packets });
   } if (res.status === 404) {
     return Promise.resolve([]);
   } return Promise.reject(Error(`Unable to retrieve annotations: error ${res.status} received from server`));
@@ -264,7 +264,67 @@ const addGroupNamesToAnnotations = async (annosToAlter) => {
   return altered;
 };
 
+
+const calculateSizeOfDataInMB = ({ data, range = { start: 0, end: undefined } }) => ((encodeURI(JSON.stringify(data.slice(range.start, range.end)).split(/%..|./)).length - 1) / 1024) / 1024;
+
+/*
+const calculateDataToSend = (data, limit = 1) => {
+
+  if (calculateSizeOfDataInMB(data) <= limit) {
+    return { data, index}
+  }
+
+  let index = Math.floor(data.length * 0.75);
+  while(calculateSizeOfDataInMB(data.slice(0, index)) > limit) {
+    index = Math.floor(index * 0.75)
+  }
+
+  return { data, index }
+}
+*/
+
+const calculatePacketSizes = (data, limit = 1) => {
+  // an array of the start and stop indexes of each packet
+  const packets = [{
+    start: 0,
+    end: data.length,
+  }];
+
+  let removeIndex = 0;
+  let sizeOfPacket = calculateSizeOfDataInMB({ data, range: packets[removeIndex] });
+  let resizePackets = sizeOfPacket > limit;
+  let percentageResize = null;
+  let amountOfIndexesToMove = 0;
+  let diff = 0;
+  while (resizePackets) {
+    percentageResize = limit / sizeOfPacket;
+    diff = packets[removeIndex].end - packets[removeIndex].start;
+    amountOfIndexesToMove = Math.floor(diff * percentageResize);
+    packets[removeIndex].end -= amountOfIndexesToMove;
+    sizeOfPacket = calculateSizeOfDataInMB({ data, range: packets[removeIndex] });
+
+    if (sizeOfPacket > limit) {
+      resizePackets = true;
+    } else if (packets[removeIndex].end < data.length) {
+      resizePackets = true;
+      // adding a new packet for data that needs to be split into packets
+      packets.push({
+        start: packets[removeIndex].end + 1,
+        end: data.length,
+      });
+      removeIndex += 1;
+      // calculating the size of the new packet we created and setting that as the packet size
+      sizeOfPacket = calculateSizeOfDataInMB({ data, range: packets[removeIndex] });
+    } else {
+      resizePackets = false;
+    }
+  }
+
+  return packets;
+};
+
 export {
+  calculatePacketSizes,
   addGroupNamesToAnnotations,
   deleteAnnotationById,
   getAnnotationById,
