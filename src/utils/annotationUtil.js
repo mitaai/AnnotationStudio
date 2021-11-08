@@ -283,7 +283,7 @@ const calculateDataToSend = (data, limit = 1) => {
 }
 */
 
-const calculatePacketSizes = (data, limit = 1) => {
+const calculatePacketSizes = (data, limit = 0.9) => {
   // an array of the start and stop indexes of each packet
   const packets = [{
     start: 0,
