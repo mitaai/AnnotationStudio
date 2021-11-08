@@ -204,8 +204,8 @@ const getAllAnnotations = async ({
   });
   if (res.status === 200) {
     const response = await res.json();
-    const { annotations, count } = response;
-    return Promise.resolve({ annotations, count });
+    const { annotations, count, packets } = response;
+    return Promise.resolve({ annotations, count, packets });
   } if (res.status === 404) {
     return Promise.resolve([]);
   } return Promise.reject(Error(`Unable to retrieve annotations: error ${res.status} received from server`));
@@ -319,6 +319,8 @@ const calculatePacketSizes = (data, limit = 1) => {
       resizePackets = false;
     }
   }
+
+  return packets;
 };
 
 export {

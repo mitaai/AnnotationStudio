@@ -73,8 +73,9 @@ const handler = async (req, res) => {
             .toArray();
 
           const packets = calculatePacketSizes(arr);
+          const firstPacket = arr.slice(packets[0].start, packets[0].end)
           res.status(200).json({
-            annotations: arr.slice(packets[0].start, packets[0].end),
+            annotations: firstPacket,
             packets,
           });
         } else res.status(403).end('Unauthorized');
