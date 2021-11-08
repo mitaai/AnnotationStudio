@@ -76,22 +76,25 @@ const handler = async (req, res) => {
               .skip(range.start)
               .limit(parseInt(range.end - range.start, 10))
               .toArray();
+            
+              res.status(200).json({
+                annotations: arr,
+              });
           } else {
             arr = await db
               .collection('annotations')
               .find(condition)
               .sort({ createdAt: -1 })
               .toArray();
+
+              const packets = calculatePacketSizes(arr);
+              // const firstPacket = arr.slice(packets[0].start, packets[0].end);
+              res.status(200).json({
+                annotations: [],
+                packets,
+                count: arr.length,
+              });
           }
-
-
-          const packets = calculatePacketSizes(arr);
-          const firstPacket = arr.slice(packets[0].start, packets[0].end);
-          res.status(200).json({
-            annotations: firstPacket,
-            packets,
-            count: arr.length,
-          });
         } else res.status(403).end('Unauthorized');
       } else res.status(400).end('Bad request');
     } else res.status(403).end('Invalid or expired token');
