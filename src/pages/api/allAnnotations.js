@@ -75,7 +75,7 @@ const handler = async (req, res) => {
               .collection('annotations')
               .find(condition)
               .sort({ createdAt: -1 })
-              .skip(page > 0 ? ((page - 1) * perPage) : 0)
+              .skip(page > 0 ? page * perPage : 0)
               .limit(parseInt(perPage, 10))
               .toArray();
 

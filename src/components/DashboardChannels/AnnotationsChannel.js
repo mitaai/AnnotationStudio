@@ -723,7 +723,7 @@ export default function AnnotationsChannel({
             if (data.count > annos.length) {
               const numOfPages = Math.ceil(data.count / getAllAnnotationsPerPage);
               const unresolved = [];
-              for (let i = 0; i < numOfPages - 1; i += 1) {
+              for (let i = 1; i < numOfPages; i += 1) {
                 unresolved.push(getAllAnnotations({
                   groups: session.user.groups,
                   userId: session.user.id,
