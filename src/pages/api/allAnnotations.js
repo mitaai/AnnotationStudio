@@ -90,7 +90,7 @@ const handler = async (req, res) => {
               .toArray();
 
             res.status(200).json({
-              annotations: arr.slice(0, 300),
+              annotations: arr.slice(0, perPage),
               count: arr.length,
             });
           }
