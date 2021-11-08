@@ -88,9 +88,9 @@ const handler = async (req, res) => {
               .toArray();
 
             const packets = calculatePacketSizes(arr);
-            // const firstPacket = arr.slice(packets[0].start, packets[0].end);
+            const firstPacket = arr.slice(packets[0].start, packets[0].end);
             res.status(200).json({
-              annotations: [],
+              annotations: firstPacket,
               packets,
               count: arr.length,
             });
