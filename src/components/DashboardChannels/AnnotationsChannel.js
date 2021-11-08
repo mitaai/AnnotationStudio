@@ -84,6 +84,7 @@ export default function AnnotationsChannel({
   const [loadMore, setLoadMore] = useState();
   const aa = allAnnotations || [];
   const perPage = 25;
+  const getAllAnnotationsPerPage = 300;
   const [groupedAnnotations, setGroupedAnnotations] = useState({});
   const [filteredAnnotations, setFilteredAnnotations] = useState([]);
 
@@ -708,17 +709,20 @@ export default function AnnotationsChannel({
           groups: session.user.groups, userId: session.user.id,
         })
           .then(async (data) => {
-            console.log('data.packets', data.packets);
-            const annos = data.annotations;
-            if (data.packets.length > 1) {
-              /*
-              const dataArray = await Promise.all(data.packets.map((range) => getAllAnnotations({
-                groups: session.user.groups, userId: session.user.id, range,
+            console.log('data', data);
+            let annos = data.annotations;
+            if (data.count > annos.length) {
+              const numOfPages = Math.ceil(annos.length / getAllAnnotationsPerPage);
+              const a = Array(numOfPages - 1);
+              const dataArray = await Promise.all(a.map((v, i) => getAllAnnotations({
+                groups: session.user.groups,
+                userId: session.user.id,
+                page: i + 1,
+                perPage: getAllAnnotationsPerPage,
               })));
               console.log(dataArray);
               annos = dataArray.reduce((prev, current) => prev.concat(current.annotations), annos);
               console.log('annos', annos);
-              */
             }
             saveAndOrganizeAnnotationsByGroup(annos);
             setRefresh();
