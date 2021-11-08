@@ -709,7 +709,7 @@ export default function AnnotationsChannel({
         })
           .then(async (data) => {
             console.log('data.packets', data.packets);
-            let annos = data.annotations;
+            const annos = data.annotations;
             if (data.packets.length > 1) {
               /*
               const dataArray = await Promise.all(data.packets.map((range) => getAllAnnotations({
