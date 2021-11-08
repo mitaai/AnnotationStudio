@@ -296,23 +296,27 @@ const calculatePacketSizes = (data, limit = 0.9) => {
   let percentageResize = null;
   let amountOfIndexesToMove = 0;
   let diff = 0;
-  const minimumIndexesToRemove = 5;
-  while (resizePackets) {
+  const minimumIndexesToRemove = 1;
+  let count = 0;
+  while (resizePackets && count < 25) {
     percentageResize = limit / sizeOfPacket;
     diff = packets[removeIndex].end - packets[removeIndex].start;
     amountOfIndexesToMove = Math.ceil(diff * percentageResize);
     packets[removeIndex].end -= amountOfIndexesToMove < minimumIndexesToRemove
       ? minimumIndexesToRemove
       : amountOfIndexesToMove;
-    sizeOfPacket = calculateSizeOfDataInMB({ data, range: packets[removeIndex] });
+    if (packets[removeIndex].end <= packets[removeIndex].start) {
+      packets[removeIndex].end = packets[removeIndex].start + 1;
+    }
 
+    sizeOfPacket = calculateSizeOfDataInMB({ data, range: packets[removeIndex] });
     if (sizeOfPacket > limit) {
       resizePackets = true;
     } else if (packets[removeIndex].end < data.length) {
       resizePackets = true;
       // adding a new packet for data that needs to be split into packets
       packets.push({
-        start: packets[removeIndex].end + 1,
+        start: packets[removeIndex].end,
         end: data.length,
       });
       removeIndex += 1;
@@ -321,6 +325,8 @@ const calculatePacketSizes = (data, limit = 0.9) => {
     } else {
       resizePackets = false;
     }
+
+    count += 1;
   }
 
   return packets;

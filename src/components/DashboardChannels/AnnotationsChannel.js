@@ -709,14 +709,16 @@ export default function AnnotationsChannel({
         })
           .then(async (data) => {
             console.log('data.packets', data.packets);
-            let annos = data.annotations;
+            const annos = data.annotations;
             if (data.packets.length > 1) {
+              /*
               const dataArray = await Promise.all(data.packets.map((range) => getAllAnnotations({
                 groups: session.user.groups, userId: session.user.id, range,
               })));
               console.log(dataArray);
               annos = dataArray.reduce((prev, current) => prev.concat(current.annotations), annos);
               console.log('annos', annos);
+              */
             }
             saveAndOrganizeAnnotationsByGroup(annos);
             setRefresh();
