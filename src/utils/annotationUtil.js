@@ -190,11 +190,11 @@ const getSharedAnnotations = async ({
 };
 
 const getAllAnnotations = async ({
-  userId, groups,
+  userId, groups, range,
 }) => {
   const url = '/api/allAnnotations';
   const groupIds = groups ? groups.map((g) => g.id) : [];
-  const body = { userId, groupIds };
+  const body = { userId, groupIds, range };
   const res = await unfetch(url, {
     method: 'POST',
     body: JSON.stringify(body),
