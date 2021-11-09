@@ -581,7 +581,7 @@ export default function IdeaSpacesChannel({
               </>
             )}
         </div>
-        <div className={styles.tileContainer} style={{ display: 'flex', flexDirection: 'column' }}>
+        <div className={styles.tileContainer} style={{ display: 'flex', flexDirection: 'column', paddingTop: 0 }}>
           {openIdeaSpaceId ? (
             <>
               <div className={styles.ideaSpaceHeader}>
