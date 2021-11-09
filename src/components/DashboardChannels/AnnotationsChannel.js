@@ -255,11 +255,11 @@ export default function AnnotationsChannel({
 
   const updateAnnotations = (annos) => {
     const {
-      canLoadMore,
-      page,
-      mine,
-      shared,
-      'shared-with-me': sharedWithMe,
+      canLoadMore = false,
+      page = 1,
+      mine = [],
+      shared = [],
+      'shared-with-me': sharedWithMe = [],
     } = annos;
     if (annotations[slug]) {
       annotations[slug].canLoadMore = canLoadMore;
@@ -268,7 +268,13 @@ export default function AnnotationsChannel({
       annotations[slug].shared.push(...shared);
       annotations[slug]['shared-with-me'].push(...sharedWithMe);
     } else {
-      annotations[slug] = annos;
+      annotations[slug] = {
+        canLoadMore,
+        page,
+        mine,
+        shared,
+        'shared-with-me': sharedWithMe,
+      };
     }
     setAnnotations(annotations);
   };
@@ -1050,13 +1056,15 @@ export default function AnnotationsChannel({
       return;
     }
 
-    if (annotations[slug] !== undefined && !refresh) {
+    if (annotations[slug] !== undefined && !refresh && !loadMore) {
       // we already have the annotations for this document so we don't need to reload that
       // information
       return;
     }
 
-    const pageNumber = loadMore && annotations[slug]?.page ? annotations[slug]?.page + 1 : 0;
+    const pageNumber = loadMore && annotations[slug]?.page !== undefined
+      ? annotations[slug]?.page + 1
+      : 1;
 
     setListLoading(true);
     fetchSharedAnnotationsOnDocument({
@@ -1064,47 +1072,58 @@ export default function AnnotationsChannel({
     })
       .then((data) => {
         const sortedAnnos = data.annotations;
-        // const sortedAnnos = annos.sort((a, b) => new Date(b.modified) - new Date(a.modified));
-        const a = {
-          canLoadMore: sortedAnnos.length === perPage,
-          page: pageNumber,
-          mine: sortedAnnos
-            .filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'mine' }))
-            .map((anno) => toAnnotationsTile(anno,
-              {
-                maxNumberOfTags: maxNumberOfAnnotationTags,
-                shareableLink: `${origin}/documents/${anno.target.document.slug}?mine=false&aid=${anno._id}`,
-                setAlerts,
-              })),
-          shared: sortedAnnos
-            .filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'shared' }))
-            .map((anno) => toAnnotationsTile(anno,
-              {
-                maxNumberOfTags: maxNumberOfAnnotationTags,
-                shareableLink: `${origin}/documents/${anno.target.document.slug}?mine=false&aid=${anno._id}`,
-                setAlerts,
-              })),
-          'shared-with-me': sortedAnnos
-            .filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'shared-with-me' }))
-            .map((anno) => toAnnotationsTile(anno,
-              {
-                maxNumberOfTags: maxNumberOfAnnotationTags,
-                shareableLink: `${origin}/documents/${anno.target.document.slug}?mine=false&aid=${anno._id}`,
-                setAlerts,
-              })),
-        };
+        if (sortedAnnos.length > 0) {
+          // const sortedAnnos = annos.sort((a, b) => new Date(b.modified) - new Date(a.modified));
+          const a = {
+            canLoadMore: sortedAnnos.length === perPage,
+            page: pageNumber,
+            mine: sortedAnnos
+              .filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'mine' }))
+              .map((anno) => toAnnotationsTile(anno,
+                {
+                  maxNumberOfTags: maxNumberOfAnnotationTags,
+                  shareableLink: `${origin}/documents/${anno.target.document.slug}?mine=false&aid=${anno._id}`,
+                  setAlerts,
+                })),
+            shared: sortedAnnos
+              .filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'shared' }))
+              .map((anno) => toAnnotationsTile(anno,
+                {
+                  maxNumberOfTags: maxNumberOfAnnotationTags,
+                  shareableLink: `${origin}/documents/${anno.target.document.slug}?mine=false&aid=${anno._id}`,
+                  setAlerts,
+                })),
+            'shared-with-me': sortedAnnos
+              .filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'shared-with-me' }))
+              .map((anno) => toAnnotationsTile(anno,
+                {
+                  maxNumberOfTags: maxNumberOfAnnotationTags,
+                  shareableLink: `${origin}/documents/${anno.target.document.slug}?mine=false&aid=${anno._id}`,
+                  setAlerts,
+                })),
+          };
 
-        updateAnnotations(a);
-        setListLoading();
-        setRefresh();
-        setLoadMore();
-        setLastUpdated(new Date());
+          updateAnnotations(a);
 
-        if ((a.shared.length === 0 && a.mine.length > 0) || selectedGroupId === 'privateGroup') {
-          setSelectedPermissions('mine');
+          if ((a.shared.length === 0 && a.mine.length > 0) || selectedGroupId === 'privateGroup') {
+            setSelectedPermissions('mine');
+          } else {
+            setSelectedPermissions('shared');
+          }
         } else {
-          setSelectedPermissions('shared');
+          updateAnnotations({ page: pageNumber });
         }
+
+        setListLoading();
+        if (refresh) {
+          setRefresh();
+        }
+
+        if (loadMore) {
+          setLoadMore();
+        }
+
+        setLastUpdated(new Date());
       }).catch((err) => {
         setAlerts([{ text: err.message, variant: 'danger' }]);
         setListLoading();
