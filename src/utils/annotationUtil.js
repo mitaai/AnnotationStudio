@@ -52,16 +52,51 @@ const postAnnotation = async ({
 };
 
 const fetchSharedAnnotationsOnDocument = async ({
-  slug, page, perPage, cookie, prefetch,
+  slug,
+  page,
+  perPage,
+  cookie,
+  prefetch,
+  userId,
+  userEmail,
+  countByPermissions,
+  selectedPermissions,
 }) => {
-  let url = `${prefetch ? appendProtocolIfMissing(process.env.SITE) : ''}/api/annotations?slug=${slug}`;
-  if (page !== undefined && perPage !== undefined) {
-    url += `&page=${page}&perPage=${perPage}`;
+  const url = `${prefetch ? appendProtocolIfMissing(process.env.SITE) : ''}/api/annotations`;
+  /*
+  if (page !== undefined) {
+    url += `&page=${page}`;
   }
+  if (perPage !== undefined) {
+    url += `&perPage=${perPage}`;
+  }
+  if (selectedPermissions !== undefined) {
+    url += `&selectedPermissions=${selectedPermissions}`;
+  }
+  if (userEmail !== undefined) {
+    url += `&userEmail=${userEmail}`;
+  }
+  if (userId !== undefined) {
+    url += `&userId=${userId}`;;
+  }
+  */
+
+  const body = {
+    slug,
+    page,
+    perPage,
+    cookie,
+    prefetch,
+    userId,
+    userEmail,
+    countByPermissions,
+    selectedPermissions,
+  };
   // eslint-disable-next-line no-undef
   const f = prefetch ? fetch : unfetch;
   const res = await f(url, {
-    method: 'GET',
+    method: 'POST',
+    body: JSON.stringify(body),
     headers: {
       'Content-Type': 'application/json',
       Cookie: cookie,
@@ -69,8 +104,15 @@ const fetchSharedAnnotationsOnDocument = async ({
   });
   if (res.status === 200) {
     const response = await res.json();
-    const { annotations, count } = response;
-    return Promise.resolve({ annotations, count });
+    const {
+      annotations, count, countByPermissions: cbp, annotationsByPermissions,
+    } = response;
+    return Promise.resolve({
+      annotations,
+      count,
+      countByPermissions: cbp,
+      annotationsByPermissions,
+    });
   } if (res.status === 404) {
     return Promise.resolve([]);
   } return Promise.reject(Error(`Unable to retrieve annotations: error ${res.status} received from server`));
@@ -334,9 +376,27 @@ const calculatePacketSizes = (data, limit = 0.9) => {
   return packets;
 };
 
+const byPermissionFilter = ({
+  email, permissions, filter, userEmail, userId,
+}) => {
+  if (filter === 'mine') { // mine
+    return userEmail === email;
+  }
+
+  if (filter === 'shared') { // shared
+    return !permissions.private && !permissions.sharedTo;
+  }
+
+  if (filter === 'shared-with-me' && permissions.sharedTo !== undefined) { // shared with specific people
+    return permissions.sharedTo.includes(userId);
+  }
+  return false;
+};
+
 const MAX_NUMBER_OF_ANNOTATIONS_REQUESTED = 305;
 
 export {
+  byPermissionFilter,
   MAX_NUMBER_OF_ANNOTATIONS_REQUESTED,
   calculatePacketSizes,
   addGroupNamesToAnnotations,

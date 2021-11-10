@@ -83,7 +83,7 @@ export default function AnnotationsChannel({
   const [annotations, setAnnotations] = useState({});
   const [loadMore, setLoadMore] = useState();
   const aa = allAnnotations || [];
-  const perPage = 25;
+  const perPage = 3;
   const [groupedAnnotations, setGroupedAnnotations] = useState({});
   const [filteredAnnotations, setFilteredAnnotations] = useState([]);
 
@@ -165,17 +165,26 @@ export default function AnnotationsChannel({
     ? <ListLoadingSpinner />
     : (
       <div
-        className={styles.loadMoreDocs}
+        className={styles.loadMoreItems}
         onClick={() => setLoadMore(true)}
         onKeyDown={() => {}}
         tabIndex={-1}
         role="button"
       >
-        Load more annotations
+        <span>
+          Load more annotations
+        </span>
+
       </div>
     );
 
-  const loadMoreDocs = annotations[slug]?.canLoadMore ? loadComponent : <></>;
+  const loadMoreDocs = (
+    annotations[slug]?.countByPermissions
+    && annotations[slug]?.countByPermissions[selectedPermissions]
+      > annotations[slug][selectedPermissions].length)
+    ? loadComponent
+    : <></>;
+
 
   const [, setForceUpdate] = useState();
   const forceUpdate = () => setForceUpdate(RID());
@@ -211,26 +220,13 @@ export default function AnnotationsChannel({
     byDateCreated: <CalendarEventFill size={14} style={{ marginRight: 4 }} />,
   };
 
-  const byPermissionFilter = ({ email, permissions, filter }) => {
-    if (filter === 'mine') { // mine
-      return session.user.email === email;
-    }
-
-    if (filter === 'shared') { // shared
-      return !permissions.private && !permissions.sharedTo;
-    }
-
-    if (filter === 'shared-with-me' && permissions.sharedTo !== undefined) { // shared with specific people
-      return permissions.sharedTo.includes(session.user.id);
-    }
-    return false;
-  };
-
   const buttons = [
     {
       text: 'Mine',
       textWidth: 40,
-      count: annotations[slug] === undefined ? 0 : annotations[slug].mine.length,
+      count: annotations[slug]?.countByPermissions === undefined
+        ? 0
+        : annotations[slug]?.countByPermissions.mine,
       selected: selectedPermissions === 'mine',
       onClick: () => { setSelectedPermissions('mine'); },
       icon: <PersonFill size="1.2em" />,
@@ -238,7 +234,9 @@ export default function AnnotationsChannel({
     {
       text: 'Shared with group(s)',
       textWidth: 145,
-      count: annotations[slug] === undefined ? 0 : annotations[slug].shared.length,
+      count: annotations[slug]?.countByPermissions === undefined
+        ? 0
+        : annotations[slug]?.countByPermissions.shared,
       selected: selectedPermissions === 'shared',
       onClick: () => { setSelectedPermissions('shared'); },
       icon: <PeopleFill size="1.2em" />,
@@ -246,7 +244,9 @@ export default function AnnotationsChannel({
     {
       text: 'Shared with me',
       textWidth: 115,
-      count: annotations[slug] === undefined ? 0 : annotations[slug]['shared-with-me'].length,
+      count: annotations[slug]?.countByPermissions === undefined
+        ? 0
+        : annotations[slug]?.countByPermissions['shared-with-me'],
       selected: selectedPermissions === 'shared-with-me',
       onClick: () => { setSelectedPermissions('shared-with-me'); },
       icon: <PersonPlusFill size="1.2em" />,
@@ -255,27 +255,40 @@ export default function AnnotationsChannel({
 
   const updateAnnotations = (annos) => {
     const {
-      canLoadMore = false,
+      countByPermissions,
       page = 1,
       mine = [],
       shared = [],
       'shared-with-me': sharedWithMe = [],
     } = annos;
     if (annotations[slug]) {
-      annotations[slug].canLoadMore = canLoadMore;
+      if (countByPermissions) {
+        if (countByPermissions?.mine) {
+          annotations[slug].countByPermissions.mine = countByPermissions.mine;
+        }
+        if (countByPermissions?.shared) {
+          annotations[slug].countByPermissions.mine = countByPermissions.mine;
+        }
+        if (countByPermissions['shared-with-me']) {
+          annotations[slug].countByPermissions['shared-with-me'] = countByPermissions['shared-with-me'];
+        }
+      }
+
       annotations[slug].page = page;
       annotations[slug].mine.push(...mine);
       annotations[slug].shared.push(...shared);
       annotations[slug]['shared-with-me'].push(...sharedWithMe);
     } else {
       annotations[slug] = {
-        canLoadMore,
+        countByPermissions,
         page,
         mine,
         shared,
         'shared-with-me': sharedWithMe,
       };
     }
+
+
     setAnnotations(annotations);
   };
 
@@ -1066,55 +1079,48 @@ export default function AnnotationsChannel({
       ? annotations[slug]?.page + 1
       : 1;
 
-    setListLoading(true);
+    const countByPermissions = annotations[slug]?.countByPermissions === undefined;
+
+    if (!loadMore) {
+      setListLoading(true);
+    }
+
     fetchSharedAnnotationsOnDocument({
-      slug, prefetch: false, page: pageNumber, perPage,
+      slug,
+      prefetch: false,
+      page: pageNumber === 1 ? undefined : pageNumber,
+      perPage,
+      countByPermissions,
+      userId: session.user.id,
+      userEmail: session.user.email,
+      selectedPermissions,
     })
       .then((data) => {
-        const sortedAnnos = data.annotations;
-        if (sortedAnnos.length > 0) {
-          // const sortedAnnos = annos.sort((a, b) => new Date(b.modified) - new Date(a.modified));
-          const a = {
-            canLoadMore: sortedAnnos.length === perPage,
-            page: pageNumber,
-            mine: sortedAnnos
-              .filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'mine' }))
-              .map((anno) => toAnnotationsTile(anno,
-                {
-                  maxNumberOfTags: maxNumberOfAnnotationTags,
-                  shareableLink: `${origin}/documents/${anno.target.document.slug}?mine=false&aid=${anno._id}`,
-                  setAlerts,
-                })),
-            shared: sortedAnnos
-              .filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'shared' }))
-              .map((anno) => toAnnotationsTile(anno,
-                {
-                  maxNumberOfTags: maxNumberOfAnnotationTags,
-                  shareableLink: `${origin}/documents/${anno.target.document.slug}?mine=false&aid=${anno._id}`,
-                  setAlerts,
-                })),
-            'shared-with-me': sortedAnnos
-              .filter(({ creator: { email }, permissions }) => byPermissionFilter({ email, permissions, filter: 'shared-with-me' }))
-              .map((anno) => toAnnotationsTile(anno,
-                {
-                  maxNumberOfTags: maxNumberOfAnnotationTags,
-                  shareableLink: `${origin}/documents/${anno.target.document.slug}?mine=false&aid=${anno._id}`,
-                  setAlerts,
-                })),
-          };
+        const a = {
+          page: pageNumber,
+          countByPermissions: data.countByPermissions,
+        };
 
-          updateAnnotations(a);
+        if (data.annotationsByPermissions) {
+          a.mine = data.annotationsByPermissions.mine;
+          a.shared = data.annotationsByPermissions.shared;
+          a['shared-with-me'] = data.annotationsByPermissions['shared-with-me'];
+        }
 
-          if ((a.shared.length === 0 && a.mine.length > 0) || selectedGroupId === 'privateGroup') {
+        if (countByPermissions && !refresh) {
+          // this means that this is the first time the user is clicking on the document in the
+          // dashboard
+          if ((data.countByPermissions.shared === 0 && data.countByPermissions.mine > 0) || selectedGroupId === 'privateGroup') {
             setSelectedPermissions('mine');
           } else {
             setSelectedPermissions('shared');
           }
-        } else {
-          updateAnnotations({ page: pageNumber });
         }
 
+        updateAnnotations(a);
+
         setListLoading();
+
         if (refresh) {
           setRefresh();
         }
@@ -1221,7 +1227,27 @@ export default function AnnotationsChannel({
     } else if (annotations[slug][selectedPermissions].length === 0) {
       annotationTiles = <EmptyListMessage />;
     } else {
-      annotationTiles = annotations[slug][selectedPermissions];
+      const annotationData = annotations[slug][selectedPermissions];
+
+      if (selectedPermissions === 'mine') {
+        annotationTiles = annotationData.map((anno) => toAnnotationsTile(anno, {
+          maxNumberOfTags: maxNumberOfAnnotationTags,
+          shareableLink: `${origin}/documents/${anno.target.document.slug}?mine=false&aid=${anno._id}`,
+          setAlerts,
+        }));
+      } else if (selectedPermissions === 'shared') {
+        annotationTiles = annotationData.map((anno) => toAnnotationsTile(anno, {
+          maxNumberOfTags: maxNumberOfAnnotationTags,
+          shareableLink: `${origin}/documents/${anno.target.document.slug}?mine=false&aid=${anno._id}`,
+          setAlerts,
+        }));
+      } else if (selectedPermissions === 'shared-with-me') {
+        annotationTiles = annotationData.map((anno) => toAnnotationsTile(anno, {
+          maxNumberOfTags: maxNumberOfAnnotationTags,
+          shareableLink: `${origin}/documents/${anno.target.document.slug}?mine=false&aid=${anno._id}`,
+          setAlerts,
+        }));
+      }
     }
   } else if (mode === 'is') {
     // eslint-disable-next-line no-restricted-syntax

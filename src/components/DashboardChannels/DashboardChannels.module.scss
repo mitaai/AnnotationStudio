@@ -13,13 +13,20 @@
   }
 }
 
-.loadMoreDocs {
+.loadMoreItems {
   text-align: center;
   cursor: pointer;
-  margin: 10px auto;
+  margin: 20px auto;
   font-size: 14px;
-  &:hover {
-    color: theme.$primary;
+  > span {
+    &:hover {
+      background-color: #19436F;
+    }
+    transition: all 0.5s;
+    background-color: theme.$primary;
+    padding: 8px 10px;
+    color: white;
+    border-radius: 2px;
   }
 }
 
