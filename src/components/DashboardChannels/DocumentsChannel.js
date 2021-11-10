@@ -243,13 +243,15 @@ export default function DocumentsChannel({
     ? <ListLoadingSpinner />
     : (
       <div
-        className={styles.loadMoreDocs}
+        className={styles.loadMoreItems}
         onClick={() => setLoadMore(true)}
         onKeyDown={() => {}}
         tabIndex={-1}
         role="button"
       >
-        Load more documents
+        <span>
+          Load more documents
+        </span>
       </div>
     );
 

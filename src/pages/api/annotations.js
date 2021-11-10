@@ -1,18 +1,26 @@
 import { ObjectID } from 'mongodb';
 import jwt from 'next-auth/jwt';
-import { MAX_NUMBER_OF_ANNOTATIONS_REQUESTED } from '../../utils/annotationUtil';
+import { byPermissionFilter, MAX_NUMBER_OF_ANNOTATIONS_REQUESTED } from '../../utils/annotationUtil';
 import { connectToDatabase } from '../../utils/dbUtil';
 
 const secret = process.env.AUTH_SECRET;
 
 const handler = async (req, res) => {
   const { method } = req;
-  if (method === 'GET') {
+  if (method === 'POST') {
     const token = await jwt.getToken({ req, secret });
     if (token && token.exp > 0) {
       const {
-        slug, userId, limit, page, perPage = MAX_NUMBER_OF_ANNOTATIONS_REQUESTED,
-      } = req.query;
+        slug,
+        limit,
+        page,
+        countByPermissions,
+        userId,
+        userEmail,
+        selectedPermissions,
+        perPage = MAX_NUMBER_OF_ANNOTATIONS_REQUESTED,
+      } = req.body;
+
       let groupIds = req.query['groupIds[]'];
       if (groupIds && !Array.isArray(groupIds)) {
         groupIds = [req.query['groupIds[]']];
@@ -20,31 +28,101 @@ const handler = async (req, res) => {
       if (slug) {
         const { db } = await connectToDatabase();
         let arr = [];
-        if (page && perPage) {
+        const condition = {
+          'target.document.slug': slug,
+        };
+
+        const p = page || 1;
+        const skip = p < 0 ? 0 : (p - 1) * perPage;
+
+        if (countByPermissions && selectedPermissions) {
+          // the user is loading annotations for a specific document with specific permissions for
+          // the dashboard for the first time / refreshing
           arr = await db
             .collection('annotations')
-            .find({
-              'target.document.slug': slug,
-            })
+            .find(condition)
             .sort({ modified: -1 })
-            .skip(page > 0 ? ((page - 1) * perPage) : 0)
-            .limit(parseInt(perPage, 10))
             .toArray();
 
+          const cbp = {
+            mine: arr
+              .filter(({ creator: { email }, permissions }) => byPermissionFilter({
+                email, permissions, filter: 'mine', userEmail,
+              })),
+            shared: arr
+              .filter(({ creator: { email }, permissions }) => byPermissionFilter({
+                email, permissions, filter: 'shared',
+              })),
+            'shared-with-me': arr
+              .filter(({ creator: { email }, permissions }) => byPermissionFilter({
+                email, permissions, filter: 'shared-with-me', userId,
+              })),
+          };
+
+          const annotationsByPermissions = {
+            mine: cbp.mine.slice(skip, perPage),
+            shared: cbp.shared.slice(skip, perPage),
+            'shared-with-me': cbp['shared-with-me'].slice(skip, perPage),
+          };
+
           res.status(200).json({
-            annotations: arr,
+            annotations: annotationsByPermissions[selectedPermissions],
+            annotationsByPermissions,
+            count: arr.length,
+            countByPermissions: {
+              mine: cbp.mine.length,
+              shared: cbp.shared.length,
+              'shared-with-me': cbp['shared-with-me'].length,
+            },
+          });
+        } else if (selectedPermissions) {
+          // The user is trying to load more annotations for a specific document with specific
+          // permissions for the dashboard
+
+          if (selectedPermissions === 'mine') {
+            condition['creator.email'] = userEmail;
+          } else if (selectedPermissions === 'shared') {
+            condition['permissions.private'] = { $eq: false };
+            condition['permissions.sharedTo'] = { $eq: undefined };
+          } else if (selectedPermissions === 'shared-with-me') {
+            condition['permissions.sharedTo'] = userId;
+          }
+
+          arr = await db
+            .collection('annotations')
+            .find(condition)
+            .sort({ modified: -1 })
+            .toArray();
+
+          const annotationsByPermissions = {
+            mine: [],
+            shared: [],
+            'shared-with-me': [],
+          };
+
+          annotationsByPermissions[selectedPermissions] = arr.slice(skip, skip + perPage);
+
+          res.status(200).json({
+            annotations: annotationsByPermissions[selectedPermissions],
+            annotationsByPermissions,
+            countByPermissions: {
+              [selectedPermissions]: arr.length,
+            },
+            count: arr.length,
           });
         } else {
+          // user is trying to load annotations by slug for document view. Needs the first packet
+          // of annotations and the count of total annotations so that it knows how many more
+          // packets of data to request
+
           arr = await db
             .collection('annotations')
-            .find({
-              'target.document.slug': slug,
-            })
+            .find(condition)
             .sort({ modified: -1 })
             .toArray();
 
           res.status(200).json({
-            annotations: arr.slice(0, perPage),
+            annotations: arr.slice(skip, skip + perPage),
             count: arr.length,
           });
         }
