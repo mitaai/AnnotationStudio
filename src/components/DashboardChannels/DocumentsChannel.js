@@ -52,11 +52,11 @@ export default function DocumentsChannel({
   const [refresh, setRefresh] = useState();
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [, forceUpdateForRefresh] = useState();
-  const perPage = 10;
+  const perPage = 25;
   const numberOfDocuments = documents[selectedGroupId] === undefined
-  || documents[selectedGroupId][documentPermissions] === undefined
+    || documents[selectedGroupId]?.countByPermissions === undefined
     ? 0
-    : documents[selectedGroupId][documentPermissions].docs.length;
+    : documents[selectedGroupId].countByPermissions[documentPermissions];
   const buttons = [
     {
       text: 'Mine',
@@ -76,46 +76,27 @@ export default function DocumentsChannel({
     },
   ];
 
-  const organizeDocumentsByGroup = (docs, groupId) => {
-    const sortedDocs = docs.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
-    const d = DeepCopyObj(documents);
-    if (refresh) {
-      d[groupId][documentPermissions] = {
-        canLoadMore: sortedDocs.length === perPage,
-        docs: sortedDocs,
-        page: 2,
-      };
-    } else if (d[groupId]) {
-      if (d[groupId][documentPermissions]) {
-        // loading more information
-        d[groupId][documentPermissions].docs = d[groupId][documentPermissions].docs
-          .concat(sortedDocs);
-        d[groupId][documentPermissions].canLoadMore = sortedDocs.length === perPage;
-        d[groupId][documentPermissions].page += 1;
+  const updateDocuments = (d) => {
+    const newDocuments = DeepCopyObj(documents);
+    if (newDocuments[selectedGroupId]) {
+      if (d?.countByPermissions?.shared) {
+        newDocuments[selectedGroupId].countByPermissions.shared = d.countByPermissions.shared;
+      } else if (d?.countByPermissions?.mine) {
+        newDocuments[selectedGroupId].countByPermissions.mine = d.countByPermissions.mine;
+      }
+
+      if (Array.isArray(newDocuments[selectedGroupId][documentPermissions])) {
+        newDocuments[selectedGroupId][documentPermissions].push(...d[documentPermissions]);
       } else {
-        d[groupId][documentPermissions] = { docs: sortedDocs, page: 2 };
+        newDocuments[selectedGroupId][documentPermissions] = d[documentPermissions];
       }
     } else {
-      d[groupId] = {};
-      d[groupId][documentPermissions] = {
-        canLoadMore: sortedDocs.length === perPage,
-        docs: sortedDocs,
-        page: 2,
-      };
+      newDocuments[selectedGroupId] = d;
     }
 
-    return d;
+    setDocuments(newDocuments);
   };
 
-  const getPageNumber = () => {
-    if (!refresh
-      && documents[selectedGroupId] !== undefined
-      && documents[selectedGroupId][documentPermissions] !== undefined
-    ) {
-      return documents[selectedGroupId][documentPermissions].page;
-    }
-    return 1;
-  };
 
   useEffect(() => {
     async function fetchData() {
@@ -132,60 +113,57 @@ export default function DocumentsChannel({
           setListLoading(true);
         }
 
-        if (documentPermissions === 'shared') {
-          await getDocumentsByGroupByUser({
-            groups: [{ id: selectedGroupId }],
-            perPage,
-            page: getPageNumber(),
-            mine: false,
-            noDrafts: true,
-          })
-            .then(async (data) => {
-              const { docs } = data;
-              await addGroupNamesToDocuments(docs)
-                .then((allDocs) => {
-                  setDocuments(organizeDocumentsByGroup(allDocs, selectedGroupId));
-                  setListLoading(false);
+        const skip = (documents[selectedGroupId] === undefined
+          || documents[selectedGroupId][documentPermissions]?.length === undefined)
+          ? 0
+          : documents[selectedGroupId][documentPermissions].length;
+
+        const countByPermissions = documents[selectedGroupId]?.countByPermissions === undefined;
+
+        await getDocumentsByGroupByUser({
+          groups: selectedGroupId === 'privateGroup' ? [] : [{ id: selectedGroupId }],
+          id: documentPermissions === 'mine' ? session.user.id : undefined,
+          perPage,
+          skip,
+          countByPermissions,
+          mine: documentPermissions === 'mine',
+          noDrafts: true,
+          sort: { updatedAt: -1 },
+        })
+          .then(async (data) => {
+            const { docs, count } = data;
+            await addGroupNamesToDocuments(docs)
+              .then((docsWithGroupNames) => {
+                const d = {
+                  countByPermissions: {
+                    [documentPermissions]: count,
+                  },
+                  [documentPermissions]: docsWithGroupNames,
+                };
+
+                updateDocuments(d);
+
+
+                setListLoading(false);
+
+                if (refresh) {
                   setRefresh();
-                  setLastUpdated(new Date());
+                }
+
+                if (loadMore) {
                   setLoadMore(false);
-                });
-            })
-            .catch((err) => {
-              setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
-              setListLoading(false);
-              setRefresh();
-              setLastUpdated(new Date());
-              setLoadMore(false);
-            });
-        } else if (documentPermissions === 'mine') {
-          await getDocumentsByGroupByUser({
-            groups: selectedGroupId === 'privateGroup' ? [] : [{ id: selectedGroupId }],
-            id: session.user.id,
-            perPage,
-            page: getPageNumber(),
-            mine: true,
-            noDrafts: true,
+                }
+
+                setLastUpdated(new Date());
+              });
           })
-            .then(async (data) => {
-              const { docs } = data;
-              await addGroupNamesToDocuments(docs)
-                .then((docsWithGroupNames) => {
-                  setDocuments(organizeDocumentsByGroup(docsWithGroupNames, selectedGroupId));
-                  setListLoading(false);
-                  setRefresh();
-                  setLastUpdated(new Date());
-                  setLoadMore(false);
-                });
-            })
-            .catch((err) => {
-              setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
-              setListLoading(false);
-              setRefresh();
-              setLastUpdated(new Date());
-              setLoadMore(false);
-            });
-        }
+          .catch((err) => {
+            setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
+            setListLoading(false);
+            setRefresh();
+            setLastUpdated(new Date());
+            setLoadMore(false);
+          });
       }
     }
     fetchData();
@@ -205,7 +183,7 @@ export default function DocumentsChannel({
   let documentTiles = documents[selectedGroupId] === undefined
   || documents[selectedGroupId][documentPermissions] === undefined
     ? []
-    : documents[selectedGroupId][documentPermissions].docs.map(({
+    : documents[selectedGroupId][documentPermissions].map(({
       _id, title, groups, contributors, updatedAt, slug, owner,
     }) => {
       const contributor = contributors ? contributors.find(({ type }) => type.toLowerCase() === 'author') : undefined;
@@ -234,10 +212,15 @@ export default function DocumentsChannel({
     documentTiles = <EmptyListMessage />;
   }
 
-  const canLoadMoreDocs = (documents[selectedGroupId] !== undefined
-    && documents[selectedGroupId][documentPermissions] !== undefined)
-    ? documents[selectedGroupId][documentPermissions].canLoadMore
-    : false;
+  const totalCount = documents[selectedGroupId]
+    && documents[selectedGroupId]?.countByPermissions
+    && documents[selectedGroupId]?.countByPermissions[documentPermissions];
+  const currentCount = documents[selectedGroupId]
+    && documents[selectedGroupId][documentPermissions]
+    && documents[selectedGroupId][documentPermissions].length;
+  const canLoadMoreDocs = totalCount !== undefined
+    && currentCount !== undefined
+    && totalCount > currentCount;
 
   const loadComponent = loadMore
     ? <ListLoadingSpinner />
