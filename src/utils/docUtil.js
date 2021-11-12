@@ -87,19 +87,23 @@ const getSharedDocumentsByGroup = async ({
 
 const getDocumentsByGroupByUser = async ({
   groups,
+  skip,
   page,
   perPage,
   id,
   mine,
   noDrafts,
+  sort,
 }) => {
   const url = '/api/documents2';
   const body = {
     userId: mine ? id : undefined,
     groupIds: groups.map((group) => group.id),
+    skip,
     page,
     perPage,
     noDrafts,
+    sort,
   };
   const res = await unfetch(url, {
     method: 'POST',
@@ -163,9 +167,13 @@ const getManyGroupNamesById = async (groupIds) => {
   } return Promise.reject(Error(`Unable to fecth group names: error ${res.status} received from server`));
 };
 
-const searchForUsers = async ({ query, page, perPage, sort }) => {
+const searchForUsers = async ({
+  query, page, perPage, sort,
+}) => {
   const url = '/api/search/users';
-  const body = { query, page, perPage, sort };
+  const body = {
+    query, page, perPage, sort,
+  };
   const res = await unfetch(url, {
     method: 'POST',
     body: JSON.stringify(body),
@@ -179,9 +187,13 @@ const searchForUsers = async ({ query, page, perPage, sort }) => {
   } return Promise.reject(Error(`Unable to fecth group names: error ${res.status} received from server`));
 };
 
-const searchForDocuments = async ({ query, page, perPage, sort }) => {
+const searchForDocuments = async ({
+  query, page, perPage, sort,
+}) => {
   const url = '/api/search/documents';
-  const body = { query, page, perPage, sort };
+  const body = {
+    query, page, perPage, sort,
+  };
   const res = await unfetch(url, {
     method: 'POST',
     body: JSON.stringify(body),
@@ -195,9 +207,13 @@ const searchForDocuments = async ({ query, page, perPage, sort }) => {
   } return Promise.reject(Error(`Unable to fecth group names: error ${res.status} received from server`));
 };
 
-const searchForGroups = async ({ query, page, perPage, sort }) => {
+const searchForGroups = async ({
+  query, page, perPage, sort,
+}) => {
   const url = '/api/search/groups';
-  const body = { query, page, perPage, sort };
+  const body = {
+    query, page, perPage, sort,
+  };
   const res = await unfetch(url, {
     method: 'POST',
     body: JSON.stringify(body),

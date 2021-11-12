@@ -12,7 +12,7 @@ const handler = async (req, res) => {
     const token = await jwt.getToken({ req, secret });
     if (token && token.exp > 0) {
       const {
-        page, perPage, userId, groupIds, noDrafts,
+        page, perPage, userId, groupIds, noDrafts, skip, sort = { createdAt: -1 },
       } = req.body;
       if (userId || groupIds) {
         const { db } = await connectToDatabase();
@@ -43,14 +43,21 @@ const handler = async (req, res) => {
           condition.state = state;
         }
 
+        let skp = 0;
+        if (skip !== undefined) {
+          skp = skip;
+        } else if (page && perPage) {
+          skp = page > 0 ? ((page - 1) * perPage) : 0;
+        }
+
         let arr;
-        let count;
-        if (page && perPage) {
+        let count = 0;
+        if (perPage && (page !== undefined || skip !== undefined)) {
           arr = await db
             .collection('documents')
             .find(condition, { projection })
-            .sort({ createdAt: -1 })
-            .skip(page > 0 ? ((page - 1) * perPage) : 0)
+            .sort(sort)
+            .skip(skp)
             .limit(parseInt(perPage, 10))
             .toArray();
           count = await db.collection('documents').countDocuments(condition);
@@ -59,8 +66,14 @@ const handler = async (req, res) => {
             .collection('documents')
             .find(condition, { projection })
             .toArray();
+
+          count = arr.length;
         }
-        res.status(200).json({ documents: arr, count });
+
+        res.status(200).json({
+          documents: arr,
+          count,
+        });
       } else res.status(400).end('Bad request');
     } else res.status(403).end('Invalid or expired token');
   } else res.status(405).end(`Method ${method} Not Allowed`);

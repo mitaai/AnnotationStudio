@@ -83,7 +83,7 @@ export default function AnnotationsChannel({
   const [annotations, setAnnotations] = useState({});
   const [loadMore, setLoadMore] = useState();
   const aa = allAnnotations || [];
-  const perPage = 3;
+  const perPage = 25;
   const [groupedAnnotations, setGroupedAnnotations] = useState({});
   const [filteredAnnotations, setFilteredAnnotations] = useState([]);
 
@@ -342,7 +342,7 @@ export default function AnnotationsChannel({
     for (const [groupId, { shared, mine }] of Object.entries(documents)) {
       const permissions = [].concat(shared ? ['shared'] : []).concat(mine ? ['mine'] : []);
       permissions.map((p) => {
-        documents[groupId][p].docs.map(({ _id, title }) => {
+        documents[groupId][p].map(({ _id, title }) => {
           if (!documentIdsIncluded.includes(_id)) {
             // this means that the user has access to this document but not any annotations in this
             // document if it has any, so it was not added to the allFilers.byDocument object. So we
@@ -412,7 +412,7 @@ export default function AnnotationsChannel({
         // the allFilters.byDocument object so we will try to get that data and update the object
         const doc = documents[selectedGroupId]
           && documents[selectedGroupId][selectedPermissions]
-          && documents[selectedGroupId][selectedPermissions].docs
+          && documents[selectedGroupId][selectedPermissions]
             .find(({ _id }) => _id === selectedDocumentId);
         const obj = doc ? {
           name: doc.title,
@@ -1073,6 +1073,10 @@ export default function AnnotationsChannel({
       // we already have the annotations for this document so we don't need to reload that
       // information
       return;
+    }
+
+    if (refresh && mode === 'as') {
+      annotations[slug] = undefined;
     }
 
     const pageNumber = loadMore && annotations[slug]?.page !== undefined
