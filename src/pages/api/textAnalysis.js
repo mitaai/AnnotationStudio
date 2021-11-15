@@ -37,7 +37,7 @@ const handler = async (req, res) => {
         client.annotateText(opts)
           .then(async ([result]) => {
             const reslt = result;
-            const sizeBefore = calculateSizeOfDataInMB({ data: result });
+            const sizeBefore = calculateSizeOfDataInMB({ data: reslt });
 
             for (let i = 0; i < reslt.entities.length; i += 1) {
               reslt.entities[i].mentions = undefined;
