@@ -60,6 +60,14 @@
   background: #EBF2FF;
 }
 
+.dark-blue {
+  color: white;
+  background: theme.$primary;
+  &:hover {
+    background: #19436F;
+  }
+}
+
 .yellow {
   background: #EFC957;
   color: #575757;

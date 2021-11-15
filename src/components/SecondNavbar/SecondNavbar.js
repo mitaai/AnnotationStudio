@@ -8,6 +8,7 @@ import { publicationFieldName } from '../../utils/metadataUtil';
 import DocumentZoomSlider from '../DocumentZoomSlider/DocumentZoomSlider';
 import styles from './SecondNavbar.module.scss';
 import ArrowButton from '../ArrowButtton/ArrowButton';
+import TextAnalysisPopover from '../TextAnalysisPopover';
 
 const SecondNavbar = ({
   session,
@@ -192,6 +193,9 @@ const SecondNavbar = ({
                   </div>
                   <div className={styles['filter-container']}>
                     <FilterPopover session={session} />
+                  </div>
+                  <div className={styles['filter-container']}>
+                    <TextAnalysisPopover session={session} />
                   </div>
                 </div>
               </Col>
