@@ -40,7 +40,7 @@ const handler = async (req, res) => {
             const sizeBefore = calculateSizeOfDataInMB({ data: result });
 
             for (let i = 0; i < reslt.entities.length; i += 1) {
-                reslt.entities[i].mentions = undefined;
+              reslt.entities[i].mentions = undefined;
             }
 
             const size = calculateSizeOfDataInMB({ data: reslt });
