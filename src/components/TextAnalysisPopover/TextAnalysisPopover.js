@@ -72,7 +72,7 @@ function TextAnalysisPopover({ textAnalysisData, loadingTextAnalysisData, getTex
                 {
                   textAnalysisData
                     ? (
-                      <Nav className="me-auto">
+                      <Nav className="me-auto text-analysis-navbar">
                         <Nav.Link onClick={() => setTab('overview')} active={tab === 'overview'}>Overview</Nav.Link>
                         <Nav.Link onClick={() => setTab('filter')} active={tab === 'filter'}>Filter</Nav.Link>
                         <Nav.Link onClick={() => setTab('features')} active={tab === 'features'}>Features</Nav.Link>
@@ -129,6 +129,10 @@ function TextAnalysisPopover({ textAnalysisData, loadingTextAnalysisData, getTex
 
       <style jsx global>
         {`
+
+          .text-analysis-navbar .nav-link.active {
+            color: #015999 !important;
+          }
   
           #btn-text-analysis-filter .badge {
             opacity: 0.0;
