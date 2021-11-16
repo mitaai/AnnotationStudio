@@ -7,11 +7,14 @@ import {
 import { getDocumentTextAnalysis } from '../../utils/docUtil';
 
 export default function RunTextAnalysisModal({
+  setAlerts,
   show,
   setShow = () => {},
+  setTextAnalysisData,
   textAnalysisComplete,
   setTextAnalysisComplete,
   getHTMLValue,
+  documentTextAnalysisId,
   setDocumentTextAnalysisId,
 }) {
   const [errorMessage, setErrorMessage] = useState();
@@ -32,21 +35,25 @@ export default function RunTextAnalysisModal({
       type: 'HTML',
     };
 
-    getDocumentTextAnalysis({ document })
+    const returnData = setTextAnalysisData !== undefined;
+    getDocumentTextAnalysis({ document, analysisId: documentTextAnalysisId, returnData })
       .then((res) => {
-        console.log('res', res);
         if (res.err) {
           setErrorMessage(res.err.details);
           setDocumentTextAnalysisId();
           setTextAnalysisComplete();
         } else {
+          setErrorMessage();
+          if (returnData) {
+            setTextAnalysisData(res.analysis.result);
+          }
           setDocumentTextAnalysisId(res.analysis.id);
           setTextAnalysisComplete(true);
           setShow();
         }
       })
       .catch((err) => {
-        console.log('err', err);
+        setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
       });
   };
 
@@ -58,7 +65,7 @@ export default function RunTextAnalysisModal({
 
   return (
     <Modal show={show} onHide={onHide}>
-      <Modal.Header closeButton>
+      <Modal.Header closeButton={errorMessage}>
         <Modal.Title>Running Text Analysis</Modal.Title>
       </Modal.Header>
       <Modal.Body>

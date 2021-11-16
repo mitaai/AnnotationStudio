@@ -8,6 +8,7 @@ function Layout({
   children,
   type,
   splashPage,
+  getTextAnalysisData,
   document,
   breadcrumbs,
   alerts,
@@ -31,9 +32,14 @@ function Layout({
   } else if (type === 'dashboard') {
     innerContent = content;
   } else {
-    innerContent = <Container style={type === 'admin' ? {
-      height: '100%',
-    } : {}}>{content}</Container>;
+    innerContent = (
+      <Container style={type === 'admin' ? {
+        height: '100%',
+      } : {}}
+      >
+        {content}
+      </Container>
+    );
   }
   return (
     <>
@@ -44,6 +50,7 @@ function Layout({
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
         <Header
           type={type}
+          getTextAnalysisData={getTextAnalysisData}
           document={document}
           breadcrumbs={breadcrumbs}
           docView={docView}

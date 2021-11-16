@@ -58,6 +58,7 @@ import SlateToolbar from '../SlateToolbar';
 import styles from './DocumentForm.module.scss';
 import TileBadge from '../TileBadge';
 import RunTextAnalysisModal from '../RunTextAnalysisModal';
+import TextAnalysisInfo from '../TextAnalysisInfo/TextAnalysisInfo';
 
 const DocumentForm = ({
   session,
@@ -245,6 +246,7 @@ const DocumentForm = ({
         text: serializeHTMLFromNodes({ plugins, nodes: values.textSlate }),
         textAnalysisId: documentTextAnalysisId,
       };
+
     const res = await unfetch(postUrl, {
       method: 'POST',
       body: JSON.stringify({
@@ -363,7 +365,6 @@ const DocumentForm = ({
   useEffect(() => {
     if (textAnalysisComplete) {
       setTextAnalysisComplete();
-      setDocumentTextAnalysisId();
     }
   }, [slateValue, htmlValue]);
 
@@ -634,67 +635,10 @@ const DocumentForm = ({
                     </Card.Title>
                   </Card.Header>
                   <Card.Body>
-                    <div style={{ color: '#212121', fontSize: 15, marginTop: 5 }}>
-                      Powered by&nbsp;
-                      <strong>Google Cloud</strong>
-                      , Annotation Studio&apos;s Text Analysis software generates extra layers of
-                      information and annotation to help readers understand and deep read a writing.
-                    </div>
-                    <div style={{ paddingLeft: 10 }}>
-                      <div style={{
-                        color: '#212121', fontSize: 17, fontWeight: 'bold', marginTop: 5,
-                      }}
-                      >
-                        Features
-                      </div>
-                      <div style={{ marginTop: 5 }}>
-                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                          {featuresIcon}
-                          <span
-                            style={{ color: textAnalysisColor }}
-                            className={styles.featureHeader}
-                          >
-                            Named Entity Recoginition
-                          </span>
-                        </div>
-                        <div className={styles.featureText}>
-                          Highlights and labels people, places,and events in a document and
-                          organizes them by relevance and frequency within the document.
-                        </div>
-                      </div>
-                      <div style={{ marginTop: 5 }}>
-                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                          {featuresIcon}
-                          <span
-                            style={{ color: textAnalysisColor }}
-                            className={styles.featureHeader}
-                          >
-                            Sentiment Analysis
-                          </span>
-                        </div>
-                        <div className={styles.featureText}>
-                          Highlights and labels people, places,
-                          and events in a document and organizes them by relevance and frequency
-                          within the document.
-                        </div>
-                      </div>
-                      <div style={{ marginTop: 5 }}>
-                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                          {featuresIcon}
-                          <span
-                            style={{ color: textAnalysisColor }}
-                            className={styles.featureHeader}
-                          >
-                            Literary Device Analysis
-                          </span>
-                        </div>
-                        <div className={styles.featureText}>
-                          Scans, highlights, and labels literary devices found in a document, for
-                          example: metaphor, simile, rhetorical devices, etc.
-                        </div>
-                      </div>
-                    </div>
-
+                    <TextAnalysisInfo
+                      featuresIcon={featuresIcon}
+                      textAnalysisColor={textAnalysisColor}
+                    />
                   </Card.Body>
                 </Card>
               </Col>
@@ -820,6 +764,7 @@ const DocumentForm = ({
         textAnalysisComplete={textAnalysisComplete}
         setTextAnalysisComplete={setTextAnalysisComplete}
         getHTMLValue={htmlValue === '' ? () => serializeHTMLFromNodes({ plugins, nodes: slateValue }) : () => htmlValue}
+        documentTextAnalysisId={documentTextAnalysisId}
         setDocumentTextAnalysisId={setDocumentTextAnalysisId}
       />
     </>

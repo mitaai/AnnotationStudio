@@ -14,6 +14,7 @@ const SecondNavbar = ({
   session,
   type,
   breadcrumbs,
+  getTextAnalysisData = () => {},
   document,
   docView,
   dashboardState,
@@ -195,7 +196,11 @@ const SecondNavbar = ({
                     <FilterPopover session={session} />
                   </div>
                   <div className={styles['filter-container']}>
-                    <TextAnalysisPopover session={session} />
+                    <TextAnalysisPopover
+                      textAnalysisData={document?.textAnalysisData}
+                      getTextAnalysisData={getTextAnalysisData}
+                      loadingTextAnalysisData={document?.loadingTextAnalysisData}
+                    />
                   </div>
                 </div>
               </Col>

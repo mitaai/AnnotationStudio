@@ -14,19 +14,37 @@ import {
 } from 'react-bootstrap';
 
 import {
+  Check2Square,
   Stack,
 } from 'react-bootstrap-icons';
+import LoadingSpinner from '../LoadingSpinner';
+import TextAnalysisInfo from '../TextAnalysisInfo/TextAnalysisInfo';
+import TileBadge from '../TileBadge';
 
 
-function TextAnalysisPopover() {
+function TextAnalysisPopover({ textAnalysisData, loadingTextAnalysisData, getTextAnalysisData }) {
   const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState();
   const [tab, setTab] = useState('overview');
 
+  const textAnalysisColor = '#19436F';
+  const featuresIcon = <Check2Square color={textAnalysisColor} size={14} />;
   const tabs = {
+    loading: <LoadingSpinner />,
+    runAnalysis: <TextAnalysisInfo
+      featuresIcon={featuresIcon}
+      textAnalysisColor={textAnalysisColor}
+    />,
     overview: <div>overview</div>,
     filter: <div>filter</div>,
     features: <div>features</div>,
   };
+
+  let t = tab;
+  if (loadingTextAnalysisData) {
+    t = 'loading';
+  } else if (textAnalysisData === undefined) {
+    t = 'runAnalysis';
+  }
 
   const filterPopoverComponent = (
     <Popover id="filter-popover">
@@ -35,26 +53,50 @@ function TextAnalysisPopover() {
           {false && (
             <Card.Header style={{ display: 'flex', alignItems: 'center' }}>
               <h5 style={{ marginBottom: 0, flex: 1 }}>Text Analysis</h5>
-              <DropdownButton id="dropdown-basic-button" title="Overview" size="sm">
-                <Dropdown.Item href="#/action-1">Action</Dropdown.Item>
-                <Dropdown.Item href="#/action-2">Another action</Dropdown.Item>
-                <Dropdown.Item href="#/action-3">Something else</Dropdown.Item>
-              </DropdownButton>
+              { textAnalysisData
+                ? (
+                  <DropdownButton id="dropdown-basic-button" title="Overview" size="sm">
+                    <Dropdown.Item href="#/action-1">Action</Dropdown.Item>
+                    <Dropdown.Item href="#/action-2">Another action</Dropdown.Item>
+                    <Dropdown.Item href="#/action-3">Something else</Dropdown.Item>
+                  </DropdownButton>
+                )
+                : <div>Run text analysis</div>}
+
             </Card.Header>
           )}
           <Card.Body style={{ padding: 0 }}>
             <Navbar bg="light" variant="light" style={{ borderRadius: '4px 4px 0px 0px' }}>
               <Container>
                 <Navbar.Brand>Text Analysis</Navbar.Brand>
-                <Nav className="me-auto">
-                  <Nav.Link onClick={() => setTab('overview')} active={tab === 'overview'}>Overview</Nav.Link>
-                  <Nav.Link onClick={() => setTab('filter')} active={tab === 'filter'}>Filter</Nav.Link>
-                  <Nav.Link onClick={() => setTab('features')} active={tab === 'features'}>Features</Nav.Link>
-                </Nav>
+                {
+                  textAnalysisData
+                    ? (
+                      <Nav className="me-auto">
+                        <Nav.Link onClick={() => setTab('overview')} active={tab === 'overview'}>Overview</Nav.Link>
+                        <Nav.Link onClick={() => setTab('filter')} active={tab === 'filter'}>Filter</Nav.Link>
+                        <Nav.Link onClick={() => setTab('features')} active={tab === 'features'}>Features</Nav.Link>
+                      </Nav>
+                    )
+                    : (
+                      <TileBadge
+                        key="text-analysis-status"
+                        color="dark-blue"
+                        text="Run Analysis"
+                        fontSize={12}
+                        paddingLeft={8}
+                        paddingRight={8}
+                        paddingTop={6}
+                        paddingBottom={6}
+                        onClick={getTextAnalysisData}
+                      />
+                    )
+                }
+
               </Container>
             </Navbar>
-            <div style={{ height: 100 }}>
-              {tabs[tab]}
+            <div style={{ padding: '15px 20px 30px 20px' }}>
+              {tabs[t]}
             </div>
           </Card.Body>
         </Card>

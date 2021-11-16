@@ -259,11 +259,13 @@ const addGroupNamesToDocuments = async (docsToAlter) => {
 };
 
 const getDocumentTextAnalysis = async ({
-  document,
+  document, analysisId, returnData,
 }) => {
   const url = '/api/textAnalysis';
   const body = {
     document,
+    analysisId,
+    returnData,
   };
   const res = await unfetch(url, {
     method: 'POST',
