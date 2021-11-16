@@ -60,7 +60,7 @@ const handler = async (req, res) => {
             let d = 0;
             if (diff > 0) {
               for (let i = 0; i < reslt.entities.length; i += 1) {
-                d = reslt.entities[i].salience - minSalience
+                d = reslt.entities[i].salience - minSalience;
                 reslt.entities[i].normalizedSalience = d / diff;
               }
             }
