@@ -660,8 +660,6 @@ const DocumentPage = ({
       return;
     }
 
-    console.log('hello');
-
     const saveDocumentTextAnalysisId = async () => {
       // this means that document text analysis was just run
       const patchUrl = `/api/document/${document.id}`;
@@ -670,15 +668,17 @@ const DocumentPage = ({
         textAnalysisId: documentTextAnalysisId,
       }
 
-      const res = await unfetch(patchUrl, {
+      unfetch(patchUrl, {
         method: 'PATCH',
         body: JSON.stringify(body),
         headers: {
           'Content-Type': 'application/json',
         },
-      });
-
-      console.log('res', res);
+      })
+        .then(() => {})
+        .catch((err) => {
+          setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
+        });
     };
     
     saveDocumentTextAnalysisId();

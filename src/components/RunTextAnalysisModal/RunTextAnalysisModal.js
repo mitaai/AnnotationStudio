@@ -17,7 +17,6 @@ export default function RunTextAnalysisModal({
   documentTextAnalysisId,
   setDocumentTextAnalysisId,
 }) {
-
   const [errorMessage, setErrorMessage] = useState();
 
   const onHide = errorMessage ? () => setShow() : () => {};
