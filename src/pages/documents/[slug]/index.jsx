@@ -629,9 +629,9 @@ const DocumentPage = ({
       documentContainerResized();
     });
 
-    setLoadingTextAnalysisData(true);
-
-    getDocumentTextAnalysis({ analysisId: documentTextAnalysisId, returnData: true })
+    if (documentTextAnalysisId) {
+      setLoadingTextAnalysisData(true);
+      getDocumentTextAnalysis({ analysisId: documentTextAnalysisId, returnData: true })
       .then((res) => {
         if (res.err) {
           setAlerts((prevState) => [...prevState, { text: res.err.details, variant: 'danger' }]);
@@ -651,7 +651,41 @@ const DocumentPage = ({
         setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
         setLoadingTextAnalysisData();
       });
+    }
   }, []);
+
+  useEffect(() => {
+
+    if (document.textAnalysisId || documentTextAnalysisId === undefined) {
+      return;
+    }
+
+    console.log('hello');
+
+    const saveDocumentTextAnalysisId = async () => {
+      // this means that document text analysis was just run
+      const patchUrl = `/api/document/${document.id}`;
+      const body = {
+        ...document,
+        textAnalysisId: documentTextAnalysisId,
+      }
+
+      const res = await unfetch(patchUrl, {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      console.log('res', res);
+    };
+    
+    saveDocumentTextAnalysisId();
+
+    
+
+  }, [documentTextAnalysisId])
 
   useEffect(() => {
     debouncedRepositioning(
