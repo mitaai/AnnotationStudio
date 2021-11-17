@@ -632,30 +632,29 @@ const DocumentPage = ({
     if (documentTextAnalysisId) {
       setLoadingTextAnalysisData(true);
       getDocumentTextAnalysis({ analysisId: documentTextAnalysisId, returnData: true })
-      .then((res) => {
-        if (res.err) {
-          setAlerts((prevState) => [...prevState, { text: res.err.details, variant: 'danger' }]);
-          setDocumentTextAnalysisId();
-          setTextAnalysisComplete();
-        } else {
+        .then((res) => {
+          if (res.err) {
+            setAlerts((prevState) => [...prevState, { text: res.err.details, variant: 'danger' }]);
+            setDocumentTextAnalysisId();
+            setTextAnalysisComplete();
+          } else {
           // because returnData = true
-          setTextAnalysisData(res.analysis.result);
+            setTextAnalysisData(res.analysis.result);
 
+            setLoadingTextAnalysisData();
+            setDocumentTextAnalysisId(res.analysis.id);
+            setTextAnalysisComplete(true);
+            setShowTextAnalysisModal();
+          }
+        })
+        .catch((err) => {
+          setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
           setLoadingTextAnalysisData();
-          setDocumentTextAnalysisId(res.analysis.id);
-          setTextAnalysisComplete(true);
-          setShowTextAnalysisModal();
-        }
-      })
-      .catch((err) => {
-        setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
-        setLoadingTextAnalysisData();
-      });
+        });
     }
   }, []);
 
   useEffect(() => {
-
     if (document.textAnalysisId || documentTextAnalysisId === undefined) {
       return;
     }
@@ -666,7 +665,7 @@ const DocumentPage = ({
       const body = {
         ...document,
         textAnalysisId: documentTextAnalysisId,
-      }
+      };
 
       unfetch(patchUrl, {
         method: 'PATCH',
@@ -680,12 +679,9 @@ const DocumentPage = ({
           setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
         });
     };
-    
+
     saveDocumentTextAnalysisId();
-
-    
-
-  }, [documentTextAnalysisId])
+  }, [documentTextAnalysisId]);
 
   useEffect(() => {
     debouncedRepositioning(
