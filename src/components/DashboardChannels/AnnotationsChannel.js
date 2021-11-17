@@ -178,7 +178,7 @@ export default function AnnotationsChannel({
       </div>
     );
 
-  const loadMoreDocs = (
+  const ASLoadMoreAnnos = (
     annotations[slug]?.countByPermissions
     && annotations[slug]?.countByPermissions[selectedPermissions]
       > annotations[slug][selectedPermissions].length)
@@ -1373,7 +1373,7 @@ export default function AnnotationsChannel({
     )}
     <div className={styles.tileContainer}>
       {(listLoading || refresh) ? <ListLoadingSpinner /> : annotationTiles}
-      {loadMoreDocs}
+      { mode === 'as' && ASLoadMoreAnnos}
     </div>
   </>,
     outlines: openOutline.current.id ? (

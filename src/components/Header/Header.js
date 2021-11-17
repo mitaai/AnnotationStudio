@@ -21,6 +21,7 @@ const getEditProfileUrl = (email) => {
 const Header = ({
   type,
   breadcrumbs,
+  getTextAnalysisData,
   document,
   docView,
   annotations,
@@ -113,6 +114,7 @@ const Header = ({
           session={session}
           type={type}
           breadcrumbs={breadcrumbs}
+          getTextAnalysisData={getTextAnalysisData}
           document={document}
           docView={docView}
           annotations={annotations}

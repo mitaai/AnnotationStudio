@@ -249,7 +249,10 @@ export default function DocumentsChannel({
     >
       <div className={styles.dividingLine} />
       <div className={styles.headerContainer}>
-        <div style={{ display: 'flex', flex: 1, flexDirection: 'row' }}>
+        <div style={{
+          display: 'flex', flex: 1, flexDirection: 'row', alignItems: 'center',
+        }}
+        >
           <Link href={`/documents?${dashboardState}&tab=${selectedGroupId === 'privateGroup' ? 'mine' : 'shared'}`}>
             <span className={`${styles.headerText} ${styles.headerLink}`}>
               Documents

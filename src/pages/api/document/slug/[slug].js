@@ -50,6 +50,7 @@ const handler = async (req, res) => {
           series,
           seriesNumber,
           notes,
+          textAnalysisId,
         } = document;
         res.status(200).json({
           id: _id,
@@ -77,6 +78,7 @@ const handler = async (req, res) => {
           series,
           seriesNumber,
           notes,
+          textAnalysisId,
         });
       } else res.status(404).end('Not Found');
     } else res.status(403).end('Invalid or expired token');

@@ -25,7 +25,7 @@ import Layout from '../../../components/Layout';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import AnnotationChannel from '../../../components/AnnotationChannel';
 import Document from '../../../components/Document';
-import { prefetchDocumentBySlug } from '../../../utils/docUtil';
+import { getDocumentTextAnalysis, prefetchDocumentBySlug } from '../../../utils/docUtil';
 import { fetchSharedAnnotationsOnDocument, MAX_NUMBER_OF_ANNOTATIONS_REQUESTED } from '../../../utils/annotationUtil';
 import {
   DocumentAnnotationsContext,
@@ -42,6 +42,7 @@ import Footer from '../../../components/Footer';
 import { annotatedByFilterMatch, byPermissionsDocumentViewFilterMatch, byTagFilterMatch } from '../../../utils/annotationFilteringUtil';
 import MaxedTextLengthToast from '../../../components/MaxedTextLengthToast';
 import MaxedAnnotationLengthToast from '../../../components/MaxedAnnotationLengthToast';
+import RunTextAnalysisModal from '../../../components/RunTextAnalysisModal';
 
 
 const DocumentPage = ({
@@ -143,6 +144,18 @@ const DocumentPage = ({
       setFooterH(footerH);
     }, 250),
   ).current;
+
+
+  // state for run text analysis modal
+  const [showTextAnalysisModal, setShowTextAnalysisModal] = useState();
+  const [textAnalysisData, setTextAnalysisData] = useState();
+  const [textAnalysisComplete, setTextAnalysisComplete] = useState();
+  const [documentTextAnalysisId, setDocumentTextAnalysisId] = useState(
+    (process.env.NEXT_PUBLIC_TEXT_ANALYSIS === 'true' || process.env.NEXT_PUBLIC_TEXT_ANALYSIS === true)
+      ? document?.textAnalysisId
+      : undefined,
+  );
+  const [loadingTextAnalysisData, setLoadingTextAnalysisData] = useState();
 
   const expandAnnotation = (aid, expand) => {
     const aidExistInList = expandedAnnotations.includes(aid);
@@ -619,7 +632,60 @@ const DocumentPage = ({
     window.addEventListener('resize', () => {
       documentContainerResized();
     });
+
+    if (documentTextAnalysisId) {
+      setLoadingTextAnalysisData(true);
+      getDocumentTextAnalysis({ analysisId: documentTextAnalysisId, returnData: true })
+        .then((res) => {
+          if (res.err) {
+            setAlerts((prevState) => [...prevState, { text: res.err.details, variant: 'danger' }]);
+            setDocumentTextAnalysisId();
+            setTextAnalysisComplete();
+          } else {
+          // because returnData = true
+            setTextAnalysisData(res.analysis.result);
+
+            setLoadingTextAnalysisData();
+            setDocumentTextAnalysisId(res.analysis.id);
+            setTextAnalysisComplete(true);
+            setShowTextAnalysisModal();
+          }
+        })
+        .catch((err) => {
+          setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
+          setLoadingTextAnalysisData();
+        });
+    }
   }, []);
+
+  useEffect(() => {
+    if (document.textAnalysisId || documentTextAnalysisId === undefined) {
+      return;
+    }
+
+    const saveDocumentTextAnalysisId = async () => {
+      // this means that document text analysis was just run
+      const patchUrl = `/api/document/${document.id}`;
+      const body = {
+        ...document,
+        textAnalysisId: documentTextAnalysisId,
+      };
+
+      unfetch(patchUrl, {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+        .then(() => {})
+        .catch((err) => {
+          setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
+        });
+    };
+
+    saveDocumentTextAnalysisId();
+  }, [documentTextAnalysisId]);
 
   useEffect(() => {
     debouncedRepositioning(
@@ -764,7 +830,8 @@ const DocumentPage = ({
           >
             <Layout
               type="document"
-              document={document}
+              getTextAnalysisData={() => setShowTextAnalysisModal(true)}
+              document={{ ...document, textAnalysisData, loadingTextAnalysisData }}
               alerts={alerts}
               docView
               statefulSession={statefulSession}
@@ -783,16 +850,16 @@ const DocumentPage = ({
                 <>
                   <UnsavedChangesToast
                     show={showUnsavedChangesToast}
-                    onClose={() => { setShowUnsavedChangesToast(); }}
+                    onClose={() => setShowUnsavedChangesToast()}
                     scrollToAnnotation={scrollToAnnotation}
                   />
                   <MaxedTextLengthToast
                     show={showMaxTextLengthReached}
-                    onClose={() => { setShowMaxTextLengthReached(); }}
+                    onClose={() => setShowMaxTextLengthReached()}
                   />
                   <MaxedAnnotationLengthToast
                     show={showMaxedAnnotationLengthToast}
-                    onClose={() => { setShowMaxedAnnotationLengthToast(); }}
+                    onClose={() => setShowMaxedAnnotationLengthToast()}
                   />
                   <HeatMap
                     annotationsLoaded={annotationChannel1Loaded && annotationChannel2Loaded}
@@ -925,6 +992,16 @@ const DocumentPage = ({
                       </p>
                     </Modal.Body>
                   </Modal>
+                  <RunTextAnalysisModal
+                    show={showTextAnalysisModal}
+                    setShow={setShowTextAnalysisModal}
+                    setTextAnalysisData={setTextAnalysisData}
+                    textAnalysisComplete={textAnalysisComplete}
+                    setTextAnalysisComplete={setTextAnalysisComplete}
+                    getHTMLValue={() => document.text}
+                    documentTextAnalysisId={documentTextAnalysisId}
+                    setDocumentTextAnalysisId={setDocumentTextAnalysisId}
+                  />
                 </>
               )}
             </Layout>

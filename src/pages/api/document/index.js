@@ -33,6 +33,7 @@ const handler = async (req, res) => {
         series,
         seriesNumber,
         notes,
+        textAnalysisId,
       } = req.body;
       const metadata = {
         title,
@@ -56,6 +57,7 @@ const handler = async (req, res) => {
         series,
         seriesNumber,
         notes,
+        textAnalysisId,
       };
       Object.keys(metadata).forEach((key) => {
         if (metadata[key] === undefined) {
