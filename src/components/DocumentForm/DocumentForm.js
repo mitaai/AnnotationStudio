@@ -614,33 +614,35 @@ const DocumentForm = ({
                     />
                   </Card.Body>
                 </Card>
-                <Card style={{ marginTop: 10 }}>
-                  <Card.Header>
-                    <Card.Title style={{ display: 'flex', alignItems: 'center', marginBottom: 0 }}>
-                      <span style={{ flex: 1 }}>Text Analysis</span>
-                      <TileBadge
-                        key="text-analysis-status"
-                        color={textAnalysisComplete ? 'green' : 'dark-blue'}
-                        text={textAnalysisComplete ? 'Completed' : 'Run Analysis'}
-                        defaultFocus={textAnalysisComplete}
-                        fontSize={12}
-                        paddingLeft={8}
-                        paddingRight={8}
-                        paddingTop={6}
-                        paddingBottom={6}
-                        onClick={textAnalysisComplete
-                          ? undefined
-                          : () => setShowTextAnalysisModal(true)}
+                {(process.env.NEXT_PUBLIC_TEXT_ANALYSIS === 'true' || process.env.NEXT_PUBLIC_TEXT_ANALYSIS === true) && (
+                  <Card style={{ marginTop: 10 }}>
+                    <Card.Header>
+                      <Card.Title style={{ display: 'flex', alignItems: 'center', marginBottom: 0 }}>
+                        <span style={{ flex: 1 }}>Text Analysis</span>
+                        <TileBadge
+                          key="text-analysis-status"
+                          color={textAnalysisComplete ? 'green' : 'dark-blue'}
+                          text={textAnalysisComplete ? 'Completed' : 'Run Analysis'}
+                          defaultFocus={textAnalysisComplete}
+                          fontSize={12}
+                          paddingLeft={8}
+                          paddingRight={8}
+                          paddingTop={6}
+                          paddingBottom={6}
+                          onClick={textAnalysisComplete
+                            ? undefined
+                            : () => setShowTextAnalysisModal(true)}
+                        />
+                      </Card.Title>
+                    </Card.Header>
+                    <Card.Body>
+                      <TextAnalysisInfo
+                        featuresIcon={featuresIcon}
+                        textAnalysisColor={textAnalysisColor}
                       />
-                    </Card.Title>
-                  </Card.Header>
-                  <Card.Body>
-                    <TextAnalysisInfo
-                      featuresIcon={featuresIcon}
-                      textAnalysisColor={textAnalysisColor}
-                    />
-                  </Card.Body>
-                </Card>
+                    </Card.Body>
+                  </Card>
+                )}
               </Col>
               <Col>
                 <Card className="mb-2">

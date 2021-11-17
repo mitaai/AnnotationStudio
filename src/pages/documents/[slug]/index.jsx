@@ -150,7 +150,11 @@ const DocumentPage = ({
   const [showTextAnalysisModal, setShowTextAnalysisModal] = useState();
   const [textAnalysisData, setTextAnalysisData] = useState();
   const [textAnalysisComplete, setTextAnalysisComplete] = useState();
-  const [documentTextAnalysisId, setDocumentTextAnalysisId] = useState(document?.textAnalysisId);
+  const [documentTextAnalysisId, setDocumentTextAnalysisId] = useState(
+    (process.env.NEXT_PUBLIC_TEXT_ANALYSIS === 'true' || process.env.NEXT_PUBLIC_TEXT_ANALYSIS === true)
+      ? document?.textAnalysisId
+      : undefined,
+  );
   const [loadingTextAnalysisData, setLoadingTextAnalysisData] = useState();
 
   const expandAnnotation = (aid, expand) => {

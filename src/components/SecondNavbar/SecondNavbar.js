@@ -195,13 +195,15 @@ const SecondNavbar = ({
                   <div className={styles['filter-container']}>
                     <FilterPopover session={session} />
                   </div>
-                  <div className={styles['filter-container']}>
-                    <TextAnalysisPopover
-                      textAnalysisData={document?.textAnalysisData}
-                      getTextAnalysisData={getTextAnalysisData}
-                      loadingTextAnalysisData={document?.loadingTextAnalysisData}
-                    />
-                  </div>
+                  {(process.env.NEXT_PUBLIC_TEXT_ANALYSIS === 'true' || process.env.NEXT_PUBLIC_TEXT_ANALYSIS === true) && (
+                    <div className={styles['filter-container']}>
+                      <TextAnalysisPopover
+                        textAnalysisData={document?.textAnalysisData}
+                        getTextAnalysisData={getTextAnalysisData}
+                        loadingTextAnalysisData={document?.loadingTextAnalysisData}
+                      />
+                    </div>
+                  )}
                 </div>
               </Col>
             )}
