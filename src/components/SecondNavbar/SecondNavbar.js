@@ -8,11 +8,13 @@ import { publicationFieldName } from '../../utils/metadataUtil';
 import DocumentZoomSlider from '../DocumentZoomSlider/DocumentZoomSlider';
 import styles from './SecondNavbar.module.scss';
 import ArrowButton from '../ArrowButtton/ArrowButton';
+import TextAnalysisPopover from '../TextAnalysisPopover';
 
 const SecondNavbar = ({
   session,
   type,
   breadcrumbs,
+  getTextAnalysisData = () => {},
   document,
   docView,
   dashboardState,
@@ -193,6 +195,15 @@ const SecondNavbar = ({
                   <div className={styles['filter-container']}>
                     <FilterPopover session={session} />
                   </div>
+                  {(process.env.NEXT_PUBLIC_TEXT_ANALYSIS === 'true' || process.env.NEXT_PUBLIC_TEXT_ANALYSIS === true) && (
+                    <div className={styles['filter-container']}>
+                      <TextAnalysisPopover
+                        textAnalysisData={document?.textAnalysisData}
+                        getTextAnalysisData={getTextAnalysisData}
+                        loadingTextAnalysisData={document?.loadingTextAnalysisData}
+                      />
+                    </div>
+                  )}
                 </div>
               </Col>
             )}

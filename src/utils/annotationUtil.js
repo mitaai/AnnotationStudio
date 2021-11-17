@@ -309,7 +309,12 @@ const addGroupNamesToAnnotations = async (annosToAlter) => {
 };
 
 
-const calculateSizeOfDataInMB = ({ data, range = { start: 0, end: undefined } }) => ((encodeURI(JSON.stringify(data.slice(range.start, range.end)).split(/%..|./)).length - 1) / 1024) / 1024;
+const calculateSizeOfDataInMB = ({ data, range = { start: 0, end: undefined } }) => {
+  if (Array.isArray(data)) {
+    return ((encodeURI(JSON.stringify(data.slice(range.start, range.end)).split(/%..|./)).length - 1) / 1024) / 1024;
+  }
+  return ((encodeURI(JSON.stringify(data).split(/%..|./)).length - 1) / 1024) / 1024;
+};
 
 /*
 const calculateDataToSend = (data, limit = 1) => {
@@ -397,6 +402,7 @@ const MAX_NUMBER_OF_ANNOTATIONS_REQUESTED = 305;
 
 export {
   byPermissionFilter,
+  calculateSizeOfDataInMB,
   MAX_NUMBER_OF_ANNOTATIONS_REQUESTED,
   calculatePacketSizes,
   addGroupNamesToAnnotations,

@@ -14,6 +14,11 @@ export default function TileBadge({
   setShowPopover,
   color = 'grey',
   text = '',
+  defaultFocus,
+  paddingLeft = 5,
+  paddingRight = 5,
+  paddingTop = 5,
+  paddingBottom = 5,
   marginTop = 0,
   marginLeft = 0,
   marginBottom = 0,
@@ -27,9 +32,9 @@ export default function TileBadge({
   onDragStart = () => {},
   onDragEnd = () => {},
 }) {
-  const [focused, setFocused] = useState();
+  const [focused, setFocused] = useState(defaultFocus);
   const [hoverCancel, setHoverCancel] = useState();
-  const colors = ['grey', 'blue', 'green', 'yellow', 'red'];
+  const colors = ['grey', 'blue', 'dark-blue', 'green', 'yellow', 'red'];
   const c = colors.includes(color) ? color : 'grey';
   const classNames = [
     styles.tileBadge,
@@ -77,6 +82,10 @@ export default function TileBadge({
           }
         }}
         style={{
+          paddingLeft,
+          paddingRight,
+          paddingTop,
+          paddingBottom,
           marginTop,
           marginLeft,
           marginBottom,
@@ -109,7 +118,7 @@ export default function TileBadge({
         onDragEnd={onDragEnd}
         onClick={tileBadgeOnClick}
         onFocus={() => setFocused(true)}
-        onBlur={() => setFocused()}
+        onBlur={() => setFocused(defaultFocus)}
         role="link"
         tabIndex={0}
         onKeyDown={(e) => {
@@ -123,7 +132,14 @@ export default function TileBadge({
         }}
         className={classNames}
         style={{
-          marginLeft, marginRight, fontSize,
+          paddingLeft,
+          paddingRight,
+          paddingTop,
+          marginTop,
+          marginLeft,
+          marginBottom,
+          marginRight,
+          fontSize,
         }}
       >
         <span>{text}</span>
