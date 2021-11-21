@@ -1254,8 +1254,12 @@ export default function AnnotationsChannel({
       }
     }
   } else if (mode === 'is') {
+    console.log('filteredAnnotations', filteredAnnotations);
+    console.log('filteredAnnotations.length', filteredAnnotations.length);
     // eslint-disable-next-line no-restricted-syntax
     for (const [gid, annosIndexes] of Object.entries(groupedAnnotations)) {
+      console.log('gid', gid);
+      console.log('annosIndexes', annosIndexes);
       const aids = [];
       if ((appliedFilters.byGroup.length > 0 && appliedFilters.byGroup.includes(gid))
       || appliedFilters.byGroup.length === 0) {
