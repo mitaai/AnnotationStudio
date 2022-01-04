@@ -253,24 +253,46 @@ const DocumentPage = ({
     }
   };
 
-  const highlightTextToAnnotate = async (mySelector, annotationID) => {
+  const highlightTextToAnnotate = async ({
+    selector,
+    annotationID,
+    normalizedSalience,
+    class: c,
+  }) => {
     // this function takes a object selector and it highlights it
     // accordingly so that the user knows what they are about to annotate
-    const obj = {
-      selector: mySelector,
-      props: {
-        class: 'text-currently-being-annotated active',
-        'annotation-id': annotationID,
-      },
+    // const randomNumber = (min, max) => (Math.random() * (max - min) + min);
+    if (annotationID) {
+      // console.log('selector', selector);
+    }
+    const props = annotationID ? {
+      class: 'text-currently-being-annotated active',
+      'annotation-id': annotationID,
+    } : {
+      class: c,
     };
 
-    // before we highlight the tex to annotate we need to
-    // make sure to unhighlight text that was trying to be annotated by the user previously
-    $('.text-currently-being-annotated').removeClass('text-currently-being-annotated active');
+    if (normalizedSalience) {
+      props['normalized-salience'] = normalizedSalience;
+    }
 
-    $('#document-content-container').addClass('unselectable');
+    const obj = {
+      selector,
+      props,
+    };
+
+    if (annotationID) {
+      // before we highlight the tex to annotate we need to
+      // make sure to unhighlight text that was trying to be annotated by the user previously
+      $('.text-currently-being-annotated').removeClass('text-currently-being-annotated active');
+      $('#document-content-container').addClass('unselectable');
+    }
 
     await highlightText(obj, $('#document-content-container').get(0));
+  };
+
+  const annotateDocument = async (opts) => {
+    await highlightTextToAnnotate(opts);
   };
 
   const addAnnotationToChannels = (side, newAnnotation) => {
@@ -659,6 +681,127 @@ const DocumentPage = ({
   }, []);
 
   useEffect(() => {
+    if (textAnalysisData === undefined
+      || !annotationChannel1Loaded
+      || !annotationChannel2Loaded
+    ) { return; }
+    // console.log('textAnalysisData.analysis', textAnalysisData.analysis);
+    const cleanText = (strInputCode) => strInputCode.replace(/<\/?[^>]+(>|$)/g, '');
+    const calculateSentimentAnalysisClass = ({ score }) => {
+      let n = '';
+      if (score < -1.5) {
+        n = '-3';
+      } else if (score < -0.9) {
+        n = '-2';
+      } else if (score < -0.3) {
+        n = '-1';
+      } else if (score < 0.3) {
+        n = '0';
+      } else if (score < 0.9) {
+        n = '1';
+      } else if (score < 1.5) {
+        n = '2';
+      } else {
+        n = '3';
+      }
+
+      return `sentiment-analysis-${n}`;
+    };
+    // const d = `sentiment-analysis-${Math.floor(randomNumber(1, 6))}`;
+    const { analysis: { sentences, entities } } = textAnalysisData;
+    const highlightDocumentWithSentimentAnalysis = async () => {
+      const sentenceBeginOffset = [];
+      for (let i = 0; i < sentences.length; i += 1) {
+        let prefix;
+        let suffix;
+        if (i === 0) {
+          prefix = '';
+          suffix = ` ${sentences[i + 1].text.content}`;
+        }
+
+        if (i === sentences.length - 1) {
+          prefix = `${sentences[i - 1].text.content} `;
+          suffix = '';
+        }
+
+        if (prefix === undefined && suffix === undefined) {
+          prefix = `${sentences[i - 1].text.content} `;
+          suffix = ` ${sentences[i + 1].text.content}`;
+        }
+
+        sentenceBeginOffset.push(sentences[i].text.beginOffset);
+
+        // console.log('prefix', prefix);
+        // console.log('suffix', suffix);
+        // console.log('exact', sentences[i].text.content);
+        // eslint-disable-next-line no-await-in-loop
+        await annotateDocument({
+          selector: {
+            exact: cleanText(sentences[i].text.content),
+            // prefix: '',
+            // suffix: ' ',
+            prefix: cleanText(prefix),
+            suffix: cleanText(suffix),
+          },
+          class: calculateSentimentAnalysisClass(sentences[i].sentiment),
+        });
+      }
+
+      // next thing we need to do is highlight all the entities in the paper
+      for (let i = 0; i < entities.length; i += 1) {
+        let ns = 'low';
+        if (entities[i].normalizedSalience > 0.6) {
+          ns = 'high';
+        } else if (entities[i].normalizedSalience > 0.2) {
+          ns = 'medium';
+        }
+        // eslint-disable-next-line no-await-in-loop
+        await annotateDocument({
+          selector: {
+            exact: entities[i].name,
+            prefix: ' ',
+            suffix: '',
+          },
+          class: `entity-analysis-${entities[i].type} entity-analysis`,
+          normalizedSalience: ns,
+        });
+      }
+
+      // after annotating the document with entities we will remove entities that have no content
+      const filterEmptySpan = (c, content) => {
+        if (content.length !== undefined) {
+          return content.length === 0;
+        }
+        return content.innerHTML.length === 0;
+      };
+      // eslint-disable-next-line react/no-this-in-sfc
+      let a = $('.entity-analysis').contents().filter(filterEmptySpan);
+      while (a.length > 0) {
+        // console.log('a', a);
+        // console.log($('.entity-analysis').contents().length);
+        a.remove();
+        a = $('.entity-analysis').contents().filter(filterEmptySpan);
+        // console.log('a.length', a.length);
+      }
+      // console.log($('.entity-analysis').contents());
+
+      const filterEmptySpan2 = (c, d) => d.innerHTML.length === 0;
+
+      let b = $('.entity-analysis').filter(filterEmptySpan2);
+      while (b.length > 0) {
+        // console.log('b', b);
+        b.remove();
+        b = $('.entity-analysis').filter(filterEmptySpan2);
+        // console.log('b.length', b.length);
+      }
+
+      // console.log('sentenceBeginOffset', sentenceBeginOffset);
+    };
+
+    setTimeout(highlightDocumentWithSentimentAnalysis, 500);
+  }, [textAnalysisData, annotationChannel1Loaded, annotationChannel2Loaded]);
+
+  useEffect(() => {
     if (document.textAnalysisId || documentTextAnalysisId === undefined) {
       return;
     }
@@ -913,11 +1056,7 @@ const DocumentPage = ({
                           annotations={annotations}
                           documentHighlightedAndLoaded={documentHighlightedAndLoaded}
                           addAnnotationToChannels={addAnnotationToChannels}
-                          annotateDocument={
-                            async (mySelector, annotationID) => {
-                              await highlightTextToAnnotate(mySelector, annotationID);
-                            }
-                          }
+                          annotateDocument={annotateDocument}
                           documentToAnnotate={document}
                           documentZoom={documentZoom}
                           alerts={alerts}
@@ -1102,6 +1241,94 @@ const DocumentPage = ({
 
               .text-currently-being-annotated.active {
                 background-color: rgba(0, 123, 255, 0.5);
+              }
+
+              .sentiment-analysis--3 {
+                background-color: rgba(252, 108, 132, 0.5);
+              }
+
+              .sentiment-analysis--2 {
+                background-color: rgba(252, 148, 160, 0.5);
+              }
+              .sentiment-analysis--1 {
+                background-color: rgba(255, 204, 203, 0.5);
+              }
+
+              .sentiment-analysis-0 {
+                background-color: rgba(220, 220, 220, 0.5);
+              }
+              .sentiment-analysis-1 {
+                background-color: rgba(205, 255, 204, 0.5);
+              }
+
+              .sentiment-analysis-2 {
+                background-color: rgba(176, 245, 171, 0.5);
+              }
+
+              .sentiment-analysis-3 {
+                background-color: rgba(144, 239, 144, 0.5);
+              }
+
+              .entity-analysis {
+                border-radius: 2px;
+                border-width: 1px;
+                border-style: dashed;
+              }
+
+              .entity-analysis .entity-analysis {
+                border-radius: 0px !important;
+                border-width: 0px !important;
+                border-style: none !important;
+              }
+
+              /*
+              .entity-analysis-OTHER[normalized-salience='high'], .entity-analysis-OTHER[normalized-salience='medium'] {
+                border-color: rgb(153, 168, 255);
+                background-color: rgb(108, 130, 252, 0.05);
+                color: rgb(48, 79, 254);
+              }
+              */
+
+              .entity-analysis-OTHER[normalized-salience='high'], .entity-analysis-OTHER[normalized-salience='medium'] {
+                border-color: rgb(102, 31, 255);
+                background-color: rgb(102, 31, 255, 0.05);
+                color: rgb(102, 31, 255);
+              }
+
+              .entity-analysis-PERSON[normalized-salience='high'], .entity-analysis-PERSON[normalized-salience='medium'] {
+                border-color: rgb(102, 31, 255);
+                background-color: rgb(102, 31, 255, 0.05);
+                color: rgb(102, 31, 255);
+              }
+
+              .entity-analysis-ORGANIZATION[normalized-salience='high'], .entity-analysis-ORGANIZATION[normalized-salience='medium'] {
+                border-color: rgb(102, 31, 255);
+                background-color: rgb(102, 31, 255, 0.05);
+                color: rgb(102, 31, 255);
+              }
+
+              .entity-analysis-EVENT[normalized-salience='high'], .entity-analysis-EVENT[normalized-salience='medium'] {
+                border-color: rgb(102, 31, 255);
+                background-color: rgb(102, 31, 255, 0.05);
+                color: rgb(102, 31, 255);
+              }
+
+              .entity-analysis-LOCATION[normalized-salience='high'], .entity-analysis-LOCATION[normalized-salience='medium'] {
+                border-color: rgb(102, 31, 255);
+                background-color: rgb(102, 31, 255, 0.05);
+                color: rgb(102, 31, 255);
+              }
+
+              .entity-analysis-WORK_OF_ART[normalized-salience='high'], .entity-analysis-WORK_OF_ART[normalized-salience='medium'] {
+                border-color: rgb(102, 31, 255);
+                background-color: rgb(102, 31, 255, 0.05);
+                color: rgb(102, 31, 255);
+              }
+
+              .entity-analysis-NUMBER[normalized-salience='high'], .entity-analysis-NUMBER[normalized-salience='medium'] {
+                border-color: rgb(102, 31, 255);
+                background-color: rgb(102, 31, 255, 0.05);
+                color: rgb(102, 31, 255);
               }
 
               #show-cannot-annotate-document-toast-container {

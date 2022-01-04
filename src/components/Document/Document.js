@@ -418,7 +418,10 @@ export default function Document({
       {documentContentContainer}
       <AnnotateButton
         annotationIdBeingEdited={annotationIdBeingEdited}
-        annotateDocument={(s, rid) => annotateDocument(s, rid)}
+        annotateDocument={(s, rid) => annotateDocument({
+          selector: s,
+          annotationID: rid,
+        })}
         selector={selector}
         setShowUnsavedChangesToast={setShowUnsavedChangesToast}
         setShowMaxTextLengthReached={setShowMaxTextLengthReached}

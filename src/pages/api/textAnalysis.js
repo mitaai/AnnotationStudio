@@ -45,6 +45,8 @@ const handler = async (req, res) => {
             let maxSalience = 0;
             for (let i = 0; i < reslt.entities.length; i += 1) {
               reslt.entities[i].frequency = reslt.entities[i].mentions.length;
+              reslt.entities[i].mentionsBeginOffset = reslt.entities[i].mentions
+                .map(({ text: { beginOffset } }) => beginOffset);
               reslt.entities[i].mentions = undefined;
               const s = reslt.entities[i].salience;
               if (s < minSalience) {
