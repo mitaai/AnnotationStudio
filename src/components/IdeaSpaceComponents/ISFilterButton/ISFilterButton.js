@@ -108,7 +108,7 @@ export default function ISFilterButton({
           // if 'b' is undefined and 'a' is not undefined then 'a' automatically wins the sort
           return -1;
         }
-
+        /*
         if (a.name.toUpperCase() < b.name.toUpperCase()) {
           return -1;
         }
@@ -116,7 +116,7 @@ export default function ISFilterButton({
         if (a.name.toUpperCase() > b.name.toUpperCase()) {
           return 1;
         }
-
+        */
         if (a.name < b.name) {
           return -1;
         }
