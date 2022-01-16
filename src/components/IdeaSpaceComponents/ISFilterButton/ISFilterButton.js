@@ -108,15 +108,26 @@ export default function ISFilterButton({
           // if 'b' is undefined and 'a' is not undefined then 'a' automatically wins the sort
           return -1;
         }
-        /*
-        if (a.name.toUpperCase() < b.name.toUpperCase()) {
-          return -1;
+
+        let returnValue;
+        try {
+          if (a.name.toUpperCase() < b.name.toUpperCase()) {
+            returnValue = -1;
+          }
+
+          if (a.name.toUpperCase() > b.name.toUpperCase()) {
+            returnValue = 1;
+          }
+        } catch (err) {
+          console.log('a?.name', a?.name);
+          console.log('b?.name', b?.name);
+          console.log('err', err);
         }
 
-        if (a.name.toUpperCase() > b.name.toUpperCase()) {
-          return 1;
+        if (returnValue !== undefined) {
+          return returnValue;
         }
-        */
+
         if (a.name < b.name) {
           return -1;
         }
