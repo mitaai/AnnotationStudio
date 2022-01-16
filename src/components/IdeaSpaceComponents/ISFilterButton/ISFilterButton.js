@@ -95,16 +95,16 @@ export default function ISFilterButton({
 
     return {
       filterRows: filterRows.sort((a, b) => {
-        if (a === undefined && b === undefined) {
+        if (a?.name === undefined && b?.name === undefined) {
           return 0;
         }
 
-        if (a === undefined) {
+        if (a?.name === undefined) {
           // if 'a' is undefined and 'b' is not undefined then 'b' automatically wins the sort
           return 1;
         }
 
-        if (b === undefined) {
+        if (b?.name === undefined) {
           // if 'b' is undefined and 'a' is not undefined then 'a' automatically wins the sort
           return -1;
         }
