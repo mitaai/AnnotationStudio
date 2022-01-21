@@ -4,6 +4,8 @@ import GroupTile from './GroupTile';
 
 import styles from './DashboardChannels.module.scss';
 import TileBadge from '../TileBadge';
+import SortChannelsIcon from './SortChannelsIcon';
+import { getGroupsByGroupIds } from '../../utils/groupUtil';
 
 export default function GroupsChannel({
   width,
@@ -17,7 +19,48 @@ export default function GroupsChannel({
   documentPermissions,
 }) {
   const [groups, setGroups] = useState([]);
+  const [groupsDates, setGroupsDates] = useState();
+  const [selectedItem, setSelectedItem] = useState('by-date-created');
+  const [asc, setAsc] = useState();
   const dashboardState = `${selectedDocumentId !== undefined && selectedDocumentSlug !== undefined ? `did=${selectedDocumentId}&slug=${selectedDocumentSlug}&dp=${documentPermissions}&` : ''}gid=${selectedGroupId}`;
+
+
+  const sortGroups = (a, b) => {
+    const order = asc ? -1 : 1;
+
+    if (groupsDates) {
+      if (selectedItem === 'by-date-created' && groupsDates[a.id]?.createdAt && groupsDates[b.id]?.createdAt) {
+        if (groupsDates[a.id].createdAt > groupsDates[b.id].createdAt) {
+          return -order;
+        }
+        return order;
+      }
+    }
+
+    if (selectedItem === 'alpha') {
+      if (a.name.toUpperCase() < b.name.toUpperCase()) {
+        return -order;
+      }
+      return order;
+    }
+
+    return 0;
+  };
+
+  useEffect(() => {
+    const groupIds = groups.map(({ id }) => id);
+    getGroupsByGroupIds(groupIds)
+      .then((res) => {
+        const obj = {};
+        res.map(({ _id, createdAt, updatedAt }) => {
+          // eslint-disable-next-line no-underscore-dangle
+          obj[_id] = { createdAt, updatedAt };
+          return null;
+        });
+        setGroupsDates(obj);
+      })
+      .catch(() => {});
+  }, [groups]);
 
   const groupTiles = [
     <GroupTile
@@ -28,7 +71,7 @@ export default function GroupsChannel({
       selected={selectedGroupId === 'privateGroup'}
       onClick={() => setSelectedGroupId('privateGroup')}
     />,
-  ].concat(groups.map(({
+  ].concat(groups.sort(sortGroups).map(({
     id, name, memberCount, role,
   }) => (
     <GroupTile
@@ -62,6 +105,12 @@ export default function GroupsChannel({
             Groups
           </span>
         </Link>
+        <SortChannelsIcon
+          selected={selectedItem}
+          setSelected={() => setSelectedItem(selectedItem === 'by-date-created' ? 'alpha' : 'by-date-created')}
+          asc={asc}
+          setAsc={() => setAsc(!asc)}
+        />
         <TileBadge text="New +" href="/groups/new" color="yellow" />
       </div>
       <div className={styles.tileContainer}>
