@@ -52,7 +52,7 @@ export default function SortChannelsIcon({
               }}
               onClick={() => { setSelected(); setShow(); }}
             >
-              <span style={{ flex: 1, marginRight: 40 }}>By Date</span>
+              <span style={{ flex: 1, marginRight: 5 }}>By Date Created</span>
               {selected === 'by-date-created' && <Check className={styles.dropdownCheck} size={18} />}
             </span>
             <span
@@ -66,7 +66,7 @@ export default function SortChannelsIcon({
               }}
               onClick={() => { setSelected(); setShow(); }}
             >
-              <span style={{ flex: 1 }}>Alphabetically</span>
+              <span style={{ flex: 1, marginRight: 20 }}>Alphabetically</span>
               {selected === 'alpha' && <Check className={styles.dropdownCheck} size={18} />}
             </span>
             <div
@@ -85,7 +85,7 @@ export default function SortChannelsIcon({
               }}
               onClick={() => { setAsc(); setShow(); }}
             >
-              <span style={{ flex: 1, marginRight: 38 }}>Asc</span>
+              <span style={{ flex: 1, marginRight: 38 }}>Ascending</span>
               {asc && <Check className={styles.dropdownCheck} size={18} />}
             </span>
             <span
@@ -99,7 +99,7 @@ export default function SortChannelsIcon({
               }}
               onClick={() => { setAsc(); setShow(); }}
             >
-              <span style={{ flex: 1 }}>Desc</span>
+              <span style={{ flex: 1 }}>Descending</span>
               {!asc && <Check className={styles.dropdownCheck} size={18} />}
             </span>
           </Popover.Content>
