@@ -343,6 +343,20 @@ const getGroupById = async (id) => {
   } return Promise.reject(Error(`Unable to get group ${id}: error ${res.status} received from server`));
 };
 
+const getGroupsByGroupIds = async (groupIds) => {
+  const url = '/api/groupsByIds';
+  const res = await unfetch(url, {
+    method: 'POST',
+    body: JSON.stringify({ groupIds }),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (res.status === 200) {
+    return Promise.resolve(res.json());
+  } return Promise.reject(Error(`Unable to get groups by group ids: error ${res.status} received from server`));
+};
+
 export {
   addGroupToUser,
   addUserToGroup,
@@ -355,4 +369,5 @@ export {
   prefetchGroupById,
   removeUserFromGroup,
   renameGroup,
+  getGroupsByGroupIds,
 };

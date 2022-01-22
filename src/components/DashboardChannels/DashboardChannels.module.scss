@@ -13,6 +13,15 @@
   }
 }
 
+.sortChannelsIcon {
+  cursor: pointer;
+  color: #575757;
+  font-size: 14px;
+  &:hover {
+    color: theme.$primary;
+  }
+}
+
 .loadMoreItems {
   text-align: center;
   cursor: pointer;

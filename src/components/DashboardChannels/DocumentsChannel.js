@@ -26,6 +26,7 @@ import DocumentTile from './DocumentTile';
 import styles from './DashboardChannels.module.scss';
 import { DeepCopyObj, RID } from '../../utils/docUIUtils';
 import TileBadge from '../TileBadge';
+import SortChannelsIcon from './SortChannelsIcon';
 
 export default function DocumentsChannel({
   width,
@@ -52,6 +53,8 @@ export default function DocumentsChannel({
   const [refresh, setRefresh] = useState();
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [, forceUpdateForRefresh] = useState();
+  const [selectedItem, setSelectedItem] = useState('by-date-created');
+  const [asc, setAsc] = useState();
   const perPage = 25;
   const numberOfDocuments = documents[selectedGroupId] === undefined
     || documents[selectedGroupId]?.countByPermissions === undefined
@@ -180,10 +183,30 @@ export default function DocumentsChannel({
     setInterval(() => forceUpdateForRefresh(RID()), 60 * 1000);
   }, []);
 
+
+  const sortDocuments = (a, b) => {
+    const order = asc ? -1 : 1;
+    if (selectedItem === 'by-date-created') {
+      if (a.createdAt > b.createdAt) {
+        return -order;
+      }
+      return order;
+    }
+
+    if (selectedItem === 'alpha') {
+      if (a.title.toUpperCase() < b.title.toUpperCase()) {
+        return -order;
+      }
+      return order;
+    }
+
+    return 0;
+  };
+
   let documentTiles = documents[selectedGroupId] === undefined
   || documents[selectedGroupId][documentPermissions] === undefined
     ? []
-    : documents[selectedGroupId][documentPermissions].map(({
+    : documents[selectedGroupId][documentPermissions].sort(sortDocuments).map(({
       _id, title, groups, contributors, updatedAt, slug, owner,
     }) => {
       const contributor = contributors ? contributors.find(({ type }) => type.toLowerCase() === 'author') : undefined;
@@ -258,6 +281,15 @@ export default function DocumentsChannel({
               Documents
             </span>
           </Link>
+          <div style={{ marginRight: 9, marginLeft: -2 }}>
+            <SortChannelsIcon
+              tooltipText="Sort Documents"
+              selected={selectedItem}
+              setSelected={() => setSelectedItem(selectedItem === 'by-date-created' ? 'alpha' : 'by-date-created')}
+              asc={asc}
+              setAsc={() => setAsc(!asc)}
+            />
+          </div>
           <TileBadge text="New +" href="/documents/new" color="yellow" />
           <OverlayTrigger
             key="refresh-documents"
