@@ -281,12 +281,15 @@ export default function DocumentsChannel({
               Documents
             </span>
           </Link>
-          <SortChannelsIcon
-            selected={selectedItem}
-            setSelected={() => setSelectedItem(selectedItem === 'by-date-created' ? 'alpha' : 'by-date-created')}
-            asc={asc}
-            setAsc={() => setAsc(!asc)}
-          />
+          <div style={{ marginRight: 9, marginLeft: -2 }}>
+            <SortChannelsIcon
+              tooltipText="Sort Documents"
+              selected={selectedItem}
+              setSelected={() => setSelectedItem(selectedItem === 'by-date-created' ? 'alpha' : 'by-date-created')}
+              asc={asc}
+              setAsc={() => setAsc(!asc)}
+            />
+          </div>
           <TileBadge text="New +" href="/documents/new" color="yellow" />
           <OverlayTrigger
             key="refresh-documents"

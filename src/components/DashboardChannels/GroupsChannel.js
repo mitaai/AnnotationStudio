@@ -105,12 +105,15 @@ export default function GroupsChannel({
             Groups
           </span>
         </Link>
-        <SortChannelsIcon
-          selected={selectedItem}
-          setSelected={() => setSelectedItem(selectedItem === 'by-date-created' ? 'alpha' : 'by-date-created')}
-          asc={asc}
-          setAsc={() => setAsc(!asc)}
-        />
+        <div style={{ marginRight: 9, marginLeft: -2 }}>
+          <SortChannelsIcon
+            tooltipText="Sort Groups"
+            selected={selectedItem}
+            setSelected={() => setSelectedItem(selectedItem === 'by-date-created' ? 'alpha' : 'by-date-created')}
+            asc={asc}
+            setAsc={() => setAsc(!asc)}
+          />
+        </div>
         <TileBadge text="New +" href="/groups/new" color="yellow" />
       </div>
       <div className={styles.tileContainer}>
