@@ -1,7 +1,10 @@
 /* eslint-disable no-underscore-dangle */
 import { useState, useEffect, useRef } from 'react';
 import { Card, InputGroup, FormControl } from 'react-bootstrap';
-import { ArrowDown, ArrowDownUp, ArrowUp, Search } from 'react-bootstrap-icons';
+import {
+  ArrowDown, ArrowDownUp, ArrowUp, Search,
+} from 'react-bootstrap-icons';
+import { debounce } from 'lodash';
 import AdminDashboard from '../AdminDashboard';
 import AdminUserList from '../User/AdminUserList';
 import AdminDocumentList from '../Document/AdminDocumentList';
@@ -9,10 +12,9 @@ import AdminGroupList from '../Group/AdminGroupList';
 import AdminHeader from '../AdminHeader';
 import { getUsersByIds } from '../../../utils/userUtil';
 import { searchForDocuments, searchForGroups, searchForUsers } from '../../../utils/docUtil';
-import { debounce } from 'lodash';
 
 const AdminPanel = ({
-  setAlerts, session, activeKey, setKey,
+  setAlerts, activeKey, setKey, // session,
 }) => {
   const [usersListData, setUsersListData] = useState();
   const [documentsListData, setDocumentsListData] = useState();
@@ -40,7 +42,6 @@ const AdminPanel = ({
   const [usersSortState, setUsersSortState] = useState({ field: 'createdAt', direction: 'desc' });
   const [documentsSortState, setDocumentsSortState] = useState({ field: 'createdAt', direction: 'desc' });
   const [groupsSortState, setGroupsSortState] = useState({ field: 'createdAt', direction: 'desc' });
-  const [sortState, setSortState] = useState({ field: 'createdAt', direction: 'desc' });
   const [namesState, setNamesState] = useState({});
   const perPage = 20;
 
@@ -48,7 +49,7 @@ const AdminPanel = ({
     let sortState;
     if (activeKey === 'users') {
       sortState = usersSortState;
-    } else if (activeKey == 'documents') {
+    } else if (activeKey === 'documents') {
       sortState = documentsSortState;
     } else if (activeKey === 'groups') {
       sortState = groupsSortState;
@@ -59,8 +60,9 @@ const AdminPanel = ({
     } return <ArrowDownUp style={{ fill: 'gray' }} />;
   };
 
-  const searchData = async ({ query, activeKey: activeK, page, perPage: perP, sort }) => {
-    
+  const searchData = async ({
+    query, activeKey: activeK, page, perPage: perP, sort,
+  }) => {
     const saveQueryData = (arr) => {
       // we need to check if there is possibly a nextPage to view
       setQueryData((prevQueryData) => {
@@ -70,14 +72,16 @@ const AdminPanel = ({
         return newQueryData;
       });
     };
-    
+
     const formattedSort = {
       [sort.field]: sort.direction === 'asc' ? 1 : -1,
     };
 
     // if (query.length === 0) return;
     if (activeK === 'users') {
-      await searchForUsers({ query, page, perPage: perP, sort: formattedSort }).then((res) => {
+      await searchForUsers({
+        query, page, perPage: perP, sort: formattedSort,
+      }).then((res) => {
         if (page === 1) {
           setUsersListData(res.users);
         } else {
@@ -88,24 +92,30 @@ const AdminPanel = ({
         setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
       });
     } else if (activeK === 'documents') {
-      await searchForDocuments({ query, page, perPage: perP, sort: formattedSort }).then((res) => {
+      await searchForDocuments({
+        query, page, perPage: perP, sort: formattedSort,
+      }).then((res) => {
         if (page === 1) {
           setDocumentsListData(res.documents);
         } else {
-          setDocumentsListData((prevDocumentsListData) => prevDocumentsListData.concat(res.documents));
+          setDocumentsListData(
+            (prevDocumentsListData) => prevDocumentsListData.concat(res.documents),
+          );
         }
         saveQueryData(res.documents);
       }).catch((err) => {
         setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
       });
     } else if (activeK === 'groups') {
-      await searchForGroups({ query, page, perPage: perP, sort: formattedSort }).then((res) => {
+      await searchForGroups({
+        query, page, perPage: perP, sort: formattedSort,
+      }).then((res) => {
         if (page === 1) {
           setGroupsListData(res.groups);
         } else {
           setGroupsListData((prevGroupsListData) => prevGroupsListData.concat(res.groups));
         }
-        
+
         saveQueryData(res.groups);
       }).catch((err) => {
         setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
@@ -128,8 +138,10 @@ const AdminPanel = ({
     } else if (activeKey === 'groups') {
       sortState = groupsSortState;
     }
-    searchDataDebounced({ query: q, activeKey, page: 1, perPage, sort: sortState });
-    
+    searchDataDebounced({
+      query: q, activeKey, page: 1, perPage, sort: sortState,
+    });
+
     if (activeKey === 'users') {
       setUsersListData();
     } else if (activeKey === 'documents') {
@@ -137,20 +149,21 @@ const AdminPanel = ({
     } else if (activeKey === 'groups') {
       setGroupsListData();
     }
-    
+
     // then update query value
     setQueryData((prevQueryData) => {
       const newQueryData = { ...prevQueryData };
       newQueryData[activeKey].query = q;
-      // whenever the query changes we automatically go back to the first page of results because its a new query
+      // whenever the query changes we automatically go back to the first page of results because
+      // its a new query
       newQueryData[activeKey].page = 1;
-      // and we assume that there is a next page to query 
+      // and we assume that there is a next page to query
       newQueryData[activeKey].nextPage = true;
       // we are loading information if there is a query
       newQueryData[activeKey].loading = true;
       return newQueryData;
     });
-  }
+  };
 
   useEffect(() => {
 
@@ -165,8 +178,10 @@ const AdminPanel = ({
     } else if (activeKey === 'groups') {
       sortState = groupsSortState;
     }
-    const  q = queryData[activeKey].query;
-    searchData({ query: q || '', activeKey, page: 1, perPage, sort: sortState});
+    const q = queryData[activeKey].query;
+    searchData({
+      query: q || '', activeKey, page: 1, perPage, sort: sortState,
+    });
     setQueryData((prevQueryData) => {
       const newQueryData = { ...prevQueryData };
       // if we change the sort state we go back to page 1
@@ -175,6 +190,7 @@ const AdminPanel = ({
       // newQueryData[activeKey].loading = q.length > 0;
       return newQueryData;
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [usersSortState, documentsSortState, groupsSortState]);
   useEffect(() => {
 
@@ -183,134 +199,162 @@ const AdminPanel = ({
   useEffect(() => {
     async function fetchData() {
       if (documentsListData && Array.isArray(documentsListData) && documentsListData.length > 0) {
-        // first we need to filter document owners by if !namesState[doc.owner] is true and map them to a list of user ids
-        const userIds = documentsListData.filter((doc) => !namesState[doc.owner]).map((doc) => doc.owner);
+        // first we need to filter document owners by if !namesState[doc.owner] is true and map
+        // them to a list of user ids
+        const userIds = documentsListData
+          .filter((doc) => !namesState[doc.owner]).map((doc) => doc.owner);
         if (userIds.length === 0) return;
         const defaultUserObj = userIds.reduce((obj, item) => {
+          // eslint-disable-next-line no-param-reassign
           obj[item] = '[user not found]';
           return obj;
         }, {});
-        let usersObj = undefined;
+        let usersObj;
         await getUsersByIds(userIds).then((result) => {
           const { users } = result;
-          // the function inside the reduce method reduces the array to an object mapping user id to user name
+          // the function inside the reduce method reduces the array to an object mapping user id
+          // to user name
           usersObj = users.reduce((obj, { _id, name }) => {
+            // eslint-disable-next-line no-param-reassign
             obj[_id] = name;
             return obj;
-          }, defaultUserObj); 
+          }, defaultUserObj);
         }).catch(() => {});
-        const obj = usersObj || defaultUserObj
+        const obj = usersObj || defaultUserObj;
         setNamesState({ ...namesState, ...obj });
       }
     }
     fetchData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [documentsListData]);
 
   useEffect(() => {
-    if ((activeKey === 'users' && usersListData === undefined) ||
-      (activeKey === 'documents' && documentsListData === undefined) ||
-      (activeKey === 'groups' && groupsListData === undefined)) {
-        updateSearchResults('');
+    if ((activeKey === 'users' && usersListData === undefined)
+      || (activeKey === 'documents' && documentsListData === undefined)
+      || (activeKey === 'groups' && groupsListData === undefined)) {
+      updateSearchResults('');
     }
-  }, [activeKey])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeKey]);
 
-  return (<>
-    <Card id="admin-panel-card" data-testid="admin-panel">
-      <AdminHeader activeKey={activeKey} setKey={setKey} />
-      <Card.Body style={{ display: 'flex', flexDirection: 'column' }}>
-        {activeKey === 'dashboard' && (<AdminDashboard />)}
-        {activeKey !== 'dashboard' && <div style={{ position: 'relative' }}>
-          <InputGroup className="mb-3">
-            <InputGroup.Text id="search-icon-container">
-              <Search size={14} />
-            </InputGroup.Text>
-            <FormControl
-              id="admin-panel-search-input"
-              placeholder={`Search ${activeKey}`}
-              value={queryData[activeKey]?.query || ''}
-              onChange={(ev) => updateSearchResults(ev.target.value)}
-              aria-label="Username"
-              aria-describedby="basic-addon1"
-            />
-          </InputGroup>
-        </div>}
-        <div style={{ flex: 1, overflowY: 'overlay', display: 'flex' }}>
-          {activeKey === 'users' && (
+  return (
+    <>
+      <Card id="admin-panel-card" data-testid="admin-panel">
+        <AdminHeader activeKey={activeKey} setKey={setKey} />
+        <Card.Body style={{ display: 'flex', flexDirection: 'column' }}>
+          {activeKey === 'dashboard' && (<AdminDashboard />)}
+          {activeKey !== 'dashboard' && (
+          <div style={{ position: 'relative' }}>
+            <InputGroup className="mb-3">
+              <InputGroup.Text id="search-icon-container">
+                <Search size={14} />
+              </InputGroup.Text>
+              <FormControl
+                id="admin-panel-search-input"
+                placeholder={`Search ${activeKey}`}
+                value={queryData[activeKey]?.query || ''}
+                onChange={(ev) => updateSearchResults(ev.target.value)}
+                aria-label="Username"
+                aria-describedby="basic-addon1"
+              />
+            </InputGroup>
+          </div>
+          )}
+          <div style={{ flex: 1, overflowY: 'overlay', display: 'flex' }}>
+            {activeKey === 'users' && (
             <AdminUserList
               users={usersListData}
               loading={queryData[activeKey].loading}
               loadMoreResults={queryData[activeKey].nextPage
                 ? () => {
-                  searchData({ query: queryData[activeKey]?.query, activeKey, page: queryData[activeKey]?.page + 1, perPage, sort: usersSortState });
+                  searchData({
+                    query: queryData[activeKey]?.query,
+                    activeKey,
+                    page: queryData[activeKey]?.page + 1,
+                    perPage,
+                    sort: usersSortState,
+                  });
                   setQueryData((prevQueryData) => {
                     const newQueryData = { ...prevQueryData };
                     // we need to increment the page count
                     newQueryData[activeKey].page += 1;
-                    // and we need to set loading to true because it will take a second to get more results
+                    // and we need to set loading to true because it will take a second to get more
+                    // results
                     newQueryData[activeKey].loading = true;
                     return newQueryData;
                   });
                 }
-                : undefined
-              }
+                : undefined}
               sortState={usersSortState}
               setSortState={setUsersSortState}
               SortIcon={SortIcon}
             />
-          )}
-          {activeKey === 'documents' && (
+            )}
+            {activeKey === 'documents' && (
             <AdminDocumentList
               documents={documentsListData}
               loading={queryData[activeKey].loading}
               loadMoreResults={queryData[activeKey].nextPage
                 ? () => {
-                  searchData({ query: queryData[activeKey]?.query, activeKey, page: queryData[activeKey]?.page + 1, perPage, sort: documentsSortState });
+                  searchData({
+                    query: queryData[activeKey]?.query,
+                    activeKey,
+                    page: queryData[activeKey]?.page + 1,
+                    perPage,
+                    sort: documentsSortState,
+                  });
                   setQueryData((prevQueryData) => {
                     const newQueryData = { ...prevQueryData };
                     // we need to increment the page count
                     newQueryData[activeKey].page += 1;
-                    // and we need to set loading to true because it will take a second to get more results
+                    // and we need to set loading to true because it will take a second to get more
+                    // results
                     newQueryData[activeKey].loading = true;
                     return newQueryData;
                   });
                 }
-                : undefined
-              }
+                : undefined}
               namesState={namesState}
               sortState={documentsSortState}
               setSortState={setDocumentsSortState}
               SortIcon={SortIcon}
             />
-          )}
-          {activeKey === 'groups' && (
+            )}
+            {activeKey === 'groups' && (
             <AdminGroupList
               groups={groupsListData}
               loading={queryData[activeKey].loading}
               loadMoreResults={queryData[activeKey].nextPage
                 ? () => {
-                  searchData({ query: queryData[activeKey]?.query, activeKey, page: queryData[activeKey]?.page + 1, perPage, sort: groupsSortState });
+                  searchData({
+                    query: queryData[activeKey]?.query,
+                    activeKey,
+                    page: queryData[activeKey]?.page + 1,
+                    perPage,
+                    sort: groupsSortState,
+                  });
                   setQueryData((prevQueryData) => {
                     const newQueryData = { ...prevQueryData };
                     // we need to increment the page count
                     newQueryData[activeKey].page += 1;
-                    // and we need to set loading to true because it will take a second to get more results
+                    // and we need to set loading to true because it will take a second to get more
+                    // results
                     newQueryData[activeKey].loading = true;
                     return newQueryData;
                   });
                 }
-                : undefined
-              }
+                : undefined}
               sortState={groupsSortState}
               setSortState={setGroupsSortState}
               SortIcon={SortIcon}
             />
-          )}
-        </div>
+            )}
+          </div>
 
-      </Card.Body>
-    </Card>
-    <style jsx global>
-      {`
+        </Card.Body>
+      </Card>
+      <style jsx global>
+        {`
         #admin-panel-card {
           height: 100%;
         }
@@ -323,8 +367,8 @@ const AdminPanel = ({
           border-bottom-right-radius: 0px;
         }
       `}
-    </style>
-  </>
+      </style>
+    </>
   );
 };
 
