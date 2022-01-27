@@ -31,6 +31,7 @@ import {
   renameGroup,
   generateInviteToken,
   deleteInviteToken,
+  roleInGroup,
 } from '../../../utils/groupUtil';
 import { appendProtocolIfMissing } from '../../../utils/fetchUtil';
 
@@ -80,14 +81,6 @@ const EditGroup = ({
     }
   };
 
-  const roleInGroup = (currentSession) => {
-    const groupInSession = currentSession.user.groups.find((o) => Object.entries(o).some(([k, value]) => k === 'id' && value === group.id));
-    const memberInGroup = group.members.find((o) => Object.entries(o).some(([k, value]) => k === 'id' && value === currentSession.user.id));
-    if (groupInSession || memberInGroup) {
-      return groupInSession ? groupInSession.role : memberInGroup.role;
-    } return 'unauthorized';
-  };
-
   return (
     <Layout
       alerts={alerts}
@@ -100,13 +93,13 @@ const EditGroup = ({
         {((!session && loading) || (session && pageLoading)) && (
           <LoadingSpinner />
         )}
-        {((!session && !loading) || (session && group && roleInGroup(session) === 'unauthorized')) && (
+        {((!session && !loading) || (session && group && roleInGroup({ session, group }) === 'unauthorized')) && (
           <UnauthorizedCard />
         )}
         {session && !loading && !pageLoading && group
           && ((session.user && session.user.role === 'admin')
-            || roleInGroup(session) === 'owner'
-            || roleInGroup(session) === 'manager')
+            || roleInGroup({ session, group }) === 'owner'
+            || roleInGroup({ session, group }) === 'manager')
           && (
           <>
             <Card.Header>
@@ -483,7 +476,7 @@ const EditGroup = ({
                     Documents assigned to this group will not be deleted, but may
                     become inaccessible to group members.
                   </p>
-                  {roleInGroup(session) === 'owner' && (
+                  {roleInGroup({ session, group }) === 'owner' && (
                     <>
                       <Button
                         variant="outline-danger"

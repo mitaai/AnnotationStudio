@@ -13,7 +13,7 @@ import UnauthorizedCard from '../../../components/UnauthorizedCard';
 import ConfirmationDialog from '../../../components/ConfirmationDialog';
 import GroupRoleSummaries from '../../../components/GroupRoleSummaries';
 import GroupRoleBadge from '../../../components/GroupRoleBadge';
-import { deleteGroup, removeUserFromGroup } from '../../../utils/groupUtil';
+import { deleteGroup, removeUserFromGroup, roleInGroup } from '../../../utils/groupUtil';
 import { getUserByEmail } from '../../../utils/userUtil';
 import { appendProtocolIfMissing } from '../../../utils/fetchUtil';
 
@@ -24,20 +24,6 @@ const ViewGroup = ({ group, statefulSession }) => {
   const [showModal, setShowModal] = useState(false);
   const handleCloseModal = () => setShowModal(false);
   const handleShowModal = () => setShowModal(true);
-
-  const roleInGroup = (currentSession) => {
-    console.log('currentSession', currentSession);
-    const groupInSession = currentSession.user.groups
-      .find((o) => Object.entries(o).some(([k, value]) => k === 'id' && value === group.id));
-    const memberInGroup = group.members
-      .find((o) => Object.entries(o).some(([k, value]) => k === 'id' && value === currentSession.user.id));
-    if (groupInSession || memberInGroup) {
-      return groupInSession ? groupInSession.role : memberInGroup.role;
-    }
-    // if the user session is an admin we will give them all the privledges an owner of the group
-    // would have
-    return currentSession.user.role === 'admin' ? 'owner' : 'unauthorized';
-  };
 
   return (
     <Layout
@@ -51,7 +37,7 @@ const ViewGroup = ({ group, statefulSession }) => {
         {!session && loading && (
           <LoadingSpinner />
         )}
-        {((!session && !loading) || (session && group && roleInGroup(session) === 'unauthorized')) && (
+        {((!session && !loading) || (session && group && roleInGroup({ session, group }) === 'unauthorized')) && (
           <UnauthorizedCard />
         )}
         {session && !loading && group && (
@@ -79,13 +65,13 @@ const ViewGroup = ({ group, statefulSession }) => {
                 </tbody>
               </Table>
               <ButtonGroup data-testid="groupview-button-group">
-                {(roleInGroup(session) === 'owner' || roleInGroup(session) === 'manager') && (
+                {(roleInGroup({ session, group }) === 'owner' || roleInGroup({ session, group }) === 'manager') && (
                   <Button variant="outline-primary" href={`${group.id}/edit`}>
                     <PencilSquare className="align-text-bottom mr-1" />
                     Manage this group
                   </Button>
                 )}
-                {(roleInGroup(session) === 'member' || roleInGroup(session) === 'manager') && (
+                {(roleInGroup({ session, group }) === 'member' || roleInGroup({ session, group }) === 'manager') && (
                   <Button
                     variant="outline-danger"
                     onClick={async () => {
@@ -108,7 +94,7 @@ const ViewGroup = ({ group, statefulSession }) => {
                     Leave this group
                   </Button>
                 )}
-                {roleInGroup(session) === 'owner' && (
+                {roleInGroup({ session, group }) === 'owner' && (
                 <>
                   <Button
                     variant="outline-danger"
