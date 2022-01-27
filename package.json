@@ -40,6 +40,7 @@
     "formik": "^2.2.6",
     "html-to-image": "^1.6.2",
     "jquery": "^3.6.0",
+    "lodash": "^4.17.21",
     "lodash.debounce": "^4.0.8",
     "moment": "^2.29.1",
     "mongodb": "^3.6.3",
