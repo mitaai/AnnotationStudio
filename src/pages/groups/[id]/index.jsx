@@ -26,11 +26,17 @@ const ViewGroup = ({ group, statefulSession }) => {
   const handleShowModal = () => setShowModal(true);
 
   const roleInGroup = (currentSession) => {
-    const groupInSession = currentSession.user.groups.find((o) => Object.entries(o).some(([k, value]) => k === 'id' && value === group.id));
-    const memberInGroup = group.members.find((o) => Object.entries(o).some(([k, value]) => k === 'id' && value === currentSession.user.id));
+    console.log('currentSession', currentSession);
+    const groupInSession = currentSession.user.groups
+      .find((o) => Object.entries(o).some(([k, value]) => k === 'id' && value === group.id));
+    const memberInGroup = group.members
+      .find((o) => Object.entries(o).some(([k, value]) => k === 'id' && value === currentSession.user.id));
     if (groupInSession || memberInGroup) {
       return groupInSession ? groupInSession.role : memberInGroup.role;
-    } return 'unauthorized';
+    }
+    // if the user session is an admin we will give them all the privledges an owner of the group
+    // would have
+    return currentSession.user.role === 'admin' ? 'owner' : 'unauthorized';
   };
 
   return (
