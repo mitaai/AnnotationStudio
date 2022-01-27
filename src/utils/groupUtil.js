@@ -357,6 +357,19 @@ const getGroupsByGroupIds = async (groupIds) => {
   } return Promise.reject(Error(`Unable to get groups by group ids: error ${res.status} received from server`));
 };
 
+const roleInGroup = ({ session, group }) => {
+  const groupInSession = session.user.groups
+    .find((o) => Object.entries(o).some(([k, value]) => k === 'id' && value === group.id));
+  const memberInGroup = group.members
+    .find((o) => Object.entries(o).some(([k, value]) => k === 'id' && value === session.user.id));
+  if (groupInSession || memberInGroup) {
+    return groupInSession ? groupInSession.role : memberInGroup.role;
+  }
+  // if the user session is an admin we will give them all the privledges an owner of the group
+  // would have
+  return session.user.role === 'admin' ? 'owner' : 'unauthorized';
+};
+
 export {
   addGroupToUser,
   addUserToGroup,
@@ -370,4 +383,5 @@ export {
   removeUserFromGroup,
   renameGroup,
   getGroupsByGroupIds,
+  roleInGroup,
 };
