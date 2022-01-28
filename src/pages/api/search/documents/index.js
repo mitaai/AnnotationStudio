@@ -15,7 +15,7 @@ const handler = async (req, res) => {
       const condition = query ? {
         // eslint-disable-next-line no-useless-escape
         title: new RegExp(`\.\*${query}\.\*`, 'g'),
-      } : undefined;
+      } : {};
 
       const { db } = await connectToDatabase();
       const arr = await db
