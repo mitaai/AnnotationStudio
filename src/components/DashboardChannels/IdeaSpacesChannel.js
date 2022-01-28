@@ -585,43 +585,71 @@ export default function IdeaSpacesChannel({
           {openIdeaSpaceId ? (
             <>
               <div className={styles.ideaSpaceHeader}>
-                <span style={{ color: '#424242' }}>Sort by</span>
                 <DropdownButton
-                  id="sort-by-dropdown"
-                  title={dropdownOptions[dropdownSelection]}
+                  key="ideaspaces-sortby-dropdown"
+                  id="ideaspaces-sortby-dropdown-btn"
                   variant="light"
-                  className={`${styles.sortByDropdown} ${dropdownOpen ? styles.sortByDropdownSelected : ''}`}
+                  className={`${styles.sortByDropdown} ${showIdeaspacesSortByDropdown ? styles.sortByDropdownSelected : ''}`}
+                  title="Sort By"
+                  onClick={() => setDropdownOpen(true)}
                   show={dropdownOpen}
-                  onToggle={() => setDropdownOpen(!dropdownOpen)}
-                  onSelect={(e) => setDropdownSelection(e)}
+                  onToggle={(isOpen, e, { source }) => {
+                    if (source === 'rootClose') {
+                      setDropdownOpen();
+                    }
+                  }}
+                  onSelect={(e) => {
+                    if (e === 'asc') {
+                      setAscending(true);
+                    } else if (e === 'desc') {
+                      setAscending();
+                    } else {
+                      setDropdownSelection(e);
+                    }
+                  }}
                 >
-                  <Dropdown.Item eventKey="updated">
-                    {dropdownOptions.updated}
+                  <Dropdown.Item
+                    eventKey="updated"
+                    className={styles.ideaspacesSortByDropdownItem}
+                  >
+                    <span style={{ flex: 1, marginRight: 89 }}>
+                      {dropdownOptions.updated}
+                    </span>
                     {dropdownSelection === 'updated'
-                  && <Check className={styles.dropdownCheck} size={18} />}
+                    && <Check className={styles.dropdownCheck} size={18} />}
                   </Dropdown.Item>
-                  <Dropdown.Item eventKey="added">
-                    {dropdownOptions.added}
+                  <Dropdown.Item
+                    eventKey="added"
+                    className={styles.ideaspacesSortByDropdownItem}
+                  >
+                    <span style={{ flex: 1 }}>{dropdownOptions.added}</span>
                     {dropdownSelection === 'added'
-                  && <Check className={styles.dropdownCheck} size={18} />}
+                    && <Check className={styles.dropdownCheck} size={18} />}
+                  </Dropdown.Item>
+                  <Dropdown.Divider />
+                  <Dropdown.Item
+                    eventKey="asc"
+                    className={styles.ideaspacesSortByDropdownItem}
+                  >
+                    <span style={{ flex: 1 }}>
+                      <span>Asc</span>
+                      <ArrowUp style={{ marginLeft: 10 }} size={14} />
+                    </span>
+                    {ascending
+                    && <Check className={styles.dropdownCheck} size={18} />}
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    eventKey="desc"
+                    className={styles.ideaspacesSortByDropdownItem}
+                  >
+                    <span style={{ flex: 1 }}>
+                      <span>Desc</span>
+                      <ArrowDown size={14} />
+                    </span>
+                    {!ascending
+                    && <Check className={styles.dropdownCheck} size={18} />}
                   </Dropdown.Item>
                 </DropdownButton>
-                <OverlayTrigger
-                  placement="right"
-                  overlay={(
-                    <Tooltip className="styled-tooltip right">
-                      {ascending ? 'Ascending' : 'Descending'}
-                    </Tooltip>
-                )}
-                >
-                  <Button
-                    className={styles.descendingAscendingButton}
-                    variant="light"
-                    onClick={() => setAscending(!ascending)}
-                  >
-                    {ascending ? <ArrowUp size={14} /> : <ArrowDown size={14} />}
-                  </Button>
-                </OverlayTrigger>
               </div>
               {(annotationsBeingDragged && annotationsBeingDragged.from !== 'ideaspaceChannel')
               || (status && (status.done || status.annotationsRecieved))
