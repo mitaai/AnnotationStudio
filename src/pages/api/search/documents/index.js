@@ -11,14 +11,16 @@ const handler = async (req, res) => {
       const {
         query, perPage, page, sort = {},
       } = req.body;
-      // eslint-disable-next-line no-useless-escape
-      const r = query ? new RegExp(`\.\*${query}\.\*`, 'g') : new RegExp('\.\*', 'g');
+
+      const condition = query ? {
+        // eslint-disable-next-line no-useless-escape
+        title: new RegExp(`\.\*${query}\.\*`, 'g'),
+      } : undefined;
+
       const { db } = await connectToDatabase();
       const arr = await db
         .collection('documents')
-        .find({
-          title: r,
-        })
+        .find(condition)
         .sort(sort)
         .skip(page > 0 ? ((page - 1) * perPage) : 0)
         .limit(parseInt(perPage, 10))
