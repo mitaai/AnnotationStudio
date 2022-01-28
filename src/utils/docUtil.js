@@ -194,6 +194,7 @@ const searchForDocuments = async ({
   const body = {
     query, page, perPage, sort,
   };
+
   const res = await unfetch(url, {
     method: 'POST',
     body: JSON.stringify(body),
