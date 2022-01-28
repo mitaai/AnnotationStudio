@@ -202,6 +202,10 @@ const searchForDocuments = async ({
     },
   });
 
+  console.log('res', res);
+
+  console.log(query, page, perPage, sort);
+
   if (res.status === 200) {
     const response = await res.json();
     return Promise.resolve(response);
