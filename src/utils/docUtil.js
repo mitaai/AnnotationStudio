@@ -184,7 +184,7 @@ const searchForUsers = async ({
   if (res.status === 200) {
     const response = await res.json();
     return Promise.resolve(response);
-  } return Promise.reject(Error(`Unable to fetch group names: error ${res.status} received from server`));
+  } return Promise.reject(Error(`Unable to fetch users: error ${res.status} received from server`));
 };
 
 const searchForDocuments = async ({
@@ -201,11 +201,11 @@ const searchForDocuments = async ({
       'Content-Type': 'application/json',
     },
   });
-  console.log('res', res);
+
   if (res.status === 200) {
     const response = await res.json();
     return Promise.resolve(response);
-  } return Promise.reject(Error(`Unable to fetch group names: error ${res.status} received from server`));
+  } return Promise.reject(Error(`Unable to fetch documents: error ${res.status} received from server`));
 };
 
 const searchForGroups = async ({
