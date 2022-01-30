@@ -342,3 +342,15 @@ $breadcrumb-bg: transparent;
 .react-datepicker__day--selected, .react-datepicker__day--in-selecting-range, .react-datepicker__day--in-range, .react-datepicker__month-text--selected, .react-datepicker__month-text--in-selecting-range, .react-datepicker__month-text--in-range, .react-datepicker__quarter-text--selected, .react-datepicker__quarter-text--in-selecting-range, .react-datepicker__quarter-text--in-range, .react-datepicker__year-text--selected, .react-datepicker__year-text--in-selecting-range, .react-datepicker__year-text--in-range {
   background-color: theme.$primary !important;
 }
+
+#date-accessed-date-picker-wrapper .react-datepicker-wrapper {
+  width: 100%;
+}
+
+#date-accessed-date-picker-input {
+  color: #495057;
+  padding: 5px;
+  border: 1px solid #28a745 !important;
+  border-radius: 0.25rem;
+  width: 100%;
+}

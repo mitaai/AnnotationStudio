@@ -1,9 +1,13 @@
 /* eslint-disable react/no-array-index-key */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import DatePicker from 'react-datepicker';
 import { FieldArray } from 'formik';
 import {
   Button, Col, Form, InputGroup, Row,
 } from 'react-bootstrap';
+import {
+  Check,
+} from 'react-bootstrap-icons';
 import { publicationFieldName } from '../../utils/metadataUtil';
 
 const DocumentMetadata = ({
@@ -19,6 +23,12 @@ const DocumentMetadata = ({
 
   const [expandMeta, setExpandMeta] = useState(false);
   const [notesOn, setNotesOn] = useState(false);
+  const [dateAccessed, setDateAccessed] = useState(new Date());
+
+  useEffect(() => {
+    handleChange({ target: { value: dateAccessed, name: 'accessed', id: 'documentAccessed' } });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dateAccessed]);
 
   return (
     <>
@@ -392,21 +402,16 @@ const DocumentMetadata = ({
             <Col>
               <Form.Group controlId="documentAccessed">
                 <Form.Label>Date accessed</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="accessed"
-                  placeholder="Accessed"
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  value={values.accessed}
-                  isValid={touched.accessed && !errors.accessed}
-                  isInvalid={!!errors.accessed}
-                  maxLength={255}
-                  disabled={disabled}
-                />
-                <Form.Control.Feedback type="invalid">
-                  {errors.accessed}
-                </Form.Control.Feedback>
+                <div id="date-accessed-date-picker-wrapper" style={{ position: 'relative' }}>
+                  <DatePicker
+                    id="date-accessed-date-picker-input"
+                    selected={dateAccessed}
+                    onChange={(date) => setDateAccessed(date)}
+                    onCalendarClose={() => {}}
+                    onCalendarOpen={() => {}}
+                  />
+                  <Check size={32} color="#28a745" style={{ position: 'absolute', right: 6, top: 2 }} />
+                </div>
               </Form.Group>
             </Col>
           </Row>
