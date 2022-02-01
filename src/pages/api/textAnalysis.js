@@ -2,6 +2,7 @@ import { ObjectID } from 'mongodb';
 import jwt from 'next-auth/jwt';
 import { connectToDatabase } from '../../utils/dbUtil';
 import { calculateSizeOfDataInMB } from '../../utils/annotationUtil';
+import { NLTK_STOPWORDS_OBJ } from '../../utils/textAnalysisUtil';
 // Imports the Google Cloud client library
 const language = require('@google-cloud/language');
 // Creates a client
@@ -67,6 +68,17 @@ const handler = async (req, res) => {
 
             const size = calculateSizeOfDataInMB({ data: reslt });
             const percentDecrease = (sizeBefore - size) / sizeBefore;
+
+            const processedTokens = [];
+            const stopWordsObj = NLTK_STOPWORDS_OBJ[reslt.language] || {};
+            for (let i = 0; i < reslt.tokens.length; i += 1) {
+              const { lemma } = reslt.tokens[i];
+              if (!stopWordsObj[lemma]) {
+                processedTokens.push(lemma);
+              }
+            }
+
+            reslt.processedTokens = processedTokens;
 
             let doc;
             if (analysisId) {
