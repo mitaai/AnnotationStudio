@@ -819,7 +819,7 @@ function AnnotationCard({
                       size="sm"
                       onClick={CancelAnnotation}
                     >
-                      Cancel
+                      Cancel.
                     </Button>
                   )}
 
