@@ -749,10 +749,11 @@ function AnnotationCard({
                         handleClick({
                           event: ev,
                           click: (e) => {
+                            // eslint-disable-next-line no-useless-return
                             if (annotationShareableLinkIconClicked(e)) { return; }
                             // this means that the user clicked on the annotation-body and not on
                             // the link icon
-                            setExpanded();
+                            // setExpanded();
                           },
                           dbclick: () => {
                             setLargeFontSize(!largeFontSize);
@@ -897,10 +898,11 @@ function AnnotationCard({
                   handleClick({
                     event: ev,
                     click: (e) => {
+                      // eslint-disable-next-line no-useless-return
                       if (annotationShareableLinkIconClicked(e)) { return; }
                       // this means that the user clicked on the annotation-header and not on the
                       // link icon
-                      expandedAndFocus();
+                      // expandedAndFocus();
                     },
                     dbclick: () => {
                       setLargeFontSize(!largeFontSize);
