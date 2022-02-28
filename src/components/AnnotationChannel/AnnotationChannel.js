@@ -65,6 +65,51 @@ function PlaceAnnotationsInCorrectSpot(annotations, side, documentZoom) {
   }
 }
 
+const AnnotationChannelWithContext = ({
+  side,
+  setAnnotationChannelLoaded,
+  user,
+  deleteAnnotationFromChannels,
+  focusOnAnnotation,
+  focusedAnnotation,
+  showMoreInfoShareModal,
+  setShowMoreInfoShareModal,
+  setShowMaxedAnnotationLengthToast,
+  membersIntersection,
+  show,
+  alerts,
+  setAlerts,
+  largeFontSize,
+  setLargeFontSize,
+}) => {
+  const [, documentZoom] = useContext(DocumentContext);
+  const [channelAnnotations, , expandedAnnotations] = useContext(DocumentAnnotationsContext);
+  const [documentFilters] = useContext(DocumentFiltersContext);
+  return (
+    <AnnotationChannel
+      side={side}
+      setAnnotationChannelLoaded={setAnnotationChannelLoaded}
+      user={user}
+      deleteAnnotationFromChannels={deleteAnnotationFromChannels}
+      focusOnAnnotation={focusOnAnnotation}
+      focusedAnnotation={focusedAnnotation}
+      showMoreInfoShareModal={showMoreInfoShareModal}
+      setShowMoreInfoShareModal={setShowMoreInfoShareModal}
+      setShowMaxedAnnotationLengthToast={setShowMaxedAnnotationLengthToast}
+      membersIntersection={membersIntersection}
+      show={show}
+      alerts={alerts}
+      setAlerts={setAlerts}
+      documentZoom={documentZoom}
+      channelAnnotations={channelAnnotations}
+      expandedAnnotations={expandedAnnotations}
+      documentFilters={documentFilters}
+      largeFontSize={largeFontSize}
+      setLargeFontSize={setLargeFontSize}
+    />
+  );
+};
+
 const AnnotationChannel = ({
   side,
   setAnnotationChannelLoaded,
@@ -79,10 +124,13 @@ const AnnotationChannel = ({
   show,
   alerts,
   setAlerts,
+  documentZoom,
+  channelAnnotations,
+  expandedAnnotations,
+  documentFilters,
+  largeFontSize,
+  setLargeFontSize,
 }) => {
-  const [, documentZoom] = useContext(DocumentContext);
-  const [channelAnnotations, , expandedAnnotations] = useContext(DocumentAnnotationsContext);
-  const [documentFilters] = useContext(DocumentFiltersContext);
   // first we filter annotations if there are any filters applied
   let sortedAnnotations = channelAnnotations[side] !== null
     ? channelAnnotations[side]
@@ -139,7 +187,8 @@ const AnnotationChannel = ({
       // after we have placed everything in the correct spot then the channel is fully loaded
       setAnnotationChannelLoaded(true);
     }
-  }, [channelAnnotations, documentFilters]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [channelAnnotations, documentFilters, largeFontSize]);
 
   return show && (
   <div className="annotation-channel-container">
@@ -160,6 +209,8 @@ const AnnotationChannel = ({
             membersIntersection={membersIntersection}
             alerts={alerts}
             setAlerts={setAlerts}
+            largeFontSize={largeFontSize}
+            setLargeFontSize={setLargeFontSize}
           />
         ))}
       </div>
@@ -173,4 +224,12 @@ const AnnotationChannel = ({
   );
 };
 
-export default AnnotationChannel;
+const AnnotationChannelContainer = (props) => (
+  // eslint-disable-next-line react/destructuring-assignment
+  props.stateful
+    // eslint-disable-next-line react/jsx-props-no-spreading
+    ? <AnnotationChannel {...props} />
+    // eslint-disable-next-line react/jsx-props-no-spreading
+    : <AnnotationChannelWithContext {...props} />
+);
+export default AnnotationChannelContainer;

@@ -1,7 +1,9 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable no-underscore-dangle */
-import { useEffect, useState, useContext } from 'react';
+import {
+  useEffect, useState, useRef, useContext,
+} from 'react';
 import { Editor } from '@tinymce/tinymce-react';
 import ReactHtmlParser from 'react-html-parser';
 import $ from 'jquery';
@@ -57,6 +59,8 @@ function addHoverEventListenersToAllHighlightedText() {
 }
 
 function AnnotationCard({
+  largeFontSize,
+  setLargeFontSize,
   side,
   annotation,
   focusOnAnnotation,
@@ -68,6 +72,7 @@ function AnnotationCard({
   membersIntersection,
   setAlerts,
 }) {
+  const refCardClickedAlready = useRef(false);
   const [activeAnnotations] = useContext(DocumentActiveAnnotationsContext);
   const [,,,
     expandAnnotation,
@@ -107,6 +112,8 @@ function AnnotationCard({
   };
 
   const maxAnnotationTextLength = 750;
+
+  const fontSizeMultiplier = largeFontSize ? 2 : 1;
 
   const [annotationData, setAnnotationData] = useState(annotation.new
     ? { ...annotation, permissions: initPermissions(documentFilters.filters.permissions) }
@@ -479,6 +486,21 @@ function AnnotationCard({
     }
   }
 
+  const handleClick = ({ event, click = () => {}, dbclick = () => {} }) => {
+    if (refCardClickedAlready.current > 0) {
+      dbclick(event);
+      refCardClickedAlready.current = 0;
+    } else {
+      refCardClickedAlready.current = 1;
+      setTimeout(() => {
+        if (refCardClickedAlready.current === 1) {
+          click(event);
+        }
+        refCardClickedAlready.current = 0;
+      }, 200);
+    }
+  };
+
   const annotationMatchesCurrentFilters = () => {
     const newPermissions = { ...annotationData.permissions };
     if (newAnnotationPermissions !== null) {
@@ -719,10 +741,18 @@ function AnnotationCard({
                     <ListGroup.Item
                       className="annotation-body"
                       onClick={(ev) => {
-                        if (annotationShareableLinkIconClicked(ev)) { return; }
-                        // this means that the user clicked on the annotation-body and not on the
-                        // link icon
-                        setExpanded();
+                        handleClick({
+                          event: ev,
+                          click: (e) => {
+                            if (annotationShareableLinkIconClicked(e)) { return; }
+                            // this means that the user clicked on the annotation-body and not on
+                            // the link icon
+                            setExpanded();
+                          },
+                          dbclick: () => {
+                            setLargeFontSize(!largeFontSize);
+                          },
+                        });
                       }}
                     >
                       {hovered && (
@@ -762,7 +792,7 @@ function AnnotationCard({
                 </>
               )}
             <Card.Header
-              className="annotation-header grey-background"
+              className={`annotation-header grey-background ${annotationData.editing ? 'editing' : ''}`}
               style={{ display: 'flex', alignItems: 'center' }}
               onClick={() => { setUpdateFocusOfAnnotation(true); }}
             >
@@ -799,7 +829,12 @@ function AnnotationCard({
                 <>
                   <span style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                     <div style={{
-                      width: 3, height: 3, borderRadius: 1.5, background: '#616161', marginLeft: 10, marginRight: 10,
+                      width: 3 * fontSizeMultiplier,
+                      height: 3 * fontSizeMultiplier,
+                      borderRadius: 1.5 * fontSizeMultiplier,
+                      background: '#616161',
+                      marginLeft: 10,
+                      marginRight: 10,
                     }}
                     />
                     <span>{annotationData.modified === undefined ? '' : moment(annotationData.modified.toString()).format('MM/DD/YYYY')}</span>
@@ -822,13 +857,13 @@ function AnnotationCard({
                           }}
                         >
                           <PenFill
-                            style={{ marginRight: 7 }}
-                            size={14}
+                            style={{ marginRight: 7, position: 'relative', top: largeFontSize ? -2 : 0 }}
+                            size={14 * fontSizeMultiplier}
                           />
                         </span>
                         <TrashFill
                           className="delete-annotation-btn"
-                          size={14}
+                          size={14 * fontSizeMultiplier}
                           onClick={DeleteAnnotation}
                         />
                       </>
@@ -846,7 +881,7 @@ function AnnotationCard({
               placement="top"
               onExited={() => { setHovered(); }}
               overlay={(
-                <Tooltip id={`tooltip-${annotationData._id}`}>
+                <Tooltip style={{ fontSize: 12 * fontSizeMultiplier }} id={`tooltip-${annotationData._id}`}>
                   {FirstNameLastInitial(annotationData.creator.name)}
                 </Tooltip>
               )}
@@ -854,10 +889,18 @@ function AnnotationCard({
               <Card.Header
                 className="annotation-header"
                 onClick={(ev) => {
-                  if (annotationShareableLinkIconClicked(ev)) { return; }
-                  // this means that the user clicked on the annotation-header and not on the link
-                  // icon
-                  expandedAndFocus();
+                  handleClick({
+                    event: ev,
+                    click: (e) => {
+                      if (annotationShareableLinkIconClicked(e)) { return; }
+                      // this means that the user clicked on the annotation-header and not on the
+                      // link icon
+                      expandedAndFocus();
+                    },
+                    dbclick: () => {
+                      setLargeFontSize(!largeFontSize);
+                    },
+                  });
                 }}
               >
                 {hovered && (
@@ -904,7 +947,7 @@ function AnnotationCard({
           -webkit-line-clamp: 1;
           -webkit-box-orient: vertical;
           display: -webkit-box;
-          max-height: 20px;
+          max-height: ${20 * fontSizeMultiplier}px;
         }
 
         .annotation-header .truncated-annotation.hovered {
@@ -1010,7 +1053,7 @@ function AnnotationCard({
 
         .quote-svg {
           opacity: 0.8;
-          width: 8px;
+          width: ${8 * fontSizeMultiplier}px;
           position: relative;
           top: -3px;
           margin-right: 3px;
@@ -1204,8 +1247,12 @@ function AnnotationCard({
 
       .annotation-header {
         padding: 6px;
-        font-size: 12px;
+        font-size: ${12 * fontSizeMultiplier}px;
         background: white;
+      }
+
+      .annotation-header.editing {
+        font-size: 12px !important;
       }
 
       .annotation-header.grey-background:hover {
@@ -1231,7 +1278,7 @@ function AnnotationCard({
 
       .annotation-body {
         padding: 0.3rem;
-        font-size: 12px;
+        font-size: ${12 * fontSizeMultiplier}px;
         border-bottom-width: 1px !important;
       }
 
@@ -1248,7 +1295,7 @@ function AnnotationCard({
 
       .annotation-tags {
         padding: 0px 0.3rem 0.3rem 0.3rem !important; 
-        font-size: 16px;
+        font-size: ${16 * fontSizeMultiplier}px;
         font-weight: 500 !important;
         border-bottom-width: 1px !important
       }

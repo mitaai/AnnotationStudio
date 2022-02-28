@@ -78,6 +78,7 @@ const DocumentPage = ({
     }, 750),
   ).current;
 
+  const [largeFontSize, setLargeFontSize] = useState();
   const [documentLoading, setDocumentLoading] = useState(true);
   const [
     initializedDocumentScrollEventListener,
@@ -885,6 +886,8 @@ const DocumentPage = ({
                         membersIntersection={membersIntersection}
                         alerts={alerts}
                         setAlerts={setAlerts}
+                        largeFontSize={largeFontSize}
+                        setLargeFontSize={setLargeFontSize}
                       />
                       <div
                         id="document-container-col"
@@ -942,6 +945,8 @@ const DocumentPage = ({
                         membersIntersection={membersIntersection}
                         alerts={alerts}
                         setAlerts={setAlerts}
+                        largeFontSize={largeFontSize}
+                        setLargeFontSize={setLargeFontSize}
                       />
                     </div>
                   </div>
