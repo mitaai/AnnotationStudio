@@ -667,7 +667,7 @@ function AnnotationCard({
                         id="typeahead-annotation-tags"
                         disabled={savingAnnotation}
                         labelKey="tags"
-                        placeholder="tags"
+                        placeholder="tag"
                         multiple
                         selected={
                             newAnnotationTags === null
