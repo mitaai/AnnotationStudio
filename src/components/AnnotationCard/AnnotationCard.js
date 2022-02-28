@@ -487,15 +487,19 @@ function AnnotationCard({
   }
 
   const handleClick = ({ event, click = () => {}, dbclick = () => {} }) => {
+    console.log('handleClick');
     if (refCardClickedAlready.current > 0) {
+      console.log('dbclick');
       dbclick(event);
       refCardClickedAlready.current = 0;
     } else {
       refCardClickedAlready.current = 1;
       setTimeout(() => {
         if (refCardClickedAlready.current === 1) {
+          console.log('dbclick');
           click(event);
         }
+        console.log('dbclick already');
         refCardClickedAlready.current = 0;
       }, 200);
     }
