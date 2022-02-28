@@ -496,10 +496,11 @@ function AnnotationCard({
       refCardClickedAlready.current = 1;
       setTimeout(() => {
         if (refCardClickedAlready.current === 1) {
-          console.log('dbclick');
+          console.log('click');
           click(event);
+        } else {
+          console.log('dbclick already');
         }
-        console.log('dbclick already');
         refCardClickedAlready.current = 0;
       }, 200);
     }
