@@ -9,8 +9,7 @@ import {
 } from 'react-bootstrap-icons';
 import { DocumentContext } from '../../contexts/DocumentContext';
 
-function DocumentZoomSlider() {
-  const [, documentZoom, setDocumentZoom] = useContext(DocumentContext);
+function DocumentZoomSlider({ documentZoom, setDocumentZoom }) {
   const [hovered, setHovered] = useState();
   const widthOfSlider = 100;
   const widthOfCollapsedZoomContainer = 92;
@@ -88,4 +87,15 @@ function DocumentZoomSlider() {
   );
 }
 
-export default DocumentZoomSlider;
+function DocumentZoomSliderWithContext() {
+  const [, documentZoom, setDocumentZoom] = useContext(DocumentContext);
+  return <DocumentZoomSlider documentZoom={documentZoom} setDocumentZoom={setDocumentZoom} />;
+}
+
+function DocumentZoomSliderContainer({ stateful, documentZoom, setDocumentZoom }) {
+  return stateful
+    ? <DocumentZoomSlider documentZoom={documentZoom} setDocumentZoom={setDocumentZoom} />
+    : <DocumentZoomSliderWithContext />;
+}
+
+export default DocumentZoomSliderContainer;

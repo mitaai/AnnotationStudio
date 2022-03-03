@@ -19,7 +19,9 @@ const handler = async (req, res) => {
       const {
         document,
         analysisId,
+        analysisIds,
         returnData,
+        dontSaveData,
       } = req.body;
 
       if (document) {
@@ -70,36 +72,52 @@ const handler = async (req, res) => {
             const percentDecrease = (sizeBefore - size) / sizeBefore;
 
             const processedTokens = [];
+            const indexesOfRemovedStopWords = [];
+            // this keeps track of the indexes of stop words in the processed tokens which is
+            // different from where they originally were in the list of tokens
+            const removedStopWordsPTIndexes = {};
+            let removedStopWordsLength = 0;
             const stopWordsObj = NLTK_STOPWORDS_OBJ[reslt.language] || {};
             for (let i = 0; i < reslt.tokens.length; i += 1) {
-              const { lemma } = reslt.tokens[i];
+              const { lemma, text: { content } } = reslt.tokens[i];
               if (!stopWordsObj[lemma]) {
-                processedTokens.push(lemma);
+                processedTokens.push({ lemma, textContent: content });
+              } else {
+                removedStopWordsPTIndexes[i - removedStopWordsLength] = {
+                  index: i,
+                  lemma,
+                  textContent: content,
+                };
+                removedStopWordsLength += 1;
+                indexesOfRemovedStopWords.push(i);
               }
             }
 
             reslt.processedTokens = processedTokens;
+            reslt.removedStopWordsPTIndexes = removedStopWordsPTIndexes;
 
             let doc;
-            if (analysisId) {
-              doc = await db
-                .collection('textAnalysis')
-                .updateMany(
-                  { _id: ObjectID(analysisId) },
-                  {
-                    $set: {
-                      analysis: reslt,
+            if (!dontSaveData) {
+              if (analysisId) {
+                doc = await db
+                  .collection('textAnalysis')
+                  .updateMany(
+                    { _id: ObjectID(analysisId) },
+                    {
+                      $set: {
+                        analysis: reslt,
+                      },
                     },
-                  },
-                );
-            } else {
-              doc = await db
-                .collection('textAnalysis')
-                .insertOne({ analysis: reslt });
+                  );
+              } else {
+                doc = await db
+                  .collection('textAnalysis')
+                  .insertOne({ analysis: reslt });
+              }
             }
 
             res.status(200).json({
-              analysis: { id: analysisId || doc.insertedId, result: returnData && reslt },
+              analysis: { id: analysisId || doc?.insertedId, result: returnData && reslt },
               percentDecrease,
               size,
             });
@@ -118,6 +136,19 @@ const handler = async (req, res) => {
 
         res.status(200).json({
           analysis: { id: analysisId, result },
+        });
+      } else if (analysisIds) {
+        const { db } = await connectToDatabase();
+
+        const objectIds = analysisIds.map((id) => ObjectID(id));
+
+        const result = await db
+          .collection('textAnalysis')
+          .find({ _id: { $in: objectIds } })
+          .toArray();
+
+        res.status(200).json({
+          analyses: result,
         });
       } else res.status(400).end('Bad request');
     } else res.status(403).end('Invalid or expired token');

@@ -261,13 +261,35 @@ const addGroupNamesToDocuments = async (docsToAlter) => {
 };
 
 const getDocumentTextAnalysis = async ({
-  document, analysisId, returnData,
+  document, analysisId, returnData, dontSaveData,
 }) => {
   const url = '/api/textAnalysis';
   const body = {
     document,
     analysisId,
     returnData,
+    dontSaveData,
+  };
+  const res = await unfetch(url, {
+    method: 'POST',
+    body: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (res.status === 200) {
+    const response = await res.json();
+    return Promise.resolve(response);
+  } return Promise.reject(Error(`Unable to fetch text analysis data: error ${res.status} received from server`));
+};
+
+const getDocumentTextAnalyses = async ({
+  analysisIds,
+}) => {
+  const url = '/api/textAnalysis';
+  const body = {
+    analysisIds,
+    returnData: true,
   };
   const res = await unfetch(url, {
     method: 'POST',
@@ -296,4 +318,5 @@ export {
   prefetchDocumentBySlug,
   prefetchManyGroupNamesById,
   getDocumentTextAnalysis,
+  getDocumentTextAnalyses,
 };

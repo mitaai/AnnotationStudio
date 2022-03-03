@@ -17,8 +17,13 @@
   border-top-right-radius: 0.25rem;
   background-color: rgba(0, 0, 0, 0.08);
   border: 1px solid theme.$gray-400;
+  transition: background-color 0.5s;
   & > * {
     display: inline-block;
+  }
+
+  &.analysis-mode {
+    background-color: rgba(13, 109, 253, 0.1) !important;
   }
 }
 
@@ -27,10 +32,21 @@
   margin-left: 0.125rem;
   margin-right: 0.125rem;
   height: 2rem;
+  border: none;
+  
+  button {
+    border: none;
+  }
+}
+
+.toolbar-button-extra-padding button {
+  padding-top: 5px;
+  padding-bottom: 5px;
 }
 
 .button-group-end {
-  margin-right: 1rem;
+  margin-right: 0rem;
+  border: none;
 }
 
 .export-button {

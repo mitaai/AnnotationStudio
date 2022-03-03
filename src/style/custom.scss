@@ -354,3 +354,12 @@ $breadcrumb-bg: transparent;
   border-radius: 0.25rem;
   width: 100%;
 }
+
+#runAnalysisModal {
+  margin: 30px 25px;
+
+  .modal-content {
+    width: calc(100vw - 50px);
+    height: calc(100vh - 60px)
+  }
+}

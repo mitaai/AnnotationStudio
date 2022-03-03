@@ -1,7 +1,10 @@
 const hashTextArray = (arr) => {
   // this function takes a list of strings and processes them into one string that can be hashed
   // into a hash table
-  const str = arr.reduce((previousValue, currentValue) => `${previousValue}_${currentValue.toLowerCase()}`, '');
+  const str = arr.reduce((previousValue, currentValue) => {
+    const text = currentValue?.lemma || currentValue;
+    return `${previousValue}_${text.toLowerCase()}`;
+  }, '');
   return str;
 };
 
@@ -32,6 +35,7 @@ const findNGrams = ({ size = 3, sourceTexts = [], text }) => {
       // time of the algorithm
       indexToNGramHash: {},
       nGramMatchIndexesInUserTextData: [],
+      uniqueNGramMatchesInUserTextData: {},
       // object keys will be numbers corresponding to the size of the nGram and each value will be
       // an array of numbers corresponding to the start index of each nGram found larger than the
       // default 'size' of the nGrams we were initially looking for
@@ -40,10 +44,11 @@ const findNGrams = ({ size = 3, sourceTexts = [], text }) => {
     const userText = item.slug === textDefaultSlug;
     for (let i = 0; i < item.text.length - size + 1; i += 1) {
       const nGramHash = hashTextArray(item.text.slice(i, i + size));
+
       if (obj.nGramHashToIndexes[nGramHash]) {
         obj.nGramHashToIndexes[nGramHash].push(i);
       } else {
-        obj.nGramHashToIndexes[nGramHash] = i;
+        obj.nGramHashToIndexes[nGramHash] = [i];
       }
 
       obj.indexToNGramHash[i] = nGramHash;
@@ -56,6 +61,9 @@ const findNGrams = ({ size = 3, sourceTexts = [], text }) => {
         for (const [slug, { nGramHashToIndexes }] of Object.entries(sourceTextsData)) {
           if (nGramHashToIndexes[nGramHash]) {
             sourceTextsData[slug].nGramMatchIndexesInUserTextData.push(i);
+            if (!sourceTextsData[slug].uniqueNGramMatchesInUserTextData[nGramHash]) {
+              sourceTextsData[slug].uniqueNGramMatchesInUserTextData[nGramHash] = true;
+            }
           }
         }
       }
@@ -72,7 +80,23 @@ const findNGrams = ({ size = 3, sourceTexts = [], text }) => {
   // the next thing we need to do is cacluate larger sized nGrams that may exist in the set of
   // matchingNGrams
   // eslint-disable-next-line no-restricted-syntax
-  for (const [slug, { nGramMatchIndexesInUserTextData }] of Object.entries(sourceTextsData)) {
+  for (const [slug, data] of Object.entries(sourceTextsData)) {
+    const {
+      nGramMatchIndexesInUserTextData,
+      uniqueNGramMatchesInUserTextData,
+      nGramHashToIndexes,
+    } = data;
+    // first thing we will do is cacluate a similarity score between the source text and user text
+    const uniqueNumberOfNGramHashes = Object.keys(nGramHashToIndexes).length;
+    const uniqueNumberOfNGramMatches = Object.keys(uniqueNGramMatchesInUserTextData).length;
+    const similarityScore = (uniqueNumberOfNGramMatches / uniqueNumberOfNGramHashes).toFixed(5);
+    sourceTextsData[slug].similarityScore = similarityScore;
+
+    // we need to make a new one because if we find higher nGrams then we don't need to record them
+    // as multiple lower nGrams. For example if you find a 4-gram it will be recorded as 2 trigrams
+    // which we don't need that double record
+    const newNGramMatchIndexes = [];
+
     let startIndex;
     let prevIndex;
     // eslint-disable-next-line no-restricted-syntax
@@ -96,6 +120,9 @@ const findNGrams = ({ size = 3, sourceTexts = [], text }) => {
           } else {
             sourceTextsData[slug].largerSizedNGramMatches[n] = [startIndex];
           }
+        } else {
+          // this means that this index is only an nGram and not a larger sized nGram
+          newNGramMatchIndexes.push(startIndex);
         }
 
         prevIndex = nGramMatchIndex;
@@ -112,13 +139,65 @@ const findNGrams = ({ size = 3, sourceTexts = [], text }) => {
       } else {
         sourceTextsData[slug].largerSizedNGramMatches[n] = [startIndex];
       }
+    } else {
+      // this means that this index is only an nGram and not a larger sized nGram
+      newNGramMatchIndexes.push(startIndex);
     }
+
+    // this saves nGram Matches that are not larger nGrams to nGramMatchIndexesInUserTextData
+    sourceTextsData[slug].nGramMatchIndexesInUserTextData = newNGramMatchIndexes;
   }
 
   return { userTextData, sourceTextsData };
 };
 
+const toNGramStringArray = (nGramSize, processedTokens, removedStopWordsPTIndexes) => (index) => {
+  const arr = [];
+  for (let i = 0; i < nGramSize; i += 1) {
+    const t = processedTokens[index + i].textContent;
+    arr.push(t);
+    if (removedStopWordsPTIndexes[index + i + 1]) {
+      const stopWordText = removedStopWordsPTIndexes[index + i + 1].textContent;
+      arr.push(stopWordText);
+    }
+  }
+
+  return arr;
+};
+
+const getNGramTexts = ({ userTextAnalysisData, sourceTextsData, size }) => {
+  const { processedTokens, removedStopWordsPTIndexes } = userTextAnalysisData;
+  // so we will go through all the 'nGramMatchIndexesInUserTextData' in all the source texts
+  const nGramTexts = {};
+  // eslint-disable-next-line no-restricted-syntax
+  for (const [slug, data] of Object.entries(sourceTextsData)) {
+    const { nGramMatchIndexesInUserTextData, largerSizedNGramMatches } = data;
+    const nSizeGramTexts = nGramMatchIndexesInUserTextData.map(
+      toNGramStringArray(size, processedTokens, removedStopWordsPTIndexes),
+    );
+
+    const obj = {
+      [size]: nSizeGramTexts,
+    };
+
+    // then we need to check if there are any nGrams larger than then default size
+    // eslint-disable-next-line no-restricted-syntax
+    for (const [nGramSize, startIndexes] of Object.entries(largerSizedNGramMatches)) {
+      const largerSizedNGrams = startIndexes.map(
+        toNGramStringArray(nGramSize, processedTokens, removedStopWordsPTIndexes),
+      );
+
+      obj[nGramSize] = largerSizedNGrams;
+    }
+
+    nGramTexts[slug] = obj;
+  }
+
+  return nGramTexts;
+};
+
+
 export {
-  // eslint-disable-next-line import/prefer-default-export
   findNGrams,
+  getNGramTexts,
 };

@@ -9,6 +9,7 @@ import AnnotationShareableLinkIcon from '../AnnotationShareableLinkIcon';
 
 export default function AnnotationTile({
   id,
+  documentId = '',
   text = '',
   annotation = '',
   author = '',
@@ -52,6 +53,7 @@ export default function AnnotationTile({
   return (
     <div
       id={id}
+      documentid={documentId}
       style={{ userSelect: 'none' }}
       className={classNames}
       contentEditable={false}

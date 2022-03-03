@@ -1,5 +1,4 @@
 import React, {
-  useEffect,
   useState,
 } from 'react';
 import {
@@ -18,7 +17,7 @@ import {
   Check2Square,
   Stack,
 } from 'react-bootstrap-icons';
-import { findNGrams } from '../../utils/nGramUtil';
+// import { findNGrams } from '../../utils/nGramUtil';
 import LoadingSpinner from '../LoadingSpinner';
 import TextAnalysisInfo from '../TextAnalysisInfo/TextAnalysisInfo';
 import TileBadge from '../TileBadge';
@@ -47,16 +46,6 @@ function TextAnalysisPopover({ textAnalysisData, loadingTextAnalysisData, getTex
   } else if (textAnalysisData === undefined) {
     t = 'runAnalysis';
   }
-
-  console.log('textAnalysisData', textAnalysisData);
-
-  useEffect(() => {
-    console.log(findNGrams({
-      size: 3,
-      sourceTexts: [{ slug: 'hello', text: 'hello my name is bob your name is susan and his name is Tom'.split(' ') }],
-      text: 'hello my name is Bob your name is Tom and his name is Susan'.split(' '),
-    }));
-  }, []);
 
   const filterPopoverComponent = (
     <Popover id="filter-popover">

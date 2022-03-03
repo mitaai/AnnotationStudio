@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-param-reassign */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect, useRef } from 'react';
@@ -124,6 +126,7 @@ export default function AnnotationsChannel({
   const [showNewOutlineModal, setShowNewOutlineModal] = useState();
   const [showExportingDocumentModal, setShowExportingDocumentModal] = useState();
   const [exportingDocumentModalTitle, setExportingDocumentModalTitle] = useState('');
+  const [showRunAnalysisModal, setShowRunAnalysisModal] = useState();
   const [newOutlineName, setNewOutlineName] = useState('');
   const [creatingOutline, setCreatingOutline] = useState();
   const [deletingOutline, setDeletingOutline] = useState();
@@ -1356,6 +1359,301 @@ export default function AnnotationsChannel({
     ));
   }
 
+  const convertAnnotationTilesToImages = ({ callback }) => {
+    const composition = DeepCopyObj(openOutline.current.document);
+    const annotationTilesPositions = findAnnotationTilesPostions(composition, []);
+    // now we need to create all the images for all the annotations we found
+    Promise.all(annotationTilesPositions.map(({ oid }) => {
+      // eslint-disable-next-line no-undef
+      const node = document.getElementById(oid);
+      return { image: toPng(node), documentId: node.getAttribute('documentid') };
+    })).then((annotationImages) => {
+      const docIds = {};
+      for (let i = 0; i < annotationTilesPositions.length; i += 1) {
+        if (docIds[annotationImages[i].documentId] === undefined) {
+          docIds[annotationImages[i].documentId] = true;
+        }
+        const {
+          posArray,
+          url,
+        } = annotationTilesPositions[i];
+        const subDocument = posArray.slice(0, -1).reduce((o, k) => o[k], composition);
+        subDocument[posArray.slice(-1)[0]] = {
+          type: 'a',
+          url,
+          children: [{
+            type: 'img',
+            children: [{ text: '' }],
+            url: annotationImages[i].image,
+          }],
+        };
+      }
+
+      callback({ composition, documentIds: docIds });
+    });
+  };
+
+  const parseForSpecialCharacters = (word) => {
+    let index = word.search(/['.;-]/g);
+    if (index === -1) {
+      return [word];
+    }
+
+    let w = word;
+    const items = [];
+    while (index !== -1) {
+      items.push(...[w.substring(0, index), w.substring(index, index + 1)]);
+      w = w.substring(index + 1);
+      index = w.search(/['.;-]/g);
+    }
+
+    items.push(w.substring(index + 1));
+
+    return items;
+  };
+
+  const generateNGramDicitionary = (analysis) => {
+    const dictionary = {};
+    // eslint-disable-next-line no-restricted-syntax
+    for (const [documentId, nGramSizes] of Object.entries(analysis)) {
+      // eslint-disable-next-line no-restricted-syntax
+      for (const [size, nGrams] of Object.entries(nGramSizes)) {
+        // eslint-disable-next-line no-restricted-syntax
+        for (const nGram of nGrams) {
+          const item = {
+            id: RID(),
+            arr: nGram.slice(1),
+            nGram,
+            size,
+            documentId,
+          };
+
+          if (dictionary[nGram[0]]) {
+            dictionary[nGram[0]].push(item);
+          } else {
+            dictionary[nGram[0]] = [item];
+          }
+        }
+      }
+    }
+
+    return dictionary;
+  };
+
+  const prepareDocumentObj = (document) => {
+    const doc = DeepCopyObj(document);
+
+    // eslint-disable-next-line no-restricted-syntax
+    for (const node of doc) {
+      const { children } = node;
+      // eslint-disable-next-line no-restricted-syntax
+      for (let j = 0; j < children.length; j += 1) {
+        const words = children[j].text.split(' ');
+        for (let i = 0; i < words.length; i += 1) {
+          const items = parseForSpecialCharacters(words[i]);
+          words.splice(i, 1, items);
+        }
+
+        children[j].text = words;
+      }
+    }
+
+    return doc;
+  };
+
+  const findNGramsInDocument = (document, dictionary) => {
+    let queue = {};
+    const foundNGrams = [];
+
+    // eslint-disable-next-line no-restricted-syntax
+    for (let h = 0; h < document.length; h += 1) {
+      const { children } = document[h];
+      // eslint-disable-next-line no-restricted-syntax
+      for (let i = 0; i < children.length; i += 1) {
+        for (let j = 0; j < children[i].text.length; j += 1) {
+          for (let k = 0; k < children[i].text[j].length; k += 1) {
+            const word = children[i].text[j][k];
+            // we need to make sure that 'word' is an actual word and not an empty string
+            if (word.length === 0) {
+              // eslint-disable-next-line no-continue
+              continue;
+            }
+            const queueItems = queue[word];
+            // we need to clear the queue because we have grabbed the possible next set of
+            queue = {};
+            // queueItems we will iterate through, all other values in the queue didn't match so
+            // they get kicked out
+            if (queueItems) {
+              // eslint-disable-next-line no-restricted-syntax
+              for (const queueItem of queueItems) {
+                const { arr } = queueItem;
+                if (arr.length === 0) {
+                  // this means that we finished finiding an nGram in the user text
+                  foundNGrams.push({
+                    ...queueItem,
+                    endPos: [h, i, j, k],
+                  });
+                } else {
+                  const newQueueItem = {
+                    ...queueItem,
+                    arr: arr.slice(1),
+                  };
+
+                  const key = arr[0];
+                  if (queue[key]) {
+                    queue[key].push(newQueueItem);
+                  } else {
+                    queue[key] = [newQueueItem];
+                  }
+                }
+              }
+            }
+            // next we check if this word is in the dictionary
+            const dictionaryItems = dictionary[word];
+            if (dictionary[word]) {
+              // if it is in the dictionary we need to add it as a queue item
+
+              // eslint-disable-next-line no-restricted-syntax
+              for (const dictionaryItem of dictionaryItems) {
+                const { arr } = dictionaryItem;
+                const newQueueItem = {
+                  ...dictionaryItem,
+                  arr: arr.slice(1),
+                  startPos: [h, i, j, k],
+                };
+
+                const key = arr[0];
+                if (queue[key]) {
+                  queue[key].push(newQueueItem);
+                } else {
+                  queue[key] = [newQueueItem];
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return foundNGrams;
+  };
+
+  const addTagsToDocumentStructure = (document, foundNGrams) => {
+    // first thing is we put text tags into the document structure
+
+    const startTag = { start: '__!$!', end: '#$#__' };
+    const endTag = { start: '__!$!', end: '#$#__' };
+    // eslint-disable-next-line no-restricted-syntax
+    for (const { startPos, endPos, id } of foundNGrams) {
+      // now we need to put custom text into the document object to tag text that needs to be
+      // highlighted as an nGram
+      const [sH, sI, sJ, sK] = startPos;
+      const [eH, eI, eJ, eK] = endPos;
+      const sTag = `${startTag.start}${id}${startTag.end}`;
+      const eTag = `${endTag.start}${id}${endTag.end}`;
+      // you add the endTag before the startTag because the start Tag could possibly shift things
+      // over in such a way that the endTag could be misplaced by one index but because the endTag
+      // is always a larger value then the startTag it can never affect the placement of the
+      // startTag
+      document[eH].children[eI].text[eJ].splice(eK + 1, 0, eTag);
+      document[sH].children[sI].text[sJ].splice(sK, 0, sTag);
+    }
+
+    console.log('doc1', document);
+
+    // now that the document has text tags in its structure we use them to manipulate the structure
+    // and add key value pairs to text objects
+    /*
+    // eslint-disable-next-line no-restricted-syntax
+    for (const { startPos, id } of foundNGrams) {
+      // even though the structure of document is changing startPos is still a good place to start
+      // to fin the start Tag and use it to change the structure of document and add more key value
+      // pairs to the text object. startPos works as a good starting point because the position of
+      // tags will only get larger as the document structure is edited so it saves us some time
+      // compared to starting at position [0, 0, 0, 0]
+
+      const [sH, sI, sJ, sK] = startPos;
+      const sTag = `${startTag.start}${id}${startTag.end}`;
+      const eTag = `${endTag.start}${id}${endTag.end}`;
+
+      let i = 0; // sI;
+      let j = 0; // sJ;
+      let k = 0; // sK;
+      let foundSTag = false;
+      let foundETag = false;
+      for (let h = 0; h < document.length; h += 1) {
+        while (i < document[h].children.length && !foundETag) {
+          while (j < document[h].children[i].text.length && !foundETag) {
+            while (k < document[h].children[i].text[j]?.length && !foundETag) {
+              if (document[h].children[i].text[j][k] === sTag) {
+                foundSTag = true;
+                const a1 = document[h].children[i].text.slice(0, j + 1);
+                const a2 = a1[j].slice(0, k);
+                const a3 = a1[j].slice(k + 1);
+                a1[j] = a2;
+                const a4 = document[h].children[i].text.slice(j);
+                a4[0] = a3;
+                document[h].children[i].text = a1;
+                document[h].children.splice(i, 0, {
+                  ...document[h].children[i],
+                  text: a4,
+                  startTagIds: (document[h].children[i].startTagIds || []).concat([id]),
+                });
+              } else if (document[h].children[i].text[j][k] === eTag && foundSTag) {
+                foundETag = true;
+                const a1 = document[h].children[i].text.slice(0, j + 1);
+                const a2 = a1[j].slice(0, k);
+                const a3 = a1[j].slice(k + 1);
+                a1[j] = a2;
+                const a4 = document[h].children[i].text.slice(j);
+                a4[0] = a3;
+
+                document[h].children[i].text = a1;
+                document[h].children[i].endTagIds = (
+                  document[h].children[i].endTagIds || []
+                ).concat([id]);
+
+                document[h].children.splice(i, 0, {
+                  ...document[h].children[i],
+                  text: a4,
+                  startTagIds: (document[h].children[i].startTagIds || [])
+                    .filter((startTagId) => startTagId !== id),
+                });
+              }
+
+              k += 1;
+            }
+            k = 0;
+            j += 1;
+          }
+          j = 0;
+          i += 1;
+        }
+        i = 0;
+      }
+    }
+    */
+  };
+
+
+  const saveSourceTextAnalysisResults = (res) => {
+    // this function goes through the analysis of source texts and tries to find the nGram detected
+    // in the user text
+    console.log('saveSourceTextAnalysisResults', res);
+
+    const dictionary = generateNGramDicitionary(res.analysis);
+
+    console.log('dictionary', dictionary);
+    // at this point document 'doc' has been prepared to be iterated through and find all instance
+    // of nGrams
+    const document = prepareDocumentObj(openOutline.current.document);
+    // console.log('document', document);
+    const foundNGrams = findNGramsInDocument(document, dictionary);
+    addTagsToDocumentStructure(document, foundNGrams);
+
+    console.log('document', document);
+  };
+
   const slateInitialValue = [
     {
       children: [{ text: '' }],
@@ -1381,7 +1679,10 @@ export default function AnnotationsChannel({
         <ISOutline
           key={openOutline.current.id}
           selection={openOutline.current.selection}
+          session={session}
+          convertAnnotationTilesToImages={convertAnnotationTilesToImages}
           clearSelection={() => updateOutline({ selection: null })}
+          openRunAnalysisModal={() => setShowRunAnalysisModal(true)}
           exportDocument={async (e) => {
             const eventText = {
               'annotation-studio': 'Exporting composition to Annotation Studio',
@@ -1390,39 +1691,15 @@ export default function AnnotationsChannel({
             setExportingDocumentModalTitle(eventText[e] || 'Exporting...');
             setShowExportingDocumentModal(true);
 
-            const composition = DeepCopyObj(openOutline.current.document);
-            const annotationTilesPositions = findAnnotationTilesPostions(composition, []);
-            // now we need to create all the images for all the annotations we found
-            Promise.all(annotationTilesPositions.map(({ oid }) => {
-              // eslint-disable-next-line no-undef
-              const node = document.getElementById(oid);
-              return toPng(node);
-            })).then((annotationImages) => {
-              for (let i = 0; i < annotationTilesPositions.length; i += 1) {
-                const {
-                  posArray,
-                  url,
-                } = annotationTilesPositions[i];
-                const subDocument = posArray.slice(0, -1).reduce((o, k) => o[k], composition);
-                subDocument[posArray.slice(-1)[0]] = {
-                  type: 'a',
-                  url,
-                  children: [{
-                    type: 'img',
-                    children: [{ text: '' }],
-                    url: annotationImages[i],
-                  }],
-                };
-              }
+            const callback = e === 'annotation-studio' ? (composition) => {
+              exportDocumentToAnnotationStudio({
+                author: (session && session.user) ? session.user.name : '',
+                composition: { ...openOutline.current, document: composition },
+                callback: ({ pathname, query }) => router.push({ pathname, query }),
+              });
+            } : () => {};
 
-              if (e === 'annotation-studio') {
-                exportDocumentToAnnotationStudio({
-                  author: (session && session.user) ? session.user.name : '',
-                  composition: { ...openOutline.current, document: composition },
-                  callback: ({ pathname, query }) => router.push({ pathname, query }),
-                });
-              }
-            });
+            convertAnnotationTilesToImages({ callback });
           }}
           document={openOutline.current.document || slateInitialValue}
           setDocument={(document) => updateOutline({ document })}

@@ -196,6 +196,7 @@ export default function Home({
       <AnnotationTile
         key={`${oid || _id}-${from}`}
         id={oid || _id}
+        documentId={document.id}
         onClick={onClick || openInAS}
         openInAnnotationStudio={openInAnnotationStudio ? openInAS : undefined}
         onDelete={onDelete}

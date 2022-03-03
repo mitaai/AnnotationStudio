@@ -4,6 +4,7 @@ import React, {
 } from 'react';
 import {
   Spinner,
+  Button,
 } from 'react-bootstrap';
 import { createEditor } from 'slate';
 import {
@@ -26,8 +27,12 @@ import { withHistory } from 'slate-history';
 import { plugins, withDivs } from '../../../utils/slateUtil';
 import SlateToolbar from '../../SlateToolbar';
 import styles from './ISOutline.module.scss';
+import CommentCard from '../../CommentCard/CommentCard';
 
 const ISOutline = ({
+  openRunAnalysisModal,
+  session,
+  convertAnnotationTilesToImages,
   exportDocument,
   selection,
   clearSelection,
@@ -40,6 +45,7 @@ const ISOutline = ({
   annotationsBeingDragged,
   setAnnotationsBeingDragged,
 }) => {
+  const [analysisMode, setAnalysisMode] = useState();
   const [slateLoading, setSlateLoading] = useState(false);
   const [removeDropzones, setRemoveDropzones] = useState(false);
   const withPlugins = [
@@ -56,6 +62,9 @@ const ISOutline = ({
   ];
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
+
+
+  const documentWidth = 750;
 
   const addDropzonesToSlateValue = (arr, parentType, currentPosArray = []) => {
     const newArr = [];
@@ -139,8 +148,24 @@ const ISOutline = ({
 
   // console.log(editor.selection);
 
+  useEffect(() => {
+    console.log('document', document);
+  }, [document]);
+
+  // eslint-disable-next-line no-unused-vars
+  const doc = [{
+    type: 'p',
+    children: [
+      { text: 'The legal ' },
+      { text: 'system is made up of criminal and civil courts and…diction refers to the types of cases the court is', strikethrough: true },
+      { text: ' permitted to rule on. Sometimes, only one type of…stance, bankruptcy cases can be ruled on only in ' },
+      { text: 'bankruptcy court. In other situations, it is possible for more than one court to have jurisdiction. ', bold: true, textAnalysisComment: 'hello' },
+    ],
+  }];
+
   return (
     <>
+      <Button onClick={() => openRunAnalysisModal()}>Open</Button>
       <Slate
         editor={editor}
         value={annotationsBeingDragged ? addDropzonesToSlateValue(document) : document}
@@ -155,6 +180,11 @@ const ISOutline = ({
           key="goodbye"
           disabled={false}
           exportButton
+          runAnalysisButton
+          session={session}
+          convertAnnotationTilesToImages={convertAnnotationTilesToImages}
+          analysisMode={analysisMode}
+          setAnalysisMode={setAnalysisMode}
           exportDocument={exportDocument}
         />
         {slateLoading && (
@@ -174,6 +204,14 @@ const ISOutline = ({
         </div>
         )}
         <div id="outline-container-container">
+          {analysisMode && (
+            <div style={{
+              position: 'relative', left: 6, flex: 1, height: 40,
+            }}
+            >
+              <CommentCard id="comment-card-demo" />
+            </div>
+          )}
           <EditablePlugins
             readOnly={readOnly}
             plugins={plugins}
@@ -202,19 +240,27 @@ const ISOutline = ({
               height: calc(100vh - 303px);
               padding: 20px 0px;
               overflow: scroll;
+              display: flex;
+              flex-direction: row;
+              justify-content: center;
             }
 
             #outline-container {
+              transition: right 0.5s;
               background: white;
-              width: 750px;
+              width: ${documentWidth}px;
               min-height: 971px !important;
               height: auto !important;
-              margin: 0px auto;
+              margin: 0px 20px;
               border: none;
               border-radius: 0px;
               box-shadow: 3px 3px 9px 0px rgb(0 0 0 / 38%) !important;
               outline: none !important;
               resize: none;
+            }
+
+            [text-analysis-comment='hello'] {
+              background-color: rgba(109, 247, 222, 0.3);
             }
         `}
       </style>

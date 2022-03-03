@@ -1,0 +1,66 @@
+@use "../../style/theme";
+
+.sourceTextContainer {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    &:hover {
+        .sourceTextHeader, .sourceTextChevron {
+            color: theme.$primary;
+        }
+    }
+}
+
+.sourceTextChevron {
+    color: #757575;
+    margin-left: 5px;
+    transition: transform 0.25s;
+    cursor: pointer;
+}
+
+.sourceTextHeader {
+    font-size: 22px;
+    font-weight: bold;
+    cursor: pointer;
+    &:hover {
+        color: theme.$primary;
+    }
+}
+
+.analysisModeContainer {
+    color: #616161;
+    cursor: pointer;
+
+    &:hover {
+        color: theme.$primary;
+    }
+}
+
+.rowItem {
+    display: flex;
+    flex-direction: row;
+    padding: 5px 5px 5px 5px;
+    cursor: pointer;
+
+    .addButton{
+        opacity: 0;
+    }
+
+    &:hover {
+        background-color: #f5f5f5;
+
+        .addButton {
+            opacity: 1.0;
+        }
+    }
+}
+
+.documentCardTitle {
+    font-size: 14px;
+    font-weight: bold;
+    color: #212121;
+    text-align: center;
+    margin-bottom: 5px;
+    padding: 0px 3px;
+}

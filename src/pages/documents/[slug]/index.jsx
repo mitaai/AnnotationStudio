@@ -23,8 +23,6 @@ import debounce from 'lodash.debounce';
 import HeatMap from '../../../components/HeatMap';
 import Layout from '../../../components/Layout';
 import LoadingSpinner from '../../../components/LoadingSpinner';
-import AnnotationChannel from '../../../components/AnnotationChannel';
-import Document from '../../../components/Document';
 import { getDocumentTextAnalysis, prefetchDocumentBySlug } from '../../../utils/docUtil';
 import { fetchSharedAnnotationsOnDocument, MAX_NUMBER_OF_ANNOTATIONS_REQUESTED } from '../../../utils/annotationUtil';
 import {
@@ -43,6 +41,7 @@ import { annotatedByFilterMatch, byPermissionsDocumentViewFilterMatch, byTagFilt
 import MaxedTextLengthToast from '../../../components/MaxedTextLengthToast';
 import MaxedAnnotationLengthToast from '../../../components/MaxedAnnotationLengthToast';
 import RunTextAnalysisModal from '../../../components/RunTextAnalysisModal';
+import DocumentViewContainer from '../../../components/DocumentViewContainer/DocumentViewContainer';
 
 
 const DocumentPage = ({
@@ -868,83 +867,42 @@ const DocumentPage = ({
                   />
                   {!displayAnnotationsInChannels && <AnnotationsOverlay />}
                   {cannotAnnotateDocumentToast}
-                  <div id="document-container" className={footerHeight > 0 && 'has-footer'}>
-                    <div id="document-inner-container">
-                      <AnnotationChannel
-                        show={displayAnnotationsInChannels}
-                        deleteAnnotationFromChannels={deleteAnnotationFromChannels}
-                        setAnnotationChannelLoaded={setAnnotationChannel1Loaded}
-                        focusOnAnnotation={moveAnnotationsToCorrectSpotBasedOnFocus}
-                        side="left"
-                        focusedAnnotation={focusedAnnotationsRef.left}
-                        annotations={channelAnnotations.left}
-                        user={session ? session.user : undefined}
-                        showMoreInfoShareModal={showMoreInfoShareModal}
-                        setShowMoreInfoShareModal={setShowMoreInfoShareModal}
-                        setShowMaxedAnnotationLengthToast={setShowMaxedAnnotationLengthToast}
-                        membersIntersection={membersIntersection}
-                        alerts={alerts}
-                        setAlerts={setAlerts}
-                      />
-                      <div
-                        id="document-container-col"
-                        style={{
-                          transform: `scale(${documentZoom / 100}) translateY(0px)`,
-                          transformOrigin: 'top center',
-                          minWidth: documentWidth,
-                          maxWidth: documentWidth,
-                          marginLeft: extraMargin,
-                          marginRight: extraMargin,
-                        }}
-                      >
-                        <Document
-                          setShowUnsavedChangesToast={setShowUnsavedChangesToast}
-                          setShowMaxTextLengthReached={setShowMaxTextLengthReached}
-                          annotationIdBeingEdited={annotationIdBeingEdited}
-                          addActiveAnnotation={addActiveAnnotation}
-                          removeActiveAnnotation={removeActiveAnnotation}
-                          displayAnnotationsInChannels={displayAnnotationsInChannels}
-                          setChannelAnnotations={
-                            (annos) => {
-                              setChannelAnnotations(annos);
-                              setDocumentHighlightedAndLoaded(true);
-                            }
-                          }
-                          annotations={annotations}
-                          documentHighlightedAndLoaded={documentHighlightedAndLoaded}
-                          addAnnotationToChannels={addAnnotationToChannels}
-                          annotateDocument={
-                            async (mySelector, annotationID) => {
-                              await highlightTextToAnnotate(mySelector, annotationID);
-                            }
-                          }
-                          documentToAnnotate={document}
-                          documentZoom={documentZoom}
-                          alerts={alerts}
-                          setAlerts={setAlerts}
-                          user={session ? session.user : undefined}
-                          showCannotAnnotateDocumentToast={showCannotAnnotateDocumentToast}
-                          setShowCannotAnnotateDocumentToast={setShowCannotAnnotateDocumentToast}
-                        />
-                      </div>
-                      <AnnotationChannel
-                        show={displayAnnotationsInChannels}
-                        deleteAnnotationFromChannels={deleteAnnotationFromChannels}
-                        setAnnotationChannelLoaded={setAnnotationChannel2Loaded}
-                        focusOnAnnotation={moveAnnotationsToCorrectSpotBasedOnFocus}
-                        side="right"
-                        focusedAnnotation={focusedAnnotationsRef.right}
-                        annotations={channelAnnotations.right}
-                        user={session ? session.user : undefined}
-                        showMoreInfoShareModal={showMoreInfoShareModal}
-                        setShowMoreInfoShareModal={setShowMoreInfoShareModal}
-                        setShowMaxedAnnotationLengthToast={setShowMaxedAnnotationLengthToast}
-                        membersIntersection={membersIntersection}
-                        alerts={alerts}
-                        setAlerts={setAlerts}
-                      />
-                    </div>
-                  </div>
+                  <DocumentViewContainer
+                    footerHeight={footerHeight}
+                    displayAnnotationsInChannels={displayAnnotationsInChannels}
+                    deleteAnnotationFromChannels={deleteAnnotationFromChannels}
+                    setAnnotationChannel1Loaded={setAnnotationChannel1Loaded}
+                    moveAnnotationsToCorrectSpotBasedOnFocus={
+                      moveAnnotationsToCorrectSpotBasedOnFocus
+                    }
+                    focusedAnnotationsRef={focusedAnnotationsRef}
+                    channelAnnotations={channelAnnotations}
+                    session={session}
+                    showMoreInfoShareModal={showMoreInfoShareModal}
+                    setShowMoreInfoShareModal={setShowMoreInfoShareModal}
+                    setShowMaxedAnnotationLengthToast={setShowMaxedAnnotationLengthToast}
+                    membersIntersection={membersIntersection}
+                    alerts={alerts}
+                    setAlerts={setAlerts}
+                    documentWidth={documentWidth}
+                    extraMargin={extraMargin}
+                    setShowUnsavedChangesToast={setShowUnsavedChangesToast}
+                    setShowMaxTextLengthReached={setShowMaxTextLengthReached}
+                    annotationIdBeingEdited={annotationIdBeingEdited}
+                    addActiveAnnotation={addActiveAnnotation}
+                    removeActiveAnnotation={removeActiveAnnotation}
+                    setChannelAnnotations={setChannelAnnotations}
+                    setDocumentHighlightedAndLoaded={setDocumentHighlightedAndLoaded}
+                    annotations={annotations}
+                    documentHighlightedAndLoaded={documentHighlightedAndLoaded}
+                    addAnnotationToChannels={addAnnotationToChannels}
+                    highlightTextToAnnotate={highlightTextToAnnotate}
+                    document={document}
+                    showCannotAnnotateDocumentToast={showCannotAnnotateDocumentToast}
+                    setShowCannotAnnotateDocumentToast={setShowCannotAnnotateDocumentToast}
+                    setAnnotationChannel2Loaded={setAnnotationChannel2Loaded}
+                    documentZoom={documentZoom}
+                  />
                   <Footer />
                   <Modal
                     show={!(annotationChannel1Loaded && annotationChannel2Loaded)}

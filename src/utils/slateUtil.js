@@ -298,6 +298,20 @@ const MarkButton = ({
   );
 };
 
+/*
+(
+      <span
+        // eslint-disable-next-line react/jsx-props-no-spreading
+        {...attributes}
+        style={{
+          fontWeight: leaf.bold ? 'bold' : 'normal',
+        }}
+      >
+        {children}
+      </span>
+    ),
+*/
+
 // @udecode slate plugins
 
 const plugins = [
@@ -311,6 +325,22 @@ const plugins = [
         return element.annotation;
       }
       return undefined;
+    },
+  },
+  {
+    renderLeaf: ({ attributes, children, leaf }) => {
+      const textAnalysisCommentAttribute = leaf.textAnalysisComment
+        ? { 'text-analysis-comment': leaf.textAnalysisComment }
+        : {};
+      const newAttributes = { ...attributes, ...textAnalysisCommentAttribute };
+      return (
+        <span
+          // eslint-disable-next-line react/jsx-props-no-spreading
+          {...newAttributes}
+        >
+          {children}
+        </span>
+      );
     },
   },
   AlignPlugin(DEFAULTS_ALIGN),
