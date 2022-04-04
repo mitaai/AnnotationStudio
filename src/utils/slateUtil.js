@@ -329,9 +329,15 @@ const plugins = [
   },
   {
     renderLeaf: ({ attributes, children, leaf }) => {
-      const textAnalysisCommentAttribute = leaf.textAnalysisComment
-        ? { 'text-analysis-comment': leaf.textAnalysisComment }
-        : {};
+      const textAnalysisCommentAttribute = {};
+      const arr = leaf?.textAnalysisComment;
+      if (arr && arr.length > 0) {
+        // eslint-disable-next-line guard-for-in
+        // for (const id in arr) {
+        textAnalysisCommentAttribute['text-analysis'] = 'true';
+        // }
+      }
+
       const newAttributes = { ...attributes, ...textAnalysisCommentAttribute };
       return (
         <span

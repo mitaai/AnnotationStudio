@@ -10,8 +10,7 @@
       height: 0.5rem;
     }
   }
-  display: flex;
-  justify-content: center;
+  position: relative;
   padding: 0.5rem 10px 0.5rem;
   border-top-left-radius: 0.25rem;
   border-top-right-radius: 0.25rem;
@@ -56,3 +55,43 @@
     font-size: 13px;
   }
 }
+
+.sortByDropdown.dangerDropdown > button{
+  background-color: #cc353a !important;
+  border-color: #cc353a !important;
+  color: white !important;
+}
+
+.sortByDropdown
+{
+  margin-left: 19px;
+  > button {
+    transition: all 0.25s;
+    padding: 4px 9px !important;
+    background: #EEEEEE;
+    color: #424242;
+    border-color: #ABABAB;
+    margin-right: 3px;
+    box-shadow: none !important;
+    outline: none !important;
+  
+    &:hover {
+      border-color: theme.$primary;
+      color: theme.$primary;
+      background: #EBF2FF;
+    }
+  
+    &:focus {
+      background: #EEEEEE;
+      color: #424242;
+      border-color: #ABABAB;
+    }
+  }
+}
+
+.sortByDropdownSelected > button, .sortByDropdownSelected > button:focus {
+  border-color: theme.$primary !important;
+  color: theme.$primary !important;
+  background: #EBF2FF !important;
+}
+

@@ -135,6 +135,7 @@ export default function TileBadge({
           paddingLeft,
           paddingRight,
           paddingTop,
+          paddingBottom,
           marginTop,
           marginLeft,
           marginBottom,

@@ -9,11 +9,14 @@ import {
 } from 'react-bootstrap-icons';
 import { DocumentContext } from '../../contexts/DocumentContext';
 
-function DocumentZoomSlider({ documentZoom, setDocumentZoom }) {
+function DocumentZoomSlider({
+  documentZoom, setDocumentZoom, backgroundColor, min = 50, max = 200,
+}) {
   const [hovered, setHovered] = useState();
   const widthOfSlider = 100;
   const widthOfCollapsedZoomContainer = 92;
-  const textColor = hovered ? 'text-primary' : 'text-secondary';
+  const textColor = hovered ? 'text-secondary' : 'text-secondary';
+  const backgrondColorObj = backgroundColor ? { backgroundColor } : {};
   // const colorOfSliderText = hovered ? '#007bff' : '#616161';
   return (
     <>
@@ -23,6 +26,7 @@ function DocumentZoomSlider({ documentZoom, setDocumentZoom }) {
           width: hovered
             ? widthOfCollapsedZoomContainer + widthOfSlider
             : widthOfCollapsedZoomContainer,
+          ...backgrondColorObj,
         }}
         variant="outline-light"
         onMouseOver={() => setHovered(true)}
@@ -52,8 +56,8 @@ function DocumentZoomSlider({ documentZoom, setDocumentZoom }) {
               variant="primary"
               tooltip="off"
               size="sm"
-              min={50}
-              max={200}
+              min={min}
+              max={max}
               value={documentZoom}
               onChange={
                 (changeEvent) => {
@@ -87,15 +91,32 @@ function DocumentZoomSlider({ documentZoom, setDocumentZoom }) {
   );
 }
 
-function DocumentZoomSliderWithContext() {
+function DocumentZoomSliderWithContext({ min, max }) {
   const [, documentZoom, setDocumentZoom] = useContext(DocumentContext);
-  return <DocumentZoomSlider documentZoom={documentZoom} setDocumentZoom={setDocumentZoom} />;
+  return (
+    <DocumentZoomSlider
+      documentZoom={documentZoom}
+      setDocumentZoom={setDocumentZoom}
+      min={min}
+      max={max}
+    />
+  );
 }
 
-function DocumentZoomSliderContainer({ stateful, documentZoom, setDocumentZoom }) {
+function DocumentZoomSliderContainer({
+  stateful, documentZoom, setDocumentZoom, backgroundColor, min, max,
+}) {
   return stateful
-    ? <DocumentZoomSlider documentZoom={documentZoom} setDocumentZoom={setDocumentZoom} />
-    : <DocumentZoomSliderWithContext />;
+    ? (
+      <DocumentZoomSlider
+        documentZoom={documentZoom}
+        setDocumentZoom={setDocumentZoom}
+        backgroundColor={backgroundColor}
+        min={min}
+        max={max}
+      />
+    )
+    : <DocumentZoomSliderWithContext min={min} max={max} />;
 }
 
 export default DocumentZoomSliderContainer;

@@ -83,6 +83,8 @@ function CommentCard({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [expanded, hovered]);
 
+  const cardRightOffset = 10;
+
   return (
     <>
       <Card
@@ -90,7 +92,7 @@ function CommentCard({
         onMouseOver={() => { setHovered(true); }}
         onMouseLeave={() => { setHovered(); }}
         className={`comment-card-card-container left-comment-card ${expanded ? 'expanded' : ''} ${expanded || hovered ? 'active' : ''}`}
-        style={{ right: 0 }}
+        style={{ right: -cardRightOffset }}
       >
         <div
           className="line1"
@@ -394,7 +396,7 @@ function CommentCard({
             cursor: pointer;
             border: 1px solid rgb(220, 220, 220);
             border-radius: 0px;
-            width: calc(100% - 25px);
+            width: calc(100% + ${cardRightOffset}px);
             transition: all 0.5s;
             transition-property: border-color, top, left, right;
             max-width: 375px;

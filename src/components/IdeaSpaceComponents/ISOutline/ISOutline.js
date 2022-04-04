@@ -2,9 +2,9 @@
 import React, {
   useState, useMemo, useEffect,
 } from 'react';
+import $ from 'jquery';
 import {
   Spinner,
-  Button,
 } from 'react-bootstrap';
 import { createEditor } from 'slate';
 import {
@@ -28,11 +28,13 @@ import { plugins, withDivs } from '../../../utils/slateUtil';
 import SlateToolbar from '../../SlateToolbar';
 import styles from './ISOutline.module.scss';
 import CommentCard from '../../CommentCard/CommentCard';
+import { DeepCopyObj } from '../../../utils/docUIUtils';
+import Document from '../../Document/Document';
 
 const ISOutline = ({
-  openRunAnalysisModal,
   session,
   convertAnnotationTilesToImages,
+  processSourceTextAnalysisResults,
   exportDocument,
   selection,
   clearSelection,
@@ -44,8 +46,22 @@ const ISOutline = ({
   setReadOnly,
   annotationsBeingDragged,
   setAnnotationsBeingDragged,
+  sourceTextMode,
+  setSourceTextMode,
+  showSourceTextDropdown,
+  setShowSourceTextDropdown,
+  setAlerts,
+  setSourceTextHeaderTitle,
 }) => {
-  const [analysisMode, setAnalysisMode] = useState();
+  const [documentZoom, setDocumentZoom] = useState(100);
+  const [documentHeight, setDocumentHeight] = useState();
+
+  const [loadedDocuments, setLoadedDocuments] = useState({});
+  const [selectedSourceDocumentId, setSelectedSourceDocumentId] = useState();
+  const [selectedDocuments, setSelectedDocuments] = useState({});
+  const [orderOfSelectedDocuments, setOrderOfSelectedDocuments] = useState([]);
+  const [analysisMode, setAnalysisMode] = useState(sourceTextMode);
+  const [sourceTextAnalysisResults, setSourceTextAnalysisResults] = useState();
   const [slateLoading, setSlateLoading] = useState(false);
   const [removeDropzones, setRemoveDropzones] = useState(false);
   const withPlugins = [
@@ -63,8 +79,130 @@ const ISOutline = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
+  const updateLoadedDocuments = (doc) => {
+    const newDocs = DeepCopyObj(loadedDocuments);
+    newDocs[doc.id] = doc;
+    setLoadedDocuments(newDocs);
+  };
 
+
+  const scale = documentZoom / 100;
+  const spacing = 20;
   const documentWidth = 750;
+
+  const extraWidth = 0;
+  const documentIsPDF = false;
+  // document && document.uploadContentType && document.uploadContentType.includes('pdf');
+
+  const sourceText = selectedSourceDocumentId
+    ? loadedDocuments[selectedSourceDocumentId]
+    : undefined;
+
+
+  const states = {
+    outlines: {
+      commentCardWell: {
+        opacity: 0,
+      },
+      docPos: `calc(50% - ${documentWidth / 2}px)`,
+      containerPosWidth: '100%',
+      toolbarPos: `calc(50% - ${documentWidth / 2}px)`,
+      line: {
+        height: 0,
+        opacity: 0,
+      },
+      stContainer: {
+        left: '100%',
+        opacity: 0,
+      },
+    },
+    analysis: {
+      commentCardWell: {
+        opacity: 1,
+      },
+      docPos: `calc(100% - ${documentWidth}px - 40px)`,
+      containerPosWidth: '100%',
+      toolbarPos: `calc(100% - ${documentWidth}px)`,
+      line: {
+        height: 0,
+        opacity: 0,
+      },
+      stContainer: {
+        left: '100%',
+        opacity: 0,
+      },
+    },
+    st: {
+      commentCardWell: {
+        opacity: 0,
+      },
+      docPos: `calc(100% - ${documentWidth}px - ${spacing}px - 20px)`,
+      containerPosWidth: '50%',
+      toolbarPos: `calc(50% - ${documentWidth}px - ${spacing}px - 20px)`,
+      line: {
+        height: 'calc(100% - 10px)',
+        opacity: 1,
+      },
+      stContainer: {
+        left: '50%',
+        opacity: 1,
+        width: '50%',
+      },
+    },
+  };
+
+  let state = states.outlines;
+
+  if (sourceTextMode) {
+    state = states.st;
+  } else if (analysisMode) {
+    state = states.analysis;
+  }
+
+  const {
+    docPos,
+    containerPosWidth,
+    toolbarPos,
+    commentCardWell,
+    line: lineState,
+    stContainer,
+  } = state;
+
+  const removeAnalysisFromDocument = (doc) => {
+    const d = DeepCopyObj(doc);
+    const removeAnalysis = (obj) => {
+      let newObj = DeepCopyObj(obj);
+      if (Array.isArray(obj)) {
+        newObj = [];
+        for (let i = 0; i < obj.length; i += 1) {
+          const res = removeAnalysis(obj[i]);
+          console.log('res', res);
+          // if the value is undefined that means that this element was an empty text object and
+          // for this reason we shouldn't add it back to the document structure
+          if (res) {
+            newObj.push(res);
+          }
+        }
+      } else if (obj.children) {
+        newObj.children = removeAnalysis(obj.children);
+      } else if (obj.textAnalysisComment) {
+        // deleting all the stuff that was created by the analysis
+        delete newObj.textAnalysisComment;
+        delete newObj.endTagIds;
+        delete newObj.startTagIds;
+
+        if (newObj.text.length === 0) {
+          // this is an empty text object so we can just return undefined which will be filtered
+          // out higher up in the recursive stack
+          return undefined;
+        }
+      }
+
+      return newObj;
+    };
+
+    return removeAnalysis(d);
+  };
 
   const addDropzonesToSlateValue = (arr, parentType, currentPosArray = []) => {
     const newArr = [];
@@ -121,6 +259,41 @@ const ISOutline = ({
     return newArr;
   };
 
+  console.log('sourceTextAnalysisResults', sourceTextAnalysisResults);
+
+  useEffect(() => {
+    if (selectedSourceDocumentId) {
+      setSourceTextHeaderTitle(selectedDocuments[selectedSourceDocumentId].title);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedSourceDocumentId]);
+
+  useEffect(() => {
+    console.log('sourceTextAnalysisResults changed');
+    if (sourceTextAnalysisResults) {
+      console.log('processSourceTextAnalysisResults');
+      let newDoc;
+      try {
+        newDoc = processSourceTextAnalysisResults(sourceTextAnalysisResults);
+      } catch (err) {
+        console.log('err', err);
+      }
+      if (newDoc) {
+        console.log(newDoc);
+        setDocument(newDoc);
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sourceTextAnalysisResults]);
+
+  useEffect(() => {
+    if (!analysisMode) {
+      // if analysis mode is false we need to clear any source text analysis data
+      setSourceTextAnalysisResults();
+      setDocument(removeAnalysisFromDocument(document));
+    }
+  }, [analysisMode]);
+
 
   useEffect(() => {
     setSlateLoading(false);
@@ -146,26 +319,14 @@ const ISOutline = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selection, readOnly]);
 
-  // console.log(editor.selection);
-
   useEffect(() => {
-    console.log('document', document);
+    if ($('#document-card-container')) {
+      setDocumentHeight($('#document-card-container')[0].getBoundingClientRect().height);
+    }
   }, [document]);
-
-  // eslint-disable-next-line no-unused-vars
-  const doc = [{
-    type: 'p',
-    children: [
-      { text: 'The legal ' },
-      { text: 'system is made up of criminal and civil courts and…diction refers to the types of cases the court is', strikethrough: true },
-      { text: ' permitted to rule on. Sometimes, only one type of…stance, bankruptcy cases can be ruled on only in ' },
-      { text: 'bankruptcy court. In other situations, it is possible for more than one court to have jurisdiction. ', bold: true, textAnalysisComment: 'hello' },
-    ],
-  }];
 
   return (
     <>
-      <Button onClick={() => openRunAnalysisModal()}>Open</Button>
       <Slate
         editor={editor}
         value={annotationsBeingDragged ? addDropzonesToSlateValue(document) : document}
@@ -186,6 +347,27 @@ const ISOutline = ({
           analysisMode={analysisMode}
           setAnalysisMode={setAnalysisMode}
           exportDocument={exportDocument}
+          setSourceTextAnalysisResults={setSourceTextAnalysisResults}
+          sourceTextMode={sourceTextMode}
+          setSourceTextMode={setSourceTextMode}
+          toolbarPos={toolbarPos}
+          stContainer={stContainer}
+          showSourceTextDropdown={showSourceTextDropdown}
+          setShowSourceTextDropdown={setShowSourceTextDropdown}
+          documentZoom={documentZoom}
+          setDocumentZoom={setDocumentZoom}
+          selectedDocuments={selectedDocuments}
+          setSelectedDocuments={setSelectedDocuments}
+          orderOfSelectedDocuments={orderOfSelectedDocuments}
+          setOrderOfSelectedDocuments={setOrderOfSelectedDocuments}
+          selectedSourceDocumentId={selectedSourceDocumentId}
+          loadedDocuments={loadedDocuments}
+          updateLoadedDocuments={({ document: doc, selected }) => {
+            updateLoadedDocuments(doc);
+            if (selected) {
+              setSelectedSourceDocumentId(doc.id);
+            }
+          }}
         />
         {slateLoading && (
         <div className={styles['slate-loader']}>
@@ -204,31 +386,98 @@ const ISOutline = ({
         </div>
         )}
         <div id="outline-container-container">
-          {analysisMode && (
-            <div style={{
-              position: 'relative', left: 6, flex: 1, height: 40,
-            }}
-            >
-              <CommentCard id="comment-card-demo" />
-            </div>
-          )}
-          <EditablePlugins
-            readOnly={readOnly}
-            plugins={plugins}
-            disabled={false}
-            onKeyDown={[(e) => {
-              const isPasteCapture = (e.ctrlKey || e.metaKey)
-          && e.keyCode === 86;
-              if (isPasteCapture) {
-                setSlateLoading(true);
-              }
-            }]}
-            placeholder="Paste or type here"
-            id="outline-container"
-            className={styles['slate-editor']}
+          <div style={{
+            position: 'absolute',
+            left: '50%',
+            bottom: 0,
+            backgroundColor: '#DADCE0',
+            width: 1,
+            transition: 'all 0.5s',
+            ...lineState,
+          }}
           />
+          <div
+            id="document-container"
+            style={{
+              ...stContainer,
+              position: 'absolute',
+              top: 0,
+              left: '50%',
+              height: 'calc(100% - 5px)',
+              padding: '20px',
+            }}
+          >
+            <div
+              style={{ width: documentWidth * scale, height: (documentHeight * scale) || 100 }}
+            />
+            <div
+              id="document-container-col"
+              style={{
+                transform: `scale(${scale}) translateY(0px)`,
+                transformOrigin: 'top left',
+                minWidth: documentWidth,
+                maxWidth: documentWidth,
+                position: 'absolute',
+                top: 20,
+              }}
+            >
+              <Document
+                setShowUnsavedChangesToast={() => {}}
+                setShowMaxTextLengthReached={() => {}}
+                annotationIdBeingEdited={undefined}
+                addActiveAnnotation={() => {}}
+                removeActiveAnnotation={() => {}}
+                displayAnnotationsInChannels={false}
+                setChannelAnnotations={() => {}}
+                annotations={[]}
+                documentHighlightedAndLoaded
+                addAnnotationToChannels={() => {}}
+                annotateDocument={() => {}}
+                documentToAnnotate={sourceText}
+                documentZoom={documentZoom}
+                alerts={[]}
+                setAlerts={setAlerts}
+                user={session ? session.user : undefined}
+                showCannotAnnotateDocumentToast={false}
+                setShowCannotAnnotateDocumentToast={() => {}}
+              />
+            </div>
+          </div>
+          <div style={{
+            position: 'absolute', width: docPos, height: 40, opacity: commentCardWell.opacity, transition: 'all 0.5s',
+          }}
+          >
+            <CommentCard id="comment-card-demo" />
+          </div>
+          <div
+            id="outline-container-wrapper"
+            style={{
+              position: 'absolute',
+              top: 0,
+              width: containerPosWidth,
+              overflow: 'scroll',
+              height: 'calc(100vh - 303px)',
+              transition: 'all 0.5s',
+              padding: '20px 0px',
+            }}
+          >
+            <EditablePlugins
+              readOnly={readOnly}
+              plugins={plugins}
+              disabled={false}
+              onKeyDown={[(e) => {
+                const isPasteCapture = (e.ctrlKey || e.metaKey)
+            && e.keyCode === 86;
+                if (isPasteCapture) {
+                  setSlateLoading(true);
+                }
+              }]}
+              placeholder="Paste or type here"
+              id="outline-container"
+              className={styles['slate-editor']}
+            />
+          </div>
         </div>
-
       </Slate>
       <style jsx global>
         {`
@@ -240,13 +489,13 @@ const ISOutline = ({
               height: calc(100vh - 303px);
               padding: 20px 0px;
               overflow: scroll;
-              display: flex;
-              flex-direction: row;
-              justify-content: center;
+              position: relative;
             }
 
             #outline-container {
-              transition: right 0.5s;
+              transition: left 0.5s;
+              position: absolute;
+              left: ${docPos};
               background: white;
               width: ${documentWidth}px;
               min-height: 971px !important;
@@ -259,8 +508,110 @@ const ISOutline = ({
               resize: none;
             }
 
-            [text-analysis-comment='hello'] {
+            [text-analysis='true'] {
               background-color: rgba(109, 247, 222, 0.3);
+            }
+            
+            body {
+              overflow: hidden !important;
+            }
+
+            #annotations-header-label {
+              padding: 12px 0px 0px 20px;
+            }
+
+            #document-container {
+              height: calc(100vh - ${200}px);
+              transition: height 0.5s;
+              overflow-y: overlay !important;
+              overflow-x: scroll !important;
+              padding: 25px 0px 15px 0px;
+              scrollbar-color: rgba(0,0,0,0.1) !important;
+            }
+
+            #document-inner-container {
+              display: flex;
+              flex-direction: row;
+              width: calc(100% + ${extraWidth}px);
+            }
+
+            
+
+            #document-container .annotation-channel-container{
+              height: 0px;
+              flex: 1;
+              position: relative;
+              z-index: 2;
+              top: -25px;
+            }
+            
+            #document-container #annotation-well-card-container {
+              min-height: 100%;
+              background-color: transparent;
+            }
+
+            #document-container #document-card-container {
+              min-height: 971px;
+              padding: 40px;
+              font-family: 'Times';
+              border-radius: 0px;
+              border: none;
+              box-shadow: ${documentIsPDF
+          ? 'none'
+          : '3px 3px 9px 0px rgba(0,0,0,0.38)'
+              };
+              ${documentIsPDF ? 'background: none;' : ''}
+            }
+
+            #document-container #annotation-well-card-container .card-body {
+              padding: 10px;
+            }
+                
+            #document-container #annotation-well-card-container .card-body #annotation-well-header {
+                margin-bottom: 10px;
+            }
+
+            #document-container #annotation-well-card-container .card-body #annotation-list-container > .col > .row {
+              margin-bottom: 5px;
+            }  
+    
+            #document-container #annotation-well-card-container .card-body #annotation-list-container > .col > .row .card {
+              border: none;
+              box-shadow: 0px 0px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12), 0 1px 5px 0 rgba(0, 0, 0, 0.2);
+            }
+    
+            #document-container #annotation-well-card-container .card-body .btn-group:first-child {
+                margin-right: 10px;
+            }
+    
+            #document-container #annotation-well-card-container .card-body .list-group-item {
+                padding: 5px 10px;
+            }
+
+            .text-currently-being-annotated.active {
+              background-color: rgba(0, 123, 255, 0.5);
+            }
+
+            #show-cannot-annotate-document-toast-container {
+              z-index: 1;
+              position: relative;
+              left: 10px;
+              top: 10px;
+              height: 0px;
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+            }
+  
+            #show-cannot-annotate-document-toast-container .toast {
+              border-color: rgb(220, 53, 70) !important;
+            }
+  
+            #show-cannot-annotate-document-toast-container .toast-header {
+              background-color: rgba(220, 53, 70, 0.85) !important;
+              color: white !important; 
+            }
+  
+            #show-cannot-annotate-document-toast-container .toast-header button {
+              color: white !important;
             }
         `}
       </style>

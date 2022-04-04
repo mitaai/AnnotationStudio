@@ -102,7 +102,7 @@ function SearchDocumentsUI({
           style={{
             border: '1px solid #eeeeee',
             backgroundColor: '#fafafa',
-            height: 160,
+            height: 215,
             marginTop: -10,
             marginBottom: 10,
             overflowY: 'scroll',

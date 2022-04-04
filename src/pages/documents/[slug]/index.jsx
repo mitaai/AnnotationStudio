@@ -47,6 +47,7 @@ import DocumentViewContainer from '../../../components/DocumentViewContainer/Doc
 const DocumentPage = ({
   document, annotations, initAlerts, query, statefulSession,
 }) => {
+  console.log('document', document);
   const dashboardState = `${query && query.did !== undefined && query.slug !== undefined ? `did=${query.did}&slug=${query.slug}&dp=${query.dp}&` : ''}gid=${query && query.gid}`;
   let validQuery = false;
   let defaultPermissions = 0;

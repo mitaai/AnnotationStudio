@@ -34,6 +34,7 @@ export default function Home({
   const [allAnnotations, setAllAnnotations] = useState();
   const [mode, setMode] = useState('as');
   const [modeChanged, setModeChanged] = useState();
+  const [sourceTextMode, setSourceTextMode] = useState();
   const router = useRouter();
   const newReg = query && query.alert && query.alert === 'completeRegistration';
 
@@ -99,9 +100,40 @@ export default function Home({
         opacity: 1,
       },
     },
+    // 'st' stands for 'source text' mode
+    st: {
+      groups: {
+        width: { vw: 20, px: -20 },
+        minWidth: 300,
+        left: { vw: -60, px: 60 },
+        minLeft: -640,
+        opacity: 0,
+      },
+      documents: {
+        width: { vw: 40, px: -40 },
+        minWidth: 400,
+        left: { vw: -40, px: 55 },
+        minLeft: -320,
+        opacity: 0,
+      },
+      annotations: {
+        width: { vw: 100, px: -80 },
+        minWidth: 1000,
+        left: { vw: 0, px: 30 },
+        minLeft: 30,
+        opacity: 1,
+      },
+      ideaspaces: {
+        width: { vw: 30, px: -40 },
+        minWidth: 385,
+        left: { vw: 100, px: 10 },
+        minLeft: 820,
+        opacity: 0,
+      },
+    },
   };
 
-  const channelPos = ASISChannelPositions[mode];
+  const channelPos = ASISChannelPositions[(sourceTextMode && mode === 'is') ? 'st' : mode];
   // eslint-disable-next-line no-undef
   const channelPositions = mobileView
     ? {
@@ -409,6 +441,8 @@ export default function Home({
               toAnnotationsTile={toAnnotationsTile}
               allAnnotations={allAnnotations}
               setAllAnnotations={setAllAnnotations}
+              sourceTextMode={sourceTextMode}
+              setSourceTextMode={setSourceTextMode}
             />
             <IdeaSpacesChannel
               width={channelPositions.ideaspaces.width}

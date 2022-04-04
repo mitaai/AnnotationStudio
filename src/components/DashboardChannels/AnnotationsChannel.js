@@ -75,6 +75,8 @@ export default function AnnotationsChannel({
   toAnnotationsTile,
   allAnnotations,
   setAllAnnotations,
+  sourceTextMode,
+  setSourceTextMode,
 }) {
   // eslint-disable-next-line no-undef
   const { origin } = window.location;
@@ -133,6 +135,10 @@ export default function AnnotationsChannel({
   const [outlines, setOutlines] = useState([]);
   const [loadingOutlines, setLoadingOutlines] = useState();
   const [outlineToDelete, setOutlineToDelete] = useState();
+
+  const [showSourceTextDropdown, setShowSourceTextDropdown] = useState();
+
+  const [sourceTextHeaderTitle, setSourceTextHeaderTitle] = useState();
 
   const compositionReadOnly = useRef(false);
   const setCompositionReadOnly = useRef((readOnly, callback = () => {}) => {
@@ -1156,6 +1162,9 @@ export default function AnnotationsChannel({
     if (mode === 'as') {
       setTab('annotations');
     } else if (mode === 'is') {
+      if (sourceTextMode) {
+        setTab('outlines');
+      }
       if (allAnnotations === undefined) {
         fetchAllAnnotations(() => setApplyDefaultFilters(true));
       } else {
@@ -1307,20 +1316,6 @@ export default function AnnotationsChannel({
   }
 
 
-  const annotationsTabSelected = tab === 'annotations';
-
-  const tabSelectionLineOpacity = mode === 'is' ? 1 : 0;
-  const tabSelectionLine = (
-    <div
-      className={styles.tabSelectionLine}
-      style={
-        annotationsTabSelected
-          ? { width: 'calc(60% - 5px)', left: 0, opacity: tabSelectionLineOpacity }
-          : { width: 'calc(40% + 5px)', left: 'calc(60% - 5px)', opacity: tabSelectionLineOpacity }
-      }
-    />
-  );
-
   let outlineTiles = <></>;
   if (loadingOutlines) {
     outlineTiles = <ListLoadingSpinner />;
@@ -1358,6 +1353,16 @@ export default function AnnotationsChannel({
       />
     ));
   }
+
+  const doc = [{
+    type: 'p',
+    children: [
+      { text: 'The legal ' },
+      { text: 'system is made up of criminal and civil courts and…diction refers to the types of cases the court is', strikethrough: true },
+      { text: ' permitted to rule on. Sometimes, only one type of…stance, bankruptcy cases can be ruled on only in ' },
+      { text: 'bankruptcy court. In other situations, it is possible for more than one court to have jurisdiction. ', bold: true },
+    ],
+  }];
 
   const convertAnnotationTilesToImages = ({ callback }) => {
     const composition = DeepCopyObj(openOutline.current.document);
@@ -1441,10 +1446,12 @@ export default function AnnotationsChannel({
   };
 
   const prepareDocumentObj = (document) => {
-    const doc = DeepCopyObj(document);
+    const d = DeepCopyObj(document);
+
+    // console.log('document', document);
 
     // eslint-disable-next-line no-restricted-syntax
-    for (const node of doc) {
+    for (const node of d) {
       const { children } = node;
       // eslint-disable-next-line no-restricted-syntax
       for (let j = 0; j < children.length; j += 1) {
@@ -1458,7 +1465,7 @@ export default function AnnotationsChannel({
       }
     }
 
-    return doc;
+    return d;
   };
 
   const findNGramsInDocument = (document, dictionary) => {
@@ -1538,11 +1545,11 @@ export default function AnnotationsChannel({
     return foundNGrams;
   };
 
+  const startTag = { start: '__!$!', end: '#$#__' };
+  const endTag = { start: '__#$#', end: '!$!__' };
   const addTagsToDocumentStructure = (document, foundNGrams) => {
     // first thing is we put text tags into the document structure
 
-    const startTag = { start: '__!$!', end: '#$#__' };
-    const endTag = { start: '__!$!', end: '#$#__' };
     // eslint-disable-next-line no-restricted-syntax
     for (const { startPos, endPos, id } of foundNGrams) {
       // now we need to put custom text into the document object to tag text that needs to be
@@ -1559,11 +1566,13 @@ export default function AnnotationsChannel({
       document[sH].children[sI].text[sJ].splice(sK, 0, sTag);
     }
 
-    console.log('doc1', document);
+    // console.log('original doc', DeepCopyObj(document));
+
+    // console.log('doc1', document);
 
     // now that the document has text tags in its structure we use them to manipulate the structure
     // and add key value pairs to text objects
-    /*
+
     // eslint-disable-next-line no-restricted-syntax
     for (const { startPos, id } of foundNGrams) {
       // even though the structure of document is changing startPos is still a good place to start
@@ -1588,17 +1597,22 @@ export default function AnnotationsChannel({
               if (document[h].children[i].text[j][k] === sTag) {
                 foundSTag = true;
                 const a1 = document[h].children[i].text.slice(0, j + 1);
+                // console.log('a1', a1.slice());
                 const a2 = a1[j].slice(0, k);
                 const a3 = a1[j].slice(k + 1);
                 a1[j] = a2;
                 const a4 = document[h].children[i].text.slice(j);
                 a4[0] = a3;
+                // console.log('..a1', a1);
+                // console.log('a4', a4);
                 document[h].children[i].text = a1;
-                document[h].children.splice(i, 0, {
+                document[h].children.splice(i + 1, 0, {
                   ...document[h].children[i],
                   text: a4,
-                  startTagIds: (document[h].children[i].startTagIds || []).concat([id]),
+                  textAnalysisComment: (document[h].children[i].textAnalysisComment || [])
+                    .concat([id]),
                 });
+                // console.log('edited doc', DeepCopyObj(document));
               } else if (document[h].children[i].text[j][k] === eTag && foundSTag) {
                 foundETag = true;
                 const a1 = document[h].children[i].text.slice(0, j + 1);
@@ -1613,12 +1627,14 @@ export default function AnnotationsChannel({
                   document[h].children[i].endTagIds || []
                 ).concat([id]);
 
-                document[h].children.splice(i, 0, {
+                document[h].children.splice(i + 1, 0, {
                   ...document[h].children[i],
                   text: a4,
-                  startTagIds: (document[h].children[i].startTagIds || [])
+                  textAnalysisComment: (document[h].children[i].textAnalysisComment || [])
                     .filter((startTagId) => startTagId !== id),
                 });
+
+                console.log('edited doc', DeepCopyObj(document));
               }
 
               k += 1;
@@ -1632,11 +1648,32 @@ export default function AnnotationsChannel({
         i = 0;
       }
     }
-    */
+  };
+
+  const convertTextArrayToText = (document) => {
+    for (let h = 0; h < document.length; h += 1) {
+      for (let i = 0; i < document[h].children.length; i += 1) {
+        const arr = document[h].children[i].text.map(
+          // we join any array in this array with no space
+          //
+          (item) => (Array.isArray(item)
+            // occassionally startTags and endTags will get through the filter so we need to make
+            // sure that we remove them before putting the text back togetther with a join statement
+            // with delimeter ''
+            ? item
+              .filter((a) => (a.indexOf(startTag.start) === -1 && a.indexOf(endTag.start) === -1))
+              .join('')
+            : item),
+        ).join(' ');
+        // then we join the larger array with spaces to get the original text
+        // then save the changes
+        document[h].children[i].text = arr;
+      }
+    }
   };
 
 
-  const saveSourceTextAnalysisResults = (res) => {
+  const processSourceTextAnalysisResults = (res) => {
     // this function goes through the analysis of source texts and tries to find the nGram detected
     // in the user text
     console.log('saveSourceTextAnalysisResults', res);
@@ -1649,9 +1686,15 @@ export default function AnnotationsChannel({
     const document = prepareDocumentObj(openOutline.current.document);
     // console.log('document', document);
     const foundNGrams = findNGramsInDocument(document, dictionary);
+    console.log('document copy', DeepCopyObj(document));
+    console.log('foundNGrams', foundNGrams);
     addTagsToDocumentStructure(document, foundNGrams);
 
-    console.log('document', document);
+    console.log('---document', document);
+
+    convertTextArrayToText(document);
+
+    return document;
   };
 
   const slateInitialValue = [
@@ -1682,7 +1725,7 @@ export default function AnnotationsChannel({
           session={session}
           convertAnnotationTilesToImages={convertAnnotationTilesToImages}
           clearSelection={() => updateOutline({ selection: null })}
-          openRunAnalysisModal={() => setShowRunAnalysisModal(true)}
+          processSourceTextAnalysisResults={processSourceTextAnalysisResults}
           exportDocument={async (e) => {
             const eventText = {
               'annotation-studio': 'Exporting composition to Annotation Studio',
@@ -1709,6 +1752,12 @@ export default function AnnotationsChannel({
           setReadOnly={(readOnly) => setCompositionReadOnly(readOnly, forceUpdate)}
           annotationsBeingDragged={annotationsBeingDragged}
           setAnnotationsBeingDragged={setAnnotationsBeingDragged}
+          sourceTextMode={sourceTextMode}
+          setSourceTextMode={setSourceTextMode}
+          showSourceTextDropdown={showSourceTextDropdown}
+          setShowSourceTextDropdown={setShowSourceTextDropdown}
+          setAlerts={setAlerts}
+          setSourceTextHeaderTitle={setSourceTextHeaderTitle}
         />
       </div>
     )
@@ -1718,6 +1767,67 @@ export default function AnnotationsChannel({
         </div>
       ),
   };
+
+  const annotationsTabSelected = tab === 'annotations';
+
+  const tabHeaderStates = {
+    is: {
+      annotations: {
+        opacity: 1,
+        width: mode === 'as' ? '100%' : 'calc(60% - 5px)',
+        left: 0,
+      },
+      outlines: {
+        opacity: 1,
+        width: 'calc(40% + 5px)',
+        left: 'calc(60% - 5px)',
+      },
+      sourceText: {
+        opacity: 0,
+        width: '0px',
+        left: '100%',
+      },
+      line: {
+        annotations: {
+          width: 'calc(60% - 5px)',
+          left: 0,
+          opacity: mode === 'as' ? 0 : 1,
+        },
+        outlines: {
+          width: 'calc(40% + 5px)',
+          left: 'calc(60% - 5px)',
+          opacity: 1,
+        },
+      },
+    },
+    // 'st' stands for 'source text' mode
+    st: {
+      annotations: {
+        opacity: 1,
+        width: '50%',
+        left: 0,
+      },
+      outlines: {
+        opacity: 1,
+        width: '50%',
+        left: 0,
+      },
+      sourceText: {
+        opacity: 1,
+        width: '50%',
+      },
+      line: {
+        outlines: {
+          width: '50%',
+          left: '0px',
+          opacity: mode === 'as' ? 0 : 1,
+        },
+      },
+    },
+  };
+
+  const tabHeaderState = tabHeaderStates[sourceTextMode ? 'st' : 'is'];
+  const lineState = tabHeaderState.line[tab];
 
   return (
     <>
@@ -1733,12 +1843,16 @@ export default function AnnotationsChannel({
             paddingBottom: 0,
           }}
         >
-          {tabSelectionLine}
+          <div
+            className={styles.tabSelectionLine}
+            style={{ ...lineState }}
+          />
           <div
             className={(mode === 'is' && tab === 'annotations') ? styles.selectedTab : undefined}
             style={{
+              ...tabHeaderState.annotations,
+              position: 'relative',
               display: 'flex',
-              flex: 3,
               paddingLeft: mode === 'as' ? 0 : 5,
               paddingTop: 5,
               paddingBottom: 5,
@@ -1815,58 +1929,61 @@ export default function AnnotationsChannel({
               )}
           </div>
           {mode === 'is' && (
-          <div
-            className={tab === 'outlines' ? styles.selectedTab : undefined}
-            style={{
-              display: 'flex',
-              flex: 2,
-              borderLeft: '1px solid #DADCE1',
-              paddingLeft: 8,
-              paddingBottom: 5,
-              paddingRight: 5,
-              alignItems: 'center',
-              color: !annotationsTabSelected ? '#424242' : '#ABABAB',
-            }}
-          >
-            <span
-              onClick={() => {
-                if (tab === 'outlines') {
-                  setOutlineStatus();
-                  setOpenOutline({ id: null, document: null, callback: forceUpdate });
-                } else {
-                  setTab('outlines');
-                }
+          <>
+            <div
+              className={tab === 'outlines' ? styles.selectedTab : styles.unselectedTab}
+              style={{
+                ...tabHeaderState.outlines,
+                position: 'absolute',
+                display: 'flex',
+                borderLeft: '1px solid #DADCE1',
+                paddingLeft: 8,
+                paddingBottom: 5,
+                paddingRight: 5,
+                alignItems: 'center',
+                color: !annotationsTabSelected ? '#424242' : '#ABABAB',
+                transition: 'all 0.5s',
               }}
-              onKeyDown={() => {}}
-              tabIndex={-1}
-              role="button"
-              className={styles.headerText}
-              style={{ color: annotationsTabSelected ? '#ABABAB' : '#424242' }}
             >
-              Compositions
-            </span>
-            {openOutline.current.id ? (
-              <div
-                style={{ display: 'flex', flex: 1, alignItems: 'center' }}
+              <span
                 onClick={() => {
-                  if (tab === 'annotations') {
+                  if (tab === 'outlines') {
+                    setOutlineStatus();
+                    setOpenOutline({ id: null, document: null, callback: forceUpdate });
+                  } else {
                     setTab('outlines');
                   }
                 }}
                 onKeyDown={() => {}}
                 tabIndex={-1}
                 role="button"
+                className={styles.headerText}
+                style={{ color: annotationsTabSelected ? '#ABABAB' : '#424242' }}
               >
-                <ChevronRight size={14} />
-                <input
-                  style={{ color: !annotationsTabSelected ? '#424242' : '#ABABAB' }}
-                  className={styles.titleInput}
-                  type="text"
-                  value={openOutline.current.name}
-                  onChange={(e) => updateOutline({ name: e.target.value })}
-                />
-                <div style={{ width: 20 }}>
-                  {outlineStatus === 'saved'
+                Compositions
+              </span>
+              {openOutline.current.id ? (
+                <div
+                  style={{ display: 'flex', flex: 1, alignItems: 'center' }}
+                  onClick={() => {
+                    if (tab === 'annotations') {
+                      setTab('outlines');
+                    }
+                  }}
+                  onKeyDown={() => {}}
+                  tabIndex={-1}
+                  role="button"
+                >
+                  <ChevronRight size={14} />
+                  <input
+                    style={{ color: !annotationsTabSelected ? '#424242' : '#ABABAB' }}
+                    className={styles.titleInput}
+                    type="text"
+                    value={openOutline.current.name}
+                    onChange={(e) => updateOutline({ name: e.target.value })}
+                  />
+                  <div style={{ width: 20 }}>
+                    {outlineStatus === 'saved'
                 && (
                 <OverlayTrigger
                   placement="bottom"
@@ -1879,7 +1996,7 @@ export default function AnnotationsChannel({
                   <CheckCircleFill size={16} color="#45AC87" />
                 </OverlayTrigger>
                 )}
-                  {outlineStatus === 'saving'
+                    {outlineStatus === 'saving'
                 && (
                 <OverlayTrigger
                   placement="bottom"
@@ -1892,21 +2009,45 @@ export default function AnnotationsChannel({
                   <Spinner animation="border" variant="primary" size="sm" />
                 </OverlayTrigger>
                 )}
+                  </div>
                 </div>
-              </div>
-            )
-              : (
-                <TileBadge
-                  text="New + "
-                  color={!annotationsTabSelected ? 'yellow' : 'grey'}
-                  onClick={() => {
-                    setShowNewOutlineModal(true);
-                    setTab('outlines');
-                  }}
-                />
-              )}
+              )
+                : (
+                  <TileBadge
+                    text="New + "
+                    color={!annotationsTabSelected ? 'yellow' : 'grey'}
+                    onClick={() => {
+                      setShowNewOutlineModal(true);
+                      setTab('outlines');
+                    }}
+                  />
+                )}
 
-          </div>
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+              }}
+            >
+              <span
+                className={styles.sourceTextHeader}
+                onClick={showSourceTextDropdown ? () => {} : () => setShowSourceTextDropdown(true)}
+                role="button"
+                tabIndex={-1}
+                onFocus={() => {}}
+                onBlur={() => {}}
+                onKeyDown={() => {}}
+              >
+                Source Text
+              </span>
+              <ChevronRight size={14} color="#5C5C5C" />
+              <span style={{ marginLeft: 3, color: '#ABABAB', fontSize: 18 }}>
+                {sourceTextHeaderTitle}
+              </span>
+            </div>
+          </>
           )}
         </div>
         {tabContent[tab]}

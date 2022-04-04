@@ -38,6 +38,21 @@ const prefetchDocumentBySlug = async (slug, cookie) => {
   } return Promise.reject(Error(`Unable to retrieve document: error ${res.status} received from server`));
 };
 
+const getDocumentBySlug = async (slug) => {
+  const url = `/api/document/slug/${slug}`;
+
+  const res = await unfetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (res.status === 200) {
+    const response = await res.json();
+    return Promise.resolve(response);
+  } return Promise.reject(Error(`Unable to retrieve document: error ${res.status} received from server`));
+};
+
 const getAllDocumentsByGroup = async (groups) => {
   const url = '/api/documents2';
   const body = { groupIds: groups.map((group) => group.id) };
@@ -316,6 +331,7 @@ export {
   searchForGroups,
   getDocumentsByGroupByUser,
   prefetchDocumentBySlug,
+  getDocumentBySlug,
   prefetchManyGroupNamesById,
   getDocumentTextAnalysis,
   getDocumentTextAnalyses,

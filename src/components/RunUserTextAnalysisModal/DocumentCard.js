@@ -1,3 +1,5 @@
+/* eslint-disable jsx-a11y/interactive-supports-focus */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
 import React, {
   useState,
 } from 'react';
@@ -8,7 +10,7 @@ import styles from './RunUserTextAnalysisModal.module.scss';
 
 
 function DocumentCard({
-  onDelete = () => {}, author, title, width, height,
+  onDelete = () => {}, author, title, width, height, onClick = () => {},
 }) {
   const [hover, setHover] = useState();
   const [deleteHovered, setDeleteHovered] = useState();
@@ -54,10 +56,12 @@ function DocumentCard({
           transition: 'border-color 0.25s',
           cursor: 'pointer',
         }}
+        role="button"
         onMouseOver={onMouseOver}
         onMouseOut={onMouseOut}
         onFocus={onMouseOver}
         onBlur={onMouseOut}
+        onClick={deleteHovered ? () => {} : onClick}
       >
         <XCircleFill
           style={{

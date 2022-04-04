@@ -59,7 +59,7 @@ function AddDocumentCard({
         >
           <FileEarmarkPlus size={24} color={foregroundColor} />
         </div>
-        <div style={{ fontSize: 10, textAlign: 'center', color: foregroundColor }}>Add Document</div>
+        <div style={{ fontSize: 10, textAlign: 'center', color: foregroundColor }}>Add Source Document</div>
       </span>
 
       <style jsx global>

@@ -4,6 +4,7 @@
 import React, {
   useEffect,
   useState,
+  useRef,
 } from 'react';
 import {
   Button,
@@ -13,13 +14,17 @@ import {
   Navbar,
   Container,
   Nav,
+  Spinner,
+  Overlay,
 } from 'react-bootstrap';
 
 import {
   X,
 } from 'react-bootstrap-icons';
 import { DeepCopyObj } from '../../utils/docUIUtils';
-import { getDocumentsByGroupByUser, getDocumentTextAnalyses } from '../../utils/docUtil';
+import {
+  getDocumentsByGroupByUser, getDocumentTextAnalysis, getDocumentTextAnalyses,
+} from '../../utils/docUtil';
 import { findNGrams, getNGramTexts } from '../../utils/nGramUtil';
 import { createDocumentBody } from '../../utils/outlineUtil';
 import LoadingSpinner from '../LoadingSpinner';
@@ -31,19 +36,32 @@ import TileBadge from '../TileBadge';
 import styles from './SourceTextAnalysisButton.module.scss';
 
 
-function SourceTextAnalysisButton({ exit = () => {}, session, convertAnnotationTilesToImages }) {
-  const [tab, setTab] = useState('source-texts');
+function SourceTextAnalysisButton({
+  exit = () => {},
+  session,
+  convertAnnotationTilesToImages,
+  setSourceTextAnalysisResults = () => {},
+  show,
+  setShow,
+  target,
+  setSourceTextMode,
+  selectedDocuments,
+  setSelectedDocuments,
+  orderOfSelectedDocuments,
+  setOrderOfSelectedDocuments,
+  addedDetectedDocuments,
+  setAddedDetectedDocuments,
+  openDocument,
+}) {
+  const ref = useRef(null);
   const [exitHover, setExitHover] = useState();
-
-  const [sourceTextsOpen, setSourceTextsOpen] = useState(true);
   const [showSearchDocumentsUI, setShowSearchDocumentsUI] = useState();
-  const [selectedDocuments, setSelectedDocuments] = useState({});
   const [documentAnalyses, setDocumentAnalyses] = useState();
-  const [addedDetectedDocuments, setAddedDetectedDocuments] = useState();
-  const [orderOfSelectedDocuments, setOrderOfSelectedDocuments] = useState([]);
   const [loadingResults, setLoadingResults] = useState();
   const [textAnalysis, setTextAnalysis] = useState();
+  const [loadingTextAnalysis, setLoadingTextAnalysis] = useState(true);
   const [results, setResults] = useState();
+  const [document, setDocument] = useState({});
   const [documents, setDocuments] = useState();
   const [detectedDocumentIds, setDetectedDocumentIds] = useState();
   const [alerts, setAlerts] = useState([]);
@@ -118,6 +136,8 @@ function SourceTextAnalysisButton({ exit = () => {}, session, convertAnnotationT
             size: 3,
           });
 
+          console.log('res2', res2);
+
           setResults(res2);
           setDocumentAnalyses(newDocumentAnalyses);
           setLoadingResults();
@@ -158,6 +178,10 @@ function SourceTextAnalysisButton({ exit = () => {}, session, convertAnnotationT
         width={cardWidth}
         height={cardHeight}
         onDelete={() => deleteDocumentFromSelectedDocuments(id)}
+        onClick={() => {
+          setSourceTextMode(true);
+          openDocument(selectedDocuments[id]?.slug);
+        }}
       />
     ),
   );
@@ -183,67 +207,65 @@ function SourceTextAnalysisButton({ exit = () => {}, session, convertAnnotationT
     convertAnnotationTilesToImages({ callback });
   };
 
+  let detectedDocumentsText;
+  if (detectedDocumentIds !== undefined) {
+    const num = Object.keys(detectedDocumentIds).length;
+    detectedDocumentsText = `${num} ${num === 1 ? 'document' : 'documents'} detected in composition`;
+  }
+  const sourceTextsInnerContent = showSearchDocumentsUI
+    ? (
+      <SearchDocumentsUI
+        documents={documents}
+        selectedDocuments={selectedDocuments}
+        onSelect={addDocumentToSelectedDocuments}
+        onDone={() => setShowSearchDocumentsUI()}
+      />
+    ) : (
+      <>
+        <div style={{
+          display: 'flex', flexDirection: 'row', padding: 5, overflowX: 'scroll', width: '100%',
+        }}
+        >
+          {[addDocumentCard].concat(cards)}
+        </div>
+        {detectedDocumentIds !== undefined
+          && (
+          <div style={{ padding: '5px 10px', color: '#757575' }}>
+            {detectedDocumentsText}
+          </div>
+          )}
+      </>
+    );
+
+  const loadingSourceTextsInnerContent = (
+    <div style={{
+      alignItems: 'center', justifyContent: 'center', display: 'flex', flex: 1, flexDirection: 'column', paddingBottom: 65,
+    }}
+    >
+      <div style={{ color: '#bdbdbd', marginBottom: 5 }}>Scanning Document</div>
+      <Spinner animation="border" variant="primary" />
+    </div>
+  );
 
   const sourceTextsContent = (
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
-      <div style={{
-        display: 'flex', flexDirection: 'row', padding: '15px 3px 15px 15px', alignItems: 'center',
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        width: '100%',
+        paddingTop: 13,
       }}
-      >
-        <div className={styles.sourceTextContainer}>
-          <div
-            className={styles.sourceTextHeader}
-          >
-            Input source texts used in your composition
-          </div>
-        </div>
-
-        <div style={{ flex: 1 }} />
-        <TileBadge
-          key="text-analysis-status"
-          color={numberOfSelectedDocuments === 0 ? 'grey' : tileBadgeData[analysisState].color}
-          text={tileBadgeData[analysisState].text}
-          fontSize={12}
-          paddingLeft={8}
-          paddingRight={8}
-          paddingTop={6}
-          paddingBottom={6}
-          onClick={numberOfSelectedDocuments > 0 && tileBadgeData[analysisState].onClick
-            ? () => {
-              setLoadingResults(true);
-              setSourceTextsOpen();
-              fetchDocumentsTextAnalyses();
-            }
-            : undefined}
-        />
-      </div>
+    >
       <div style={{
         display: 'flex',
         flexDirection: 'column',
-        padding: '0px 15px',
+        padding: '0px 5px',
         transition: 'height 0.25s',
-        height: sourceTextsOpen ? 230 : 0,
+        height: 270,
         overflowX: 'hidden',
       }}
       >
-        {showSearchDocumentsUI
-          ? (
-            <SearchDocumentsUI
-              documents={documents}
-              selectedDocuments={selectedDocuments}
-              onSelect={addDocumentToSelectedDocuments}
-              onDone={() => setShowSearchDocumentsUI()}
-            />
-          ) : (
-            <>
-              <div style={{
-                display: 'flex', flexDirection: 'row', padding: 5, overflowX: 'scroll', width: '100%',
-              }}
-              >
-                {[addDocumentCard].concat(cards)}
-              </div>
-            </>
-          )}
+        {loadingTextAnalysis ? loadingSourceTextsInnerContent : sourceTextsInnerContent}
       </div>
     </div>
   );
@@ -252,14 +274,7 @@ function SourceTextAnalysisButton({ exit = () => {}, session, convertAnnotationT
   const tabs = {
     loading: <LoadingSpinner />,
     'source-texts': sourceTextsContent,
-    results: <div>Results</div>,
     features: <div>features</div>,
-  };
-
-  const navLinePos = {
-    'source-texts': 0,
-    results: 33,
-    features: 66,
   };
 
   const filterPopoverComponent = (
@@ -270,15 +285,38 @@ function SourceTextAnalysisButton({ exit = () => {}, session, convertAnnotationT
             <Navbar bg="light" variant="light" style={{ borderRadius: '4px 4px 0px 0px' }}>
               <Container style={{ display: 'flex', position: 'relative' }}>
                 <Nav className="me-auto text-analysis-navbar">
-                  <Nav.Link onClick={() => setTab('source-texts')} active={tab === 'source-texts'}>Source Texts</Nav.Link>
-                  <Nav.Link onClick={() => setTab('results')} active={tab === 'results'}>Results</Nav.Link>
-                  <Nav.Link onClick={() => setTab('features')} active={tab === 'features'}>Features</Nav.Link>
+                  <Nav.Link style={{ fontSize: 18, color: '#424242' }}>Source Texts</Nav.Link>
+                  <span style={{ flex: 1 }} />
+                  <span style={{ margin: 'auto 0px' }}>
+                    <TileBadge
+                      key="text-analysis-status"
+                      color={(numberOfSelectedDocuments === 0 || showSearchDocumentsUI) ? 'grey' : tileBadgeData[analysisState].color}
+                      text={tileBadgeData[analysisState].text}
+                      fontSize={12}
+                      paddingLeft={9}
+                      paddingRight={9}
+                      paddingTop={8}
+                      paddingBottom={8}
+                      onClick={numberOfSelectedDocuments > 0
+                        && !showSearchDocumentsUI
+                        && tileBadgeData[analysisState].onClick
+                        ? () => {
+                          setLoadingResults(true);
+                          fetchDocumentsTextAnalyses();
+                        }
+                        : undefined}
+                    />
+                  </span>
+
                 </Nav>
-                <div className={styles.navLine} style={{ left: `${navLinePos[tab]}%` }} />
               </Container>
             </Navbar>
-            <div style={{ padding: '0px 10px' }}>
-              {tabs[tab]}
+            <div
+              style={{
+                padding: '0px 10px', height: 290, overflowY: 'scroll', display: 'flex',
+              }}
+            >
+              {tabs['source-texts']}
             </div>
           </Card.Body>
         </Card>
@@ -286,17 +324,23 @@ function SourceTextAnalysisButton({ exit = () => {}, session, convertAnnotationT
     </Popover>
   );
 
-  /*
+  useEffect(() => {
+    if (results) {
+      setSourceTextAnalysisResults({ sourceTexts: selectedDocuments, analysis: results });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [results]);
+
   useEffect(() => {
     if (!document?.text) {
       generateTempDocument({
-        callback: ({ documentIds }) => {
+        callback: ({ tempDocument, documentIds }) => {
+          setDocument(tempDocument);
           setDetectedDocumentIds(documentIds);
         },
       });
     }
   }, []);
-  */
 
   useEffect(() => {
     if (documents && detectedDocumentIds && !addedDetectedDocuments) {
@@ -326,63 +370,85 @@ function SourceTextAnalysisButton({ exit = () => {}, session, convertAnnotationT
   }, [detectedDocumentIds, documents]);
 
   useEffect(() => {
-    // eslint-disable-next-line no-undef
-    window.addEventListener('resize', () => {
-      // updateDocumentContainerWidth();
-    });
-
-    // updateDocumentContainerWidth();
-
-    getDocumentsByGroupByUser({
-      groups: session.user.groups,
-      id: session.user.id,
-      noDrafts: true,
-    })
-      .then(async (data) => {
-        const { docs } = data;
-        getDocumentsByGroupByUser({
-          groups: [],
-          id: session.user.id,
-          mine: true,
-          noDrafts: true,
-        })
-          .then(async (personalData) => {
-            const { docs: personalDocs } = personalData;
-            const sortedDocuments = docs.concat(personalDocs).sort((a, b) => {
-              if (a.title.toLowerCase() < b.title.toLowerCase()) {
-                return -1;
-              }
-              if (a.title.toLowerCase() === b.title.toLowerCase()) {
-                if (a.title < b.title) {
+    if (session?.user) {
+      getDocumentsByGroupByUser({
+        groups: session.user.groups,
+        id: session.user.id,
+        noDrafts: true,
+      })
+        .then(async (data) => {
+          const { docs } = data;
+          getDocumentsByGroupByUser({
+            groups: [],
+            id: session.user.id,
+            mine: true,
+            noDrafts: true,
+          })
+            .then(async (personalData) => {
+              const { docs: personalDocs } = personalData;
+              const sortedDocuments = docs.concat(personalDocs).sort((a, b) => {
+                if (a.title.toLowerCase() < b.title.toLowerCase()) {
                   return -1;
                 }
-                return 0;
-              }
-              return 1;
-            });
+                if (a.title.toLowerCase() === b.title.toLowerCase()) {
+                  if (a.title < b.title) {
+                    return -1;
+                  }
+                  return 0;
+                }
+                return 1;
+              });
 
-            setDocuments(sortedDocuments);
-          })
-          .catch((err) => {
-            setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
-          });
+              setDocuments(sortedDocuments);
+            })
+            .catch((err) => {
+              setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
+            });
+        })
+        .catch((err) => {
+          setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
+        });
+    }
+    
+  }, []);
+
+
+  useEffect(() => {
+    // document has not been loaded in yet
+    if (!document?.text) {
+      return;
+    }
+
+    const doc = {
+      content: document.text,
+      type: 'HTML',
+    };
+
+    getDocumentTextAnalysis({
+      document: doc,
+      returnData: true,
+      dontSaveData: true,
+    })
+      .then((res) => {
+        if (res.err) {
+          console.log('err', res.err);
+          // setErrorMessage(res.err.details);
+          // setDocumentTextAnalysisId();
+          // setTextAnalysisComplete();
+        } else {
+          setTextAnalysis(res.analysis.result);
+          setLoadingTextAnalysis();
+        }
       })
       .catch((err) => {
         setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
       });
-  }, []);
+  }, [document]);
 
   return (
     <>
-      <OverlayTrigger
-        trigger="click"
-        key="source-text-analysis-button"
-        placement="bottom"
-        overlay={filterPopoverComponent}
-        defaultShow
-        rootClose
-      >
-        <Button id="source-text-analysis-button" size="sm" variant={exitHover ? 'danger' : 'primary'}>
+      <div ref={ref}>
+        <Button id="source-text-analysis-button" onClick={() => setShow(!show)} size="sm" variant={exitHover ? 'danger' : 'primary'}>
           <span style={{ marginRight: 4 }}>Source Text Analysis</span>
           <X
             size={16}
@@ -391,10 +457,23 @@ function SourceTextAnalysisButton({ exit = () => {}, session, convertAnnotationT
             onClick={exit}
           />
         </Button>
-      </OverlayTrigger>
+        <Overlay
+          key="source-text-analysis-button"
+          show={show}
+          target={target}
+          container={ref}
+          placement="bottom"
+          rootClose
+          onHide={() => setShow()}
+        >
+          {filterPopoverComponent}
+        </Overlay>
+      </div>
+
 
       <style jsx global>
         {`
+
             #source-text-analysis-button {
                 display: flex;
                 justify-content: center;
@@ -402,10 +481,7 @@ function SourceTextAnalysisButton({ exit = () => {}, session, convertAnnotationT
             }
 
             .text-analysis-navbar {
-                flex: 1;
-                display: flex;
-                flex-direction: row;
-                justify-content: center;
+              flex: 1;
             }
   
             .text-analysis-navbar .nav-link.active {
@@ -413,7 +489,6 @@ function SourceTextAnalysisButton({ exit = () => {}, session, convertAnnotationT
             }
 
             .text-analysis-navbar .nav-link {
-                flex: 1;
                 padding-left: 0px;
                 padding-right: 0px;
                 text-align: center;
