@@ -409,7 +409,6 @@ function SourceTextAnalysisButton({
           setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
         });
     }
-    
   }, []);
 
 
