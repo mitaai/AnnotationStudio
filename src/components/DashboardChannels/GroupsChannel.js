@@ -53,7 +53,7 @@ export default function GroupsChannel({
     getGroupsByGroupIds(groupIds)
       .then((res) => {
         const obj = {};
-        const newGroupMembers = { privateGroup: [{ id: session.user.id }] };
+        const newGroupMembers = { privateGroup: [session.user] };
         res.map(({
           _id, createdAt, updatedAt, members,
         }) => {
@@ -67,6 +67,7 @@ export default function GroupsChannel({
         setGroupsDates(obj);
       })
       .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groups]);
 
   const groupTiles = [

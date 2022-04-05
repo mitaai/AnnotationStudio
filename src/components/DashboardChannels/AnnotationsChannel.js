@@ -119,6 +119,7 @@ export default function AnnotationsChannel({
     byTag: [],
     byDateCreated: { start: undefined, end: undefined, checked: false },
   });
+
   const [tab, setTab] = useState('annotations');
 
   // state variables for outlines tab
@@ -456,6 +457,32 @@ export default function AnnotationsChannel({
       byTag: {},
       byDateCreated: { start: undefined, end: undefined, checked: false },
     };
+
+    // adding members to annotatedBy because these group members are the group members that this
+    // user has access to seeing their annotations
+    // eslint-disable-next-line no-restricted-syntax
+    for (const [, members] of Object.entries(groupMembers)) {
+      members.map((member) => {
+        if (af.annotatedBy[member.id] === undefined) {
+          af.annotatedBy[member.id] = {
+            name: member.name,
+            number: 0,
+            checked: allFilters.annotatedBy[member.id]?.checked,
+          };
+        }
+        return null;
+      });
+    }
+
+    // adding the pseudo group private group
+    if (af.byGroup.privateGroup === undefined) {
+      af.byGroup.privateGroup = {
+        name: 'Personal',
+        number: 0,
+        checked: allFilters.byGroup.privateGroup?.checked,
+      };
+    }
+
     annos.map(({
       creator, created, target: { document: { groups, id: did, title } }, body: { tags },
     }, i) => {
