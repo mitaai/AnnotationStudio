@@ -51,6 +51,7 @@ export default function ISFilterButton({
   result = 0,
   toggleFilters = () => {},
   setByDateCreated,
+  groupMembers,
   filters = {
     byPermissions: {
       mine: false,
@@ -73,70 +74,126 @@ export default function ISFilterButton({
   const [calendarOpen, setCalendarOpen] = useState();
   const [tooltipShow, setTooltipShow] = useState();
   const [tooltipTarget, setTooltipTarget] = useState(null);
+
+  const selectedGroups = Object.keys(filters.byGroup)
+    .map((id) => (filters.byGroup[id].checked ? id : undefined))
+    .filter((id) => id);
+
+  let individualsInSelectedGroups = {};
+  if (selectedGroups.length === 0) {
+    individualsInSelectedGroups = undefined;
+  } else {
+    selectedGroups.map((gid) => {
+      if (selectedGroups.includes(gid)) {
+        groupMembers[gid].map(({ id }) => {
+          if (!individualsInSelectedGroups[id]) {
+            individualsInSelectedGroups[id] = true;
+          }
+
+          return null;
+        });
+      }
+
+      return null;
+    });
+  }
+
+  const sortRows = (a, b) => {
+    if (a?.name === undefined && b?.name === undefined) {
+      return 0;
+    }
+
+    if (a?.name === undefined) {
+      // if 'a' is undefined and 'b' is not undefined then 'b' automatically wins the sort
+      return 1;
+    }
+
+    if (b?.name === undefined) {
+      // if 'b' is undefined and 'a' is not undefined then 'a' automatically wins the sort
+      return -1;
+    }
+
+    let returnValue;
+    try {
+      if (a.name.toUpperCase() < b.name.toUpperCase()) {
+        returnValue = -1;
+      }
+
+      if (a.name.toUpperCase() > b.name.toUpperCase()) {
+        returnValue = 1;
+      }
+    } catch (err) {
+      console.log('a?.name', a?.name);
+      console.log('b?.name', b?.name);
+      console.log('err', err);
+    }
+
+    if (returnValue !== undefined) {
+      return returnValue;
+    }
+
+    if (a.name < b.name) {
+      return -1;
+    }
+    if (a.name > b.name) {
+      return 1;
+    }
+
+    return 0;
+  };
+
   const filterToFilterRows = (type) => {
     const filterRows = [];
+    const filterRows2 = [];
     const keys = Object.keys(filters[type]);
     let numberApplied = 0;
     keys.map((key) => {
       const { name, number, checked } = filters[type][key];
       numberApplied += checked ? 1 : 0;
-      filterRows.push({
-        elmnt: <FilterRow
-          key={key}
-          text={name}
-          number={number}
-          checked={checked}
-          toggle={() => toggleFilters(type, { key })}
-        />,
-        name,
-      });
+      if (type === 'annotatedBy' && individualsInSelectedGroups && !individualsInSelectedGroups[key]) {
+        filterRows2.push({
+          elmnt: <FilterRow
+            key={key}
+            text={name}
+            number={number}
+            checked={checked}
+            toggle={() => toggleFilters(type, { key })}
+          />,
+          name,
+        });
+      } else {
+        filterRows.push({
+          elmnt: <FilterRow
+            key={key}
+            text={name}
+            number={number}
+            checked={checked}
+            toggle={() => toggleFilters(type, { key })}
+          />,
+          name,
+        });
+      }
+
       return null;
     });
 
+    const filterRowElmnts = filterRows.sort(sortRows).map(({ elmnt }) => elmnt);
+
+    const divider = (
+      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+        <div style={{ flex: 1, height: 1, backgroundColor: '#e0e0e0' }} />
+        <span style={{ padding: '5px 3px', color: '#bdbdbd' }}>Individuals not in selected groups</span>
+        <div style={{ flex: 1, height: 1, backgroundColor: '#e0e0e0' }} />
+      </div>
+    );
+    const filterRowElments = filterRows2.length === 0
+      ? filterRowElmnts
+      : filterRowElmnts
+        .concat([divider])
+        .concat(filterRows2.sort(sortRows).map(({ elmnt }) => elmnt));
+
     return {
-      filterRows: filterRows.sort((a, b) => {
-        if (a?.name === undefined && b?.name === undefined) {
-          return 0;
-        }
-
-        if (a?.name === undefined) {
-          // if 'a' is undefined and 'b' is not undefined then 'b' automatically wins the sort
-          return 1;
-        }
-
-        if (b?.name === undefined) {
-          // if 'b' is undefined and 'a' is not undefined then 'a' automatically wins the sort
-          return -1;
-        }
-
-        let returnValue;
-        try {
-          if (a.name.toUpperCase() < b.name.toUpperCase()) {
-            returnValue = -1;
-          }
-
-          if (a.name.toUpperCase() > b.name.toUpperCase()) {
-            returnValue = 1;
-          }
-        } catch (err) {
-          console.log('a?.name', a?.name);
-          console.log('b?.name', b?.name);
-          console.log('err', err);
-        }
-
-        if (returnValue !== undefined) {
-          return returnValue;
-        }
-
-        if (a.name < b.name) {
-          return -1;
-        }
-        if (a.name > b.name) {
-          return 1;
-        }
-
-        return 0;
-      }).map(({ elmnt }) => elmnt),
+      filterRows: filterRowElments,
       numberApplied,
     };
   };
@@ -251,6 +308,7 @@ export default function ISFilterButton({
                   <Accordion.Collapse eventKey="annotatedBy">
                     <Card.Body className={styles.filterRowsContainer}>
                       {annotatedByFilters.filterRows}
+
                     </Card.Body>
                   </Accordion.Collapse>
                 </Card>

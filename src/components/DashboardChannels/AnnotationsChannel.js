@@ -73,6 +73,7 @@ export default function AnnotationsChannel({
   toAnnotationsTile,
   allAnnotations,
   setAllAnnotations,
+  groupMembers,
 }) {
   // eslint-disable-next-line no-undef
   const { origin } = window.location;
@@ -1529,6 +1530,7 @@ export default function AnnotationsChannel({
                   toggleFilters={toggleFilters}
                   setByDateCreated={setByDateCreated}
                   filters={allFilters}
+                  groupMembers={groupMembers}
                   onClick={() => {
                     if (tab === 'outlines') {
                       setTab('annotations');

@@ -34,6 +34,7 @@ export default function Home({
   const [allAnnotations, setAllAnnotations] = useState();
   const [mode, setMode] = useState('as');
   const [modeChanged, setModeChanged] = useState();
+  const [groupMembers, setGroupMembers] = useState({});
   const router = useRouter();
   const newReg = query && query.alert && query.alert === 'completeRegistration';
 
@@ -371,6 +372,7 @@ export default function Home({
               selectedDocumentSlug={selectedDocumentSlug}
               setSelectedDocumentSlug={setSelectedDocumentSlug}
               documentPermissions={documentPermissions}
+              setGroupMembers={setGroupMembers}
             />
             <DocumentsChannel
               width={channelPositions.documents.width}
@@ -408,6 +410,7 @@ export default function Home({
               toAnnotationsTile={toAnnotationsTile}
               allAnnotations={allAnnotations}
               setAllAnnotations={setAllAnnotations}
+              groupMembers={groupMembers}
             />
             <IdeaSpacesChannel
               width={channelPositions.ideaspaces.width}
