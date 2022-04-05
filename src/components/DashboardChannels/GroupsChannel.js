@@ -17,6 +17,7 @@ export default function GroupsChannel({
   selectedDocumentId,
   selectedDocumentSlug,
   documentPermissions,
+  setGroupMembers,
 }) {
   const [groups, setGroups] = useState([]);
   const [groupsDates, setGroupsDates] = useState();
@@ -52,11 +53,17 @@ export default function GroupsChannel({
     getGroupsByGroupIds(groupIds)
       .then((res) => {
         const obj = {};
-        res.map(({ _id, createdAt, updatedAt }) => {
+        const newGroupMembers = { privateGroup: [{ id: session.user.id }] };
+        res.map(({
+          _id, createdAt, updatedAt, members,
+        }) => {
           // eslint-disable-next-line no-underscore-dangle
           obj[_id] = { createdAt, updatedAt };
+          // eslint-disable-next-line no-underscore-dangle
+          newGroupMembers[_id] = members;
           return null;
         });
+        setGroupMembers(newGroupMembers);
         setGroupsDates(obj);
       })
       .catch(() => {});
