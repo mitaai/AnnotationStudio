@@ -83,6 +83,7 @@ export default function ISFilterButton({
   if (selectedGroups.length === 0) {
     individualsInSelectedGroups = undefined;
   } else {
+    selectedGroups.map((gid) => {
       if (selectedGroups.includes(gid)) {
         groupMembers[gid].map(({ id }) => {
           if (!individualsInSelectedGroups[id]) {
