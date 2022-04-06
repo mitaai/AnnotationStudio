@@ -139,9 +139,7 @@ const SlateToolbar = ({
 
   const stContainerStyling = stContainer
     ? { left: stContainer.left, width: stContainer.width, opacity: stContainer.opacity }
-    : {};
-
-  console.log('stContainerStyling', stContainerStyling);
+    : { left: '100%', opacity: 0 };
 
   const openDocument = async (slug) => {
     getDocumentBySlug(slug)
@@ -271,7 +269,14 @@ const SlateToolbar = ({
         </div>
         <div
           style={{
-            width: documentWidth, display: 'flex', flexDirection: 'row', justifyContent: 'center', position: 'relative', left: `max(${toolbarPos}, 130px)`, transition: 'left 0.5s',
+            width: documentWidth,
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'center',
+            position: 'relative',
+            left: `max(${toolbarPos}, 130px)`,
+            transition: 'left 0.5s',
+            ...(stContainer ? {} : { margin: '0px auto' }),
           }}
         >
           <Dropdown disabled={disabled}>

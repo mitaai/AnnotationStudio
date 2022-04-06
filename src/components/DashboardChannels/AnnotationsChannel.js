@@ -1815,6 +1815,7 @@ export default function AnnotationsChannel({
       sourceText: {
         opacity: 1,
         width: '50%',
+        left: '50%',
       },
       line: {
         outlines: {
@@ -1950,6 +1951,8 @@ export default function AnnotationsChannel({
                   if (tab === 'outlines') {
                     setOutlineStatus();
                     setOpenOutline({ id: null, document: null, callback: forceUpdate });
+                    // if source text mode is set to true we need to turn it off
+                    setSourceTextMode();
                   } else {
                     setTab('outlines');
                   }
@@ -2029,6 +2032,9 @@ export default function AnnotationsChannel({
                 display: 'flex',
                 flexDirection: 'row',
                 alignItems: 'center',
+                position: 'absolute',
+                transition: 'all 0.5s',
+                ...tabHeaderState.sourceText,
               }}
             >
               <span
