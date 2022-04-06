@@ -141,6 +141,8 @@ const SlateToolbar = ({
     ? { left: stContainer.left, width: stContainer.width, opacity: stContainer.opacity }
     : {};
 
+  console.log('stContainerStyling', stContainerStyling);
+
   const openDocument = async (slug) => {
     getDocumentBySlug(slug)
       .then((res) => {
@@ -171,7 +173,6 @@ const SlateToolbar = ({
           zIndex: 4,
           opacity: analysisMode ? 1 : 0,
           transition: 'opacity 0.5s',
-          ...stContainerStyling,
         }}
         >
           <SourceTextAnalysisButton
@@ -200,13 +201,22 @@ const SlateToolbar = ({
         </div>
         <div
           style={{
-            position: 'absolute', top: 4, opacity: 1, backgroundColor: '#D4D5D7', width: 1, height: 40, left: '50%',
+            position: 'absolute',
+            top: 4,
+            opacity: sourceTextMode ? 1 : 0,
+            backgroundColor: '#D4D5D7',
+            width: 1,
+            height: 40,
+            left: sourceTextMode ? '50%' : '100%',
+            transition: 'all 0.5s',
           }}
         />
         <div
           style={{
-            position: 'absolute', zIndex: 4, transition: 'all 0.5s',
-
+            position: 'absolute',
+            zIndex: 4,
+            transition: 'all 0.5s',
+            ...stContainerStyling,
           }}
         >
           <DropdownButton
