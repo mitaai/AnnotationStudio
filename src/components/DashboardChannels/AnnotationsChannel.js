@@ -1455,6 +1455,7 @@ export default function AnnotationsChannel({
       const { children } = node;
       // eslint-disable-next-line no-restricted-syntax
       for (let j = 0; j < children.length; j += 1) {
+        // console.log('children[j].text', children[j].text);
         const words = children[j].text.split(' ');
         for (let i = 0; i < words.length; i += 1) {
           const items = parseForSpecialCharacters(words[i]);
@@ -1471,6 +1472,9 @@ export default function AnnotationsChannel({
   const findNGramsInDocument = (document, dictionary) => {
     let queue = {};
     const foundNGrams = [];
+    // holds the memory of start and end positions of previously found nGrams. This is because
+    // sometimes the algorithm creates duplicates of an nGram that was already found
+    const mem = {};
 
     // eslint-disable-next-line no-restricted-syntax
     for (let h = 0; h < document.length; h += 1) {
@@ -1496,10 +1500,17 @@ export default function AnnotationsChannel({
                 const { arr } = queueItem;
                 if (arr.length === 0) {
                   // this means that we finished finiding an nGram in the user text
-                  foundNGrams.push({
+                  const obj = {
                     ...queueItem,
                     endPos: [h, i, j, k],
-                  });
+                  };
+                  const range = [obj.startPos, obj.endPos];
+                  // we need to make sure that we didn't already find this section of text already
+                  // before we add it to the foundNGrams
+                  if (mem[range] === undefined) {
+                    foundNGrams.push(obj);
+                    mem[range] = true;
+                  }
                 } else {
                   const newQueueItem = {
                     ...queueItem,
@@ -1541,6 +1552,9 @@ export default function AnnotationsChannel({
         }
       }
     }
+
+    // we need to remove duplicates from foundNGrams Object
+
 
     return foundNGrams;
   };
@@ -1585,17 +1599,24 @@ export default function AnnotationsChannel({
       const sTag = `${startTag.start}${id}${startTag.end}`;
       const eTag = `${endTag.start}${id}${endTag.end}`;
 
-      let i = 0; // sI;
-      let j = 0; // sJ;
-      let k = 0; // sK;
+      let h = sH;
+      let i = sI;
+      let j = sJ;
+      let k = sK;
       let foundSTag = false;
       let foundETag = false;
-      for (let h = 0; h < document.length; h += 1) {
+
+      // when you are looking for the start and end of a tag it may traverse multiple components
+      // and we need to keep of track of this so we can keep track of where in the document
+      // structures all the nGram ids were found
+      const rangeOfComponentsTraversed = { start: null, end: null };
+      while (h < document.length && !foundETag) {
         while (i < document[h].children.length && !foundETag) {
           while (j < document[h].children[i].text.length && !foundETag) {
             while (k < document[h].children[i].text[j]?.length && !foundETag) {
               if (document[h].children[i].text[j][k] === sTag) {
                 foundSTag = true;
+                rangeOfComponentsTraversed.start = h;
                 const a1 = document[h].children[i].text.slice(0, j + 1);
                 // console.log('a1', a1.slice());
                 const a2 = a1[j].slice(0, k);
@@ -1615,6 +1636,7 @@ export default function AnnotationsChannel({
                 // console.log('edited doc', DeepCopyObj(document));
               } else if (document[h].children[i].text[j][k] === eTag && foundSTag) {
                 foundETag = true;
+                rangeOfComponentsTraversed.end = h;
                 const a1 = document[h].children[i].text.slice(0, j + 1);
                 const a2 = a1[j].slice(0, k);
                 const a3 = a1[j].slice(k + 1);
@@ -1633,8 +1655,6 @@ export default function AnnotationsChannel({
                   textAnalysisComment: (document[h].children[i].textAnalysisComment || [])
                     .filter((startTagId) => startTagId !== id),
                 });
-
-                console.log('edited doc', DeepCopyObj(document));
               }
 
               k += 1;
@@ -1646,6 +1666,19 @@ export default function AnnotationsChannel({
           i += 1;
         }
         i = 0;
+        h += 1;
+      }
+
+      // adding nGram that was found to all the components it was found in. This will help in a
+      // later process were the algorithm will look at larger grammatical structures like a
+      // paragraph and see how many nGrams and there size were found to determine if the paragraph
+      // should be rewritten
+      for (let c = rangeOfComponentsTraversed.start; c <= rangeOfComponentsTraversed.end; c += 1) {
+        if (Array.isArray(document[c].nGramIds)) {
+          document[c].nGramIds.push(id);
+        } else {
+          document[c].nGramIds = [id];
+        }
       }
     }
   };
@@ -1686,15 +1719,15 @@ export default function AnnotationsChannel({
     const document = prepareDocumentObj(openOutline.current.document);
     // console.log('document', document);
     const foundNGrams = findNGramsInDocument(document, dictionary);
-    console.log('document copy', DeepCopyObj(document));
+    // console.log('document copy', DeepCopyObj(document));
     console.log('foundNGrams', foundNGrams);
     addTagsToDocumentStructure(document, foundNGrams);
 
-    console.log('---document', document);
+    console.log('---document', DeepCopyObj(document));
 
     convertTextArrayToText(document);
 
-    return document;
+    return { document, foundNGrams };
   };
 
   const slateInitialValue = [

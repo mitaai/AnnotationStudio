@@ -43,15 +43,33 @@
     padding: 5px 5px 5px 5px;
     cursor: pointer;
 
-    .addButton{
-        opacity: 0;
+    .actionButton {
+        display: none;
+    }
+
+    
+    .checkIcon {
+        display: none;
+    }
+
+    &.selected {
+        .checkIcon {
+            display: inline;
+            margin-right: 8px;
+        }
+
+        &:hover {
+            .checkIcon {
+                display: none;
+            }
+        }
     }
 
     &:hover {
         background-color: #f5f5f5;
 
-        .addButton {
-            opacity: 1.0;
+        .actionButton {
+            display: inline;
         }
     }
 }

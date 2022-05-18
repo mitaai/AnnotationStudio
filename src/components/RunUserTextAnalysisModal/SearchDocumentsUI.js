@@ -18,7 +18,11 @@ import styles from './RunUserTextAnalysisModal.module.scss';
 
 
 function SearchDocumentsUI({
-  documents, selectedDocuments = {}, onSelect = () => {}, onDone,
+  documents,
+  selectedDocuments = {},
+  onSelect = () => {},
+  onRemove = () => {},
+  onDone = () => {},
 }) {
   const [fuse, setFuse] = useState();
   const [query, setQuery] = useState('');
@@ -51,7 +55,7 @@ function SearchDocumentsUI({
     const selected = selectedDocuments[_id] !== undefined;
     return (
       <div
-        className={styles.rowItem}
+        className={`${styles.rowItem} ${selected ? styles.selected : ''}`}
         onClick={selected ? () => {} : () => onSelect(docData)}
       >
         <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
@@ -62,18 +66,21 @@ function SearchDocumentsUI({
           display: 'flex', flexDirection: 'column', justifyContent: 'center', paddingBottom: 6,
         }}
         >
-          {selected
-            ? <Check size={22} color="#026EFF" />
-            : (
-              <Button
-                className={styles.addButton}
-                variant="outline-primary"
-                size="sm"
-                onClick={() => onSelect(docData)}
-              >
-                Add
-              </Button>
-            )}
+          <Check className={styles.checkIcon} size={22} color="#026EFF" />
+          <Button
+            className={styles.actionButton}
+            variant={selected ? 'outline-danger' : 'outline-primary'}
+            size="sm"
+            onClick={() => {
+              if (selected) {
+                onRemove(docData._id);
+              } else {
+                onSelect(docData);
+              }
+            }}
+          >
+            {selected ? 'Remove' : 'Add'}
+          </Button>
         </div>
       </div>
     );
@@ -89,6 +96,7 @@ function SearchDocumentsUI({
           <FormControl
             id="admin-panel-search-input"
             placeholder="Search Documents"
+            autoFocus
             value={query}
             onChange={(ev) => setQuery(ev.target.value)}
             aria-label="search-documents"

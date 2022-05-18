@@ -332,10 +332,12 @@ const plugins = [
       const textAnalysisCommentAttribute = {};
       const arr = leaf?.textAnalysisComment;
       if (arr && arr.length > 0) {
-        // eslint-disable-next-line guard-for-in
-        // for (const id in arr) {
         textAnalysisCommentAttribute['text-analysis'] = 'true';
-        // }
+        // eslint-disable-next-line guard-for-in
+        for (const id of arr) {
+          // 'ta' stands for 'text analysis'
+          textAnalysisCommentAttribute[`ta-${id}`] = 'true';
+        }
       }
 
       const newAttributes = { ...attributes, ...textAnalysisCommentAttribute };

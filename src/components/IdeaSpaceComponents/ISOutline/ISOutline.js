@@ -24,12 +24,15 @@ import {
   withTable,
 } from '@udecode/slate-plugins';
 import { withHistory } from 'slate-history';
+import unfetch from 'unfetch';
 import { plugins, withDivs } from '../../../utils/slateUtil';
 import SlateToolbar from '../../SlateToolbar';
 import styles from './ISOutline.module.scss';
-import CommentCard from '../../CommentCard/CommentCard';
 import { DeepCopyObj } from '../../../utils/docUIUtils';
 import Document from '../../Document/Document';
+// import VerticalBar from '../../VerticalBar';
+import { getDocumentBySlug } from '../../../utils/docUtil';
+import CommentCard from '../../CommentCard';
 
 const ISOutline = ({
   session,
@@ -53,8 +56,19 @@ const ISOutline = ({
   setAlerts,
   setSourceTextHeaderTitle,
 }) => {
+  // console.log('document', document);
   const [documentZoom, setDocumentZoom] = useState(100);
   const [documentHeight, setDocumentHeight] = useState();
+
+  // 'TAUI' stands for 'text analysis UI'
+  const [applyTAUI, setApplyTAUI] = useState();
+  const [foundNGrams, setFoundNGrams] = useState();
+  const [commentCards, setCommentCards] = useState();
+
+  // eslint-disable-next-line no-unused-vars
+  const [veriticalBars, setVerticalBars] = useState([]);
+
+  const [loadingSourceText, setLoadingSourceText] = useState();
 
   const [loadedDocuments, setLoadedDocuments] = useState({});
   const [selectedSourceDocumentId, setSelectedSourceDocumentId] = useState();
@@ -83,6 +97,11 @@ const ISOutline = ({
     const newDocs = DeepCopyObj(loadedDocuments);
     newDocs[doc.id] = doc;
     setLoadedDocuments(newDocs);
+  };
+
+  const setD = (doc, bool) => {
+    setDocument(doc);
+    setApplyTAUI(bool);
   };
 
 
@@ -163,10 +182,53 @@ const ISOutline = ({
     docPos,
     containerPosWidth,
     toolbarPos,
-    commentCardWell,
     line: lineState,
     stContainer,
   } = state;
+
+  const selectAndUpdateLoadedDocuments = ({ document: doc, selected }) => {
+    updateLoadedDocuments(doc);
+    if (selected) {
+      setSelectedSourceDocumentId(doc.id);
+    }
+  };
+
+  const openDocument = async (slug) => {
+    setLoadingSourceText(true);
+    getDocumentBySlug(slug)
+      .then((doc) => {
+        const cloudfrontUrl = process.env.NEXT_PUBLIC_SIGNING_URL.split('/url')[0];
+        if (doc && doc.text
+          && doc.text.length < 255 && doc.text.includes(cloudfrontUrl)) {
+          unfetch(doc.text.substring(
+            doc.text.indexOf(cloudfrontUrl), doc.text.indexOf('.html') + 5,
+          ), {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'text/html',
+            },
+          }).then((res) => {
+            res.text().then((result) => {
+              // replacing the cloudfront url with the actual text result from the url
+              selectAndUpdateLoadedDocuments({
+                document: { ...doc, text: result },
+                selected: true,
+              });
+              setLoadingSourceText();
+            });
+          }).catch(() => {
+            selectAndUpdateLoadedDocuments({ document: doc, selected: true });
+            setLoadingSourceText();
+          });
+        } else {
+          selectAndUpdateLoadedDocuments({ document: doc, selected: true });
+          setLoadingSourceText();
+        }
+      })
+      .catch((err) => {
+        console.log('err', err);
+      });
+  };
 
   const removeAnalysisFromDocument = (doc) => {
     const d = DeepCopyObj(doc);
@@ -184,6 +246,10 @@ const ISOutline = ({
           }
         }
       } else if (obj.children) {
+        delete newObj.nGramsIds;
+        if (newObj.nGramIds) {
+          delete newObj.nGramIds;
+        }
         newObj.children = removeAnalysis(obj.children);
       } else if (obj.textAnalysisComment) {
         // deleting all the stuff that was created by the analysis
@@ -228,7 +294,7 @@ const ISOutline = ({
                 getDroppedAnnotationsData,
                 hydrateOutlineData,
                 document,
-                setDocument,
+                setDocument: setD,
                 setRemoveDropzones,
               },
             });
@@ -259,7 +325,8 @@ const ISOutline = ({
     return newArr;
   };
 
-  console.log('sourceTextAnalysisResults', sourceTextAnalysisResults);
+  // console.log('sourceTextAnalysisResults', sourceTextAnalysisResults);
+
 
   useEffect(() => {
     if (selectedSourceDocumentId) {
@@ -272,25 +339,164 @@ const ISOutline = ({
     console.log('sourceTextAnalysisResults changed');
     if (sourceTextAnalysisResults) {
       console.log('processSourceTextAnalysisResults');
-      let newDoc;
+      console.log('sourceTextAnalysisResults', sourceTextAnalysisResults);
+      let res;
       try {
-        newDoc = processSourceTextAnalysisResults(sourceTextAnalysisResults);
+        res = processSourceTextAnalysisResults(sourceTextAnalysisResults);
       } catch (err) {
         console.log('err', err);
       }
-      if (newDoc) {
-        console.log(newDoc);
-        setDocument(newDoc);
+      if (res) {
+        setFoundNGrams(res.foundNGrams);
+        setD(res.document, true);
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sourceTextAnalysisResults]);
 
   useEffect(() => {
+    if (foundNGrams) {
+      const newCommentCards = [];
+      // eslint-disable-next-line no-restricted-syntax
+      for (const { id, size, documentId } of foundNGrams) {
+        const s = parseInt(size, 10);
+        let type = 'comment';
+        if (s === 4) {
+          type = 'warning';
+        } else if (s >= 5) {
+          type = 'danger';
+        }
+        newCommentCards.push(
+          <CommentCard
+            id={id}
+            type={type}
+            setSourceTextMode={setSourceTextMode}
+            openDocument={openDocument}
+            documents={[selectedDocuments[documentId]]}
+          />,
+        );
+      }
+
+      setCommentCards(newCommentCards);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [foundNGrams]);
+
+  useEffect(() => {
+    // if this variable changes that means that any comment card currently visible will have the
+    // wrong position becuase elements are moving around so we are going to hide them
+    $('#comment-card-well .comment-card.visible')
+      .css({ top: 0, left: -500 })
+      .removeClass('left middle right visible');
+  }, [sourceTextMode]);
+
+  useEffect(() => {
+    $('#comment-card-well .comment-card').css({ top: 0, left: -500 });
+    $('#comment-card-well .comment-card').hover(() => {
+      // onmouseover
+    }, (ev) => {
+      // onmouseoout
+      const commentCardId = ev.currentTarget.id.split('-')[2];
+      if ($(ev.relatedTarget).parents(`[ta-${commentCardId}='true']`).length === 0) {
+        // this means the user hovered away from the comment to unrelated texted. The opposite
+        // being the user hovered away from the comment into the highlighted text related to the
+        // comment
+
+        // hiding the comment card and removing hover class from the commented text
+        $(`#comment-card-${commentCardId}`)
+          .css({ top: 0, left: -500 })
+          .removeClass('left middle right visible');
+
+        $(`[ta-${commentCardId}='true']`).removeClass('hover');
+      }
+    });
+  }, [commentCards]);
+
+  useEffect(() => {
+    if (applyTAUI && foundNGrams) {
+      const {
+        x: containerX,
+        y: containerY,
+      } = $('#comment-card-well').get(0).getBoundingClientRect();
+      // eslint-disable-next-line no-restricted-syntax
+      for (const { id, size } of foundNGrams) {
+        const elmnt = $(`[ta-${id}='true']`);
+        elmnt.addClass(size > 3 ? 'ta-comment' : 'ta-comment');
+        elmnt.hover((ev) => {
+          // onmouseover
+
+          // This code positions and makes the comment card visible.
+          // If it is already visible we don't need to do anything so were checking if it is already
+          // visible
+          const commentCard = $(`#comment-card-${id}`);
+          if (commentCard.hasClass('visible')) {
+            return;
+          }
+
+          const { clientX, clientY } = ev;
+          let y = clientY;
+
+          // we need to check which of the clientRects the clientX and clientY fall into and adjust
+          // the clientY value so that the comment card always is placed at the top of the selected
+          // text
+          // eslint-disable-next-line no-restricted-syntax
+          for (const [, DOMRect] of Object.entries($(ev.target).get(0).getClientRects())) {
+            if (clientX >= DOMRect.x - 2 && clientX <= DOMRect.x + DOMRect.width
+              && clientY >= DOMRect.y && clientY <= DOMRect.y + DOMRect.height) {
+              // this means that this is the clientRect that the mouse is currently hovered over so
+              // we need to adjust the y value based off of this clientRect
+              y = DOMRect.y;
+              break;
+            }
+          }
+
+          $(`[ta-${id}='true']`).addClass('hover');
+          const documentPos = $('#outline-container').get(0).getBoundingClientRect().x;
+          const {
+            height: commentCardHeight,
+            width: commentCardWidth,
+          } = commentCard.get(0).getBoundingClientRect();
+          const commentCardPointerHeight = 8;
+          const top = $('#outline-container-wrapper').scrollTop() + y - containerY - commentCardHeight - commentCardPointerHeight;
+          const left = clientX - containerX;
+
+          if (left < documentPos + documentWidth / 3) {
+            // the comment card will have its pointer to the left side of itself
+            commentCard.css({ top, left: left - 19, opacity: 1 });
+            commentCard.addClass('left visible');
+            commentCard.removeClass('right middle');
+          } else if (left < documentPos + 2 * (documentWidth / 3)) {
+            // the comment card will have its pointer to the middle of itself
+            commentCard.css({ top, left: left + 25 - commentCardWidth / 2 - 20, opacity: 1 });
+            commentCard.addClass('middle visible');
+            commentCard.removeClass('left right');
+          } else {
+            // the comment card will have its pointer to the right side of itself
+            commentCard.css({ top, left: left + 20 - commentCardWidth, opacity: 1 });
+            commentCard.addClass('right visible');
+            commentCard.removeClass('left middle');
+          }
+        }, (ev) => {
+          // onmouseout
+          if ($(ev.relatedTarget).parents('.comment-card').length === 0) {
+            // this means that user hovered away from the highlighted text analysis. The opposite
+            // being that they hovered their mouse over the comment card itself.
+            const commentCard = $(`#comment-card-${id}`);
+            commentCard.removeClass('left middle right visible');
+            commentCard.css({ top: 0, left: -500 });
+            $(`[ta-${id}='true']`).removeClass('hover');
+          }
+        });
+      }
+    }
+    setApplyTAUI();
+  }, [applyTAUI]);
+
+  useEffect(() => {
     if (!analysisMode) {
       // if analysis mode is false we need to clear any source text analysis data
       setSourceTextAnalysisResults();
-      setDocument(removeAnalysisFromDocument(document));
+      setD(removeAnalysisFromDocument(document));
     }
   }, [analysisMode]);
 
@@ -323,6 +529,35 @@ const ISOutline = ({
     if ($('#document-card-container')) {
       setDocumentHeight($('#document-card-container')[0].getBoundingClientRect().height);
     }
+    /*
+
+    const newVerticalBars = [];
+    const {
+      x: containerX,
+      y: containerY,
+    } = $('#vertical-bar-well').get(0).getBoundingClientRect();
+    // everytime the document changes we need to update the vertical bars to the left of every
+    // element in the document object
+    $("[data-slate-node='element']").each((index, domElement) => {
+      const elmnt = $(domElement);
+      if (elmnt.find("[text-analysis='true']").length < 0) {
+        return;
+      }
+
+      const { x, y, height } = elmnt.get(0).getBoundingClientRect();
+      const top = $('#outline-container-wrapper').scrollTop() + y - containerY;
+      const left = x - containerX - 16;
+      newVerticalBars.push(<VerticalBar
+        key={index}
+        left={left}
+        top={top}
+        height={height}
+        fill="#015999"
+      />);
+    });
+
+    setVerticalBars(newVerticalBars);
+    */
   }, [document]);
 
   return (
@@ -333,7 +568,7 @@ const ISOutline = ({
         disabled={false}
         onChange={(value) => {
           setSlateLoading(false);
-          setDocument(removeDropzonesFromSlateValue(value));
+          setD(removeDropzonesFromSlateValue(value), true);
         }}
       >
         <SlateToolbar
@@ -362,12 +597,7 @@ const ISOutline = ({
           setOrderOfSelectedDocuments={setOrderOfSelectedDocuments}
           selectedSourceDocumentId={selectedSourceDocumentId}
           loadedDocuments={loadedDocuments}
-          updateLoadedDocuments={({ document: doc, selected }) => {
-            updateLoadedDocuments(doc);
-            if (selected) {
-              setSelectedSourceDocumentId(doc.id);
-            }
-          }}
+          openDocument={openDocument}
         />
         {slateLoading && (
         <div className={styles['slate-loader']}>
@@ -440,14 +670,9 @@ const ISOutline = ({
                 user={session ? session.user : undefined}
                 showCannotAnnotateDocumentToast={false}
                 setShowCannotAnnotateDocumentToast={() => {}}
+                loadingDocument={loadingSourceText}
               />
             </div>
-          </div>
-          <div style={{
-            position: 'absolute', width: docPos, height: 40, opacity: commentCardWell.opacity, transition: 'all 0.5s',
-          }}
-          >
-            <CommentCard id="comment-card-demo" />
           </div>
           <div
             id="outline-container-wrapper"
@@ -461,6 +686,27 @@ const ISOutline = ({
               padding: '20px 0px',
             }}
           >
+            <div
+              id="vertical-bar-well"
+              style={{
+                position: 'absolute',
+                left: docPos,
+                transition: 'all 0.5s',
+                zIndex: 2,
+              }}
+            >
+              {veriticalBars}
+            </div>
+            <div
+              id="comment-card-well"
+              style={{
+                position: 'absolute',
+                transition: 'all 0.5s',
+                zIndex: 2,
+              }}
+            >
+              {commentCards}
+            </div>
             <EditablePlugins
               readOnly={readOnly}
               plugins={plugins}
@@ -508,8 +754,41 @@ const ISOutline = ({
               resize: none;
             }
 
+
             [text-analysis='true'] {
-              background-color: rgba(109, 247, 222, 0.3);
+              transition: background-color 0.25s;
+            }
+
+            .ta-success[text-analysis='true'] {
+              background-color: rgba(2, 112, 255, 0.2);
+            }
+
+            .ta-success[text-analysis='true'].hover {
+              background-color: rgba(2, 78, 255, 0.6);
+            }
+
+            .ta-comment[text-analysis='true'] {
+              background-color: rgba(150, 150, 150, 0.2);
+            }
+
+            .ta-comment[text-analysis='true'].hover {
+              background-color: rgba(150, 150, 150, 0.4);
+            }
+
+            .ta-warning[text-analysis='true'] {
+              background-color: rgba(255, 210, 10, 0.3);
+            }
+
+            .ta-warning[text-analysis='true'].hover {
+              background-color: rgba(255, 210, 10, 0.6);
+            }
+
+            .ta-danger[text-analysis='true'] {
+              background-color: rgba(255, 59, 10, 0.3);
+            }
+
+            .ta-danger[text-analysis='true'].hover {
+              background-color: rgba(255, 59, 10, 0.6);
             }
             
             body {
@@ -612,6 +891,14 @@ const ISOutline = ({
   
             #show-cannot-annotate-document-toast-container .toast-header button {
               color: white !important;
+            }
+
+            #comment-card-left-pointer, #comment-card-middle-pointer, #comment-card-right-pointer {
+              display: none;
+            }
+
+            .left #comment-card-left-pointer, .middle #comment-card-middle-pointer, .right #comment-card-right-pointer {
+              display: block !important;
             }
         `}
       </style>

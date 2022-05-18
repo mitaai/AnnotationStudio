@@ -1,0 +1,27 @@
+@use "sass:color";
+@use "../../style/theme";
+
+.deleteCommentBtn {
+    color: #616161;
+    cursor: pointer;
+    &:hover {
+        color: #AC4545;
+    }
+}
+
+.resolveCommentBtn {
+    color: #616161;
+    cursor: pointer;
+    &:hover {
+        color: theme.$primary;
+    }
+}
+
+.sourceTextBadge {
+    font-weight: normal;
+    &:hover {
+        cursor: pointer;
+        color: theme.$primary;
+        background-color: #EBF2FF;
+    }
+}

@@ -65,11 +65,10 @@ function SourceTextAnalysisButton({
   const [documents, setDocuments] = useState();
   const [detectedDocumentIds, setDetectedDocumentIds] = useState();
   const [alerts, setAlerts] = useState([]);
+  const [analysisState, setAnalysisState] = useState('default');
 
   const cardWidth = 110;
   const cardHeight = 165;
-
-  const analysisState = 'default';
 
   const tileBadgeData = {
     default: {
@@ -90,6 +89,7 @@ function SourceTextAnalysisButton({
   };
 
   const fetchDocumentsTextAnalyses = () => {
+    setAnalysisState('loading');
     const analysisIdToDocId = {};
     const analysisIds = [];
     // eslint-disable-next-line no-restricted-syntax
@@ -109,6 +109,7 @@ function SourceTextAnalysisButton({
           // setDocumentTextAnalysisId();
           // setTextAnalysisComplete();
           setLoadingResults();
+          setAnalysisState('default');
         } else if (res.analyses) {
           const newDocumentAnalyses = {};
           const sourceTextsData = [];
@@ -117,7 +118,8 @@ function SourceTextAnalysisButton({
             // eslint-disable-next-line no-underscore-dangle
             newDocumentAnalyses[_id] = { ...analysis, documentId: analysisIdToDocId[_id] };
             sourceTextsData.push({
-              slug: _id,
+              // eslint-disable-next-line no-underscore-dangle
+              documentId: analysisIdToDocId[_id],
               text: analysis.processedTokens || [],
             });
           }
@@ -128,7 +130,7 @@ function SourceTextAnalysisButton({
             text: textAnalysis.processedTokens,
           });
 
-          console.log('fng', fng);
+          console.log('fng.sourceTextsData', fng.sourceTextsData);
 
           const res2 = getNGramTexts({
             userTextAnalysisData: textAnalysis,
@@ -141,11 +143,16 @@ function SourceTextAnalysisButton({
           setResults(res2);
           setDocumentAnalyses(newDocumentAnalyses);
           setLoadingResults();
+          setAnalysisState('default');
+          // once we have loaded the results we are going to hide the popover so the user can focus
+          // on the results that just populated the document
+          setShow();
         }
       })
       .catch((err) => {
         setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
         setLoadingResults();
+        setAnalysisState('default');
       });
   };
 
@@ -218,6 +225,7 @@ function SourceTextAnalysisButton({
         documents={documents}
         selectedDocuments={selectedDocuments}
         onSelect={addDocumentToSelectedDocuments}
+        onRemove={deleteDocumentFromSelectedDocuments}
         onDone={() => setShowSearchDocumentsUI()}
       />
     ) : (

@@ -48,7 +48,6 @@ import {
 import styles from './SlateToolbar.module.scss';
 import SourceTextAnalysisButton from '../SourceTextAnalysisButton';
 import DocumentZoomSlider from '../DocumentZoomSlider';
-import { getDocumentBySlug } from '../../utils/docUtil';
 
 const SlateToolbar = ({
   style = {},
@@ -75,7 +74,7 @@ const SlateToolbar = ({
   orderOfSelectedDocuments = [],
   setOrderOfSelectedDocuments,
   loadedDocuments,
-  updateLoadedDocuments,
+  openDocument = () => {},
 }) => {
   const [showSourceTextAnalysisPopover, setShowSourceTextAnalysisPopover] = useState();
   const [targetSourceTextAnalysisPopover, setTargetSourceTextAnalysisPopover] = useState();
@@ -140,17 +139,6 @@ const SlateToolbar = ({
   const stContainerStyling = stContainer
     ? { left: stContainer.left, width: stContainer.width, opacity: stContainer.opacity }
     : { left: '100%', opacity: 0 };
-
-  const openDocument = async (slug) => {
-    getDocumentBySlug(slug)
-      .then((res) => {
-        console.log('res', res);
-        updateLoadedDocuments({ document: res, selected: true });
-      })
-      .catch((err) => {
-        console.log('err', err);
-      });
-  };
 
   useEffect(() => {
     setShowSourceTextAnalysisPopover(analysisMode);

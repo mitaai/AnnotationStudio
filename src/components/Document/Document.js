@@ -7,7 +7,7 @@ import React, {
 } from 'react';
 import $ from 'jquery';
 import {
-  Card,
+  Card, Spinner,
 } from 'react-bootstrap';
 import {
   createTextQuoteSelector,
@@ -101,6 +101,7 @@ export default function Document({
   displayAnnotationsInChannels,
   setAlerts,
   setShowCannotAnnotateDocumentToast,
+  loadingDocument,
 }) {
   const myRef = useRef();
   const documentZoomRef = useRef(documentZoom);
@@ -407,7 +408,26 @@ export default function Document({
     >
       <Card.Body>
         <div id="document-content-container" ref={myRef}>
-          <div dangerouslySetInnerHTML={{ __html: documentToAnnotate ? documentToAnnotate.text : '' }} />
+          {loadingDocument
+            ? (
+              <div style={{
+                alignItems: 'center', justifyContent: 'center', display: 'flex', flex: 1, flexDirection: 'column', paddingBottom: 65,
+              }}
+              >
+                <div style={{
+                  color: '#bdbdbd',
+                  marginBottom: 5,
+                  fontSize: 14,
+                  fontFamily: 'Arial',
+                }}
+                >
+                  Loading Document
+                </div>
+                <Spinner animation="border" variant="secondary" />
+              </div>
+            )
+            : <div dangerouslySetInnerHTML={{ __html: documentToAnnotate ? documentToAnnotate.text : '' }} />}
+
         </div>
       </Card.Body>
     </Card>
