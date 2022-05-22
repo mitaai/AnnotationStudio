@@ -343,6 +343,32 @@ const getGroupById = async (id) => {
   } return Promise.reject(Error(`Unable to get group ${id}: error ${res.status} received from server`));
 };
 
+const archiveGroupById = async (id) => {
+  const url = `/api/group/archive/${id}`;
+  const res = await unfetch(url, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (res.status === 200) {
+    return Promise.resolve(res.json());
+  } return Promise.reject(Error(`Unable to get group ${id}: error ${res.status} received from server`));
+};
+
+const unarchiveGroupbyId = async (id) => {
+  const url = `/api/group/unarchive/${id}`;
+  const res = await unfetch(url, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (res.status === 200) {
+    return Promise.resolve(res.json());
+  } return Promise.reject(Error(`Unable to get group ${id}: error ${res.status} received from server`));
+};
+
 const getGroupsByGroupIds = async (groupIds) => {
   const url = '/api/groupsByIds';
   const res = await unfetch(url, {
@@ -384,4 +410,6 @@ export {
   renameGroup,
   getGroupsByGroupIds,
   roleInGroup,
+  archiveGroupById,
+  unarchiveGroupbyId,
 };

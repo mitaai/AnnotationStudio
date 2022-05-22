@@ -158,6 +158,8 @@ const DocumentPage = ({
   );
   const [loadingTextAnalysisData, setLoadingTextAnalysisData] = useState();
 
+  const [allAnnotationsHaveBeenExpanded, setAllAnnotationsHaveBeenExpanded] = useState();
+
   const expandAnnotation = (aid, expand) => {
     const aidExistInList = expandedAnnotations.includes(aid);
     let newExpandedAnnotations = expandedAnnotations.slice();
@@ -169,7 +171,6 @@ const DocumentPage = ({
       setExpandedAnnotations(newExpandedAnnotations);
     }
   };
-
 
   const AnnotationMatchesFilters = (
     userEmail, a, filters, userId,
@@ -496,6 +497,24 @@ const DocumentPage = ({
       );
     }
   };
+
+  const collapseAllAnnotations = () => setExpandedAnnotations([]);
+  const expandAllAnnotations = () => {
+    setExpandedAnnotations(
+      (channelAnnotations.left || []).concat(channelAnnotations.right || []).map(({ _id }) => _id),
+    );
+    setAllAnnotationsHaveBeenExpanded(true);
+  };
+
+  useEffect(() => {
+    if (!allAnnotationsHaveBeenExpanded) { return; }
+    if (channelAnnotations?.left?.length > 0) {
+      moveAnnotationsToCorrectSpotBasedOnFocus('left', channelAnnotations?.left[0]._id);
+    }
+    if (channelAnnotations?.right?.length > 0) {
+      moveAnnotationsToCorrectSpotBasedOnFocus('right', channelAnnotations?.right[0]._id);
+    }
+  }, [allAnnotationsHaveBeenExpanded]);
 
   useEffect(() => {
     // when both annotation channels are loaded we are going to check the query data and
@@ -824,6 +843,8 @@ const DocumentPage = ({
             annotationIdBeingEdited,
             setShowUnsavedChangesToast,
             scrollToAnnotation,
+            collapseAllAnnotations,
+            expandAllAnnotations,
           ]}
         >
           <DocumentFiltersContext.Provider

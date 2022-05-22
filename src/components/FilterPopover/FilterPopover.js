@@ -27,6 +27,9 @@ import {
 import {
   Typeahead, Menu, MenuItem, Token,
 } from 'react-bootstrap-typeahead';
+
+import Switch from '../Switch';
+
 import { FirstNameLastInitial } from '../../utils/nameUtil';
 import { DocumentFiltersContext, DocumentAnnotationsContext } from '../../contexts/DocumentContext';
 import PermissionsButtonGroup from '../PermissionsButtonGroup';
@@ -36,7 +39,10 @@ import { DeepCopyObj } from '../../utils/docUIUtils';
 function FilterPopover({ session }) {
   const [
     channelAnnotations, , , , , ,
-    annotationIdBeingEdited, , scrollToAnnotation,
+    annotationIdBeingEdited, ,
+    scrollToAnnotation,
+    collapseAllAnnotations,
+    expandAllAnnotations,
   ] = useContext(DocumentAnnotationsContext);
   const [
     documentFilters,
@@ -46,6 +52,8 @@ function FilterPopover({ session }) {
   const [byTagsTypeheadMarginTop, setByTagsTypeheadMarginTop] = useState(0);
   const [byTagsTypeheadMarginBottom, setByTagsTypeheadMarginBottom] = useState(0);
   const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState();
+
+  const [expandAnnotations, setExpandAnnotations] = useState(null);
 
   const GetNumberOfMatchesForThisPermission = (permissions) => {
     const ids = FilterAnnotations(channelAnnotations, {
@@ -256,8 +264,15 @@ function FilterPopover({ session }) {
     <Popover id="filter-popover">
       <Popover.Content>
         <Card>
-          <Card.Header>
-            <h5 style={{ marginBottom: 0 }}>Filter Annotations</h5>
+          <Card.Header style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+            <h5 style={{ marginBottom: 0, flex: 1 }}>Filter Annotations</h5>
+            <Switch
+              isOn={expandAnnotations}
+              // onColor="#1157d1"
+              onColor="#015999"
+              tooltipMessage={`${expandAnnotations ? 'Collapse' : 'Expand'} All Annotations`}
+              handleToggle={() => setExpandAnnotations(!expandAnnotations)}
+            />
           </Card.Header>
           <Card.Body>
             <Row>
@@ -287,7 +302,9 @@ function FilterPopover({ session }) {
                         setByTagsTypeheadMarginTop(0);
                       }
                     }}
-                    onInputChange={() => { setByTagsTypeheadMarginTop($('#typehead-annotated-by').height() + 10); }}
+                    onInputChange={() => {
+                      setByTagsTypeheadMarginTop($('#typehead-annotated-by').height() + 10);
+                    }}
                     options={filterOptions.annotatedBy}
                     placeholder="Select one or more user(s)"
                   />
@@ -302,7 +319,12 @@ function FilterPopover({ session }) {
             </Row>
             <Row>
               <Col>
-                <Form.Group style={{ marginTop: `${byTagsTypeheadMarginTop}px`, marginBottom: `${byTagsTypeheadMarginBottom}px` }}>
+                <Form.Group
+                  style={{
+                    marginTop: `${byTagsTypeheadMarginTop}px`,
+                    marginBottom: `${byTagsTypeheadMarginBottom}px`,
+                  }}
+                >
                   <Form.Label>By Tags</Form.Label>
                   <Typeahead
                     id="typehead-by-tags"
@@ -393,6 +415,16 @@ function FilterPopover({ session }) {
       icon: <PersonPlusFill size="1.2em" />,
     },
   ];
+
+  useEffect(() => {
+    if (expandAnnotations === null) { return; }
+    if (expandAnnotations) {
+      expandAllAnnotations();
+    } else {
+      collapseAllAnnotations();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [expandAnnotations]);
 
   return (
     <>

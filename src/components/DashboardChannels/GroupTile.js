@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import $ from 'jquery';
 import Router from 'next/router';
 import {
   LockFill,
@@ -11,8 +12,24 @@ import {
 import styles from './DashboardChannels.module.scss';
 
 export default function GroupTile({
-  id, name, memberCount = 0, position = 'Member', selected, onClick, privateGroup,
+  id,
+  name,
+  memberCount = 0,
+  position = 'Member',
+  selected,
+  onClick,
+  privateGroup,
+  moveGroupTileToList,
+  archived,
 }) {
+  /*
+    This variable can take on 3 values
+      0:  means that the group tile hasn't been moved (no user actions yet)
+      1:  means that the user wants to archive/unarchive the group
+      2:  means it is in the process of archiving/unarchiving the group and nothing further needs to
+          be done
+  */
+  const [removed, setRemoved] = useState(0);
   const [hovered, setHovered] = useState();
   const [focused, setFocused] = useState();
   const classNames = [
@@ -20,6 +37,7 @@ export default function GroupTile({
     selected ? styles.selectedTile : '',
     hovered ? styles.tileHovered : '',
     focused ? styles.tileFocused : '',
+    removed > 0 ? styles.tileRemoved : '',
   ].join(' ');
   const memberText = `${memberCount} member${(memberCount === 1 ? '' : 's')}`;
   const positionColors = {
@@ -29,8 +47,19 @@ export default function GroupTile({
   };
   const color = positionColors[position] !== undefined ? positionColors[position] : 'grey';
   const tileBadge = <TileBadge color={color} text={position} />;
+  const groupTileId = `group-tile-${id}`;
+
+  useEffect(() => {
+    if (removed === 1) {
+      $(`#${groupTileId}`).css({ marginBottom: -($(`#${groupTileId}`).height() + 15) });
+      moveGroupTileToList(archived, id);
+      setRemoved(2);
+    }
+  }, [removed, archived, groupTileId, id, moveGroupTileToList]);
+
   return (
     <div
+      id={groupTileId}
       className={classNames}
       onClick={onClick}
       onMouseOver={() => setHovered(true)}
@@ -65,12 +94,15 @@ export default function GroupTile({
               onSelect={(eventKey) => {
                 if (eventKey === 'manage') {
                   Router.push(`/groups/${id}`);
+                } else if (eventKey === 'remove-from-list') {
+                  setRemoved(1);
                 }
               }}
             >
               <Dropdown.Toggle as={ThreeDotDropdown} id="dropdown-group-tile" />
               <Dropdown.Menu>
                 <Dropdown.Item eventKey="manage">Manage</Dropdown.Item>
+                <Dropdown.Item eventKey="remove-from-list">{archived ? 'Unarchive' : 'Archive'}</Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>
           )}

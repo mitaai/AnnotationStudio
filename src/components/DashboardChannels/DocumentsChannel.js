@@ -1,15 +1,18 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import moment from 'moment';
 import Link from 'next/link';
 import {
-  ArrowClockwise,
+  ArrowRepeat,
   PeopleFill,
   PersonFill,
+  PersonCheckFill,
+  Plus,
 } from 'react-bootstrap-icons';
 
 import {
-  OverlayTrigger, Popover,
+  OverlayTrigger, Tooltip,
 } from 'react-bootstrap';
 
 import {
@@ -25,7 +28,6 @@ import DocumentTile from './DocumentTile';
 
 import styles from './DashboardChannels.module.scss';
 import { DeepCopyObj, RID } from '../../utils/docUIUtils';
-import TileBadge from '../TileBadge';
 import SortChannelsIcon from './SortChannelsIcon';
 
 export default function DocumentsChannel({
@@ -35,19 +37,20 @@ export default function DocumentsChannel({
   session,
   setAlerts,
   forceUpdate,
-  selectedGroupId = 'privateGroup',
+  selectedGroupId,
   setSelectedGroupId,
   selectedDocumentId,
   setSelectedDocumentId,
-  selectedDocumentSlug,
   setSelectedDocumentSlug,
   documents,
   setDocuments,
   documentPermissions,
   setDocumentPermissions,
+  groupMembers,
   maxNumberOfDocumentGroups = 3,
+  dashboardState,
 }) {
-  const dashboardState = `${selectedDocumentId !== undefined && selectedDocumentSlug !== undefined ? `did=${selectedDocumentId}&slug=${selectedDocumentSlug}&dp=${documentPermissions}&` : ''}gid=${selectedGroupId}`;
+  const router = useRouter();
   const [listLoading, setListLoading] = useState(true);
   const [loadMore, setLoadMore] = useState();
   const [refresh, setRefresh] = useState();
@@ -56,10 +59,11 @@ export default function DocumentsChannel({
   const [selectedItem, setSelectedItem] = useState('by-date-created');
   const [asc, setAsc] = useState();
   const perPage = 25;
-  const numberOfDocuments = documents[selectedGroupId] === undefined
-    || documents[selectedGroupId]?.countByPermissions === undefined
+  const numberOfDocuments = documents[selectedGroupId]?.countByPermissions === undefined
+    || documents[selectedGroupId].countByPermissions[documentPermissions] === undefined
     ? 0
     : documents[selectedGroupId].countByPermissions[documentPermissions];
+
   const buttons = [
     {
       text: 'Mine',
@@ -70,8 +74,16 @@ export default function DocumentsChannel({
       icon: <PersonFill size="1.2em" />,
     },
     {
-      text: 'Shared',
-      textWidth: 60,
+      text: 'Owner/Manager Documents',
+      textWidth: 190,
+      count: documentPermissions === 'group-documents' ? numberOfDocuments : 0,
+      selected: documentPermissions === 'group-documents',
+      onClick: () => { setDocumentPermissions('group-documents'); },
+      icon: <PersonCheckFill size="1.2em" />,
+    },
+    {
+      text: 'Contributions',
+      textWidth: 100,
       count: documentPermissions === 'shared' ? numberOfDocuments : 0,
       selected: documentPermissions === 'shared',
       onClick: () => { setDocumentPermissions('shared'); },
@@ -84,6 +96,8 @@ export default function DocumentsChannel({
     if (newDocuments[selectedGroupId]) {
       if (d?.countByPermissions?.shared) {
         newDocuments[selectedGroupId].countByPermissions.shared = d.countByPermissions.shared;
+      } else if (d?.countByPermissions && d?.countByPermissions['group-documents']) {
+        newDocuments[selectedGroupId].countByPermissions['group-documents'] = d.countByPermissions['group-documents'];
       } else if (d?.countByPermissions?.mine) {
         newDocuments[selectedGroupId].countByPermissions.mine = d.countByPermissions.mine;
       }
@@ -123,6 +137,17 @@ export default function DocumentsChannel({
 
         const countByPermissions = documents[selectedGroupId]?.countByPermissions === undefined;
 
+        const permissions = documentPermissions === 'mine' ? undefined : {
+          contributions: documentPermissions === 'shared',
+          groupDocuments: documentPermissions === 'group-documents',
+        };
+
+        const groupOwnersAndManagers = (groupMembers[selectedGroupId] || []).slice().reduce(
+          // eslint-disable-next-line no-underscore-dangle
+          (arr, member) => arr.concat((member.role === 'owner' || member.role === 'manager') ? [member.id] : []),
+          [],
+        );
+
         await getDocumentsByGroupByUser({
           groups: selectedGroupId === 'privateGroup' ? [] : [{ id: selectedGroupId }],
           id: documentPermissions === 'mine' ? session.user.id : undefined,
@@ -130,6 +155,8 @@ export default function DocumentsChannel({
           skip,
           countByPermissions,
           mine: documentPermissions === 'mine',
+          groupOwnersAndManagers,
+          permissions,
           noDrafts: true,
           sort: { updatedAt: -1 },
         })
@@ -169,7 +196,9 @@ export default function DocumentsChannel({
           });
       }
     }
-    fetchData();
+    if (selectedGroupId) {
+      fetchData();
+    }
   }, [loadMore, selectedGroupId, refresh, documentPermissions, forceUpdate, session, setAlerts]);
 
   useEffect(() => {
@@ -203,33 +232,41 @@ export default function DocumentsChannel({
     return 0;
   };
 
-  let documentTiles = documents[selectedGroupId] === undefined
+
+  let showRefreshButton = true;
+  let documentTiles;
+  if (selectedGroupId) {
+    documentTiles = documents[selectedGroupId] === undefined
   || documents[selectedGroupId][documentPermissions] === undefined
-    ? []
-    : documents[selectedGroupId][documentPermissions].sort(sortDocuments).map(({
-      _id, title, groups, contributors, updatedAt, slug, owner,
-    }) => {
-      const contributor = contributors ? contributors.find(({ type }) => type.toLowerCase() === 'author') : undefined;
-      const author = contributor === undefined ? 'Author' : contributor.name;
-      return (
-        <DocumentTile
-          key={_id}
-          id={_id}
-          name={title}
-          author={author}
-          slug={slug}
-          isOwner={owner === session.user.id}
-          activityDate={updatedAt}
-          selected={_id === selectedDocumentId}
-          groups={groups}
-          selectedGroupId={selectedGroupId}
-          setSelectedGroupId={setSelectedGroupId}
-          maxNumberOfDocumentGroups={maxNumberOfDocumentGroups}
-          dashboardState={`${_id !== undefined && slug !== undefined ? `did=${_id}&slug=${slug}&dp=${documentPermissions}&` : ''}gid=${selectedGroupId}`}
-          onClick={() => { setSelectedDocumentId(_id); setSelectedDocumentSlug(slug); }}
-        />
-      );
-    });
+      ? []
+      : documents[selectedGroupId][documentPermissions].sort(sortDocuments).map(({
+        _id, title, groups, contributors, updatedAt, slug, owner,
+      }) => {
+        const contributor = contributors ? contributors.find(({ type }) => type.toLowerCase() === 'author') : undefined;
+        const author = contributor === undefined ? 'Author' : contributor.name;
+        return (
+          <DocumentTile
+            key={_id}
+            id={_id}
+            name={title}
+            author={author}
+            slug={slug}
+            isOwner={owner === session.user.id}
+            activityDate={updatedAt}
+            selected={_id === selectedDocumentId}
+            groups={groups}
+            selectedGroupId={selectedGroupId}
+            setSelectedGroupId={setSelectedGroupId}
+            maxNumberOfDocumentGroups={maxNumberOfDocumentGroups}
+            dashboardState={`${_id !== undefined && slug !== undefined ? `did=${_id}&slug=${slug}&dp=${documentPermissions}&` : ''}gid=${selectedGroupId}`}
+            onClick={() => { setSelectedDocumentId(_id); setSelectedDocumentSlug(slug); }}
+          />
+        );
+      });
+  } else {
+    documentTiles = <EmptyListMessage text="No group selected" />;
+    showRefreshButton = false;
+  }
 
   if (documentTiles.length === 0) {
     documentTiles = <EmptyListMessage />;
@@ -281,40 +318,71 @@ export default function DocumentsChannel({
               Documents
             </span>
           </Link>
-          <div style={{ marginRight: 9, marginLeft: -2 }}>
-            <SortChannelsIcon
-              tooltipText="Sort Documents"
-              selected={selectedItem}
-              setSelected={() => setSelectedItem(selectedItem === 'by-date-created' ? 'alpha' : 'by-date-created')}
-              asc={asc}
-              setAsc={() => setAsc(!asc)}
-            />
-          </div>
-          <TileBadge text="New +" href="/documents/new" color="yellow" />
+          {showRefreshButton && (
+          <>
+            <div style={{ marginRight: 2.5, marginLeft: 5 }}>
+              <SortChannelsIcon
+                tooltipText="Sort Documents"
+                placement="bottom"
+                selected={selectedItem}
+                setSelected={() => setSelectedItem(selectedItem === 'by-date-created' ? 'alpha' : 'by-date-created')}
+                asc={asc}
+                setAsc={() => setAsc(!asc)}
+              />
+            </div>
+            <OverlayTrigger
+              key="refresh-documents"
+              placement="bottom"
+              overlay={(
+                <Tooltip
+                  style={{ position: 'relative', top: -6, left: -4 }}
+                  className="styled-tooltip bottom"
+                >
+                  {`Refreshed ${moment(lastUpdated).fromNow()}`}
+                </Tooltip>
+            )}
+            >
+              <div
+                className={styles.refreshButton}
+                onClick={() => setRefresh(true)}
+                onKeyDown={() => {}}
+                tabIndex={-1}
+                role="button"
+              >
+                <ArrowRepeat size={18} style={{ margin: 'auto 5px' }} />
+              </div>
+            </OverlayTrigger>
+          </>
+          )}
           <OverlayTrigger
-            key="refresh-documents"
+            key="create-new-document"
             placement="bottom"
             overlay={(
-              <Popover
-                id="popover-basic"
+              <Tooltip
+                style={{ position: 'relative', top: -6, left: -4 }}
+                className="styled-tooltip bottom"
               >
-                <Popover.Content style={{ color: '#636363' }}>{`Refreshed ${moment(lastUpdated).fromNow()}`}</Popover.Content>
-              </Popover>
+                New Document
+              </Tooltip>
             )}
           >
             <div
-              className={styles.refreshButton}
-              onClick={() => setRefresh(true)}
+              className={styles.addNewIcon}
+              onClick={() => router.push({
+                pathname: '/documents/new',
+              })}
               onKeyDown={() => {}}
               tabIndex={-1}
               role="button"
             >
-              <span style={{ fontSize: 'inherit' }}>Refresh</span>
-              <ArrowClockwise size={18} style={{ margin: 'auto 5px' }} />
+              <Plus size={20} />
             </div>
           </OverlayTrigger>
         </div>
-        <PermissionsButtonGroup buttons={selectedGroupId === 'privateGroup' ? buttons.slice(0, 1) : buttons} />
+        <PermissionsButtonGroup
+          variant={showRefreshButton ? 'primary' : 'secondary'}
+          buttons={selectedGroupId === 'privateGroup' ? buttons.slice(0, 1) : buttons}
+        />
       </div>
       <div className={styles.tileContainer}>
         {(listLoading || refresh) ? <ListLoadingSpinner /> : documentTiles}
