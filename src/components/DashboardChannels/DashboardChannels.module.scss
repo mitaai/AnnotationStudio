@@ -6,12 +6,24 @@
   cursor: pointer;
   color: #575757;
   display: flex;
-  margin: auto 5px auto auto;
+  margin: auto 2.5px;
   font-size: 14px;
   &:hover {
     color: theme.$primary;
   }
 }
+
+.addNewIcon {
+  cursor: pointer;
+  color: #575757;
+  display: flex;
+  margin: auto auto auto 0px;
+  font-size: 14px;
+  &:hover {
+    color: theme.$primary;
+  }
+}
+
 
 .sortChannelsIcon {
   cursor: pointer;
@@ -183,6 +195,11 @@
 
 .tileFocused {
   border: 1px solid theme.$primary !important
+}
+
+.tileRemoved {
+  transition: all 0.5s;
+  opacity: 0;
 }
 
 .tileDragEnter {

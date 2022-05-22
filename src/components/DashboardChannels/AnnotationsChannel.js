@@ -5,7 +5,6 @@ import moment from 'moment';
 import { useRouter } from 'next/router';
 import debounce from 'lodash.debounce';
 import {
-  ArrowClockwise,
   BookmarkFill,
   ChatRightQuoteFill,
   PeopleFill,
@@ -16,10 +15,11 @@ import {
   CalendarEventFill,
   ChevronRight,
   CheckCircleFill,
+  ArrowRepeat,
 } from 'react-bootstrap-icons';
 
 import {
-  OverlayTrigger, Popover, Modal, Button, Form, Tooltip, Spinner, ProgressBar,
+  OverlayTrigger, Modal, Button, Form, Tooltip, Spinner, ProgressBar,
 } from 'react-bootstrap';
 
 import {
@@ -1508,39 +1508,37 @@ export default function AnnotationsChannel({
               >
                 Annotations
               </span>
-            </div>
-            {showRefreshButton && (
-            <OverlayTrigger
-              key="refresh-annotaitons"
-              placement="bottom"
-              overlay={(
-                <Popover
-                  id="popover-basic"
-                >
-                  <Popover.Content style={{ color: '#636363' }}>
+              {showRefreshButton && (
+              <OverlayTrigger
+                key="refresh-annotaitons"
+                placement="bottom"
+                overlay={(
+                  <Tooltip
+                    style={{ position: 'relative', top: -6, left: -4 }}
+                    className="styled-tooltip bottom"
+                  >
                     {`Refreshed ${moment(lastUpdated).fromNow()}`}
-                  </Popover.Content>
-                </Popover>
-            )}
-            >
-              <div
-                className={styles.refreshButton}
-                style={tab === 'outlines' ? { color: '#9e9e9e' } : {}}
-                onClick={() => {
-                  if (mode === 'is' && tab === 'outlines') {
-                    setTab('annotations');
-                  }
-                  setRefresh(true);
-                }}
-                onKeyDown={() => {}}
-                tabIndex={-1}
-                role="button"
+                  </Tooltip>
+                )}
               >
-                <span style={{ fontSize: 'inherit' }}>Refresh</span>
-                <ArrowClockwise size={18} style={{ margin: 'auto 5px' }} />
-              </div>
-            </OverlayTrigger>
-            )}
+                <div
+                  className={styles.refreshButton}
+                  style={tab === 'outlines' ? { color: '#9e9e9e' } : {}}
+                  onClick={() => {
+                    if (mode === 'is' && tab === 'outlines') {
+                      setTab('annotations');
+                    }
+                    setRefresh(true);
+                  }}
+                  onKeyDown={() => {}}
+                  tabIndex={-1}
+                  role="button"
+                >
+                  <ArrowRepeat size={18} style={{ margin: 'auto 5px' }} />
+                </div>
+              </OverlayTrigger>
+              )}
+            </div>
 
             {mode === 'as'
               ? (

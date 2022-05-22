@@ -92,6 +92,8 @@ const getDocumentsByGroupByUser = async ({
   perPage,
   id,
   mine,
+  groupOwnersAndManagers,
+  permissions,
   noDrafts,
   sort,
 }) => {
@@ -102,6 +104,8 @@ const getDocumentsByGroupByUser = async ({
     skip,
     page,
     perPage,
+    groupOwnersAndManagers,
+    permissions,
     noDrafts,
     sort,
   };

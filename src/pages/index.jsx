@@ -42,16 +42,16 @@ export default function Home({
   const ASISChannelPositions = {
     as: {
       groups: {
-        width: { vw: 20, px: -20 },
+        width: { vw: 22, px: -20 },
         minWidth: 300,
         left: { vw: 0, px: 30 },
         minLeft: 30,
         opacity: 1,
       },
       documents: {
-        width: { vw: 40, px: -40 },
+        width: { vw: 38, px: -40 },
         minWidth: 400,
-        left: { vw: 20, px: 25 },
+        left: { vw: 22, px: 25 },
         minLeft: 350,
         opacity: 1,
       },
@@ -148,10 +148,13 @@ export default function Home({
   const [selectedDocumentSlug, setSelectedDocumentSlug] = useState();
   const [documents, setDocuments] = useState({});
   const [documentPermissions, setDocumentPermissions] = useState('shared');
-  const dashboardState = `${selectedDocumentId !== undefined && selectedDocumentSlug !== undefined ? `did=${selectedDocumentId}&slug=${selectedDocumentSlug}&dp=${documentPermissions}&` : ''}gid=${selectedGroupId}`;
-  const breadcrumbs = [
-    { name: selectedGroupId === 'privateGroup' ? 'Personal' : session.user.groups.find(({ id }) => id === selectedGroupId)?.name },
-  ];
+  const [groupPermissions, setGroupPermissions] = useState('active');
+
+  const dashboardState = `${selectedDocumentId && selectedDocumentSlug ? `did=${selectedDocumentId}&slug=${selectedDocumentSlug}&dp=${documentPermissions}&` : ''}${groupPermissions && `groupP=${groupPermissions}`}${selectedGroupId && `&gid=${selectedGroupId}`}`;
+  const breadcrumbs = selectedGroupId
+    ? [
+      { name: selectedGroupId === 'privateGroup' ? 'Personal' : session.user.groups.find(({ id }) => id === selectedGroupId)?.name },
+    ] : [];
 
   const toAnnotationsTile = ({
     _id,
@@ -259,11 +262,23 @@ export default function Home({
           setSelectedDocumentId(query.did);
           setSelectedDocumentSlug(query.slug);
         }
-        setDocumentPermissions(['mine', 'shared'].includes(query.dp) ? query.dp : 'shared');
+        setDocumentPermissions(['mine', 'group-documents', 'shared'].includes(query.dp) ? query.dp : 'shared');
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query, session]);
+
+  useEffect(() => {
+    // if the group permissions change and the selected group is not Private Group (AKA Personal
+    // which is the only group that exists in both the Active and Archived permissions) then moving
+    // to another list we should have no selected group
+    if (selectedGroupId !== 'privateGroup') {
+      setSelectedGroupId();
+      setSelectedDocumentId();
+      setSelectedDocumentSlug();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [groupPermissions]);
 
   const showDashboard = session
   && ((session.user && session.user.firstName)
@@ -367,12 +382,12 @@ export default function Home({
                   setDocumentPermissions('shared');
                 }
               }}
-              selectedDocumentId={selectedDocumentId}
               setSelectedDocumentId={setSelectedDocumentId}
-              selectedDocumentSlug={selectedDocumentSlug}
               setSelectedDocumentSlug={setSelectedDocumentSlug}
-              documentPermissions={documentPermissions}
               setGroupMembers={setGroupMembers}
+              groupPermissions={groupPermissions}
+              setGroupPermissions={setGroupPermissions}
+              dashboardState={dashboardState}
             />
             <DocumentsChannel
               width={channelPositions.documents.width}
@@ -383,14 +398,15 @@ export default function Home({
               setSelectedGroupId={setSelectedGroupId}
               selectedDocumentId={selectedDocumentId}
               setSelectedDocumentId={setSelectedDocumentId}
-              selectedDocumentSlug={selectedDocumentSlug}
               setSelectedDocumentSlug={setSelectedDocumentSlug}
               documents={documents}
               setDocuments={setDocuments}
               documentPermissions={documentPermissions}
               setDocumentPermissions={setDocumentPermissions}
+              groupMembers={groupMembers}
               setAlerts={setAlerts}
               forceUpdate={!!statefulSession}
+              dashboardState={dashboardState}
             />
             <AnnotationsChannel
               width={channelPositions.annotations.width}

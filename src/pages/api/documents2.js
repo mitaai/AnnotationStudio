@@ -12,7 +12,15 @@ const handler = async (req, res) => {
     const token = await jwt.getToken({ req, secret });
     if (token && token.exp > 0) {
       const {
-        page, perPage, userId, groupIds, noDrafts, skip, sort = { createdAt: -1 },
+        page,
+        perPage,
+        userId,
+        groupIds,
+        groupOwnersAndManagers,
+        permissions,
+        noDrafts,
+        skip,
+        sort = { createdAt: -1 },
       } = req.body;
       if (userId || groupIds) {
         const { db } = await connectToDatabase();
@@ -27,6 +35,17 @@ const handler = async (req, res) => {
         const condition = {};
         if (userId) {
           condition.owner = userId;
+        } else if (groupOwnersAndManagers && permissions) {
+          const ownerQuerySelector = { $in: groupOwnersAndManagers };
+          // groupOwnersAndManagers is an array that holds all the user ids of the owners and
+          // managers of the groups selected
+          if (permissions.contributions) {
+            // this means that the user is trying to query for documents that were not created by
+            // owners or managers
+            condition.owner = { $not: ownerQuerySelector };
+          } else if (permissions.groupDocuments) {
+            condition.owner = ownerQuerySelector;
+          }
         }
 
         if (groupIds) {
