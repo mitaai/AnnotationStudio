@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import Link from 'next/link';
-import { ArrowRepeat, PersonFill, Plus } from 'react-bootstrap-icons';
-import { OverlayTrigger, Tooltip } from 'react-bootstrap';
-import moment from 'moment';
+import $ from 'jquery';
+import {
+  PersonFill,
+} from 'react-bootstrap-icons';
 import GroupTile from './GroupTile';
 import {
-  ListLoadingSpinner,
+  ListLoadingSpinner, EmptyListMessage,
 } from './HelperComponents';
 import styles from './DashboardChannels.module.scss';
-import SortChannelsIcon from './SortChannelsIcon';
 import { DeepCopyObj } from '../../utils/docUIUtils';
 import {
   getGroupsByGroupIds,
@@ -17,6 +15,7 @@ import {
   unarchiveGroupbyId,
 } from '../../utils/groupUtil';
 import PermissionsButtonGroup from '../PermissionsButtonGroup';
+import ChannelHeader from './ChannelHeader';
 
 export default function GroupsChannel({
   width,
@@ -30,14 +29,14 @@ export default function GroupsChannel({
   setGroupPermissions,
   dashboardState,
 }) {
-  const router = useRouter();
   const [groups, setGroups] = useState();
   const [refresh, setRefresh] = useState();
-  const [lastUpdated, setLastUpdated] = useState(new Date());
+  const [, setLastUpdated] = useState(new Date());
   const [groupsDates, setGroupsDates] = useState();
   const [archivedGroups, setArchivedGroups] = useState();
   const [selectedItem, setSelectedItem] = useState('by-date-created');
   const [asc, setAsc] = useState();
+  const [searchQuery, setSearchQuery] = useState();
 
   const moveGroupTileToList = (archived, groupId) => {
     if (archived) {
@@ -83,36 +82,58 @@ export default function GroupsChannel({
     return 0;
   };
 
-  let groupTiles = <ListLoadingSpinner />;
-  let numberOfGroups = 0;
-  if (archivedGroups) {
-    const filteredGroups = groups.filter(({ id }) => (groupPermissions === 'archived' ? archivedGroups[id] : !archivedGroups[id]));
-    numberOfGroups = filteredGroups.length;
+  const queryGroups = ({ name }) => {
+    if (searchQuery) {
+      // eslint-disable-next-line no-useless-escape
+      const r = searchQuery ? new RegExp(`\.\*${searchQuery}\.\*`, 'i') : new RegExp('\.\*', 'i');
+      return name.search(r) !== -1;
+    }
+    return true;
+  };
 
-    groupTiles = [
-      <GroupTile
-        key="privateGroup"
-        name="Personal"
-        privateGroup
-        position="Owner"
-        selected={selectedGroupId === 'privateGroup'}
-        onClick={() => setSelectedGroupId('privateGroup')}
-      />,
-    ].concat(filteredGroups.sort(sortGroups).map(({
-      id, name, memberCount, role,
+  let groupTiles = <ListLoadingSpinner />;
+  let rawGroupTiles;
+  let numberOfGroups = 0;
+  let numberOfQueriedGroups;
+  if (archivedGroups) {
+    const filteredGroups = groups.filter(({ id }) => (groupPermissions === 'archived'
+      ? archivedGroups[id]
+      : !archivedGroups[id]));
+    const includePersonalGroup = groupPermissions === 'active';
+    const includePersonalGroupInQuery = includePersonalGroup && queryGroups({ name: 'Personal' });
+    const seachQueryGroups = filteredGroups.filter(queryGroups);
+
+    numberOfGroups = filteredGroups.length + (includePersonalGroup ? 1 : 0);
+    numberOfQueriedGroups = seachQueryGroups.length + (includePersonalGroupInQuery ? 1 : 0);
+
+    rawGroupTiles = ((
+      includePersonalGroupInQuery && [{
+        id: 'privateGroup', name: 'Personal', isPrivateGroup: true, role: 'owner',
+      }]
+    ) || []).concat(seachQueryGroups.sort(sortGroups));
+
+    // Personal Psuedo group will only be apart of the active groups not archived
+    groupTiles = rawGroupTiles.map(({
+      id, name, memberCount, role, isPrivateGroup,
     }) => (
       <GroupTile
         key={id}
         id={id}
+        groupTileId={`group-tile-${id}`}
         name={name}
         memberCount={memberCount}
+        privateGroup={isPrivateGroup}
         position={role.charAt(0).toUpperCase() + role.slice(1)}
         selected={id === selectedGroupId}
         onClick={() => setSelectedGroupId(id)}
         moveGroupTileToList={moveGroupTileToList}
         archived={groupPermissions === 'archived'}
       />
-    )));
+    ));
+  }
+
+  if (groupTiles.length === 0) {
+    groupTiles = <EmptyListMessage text="0 Search Results" />;
   }
 
   const buttons = [
@@ -120,6 +141,9 @@ export default function GroupsChannel({
       text: 'Active',
       textWidth: 50,
       count: groupPermissions === 'active' ? numberOfGroups : 0,
+      queryCount: groupPermissions === 'active' && searchQuery !== undefined
+        ? numberOfQueriedGroups
+        : undefined,
       selected: groupPermissions === 'active',
       onClick: () => { setGroupPermissions('active'); },
       icon: <PersonFill size="1.2em" />,
@@ -128,6 +152,9 @@ export default function GroupsChannel({
       text: 'Archived',
       textWidth: 68,
       count: groupPermissions === 'archived' ? numberOfGroups : 0,
+      queryCount: groupPermissions === 'archived' && searchQuery !== undefined
+        ? numberOfQueriedGroups
+        : undefined,
       selected: groupPermissions === 'archived',
       onClick: () => { setGroupPermissions('archived'); },
       icon: <PersonFill size="1.2em" />,
@@ -190,73 +217,63 @@ export default function GroupsChannel({
       }}
     >
       <div className={styles.dividingLine} />
-      <div className={styles.headerContainer}>
-        <Link href={`/groups?${dashboardState}`}>
-          <span className={`${styles.headerText} ${styles.headerLink}`}>
-            Groups
-          </span>
-        </Link>
-        <div style={{ marginRight: 2.5, marginLeft: 5 }}>
-          <SortChannelsIcon
-            tooltipText="Sort Groups"
-            selected={selectedItem}
-            setSelected={() => setSelectedItem(selectedItem === 'by-date-created' ? 'alpha' : 'by-date-created')}
-            asc={asc}
-            setAsc={() => setAsc(!asc)}
-          />
-        </div>
-        <OverlayTrigger
-          key="refresh-groups"
-          placement="bottom"
-          overlay={(
-            <Tooltip
-              style={{ position: 'relative', top: -6, left: -4 }}
-              className="styled-tooltip bottom"
-            >
-              {`Refreshed ${moment(lastUpdated).fromNow()}`}
-            </Tooltip>
-          )}
-        >
-          <div
-            className={styles.refreshButton}
-            onClick={() => setRefresh(true)}
-            onKeyDown={() => {}}
-            tabIndex={-1}
-            role="button"
-          >
-            <ArrowRepeat size={18} style={{ margin: 'auto 5px' }} />
-          </div>
-        </OverlayTrigger>
-        <OverlayTrigger
-          key="create-new-group"
-          placement="bottom"
-          overlay={(
-            <Tooltip
-              style={{ position: 'relative', top: -6, left: -4 }}
-              className="styled-tooltip bottom"
-            >
-              New Group
-            </Tooltip>
-          )}
-        >
-          <div
-            className={styles.addNewIcon}
-            onClick={() => router.push({
-              pathname: '/groups/new',
-            })}
-            onKeyDown={() => {}}
-            tabIndex={-1}
-            role="button"
-          >
-            <Plus size={20} />
-          </div>
-        </OverlayTrigger>
+      <div className={styles.headerContainer} style={{ marginBottom: 0 }}>
+        <ChannelHeader
+          setRefresh={setRefresh}
+          selectedItem={selectedItem}
+          setSelectedItem={setSelectedItem}
+          asc={asc}
+          setAsc={setAsc}
+          headerText="Groups"
+          createNewText="New Group"
+          searchPlaceholderText="Search Group Titles"
+          headerTextWidth={70}
+          headerLink={`/groups?${dashboardState}`}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+        />
         <PermissionsButtonGroup buttons={buttons} />
       </div>
-      <div className={styles.tileContainer}>
+      <div
+        id="groups-channel-tile-container"
+        className={styles.tileContainer}
+        style={{ paddingTop: 25 }}
+        onScroll={() => {
+          if (rawGroupTiles) {
+            rawGroupTiles.map(({ id }) => {
+              const groupTile = $(`#group-tile-${id}`);
+              if (groupTile) {
+                const threshold = 66;
+                const stage1Height = 25;
+                const { top } = groupTile.position();
+
+                if (top < threshold - stage1Height) {
+                  const h = groupTile.height();
+                  const percentage = ((threshold - stage1Height) - top) / h;
+                  if (percentage <= 1) {
+                    groupTile.css(
+                      '-webkit-mask-image',
+                      `-webkit-linear-gradient(rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) ${percentage * 100}%, rgba(0, 0, 0, ${1 - percentage}) 100%)`,
+                    );
+                  }
+                } else if (top < threshold) {
+                  const percentage = (threshold - top) / 25;
+                  groupTile.css(
+                    '-webkit-mask-image',
+                    `-webkit-linear-gradient(rgba(0, 0, 0, ${1 - percentage}) 0%, rgba(0, 0, 0, 1) 100%)`,
+                  );
+                } else {
+                  groupTile.css('-webkit-mask-image', 'none');
+                }
+              }
+
+              return null;
+            });
+          }
+        }}
+      >
         {groupTiles}
       </div>
-
     </div>
   );
 }

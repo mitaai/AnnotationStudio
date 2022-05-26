@@ -149,6 +149,12 @@ export default function Home({
   const [documents, setDocuments] = useState({});
   const [documentPermissions, setDocumentPermissions] = useState('shared');
   const [groupPermissions, setGroupPermissions] = useState('active');
+  const updateGroupPermissions = (val) => {
+    setGroupPermissions(val);
+    setSelectedGroupId();
+    setSelectedDocumentId();
+    setSelectedDocumentSlug();
+  };
 
   const dashboardState = `${selectedDocumentId && selectedDocumentSlug ? `did=${selectedDocumentId}&slug=${selectedDocumentSlug}&dp=${documentPermissions}&` : ''}${groupPermissions && `groupP=${groupPermissions}`}${selectedGroupId && `&gid=${selectedGroupId}`}`;
   const breadcrumbs = selectedGroupId
@@ -262,23 +268,11 @@ export default function Home({
           setSelectedDocumentId(query.did);
           setSelectedDocumentSlug(query.slug);
         }
-        setDocumentPermissions(['mine', 'group-documents', 'shared'].includes(query.dp) ? query.dp : 'shared');
+        setDocumentPermissions(['mine', 'core-documents', 'shared'].includes(query.dp) ? query.dp : 'shared');
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query, session]);
-
-  useEffect(() => {
-    // if the group permissions change and the selected group is not Private Group (AKA Personal
-    // which is the only group that exists in both the Active and Archived permissions) then moving
-    // to another list we should have no selected group
-    if (selectedGroupId !== 'privateGroup') {
-      setSelectedGroupId();
-      setSelectedDocumentId();
-      setSelectedDocumentSlug();
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [groupPermissions]);
 
   const showDashboard = session
   && ((session.user && session.user.firstName)
@@ -379,14 +373,14 @@ export default function Home({
                   setSelectedGroupId(id);
                   setSelectedDocumentId();
                   setSelectedDocumentSlug();
-                  setDocumentPermissions('shared');
+                  setDocumentPermissions('core-documents');
                 }
               }}
               setSelectedDocumentId={setSelectedDocumentId}
               setSelectedDocumentSlug={setSelectedDocumentSlug}
               setGroupMembers={setGroupMembers}
               groupPermissions={groupPermissions}
-              setGroupPermissions={setGroupPermissions}
+              setGroupPermissions={updateGroupPermissions}
               dashboardState={dashboardState}
             />
             <DocumentsChannel

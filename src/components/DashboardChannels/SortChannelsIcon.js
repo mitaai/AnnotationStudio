@@ -6,139 +6,165 @@ import {
   Check,
 } from 'react-bootstrap-icons';
 import {
-  Popover, Overlay, Tooltip,
+  Popover, Overlay,
 } from 'react-bootstrap';
 
 import styles from './DashboardChannels.module.scss';
 
 export default function SortChannelsIcon({
+  id = '',
   selected,
   setSelected,
   asc,
   setAsc,
-  tooltipText = '',
-  placement = 'bottom',
+  onMouseEnter = () => {},
+  state,
+  show,
+  setShow = () => {},
 }) {
-  const [show, setShow] = useState(false);
-  const [clicked, setClicked] = useState();
-  const [hover, setHover] = useState();
   const [target, setTarget] = useState(null);
   const ref = useRef(null);
 
+  const [popoverEntered, setPopoverEntered] = useState();
+
+  const svgIconId = `sort-${id}-icon`;
+
   const handleClick = (event) => {
-    setShow(true);
-    setClicked(true);
-    setHover();
-    setTarget(event.target);
-  };
-
-  const handleMouseEnter = (event) => {
-    if (!clicked) {
+    if (!show) {
       setShow(true);
-      setHover(true);
       setTarget(event.target);
+    } else if (event.target.id === svgIconId) {
+      setShow();
+      setTarget(null);
     }
   };
 
-  const handleMouseLeave = (event) => {
-    if (!clicked) {
-      setShow();
-      setHover();
-      setTarget(event.target);
-    }
+  const hidePopover = () => {
+    setShow();
+    setTarget(null);
+  };
+
+  const handleMouseLeave = (ev) => {
+    if (ev.target.className === 'arrow') { return; }
+    hidePopover();
   };
 
   return (
-    <div style={{ zIndex: 100 }} ref={ref}>
-      <ArrowDownUp
-        className={styles.sortChannelsIcon}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
+    <>
+      <div
+        ref={ref}
+        className={styles.optionContainer}
+        style={{
+          position: 'absolute',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          ...state.arrowDownUp,
+        }}
         onClick={handleClick}
-      />
-      <Overlay
-        show={show && (hover || clicked)}
-        target={target}
-        placement={placement}
-        container={ref}
-        containerPadding={20}
-        transition
+        onKeyDown={() => {}}
+        onMouseEnter={show ? () => {} : onMouseEnter}
+        tabIndex={-1}
+        role="button"
       >
-        {(hover || !clicked)
-          ? <Tooltip style={{ position: 'relative', top: -6 }} className={`styled-tooltip ${placement}`}>{tooltipText}</Tooltip>
-          : (
-            <Popover
-              id="popover-basic"
+        <ArrowDownUp
+          id={svgIconId}
+          size={14}
+          style={{
+            transition: 'all 0.25s',
+          }}
+        />
+        <Overlay
+          show={show}
+          target={target}
+          placement="bottom"
+          container={ref}
+          containerPadding={20}
+        >
+          <Popover
+            id={`popover-sort-header-content-${id}`}
+            style={{ width: 250 }}
+            onMouseEnter={() => setPopoverEntered(true)}
+            onMouseLeave={popoverEntered ? handleMouseLeave : () => {}}
+          >
+            <Popover.Content
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+              }}
             >
-              <Popover.Content
-                style={{ display: 'flex', flexDirection: 'column' }}
-                onMouseLeave={() => { setShow(); setClicked(); }}
+              <span
+                style={{
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  marginBottom: 3,
+                  cursor: 'pointer',
+                }}
+                onClick={() => { hidePopover(); setSelected('by-date-created'); }}
               >
-                <span
-                  style={{
-                    flex: 1,
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    marginBottom: 3,
-                    cursor: 'pointer',
-                  }}
-                  onClick={() => { setSelected(); setShow(); setClicked(); }}
-                >
-                  <span style={{ flex: 1, marginRight: 5 }}>By Date Created</span>
-                  {selected === 'by-date-created' && <Check className={styles.dropdownCheck} size={18} />}
-                </span>
-                <span
-                  style={{
-                    flex: 1,
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    marginBottom: 3,
-                    cursor: 'pointer',
-                  }}
-                  onClick={() => { setSelected(); setShow(); setClicked(); }}
-                >
-                  <span style={{ flex: 1, marginRight: 20 }}>Alphabetically</span>
-                  {selected === 'alpha' && <Check className={styles.dropdownCheck} size={18} />}
-                </span>
-                <div
-                  style={{
-                    width: '100%', height: 1, backgroundColor: '#eeeeee', marginBottom: 8, marginTop: 6,
-                  }}
-                />
-                <span
-                  style={{
-                    flex: 1,
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    marginBottom: 3,
-                    cursor: 'pointer',
-                  }}
-                  onClick={() => { setAsc(); setShow(); setClicked(); }}
-                >
-                  <span style={{ flex: 1, marginRight: 38 }}>Ascending</span>
-                  {asc && <Check className={styles.dropdownCheck} size={18} />}
-                </span>
-                <span
-                  style={{
-                    flex: 1,
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    marginBottom: 3,
-                    cursor: 'pointer',
-                  }}
-                  onClick={() => { setAsc(); setShow(); setClicked(); }}
-                >
-                  <span style={{ flex: 1 }}>Descending</span>
-                  {!asc && <Check className={styles.dropdownCheck} size={18} />}
-                </span>
-              </Popover.Content>
-            </Popover>
-          )}
-      </Overlay>
-    </div>
+                <span style={{ flex: 1, marginRight: 5 }}>By Date Created</span>
+                {selected === 'by-date-created' && <Check className={styles.dropdownCheck} size={18} />}
+              </span>
+              <span
+                style={{
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  marginBottom: 3,
+                  cursor: 'pointer',
+                }}
+                onClick={() => { hidePopover(); setSelected('alpha'); }}
+              >
+                <span style={{ flex: 1, marginRight: 20 }}>Alphabetically</span>
+                {selected === 'alpha' && <Check className={styles.dropdownCheck} size={18} />}
+              </span>
+              <div
+                style={{
+                  width: '100%', height: 1, backgroundColor: '#eeeeee', marginBottom: 8, marginTop: 6,
+                }}
+              />
+              <span
+                style={{
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  marginBottom: 3,
+                  cursor: 'pointer',
+                }}
+                onClick={() => { hidePopover(); setAsc(true); }}
+              >
+                <span style={{ flex: 1, marginRight: 38 }}>Ascending</span>
+                {asc && <Check className={styles.dropdownCheck} size={18} />}
+              </span>
+              <span
+                style={{
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  marginBottom: 3,
+                  cursor: 'pointer',
+                }}
+                onClick={() => { hidePopover(); setAsc(); }}
+              >
+                <span style={{ flex: 1 }}>Descending</span>
+                {!asc && <Check className={styles.dropdownCheck} size={18} />}
+              </span>
+            </Popover.Content>
+          </Popover>
+        </Overlay>
+      </div>
+      <style jsx global>
+        {`
+        #popover-sort-header-content-${id} .arrow {
+          left: -6px !important;
+        }
+      `}
+      </style>
+    </>
   );
 }

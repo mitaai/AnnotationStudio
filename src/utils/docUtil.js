@@ -192,11 +192,11 @@ const searchForUsers = async ({
 };
 
 const searchForDocuments = async ({
-  query, page, perPage, sort,
+  query, page, perPage, sort, condition,
 }) => {
   const url = '/api/search/documents';
   const body = {
-    query, page, perPage, sort,
+    query, page, perPage, sort, condition,
   };
 
   const res = await unfetch(url, {

@@ -13,6 +13,7 @@ import styles from './DashboardChannels.module.scss';
 
 export default function GroupTile({
   id,
+  groupTileId,
   name,
   memberCount = 0,
   position = 'Member',
@@ -47,7 +48,6 @@ export default function GroupTile({
   };
   const color = positionColors[position] !== undefined ? positionColors[position] : 'grey';
   const tileBadge = <TileBadge color={color} text={position} />;
-  const groupTileId = `group-tile-${id}`;
 
   useEffect(() => {
     if (removed === 1) {
