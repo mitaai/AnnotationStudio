@@ -45,7 +45,7 @@ export default function ChannelHeader({
   const spacing = 5;
   const iconWidths = 30;
 
-  const containerBorderColor = (exitSearch && '#A04B48') || (searchInputFocused ? '#015999' : '#bdbdbd');
+  const containerBorderColor = (exitSearch && '#E20101') || (searchInputFocused ? '#015999' : '#bdbdbd');
   const searchInputBorder = `1px solid ${containerBorderColor}`;
 
   const forceUpdate = () => setForceUpdate(RID());
