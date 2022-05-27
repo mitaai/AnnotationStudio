@@ -48,7 +48,7 @@ export default function UnsavedChangesToast({
 
           #unsaved-changes-toast > .toast {
             max-width: 645px;
-            border: 1px solid #015999;
+            border: 1px solid #355CBC;
           }
               
         `}

@@ -131,7 +131,7 @@ function TextAnalysisPopover({ textAnalysisData, loadingTextAnalysisData, getTex
         {`
 
           .text-analysis-navbar .nav-link.active {
-            color: #015999 !important;
+            color: #355CBC !important;
           }
   
           #btn-text-analysis-filter .badge {

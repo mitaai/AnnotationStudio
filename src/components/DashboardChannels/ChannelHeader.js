@@ -45,7 +45,7 @@ export default function ChannelHeader({
   const spacing = 5;
   const iconWidths = 30;
 
-  const containerBorderColor = (exitSearch && '#E20101') || (searchInputFocused ? '#015999' : '#bdbdbd');
+  const containerBorderColor = (exitSearch && '#E20101') || (searchInputFocused ? '#355CBC' : '#bdbdbd');
   const searchInputBorder = `1px solid ${containerBorderColor}`;
 
   const forceUpdate = () => setForceUpdate(RID());
@@ -123,7 +123,7 @@ export default function ChannelHeader({
       },
       threeDots: {
         opacity: 0,
-        color: '#015999',
+        color: '#355CBC',
       },
       search: {
         opacity: 1,
@@ -174,7 +174,7 @@ export default function ChannelHeader({
       },
       threeDots: {
         opacity: 0,
-        color: '#015999',
+        color: '#355CBC',
       },
       search: {
         opacity: 1,
