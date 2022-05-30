@@ -1,15 +1,19 @@
+/* eslint-disable max-len */
+/* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import { useSession } from 'next-auth/client';
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
-  Button, ButtonGroup, Card, Table,
+  Button, ButtonGroup, Card,
 } from 'react-bootstrap';
 import {
-  PencilSquare, TrashFill, Plus, BoxArrowRight,
+  PencilSquare, TrashFill, Plus, BoxArrowRight, InfoCircle, Search, PersonFill,
 } from 'react-bootstrap-icons';
+import styles from './index.module.scss';
 import Layout from '../../components/Layout';
+import Table from '../../components/Table';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import UnauthorizedCard from '../../components/UnauthorizedCard';
 import ConfirmationDialog from '../../components/ConfirmationDialog';
@@ -20,6 +24,9 @@ import { deleteGroupById, removeUserFromGroup } from '../../utils/groupUtil';
 import { getUserByEmail } from '../../utils/userUtil';
 import { deepEqual } from '../../utils/objectUtil';
 import Paginator from '../../components/Paginator';
+import TileBadge from '../../components/TileBadge';
+import BadgeButton from '../../components/BadgeButton';
+import PermissionsButtonGroup from '../../components/PermissionsButtonGroup';
 
 const GroupList = ({ query, initAlerts, statefulSession }) => {
   const [session, loading] = useSession();
@@ -46,6 +53,8 @@ const GroupList = ({ query, initAlerts, statefulSession }) => {
     setGroups(groupsToShow.slice(start, end));
   }
 
+  const searchDisabled = false;
+
   useEffect(() => {
     if (session && (!session.user.groups
       || (Array.isArray(session.user.groups) && session.user.groups.length === 0))
@@ -67,8 +76,344 @@ const GroupList = ({ query, initAlerts, statefulSession }) => {
   }, [groups]);
 
   return (
-    <Layout alerts={alerts} type="group" statefulSession={statefulSession} dashboardState={dashboardState}>
-      <Card>
+    <Layout
+      alerts={alerts}
+      type="group"
+      statefulSession={statefulSession}
+      dashboardState={dashboardState}
+      backgroundColor="#F5F5F5"
+    >
+      <div style={{ height: 'calc(100vh - 234px)', display: 'flex', flexDirection: 'column' }}>
+        <div style={{
+          fontSize: 26, fontWeight: 300, marginBottom: 5, display: 'flex', flexDirection: 'row', alignItems: 'center',
+        }}
+        >
+          <div>Groups</div>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 14,
+              fontWeight: 200,
+              height: 26,
+              width: 26,
+              borderRadius: 13,
+              border: '1px solid #E0E0E0',
+              backgroundColor: '#eeeeee',
+              marginLeft: 11,
+              cursor: 'pointer',
+              marginRight: 'auto',
+            }}
+          >
+            <span style={{ position: 'relative', top: -1 }}>+</span>
+          </div>
+          <PermissionsButtonGroup
+            buttons={[
+              {
+                text: 'Active',
+                textWidth: 50,
+                count: 10,
+                queryCount: undefined,
+                selected: true,
+                onClick: () => {},
+                icon: <PersonFill size="1.2em" />,
+              },
+              {
+                text: 'Archived',
+                textWidth: 68,
+                count: 0,
+                queryCount: undefined,
+                selected: false,
+                onClick: () => {},
+                icon: <PersonFill size="1.2em" />,
+              },
+            ]}
+          />
+        </div>
+        <div
+          className={styles.rolePermissionsText}
+        >
+          <InfoCircle size={14} style={{ marginRight: 4, position: 'relative', top: 0 }} />
+          <span>Role permissions explained</span>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'row' }}>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'row',
+            flex: 1,
+            height: 38,
+            alignItems: 'center',
+            borderRadius: 19,
+            border: '1px solid #bdbdbd',
+            backgroundColor: searchDisabled ? '#eeeeee' : '#fcfcfc',
+            marginBottom: 20,
+          }}
+          >
+            <Search size={16} color="#424242" style={{ marginLeft: 14, marginRight: 8 }} />
+            <input
+              style={{
+                flex: 1,
+                height: 36,
+                border: 'none',
+                outline: 'none',
+                padding: '0px 8px',
+                backgroundColor: 'transparent',
+                fontStyle: 'italic',
+              }}
+              placeholder="Search Groups"
+            />
+            <div style={{
+              height: 36, width: 36, borderRadius: '0px 18px 18px 0px', backgroundColor: '#eeeeee', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+            }}
+            >
+              <Plus size={20} color="#424242" style={{ transform: 'rotate(45deg)' }} />
+            </div>
+          </div>
+        </div>
+        <Table
+          key="groups-table"
+          id="groups-table"
+          height="100vh - 380px"
+          columnHeaders={[
+            { header: 'NAME', flex: 6 },
+            { header: 'ROLE', flex: 3 },
+            { header: 'OWNER', flex: 4 },
+            { header: 'MEMBERS', flex: 2 },
+            { header: 'CREATED', flex: 3 },
+          ]}
+          rows={[
+            {
+              columns: [
+                { content: '21L.015 Fall22', style: { fontWeight: 400 }, highlightOnHover: true },
+                { content: 'Member', style: { color: '#86919D' } },
+                { content: 'Joshua Mbogo', style: { color: '#86919D' } },
+                { content: '39', style: { color: '#86919D' } },
+                { content: '11/02/2021', style: { color: '#86919D' } },
+              ],
+              moreOptions: [
+                { text: 'Manage', onClick: () => {} },
+                { text: 'Delete', onClick: () => {} },
+                { text: 'Archive', onClick: () => {} },
+              ],
+            },
+            {
+              columns: [
+                { content: '21L.015 Fall22', style: { fontWeight: 400 }, highlightOnHover: true },
+                { content: 'Member', style: { color: '#86919D' } },
+                { content: 'Joshua Mbogo', style: { color: '#86919D' } },
+                { content: '39', style: { color: '#86919D' } },
+                { content: '11/02/2021', style: { color: '#86919D' } },
+              ],
+              moreOptions: [
+                { text: 'Manage', onClick: () => {} },
+                { text: 'Delete', onClick: () => {} },
+                { text: 'Archive', onClick: () => {} },
+              ],
+            },
+            {
+              columns: [
+                { content: '21L.015 Fall22', style: { fontWeight: 400 }, highlightOnHover: true },
+                { content: 'Member', style: { color: '#86919D' } },
+                { content: 'Joshua Mbogo', style: { color: '#86919D' } },
+                { content: '39', style: { color: '#86919D' } },
+                { content: '11/02/2021', style: { color: '#86919D' } },
+              ],
+              moreOptions: [
+                { text: 'Manage', onClick: () => {} },
+                { text: 'Delete', onClick: () => {} },
+                { text: 'Archive', onClick: () => {} },
+              ],
+            },
+            {
+              columns: [
+                { content: '21L.015 Fall22', style: { fontWeight: 400 }, highlightOnHover: true },
+                { content: 'Member', style: { color: '#86919D' } },
+                { content: 'Joshua Mbogo', style: { color: '#86919D' } },
+                { content: '39', style: { color: '#86919D' } },
+                { content: '11/02/2021', style: { color: '#86919D' } },
+              ],
+              moreOptions: [
+                { text: 'Manage', onClick: () => {} },
+                { text: 'Delete', onClick: () => {} },
+                { text: 'Archive', onClick: () => {} },
+              ],
+            },
+            {
+              columns: [
+                { content: '21L.015 Fall22', style: { fontWeight: 400 }, highlightOnHover: true },
+                { content: 'Member', style: { color: '#86919D' } },
+                { content: 'Joshua Mbogo', style: { color: '#86919D' } },
+                { content: '39', style: { color: '#86919D' } },
+                { content: '11/02/2021', style: { color: '#86919D' } },
+              ],
+              moreOptions: [
+                { text: 'Manage', onClick: () => {} },
+                { text: 'Delete', onClick: () => {} },
+                { text: 'Archive', onClick: () => {} },
+              ],
+            },
+            {
+              columns: [
+                { content: '21L.015 Fall22', style: { fontWeight: 400 }, highlightOnHover: true },
+                { content: 'Member', style: { color: '#86919D' } },
+                { content: 'Joshua Mbogo', style: { color: '#86919D' } },
+                { content: '39', style: { color: '#86919D' } },
+                { content: '11/02/2021', style: { color: '#86919D' } },
+              ],
+              moreOptions: [
+                { text: 'Manage', onClick: () => {} },
+                { text: 'Delete', onClick: () => {} },
+                { text: 'Archive', onClick: () => {} },
+              ],
+            },
+            {
+              columns: [
+                { content: '21L.015 Fall22', style: { fontWeight: 400 }, highlightOnHover: true },
+                { content: 'Member', style: { color: '#86919D' } },
+                { content: 'Joshua Mbogo', style: { color: '#86919D' } },
+                { content: '39', style: { color: '#86919D' } },
+                { content: '11/02/2021', style: { color: '#86919D' } },
+              ],
+              moreOptions: [
+                { text: 'Manage', onClick: () => {} },
+                { text: 'Delete', onClick: () => {} },
+                { text: 'Archive', onClick: () => {} },
+              ],
+            },
+            {
+              columns: [
+                { content: '21L.015 Fall22', style: { fontWeight: 400 }, highlightOnHover: true },
+                { content: 'Member', style: { color: '#86919D' } },
+                { content: 'Joshua Mbogo', style: { color: '#86919D' } },
+                { content: '39', style: { color: '#86919D' } },
+                { content: '11/02/2021', style: { color: '#86919D' } },
+              ],
+              moreOptions: [
+                { text: 'Manage', onClick: () => {} },
+                { text: 'Delete', onClick: () => {} },
+                { text: 'Archive', onClick: () => {} },
+              ],
+            },
+            {
+              columns: [
+                { content: '21L.015 Fall22', style: { fontWeight: 400 }, highlightOnHover: true },
+                { content: 'Member', style: { color: '#86919D' } },
+                { content: 'Joshua Mbogo', style: { color: '#86919D' } },
+                { content: '39', style: { color: '#86919D' } },
+                { content: '11/02/2021', style: { color: '#86919D' } },
+              ],
+              moreOptions: [
+                { text: 'Manage', onClick: () => {} },
+                { text: 'Delete', onClick: () => {} },
+                { text: 'Archive', onClick: () => {} },
+              ],
+            },
+            {
+              columns: [
+                { content: '21L.015 Fall22', style: { fontWeight: 400 }, highlightOnHover: true },
+                { content: 'Member', style: { color: '#86919D' } },
+                { content: 'Joshua Mbogo', style: { color: '#86919D' } },
+                { content: '39', style: { color: '#86919D' } },
+                { content: '11/02/2021', style: { color: '#86919D' } },
+              ],
+              moreOptions: [
+                { text: 'Manage', onClick: () => {} },
+                { text: 'Delete', onClick: () => {} },
+                { text: 'Archive', onClick: () => {} },
+              ],
+            },
+            {
+              columns: [
+                { content: '21L.015 Fall22', style: { fontWeight: 400 }, highlightOnHover: true },
+                { content: 'Member', style: { color: '#86919D' } },
+                { content: 'Joshua Mbogo', style: { color: '#86919D' } },
+                { content: '39', style: { color: '#86919D' } },
+                { content: '11/02/2021', style: { color: '#86919D' } },
+              ],
+              moreOptions: [
+                { text: 'Manage', onClick: () => {} },
+                { text: 'Delete', onClick: () => {} },
+                { text: 'Archive', onClick: () => {} },
+              ],
+            },
+            {
+              columns: [
+                { content: '21L.015 Fall22', style: { fontWeight: 400 }, highlightOnHover: true },
+                { content: 'Member', style: { color: '#86919D' } },
+                { content: 'Joshua Mbogo', style: { color: '#86919D' } },
+                { content: '39', style: { color: '#86919D' } },
+                { content: '11/02/2021', style: { color: '#86919D' } },
+              ],
+              moreOptions: [
+                { text: 'Manage', onClick: () => {} },
+                { text: 'Delete', onClick: () => {} },
+                { text: 'Archive', onClick: () => {} },
+              ],
+            },
+            {
+              columns: [
+                { content: '21L.015 Fall22', style: { fontWeight: 400 }, highlightOnHover: true },
+                { content: 'Member', style: { color: '#86919D' } },
+                { content: 'Joshua Mbogo', style: { color: '#86919D' } },
+                { content: '39', style: { color: '#86919D' } },
+                { content: '11/02/2021', style: { color: '#86919D' } },
+              ],
+              moreOptions: [
+                { text: 'Manage', onClick: () => {} },
+                { text: 'Delete', onClick: () => {} },
+                { text: 'Archive', onClick: () => {} },
+              ],
+            },
+            {
+              columns: [
+                { content: '21L.015 Fall22', style: { fontWeight: 400 }, highlightOnHover: true },
+                { content: 'Member', style: { color: '#86919D' } },
+                { content: 'Joshua Mbogo', style: { color: '#86919D' } },
+                { content: '39', style: { color: '#86919D' } },
+                { content: '11/02/2021', style: { color: '#86919D' } },
+              ],
+              moreOptions: [
+                { text: 'Manage', onClick: () => {} },
+                { text: 'Delete', onClick: () => {} },
+                { text: 'Archive', onClick: () => {} },
+              ],
+            },
+          ]}
+        />
+
+      </div>
+
+    </Layout>
+  );
+};
+
+export async function getServerSideProps(context) {
+  const { alert } = context.query;
+  let initAlerts = [];
+  if (alert === 'leftGroup') {
+    initAlerts = [{
+      text: 'You have successfully left the group.',
+      variant: 'warning',
+    }];
+  } else if (alert === 'deletedGroup') {
+    initAlerts = [{
+      text: 'You have successfully deleted the group.',
+      variant: 'warning',
+    }];
+  }
+
+  return {
+    props: { query: context.query, initAlerts },
+  };
+}
+
+export default GroupList;
+
+
+/*
+<Card>
         {((!session && loading) || (session && pageLoading)) && (
           <LoadingSpinner />
         )}
@@ -207,28 +552,4 @@ const GroupList = ({ query, initAlerts, statefulSession }) => {
         )}
       </Card>
       <GroupRoleSummaries />
-    </Layout>
-  );
-};
-
-export async function getServerSideProps(context) {
-  const { alert } = context.query;
-  let initAlerts = [];
-  if (alert === 'leftGroup') {
-    initAlerts = [{
-      text: 'You have successfully left the group.',
-      variant: 'warning',
-    }];
-  } else if (alert === 'deletedGroup') {
-    initAlerts = [{
-      text: 'You have successfully deleted the group.',
-      variant: 'warning',
-    }];
-  }
-
-  return {
-    props: { query: context.query, initAlerts },
-  };
-}
-
-export default GroupList;
+*/

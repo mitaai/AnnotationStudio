@@ -1425,7 +1425,7 @@ export default function AnnotationsChannel({
                 );
               }
             } else if (top < threshold) {
-              const percentage = (threshold - top) / 25;
+              const percentage = (threshold - top) / stage1Height;
               annoTile.css(
                 '-webkit-mask-image',
                 `-webkit-linear-gradient(rgba(0, 0, 0, ${1 - percentage}) 0%, rgba(0, 0, 0, 1) 100%)`,

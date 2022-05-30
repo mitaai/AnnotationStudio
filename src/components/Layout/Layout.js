@@ -19,6 +19,7 @@ function Layout({
   dashboardState = '',
   mode,
   setMode,
+  backgroundColor,
 }) {
   const content = (
     <>
@@ -65,6 +66,7 @@ function Layout({
           flex: 1,
           overflowY: docView ? 'hidden' : 'overlay',
           paddingTop: docView ? 0 : 15,
+          backgroundColor,
         }}
         >
           {innerContent}

@@ -1,0 +1,47 @@
+@use "sass:color";
+@use "../../style/theme";
+.rowItem {
+    display: flex;
+    flex-direction: row;
+    border-bottom: 1px solid #EBEFF3;
+    transition: all 0.25s;
+    background-color: white;
+    cursor: pointer;
+
+    .moreOptions {
+        transition: all 0.25s;
+        width: 0px;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        position: relative;
+        left: -40px;
+        top: -2px;
+        opacity: 0;
+        color: #86919D;
+    
+        &:hover {
+            color: #616161;
+        }
+    }
+
+    &:hover {
+        background-color: #FAFAFA !important;
+        -webkit-mask-image: -webkit-linear-gradient(rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 100%) !important;
+        webkit-mask-image: webkit-linear-gradient(rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 100%) !important;
+
+        .cell.highlightOnHover {
+            color: theme.$primary;
+        }
+
+        .moreOptions {
+            opacity: 1;
+        }
+    }
+}
+
+.cell {
+    color: #1F2532;
+    padding: 20px;
+    font-weight: 300;
+}
