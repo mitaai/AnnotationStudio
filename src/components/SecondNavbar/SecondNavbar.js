@@ -20,6 +20,7 @@ const SecondNavbar = ({
   dashboardState,
   mode,
   setMode,
+  extraContent,
 }) => {
   const metadataFields = {
     title: 'Title',
@@ -121,6 +122,7 @@ const SecondNavbar = ({
               md={type === 'document' ? documentColumnSize : size}
               style={{ display: 'flex' }}
             >
+              {extraContent}
               {mode === 'is' ? (
                 <>
                   <div style={{ position: 'absolute' }}>

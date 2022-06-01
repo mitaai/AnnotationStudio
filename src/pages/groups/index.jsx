@@ -89,26 +89,14 @@ const GroupList = ({ query, initAlerts, statefulSession }) => {
         }}
         >
           <div>Groups</div>
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 14,
-              fontWeight: 200,
-              height: 26,
-              width: 26,
-              borderRadius: 13,
-              border: '1px solid #E0E0E0',
-              backgroundColor: '#eeeeee',
-              marginLeft: 11,
-              cursor: 'pointer',
-              marginRight: 'auto',
-            }}
-          >
-            <span style={{ position: 'relative', top: -1 }}>+</span>
-          </div>
+          <Link href="/groups/new">
+            <div
+              className={styles.addNewGroupBtn}
+            >
+              <span style={{ position: 'relative', top: -1 }}>+</span>
+            </div>
+          </Link>
+
           <PermissionsButtonGroup
             buttons={[
               {

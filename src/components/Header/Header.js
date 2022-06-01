@@ -30,6 +30,7 @@ const Header = ({
   dashboardState,
   mode,
   setMode,
+  secondNavbarExtraContent,
 }) => {
   const [session, loading] = useSession();
   const router = useRouter();
@@ -121,6 +122,7 @@ const Header = ({
           dashboardState={dashboardState}
           mode={mode}
           setMode={setMode}
+          extraContent={secondNavbarExtraContent}
         />
       )}
     </header>

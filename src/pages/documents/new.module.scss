@@ -1,0 +1,44 @@
+.createNewDocumentBtn {
+    transition: all 0.5s;
+    top: 15px;
+    position: relative;
+    width: 165px;
+    height: 34px;
+    line-height: 34px;
+    padding: 0px;
+    font-weight: 300;
+    background-color: #355CBC !important;
+    border-radius: 4px;
+    color: white;
+    text-align: center;
+    cursor: pointer;
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+
+    &:hover {
+        background-color: #1D3E90 !important;
+    }
+}
+
+.uploadDocumentBtn {
+    position: absolute;
+    top: 15px;
+    width: 100px;
+    height: 34px;
+    line-height: 34px;
+    padding: 0px;
+    font-weight: 300;
+    border: 1px solid #CDCEDA !important;
+    background-color: #FFFFFF !important;
+    border-radius: 4px;
+    text-align: center;
+    color: #69697C !important;
+    cursor: pointer;
+    outline: none !important;
+    box-shadow: none !important;
+
+    &:hover {
+        background-color: #eeeeee !important;
+    }
+}

@@ -1,3 +1,6 @@
+@use "sass:color";
+@use "../../style/theme";
+
 .rolePermissionsText {
     color: #143380;
     font-weight: 200;
@@ -9,5 +12,28 @@
     align-items: center;
     &:hover {
         color: #355CBC;   
+    }
+}
+
+.addNewGroupBtn {
+    transition: all 0.5s;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 200;
+    height: 26px;
+    width: 26px;
+    border-radius: 13px;
+    border: 1px solid #E0E0E0;
+    background-color: #eeeeee;
+    margin-left: 11px;
+    cursor: pointer;
+    margin-right: auto;
+
+    &:hover {
+        background-color: theme.$primary;
+        color: white;
     }
 }
