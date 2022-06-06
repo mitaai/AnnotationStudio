@@ -1,6 +1,8 @@
 @use "sass:color";
 @use "../../style/theme";
 .rowItem {
+    position: relative;
+    z-index: 1;
     display: flex;
     flex-direction: row;
     border-bottom: 1px solid #EBEFF3;
@@ -8,33 +10,67 @@
     background-color: white;
     cursor: pointer;
 
+    [show-on-hover=true] {
+        transition: all 0.25s;
+        opacity: 0;
+    }
+
     .moreOptions {
         transition: all 0.25s;
-        width: 0px;
+        width: 100%;
         display: flex;
         flex-direction: row;
         align-items: center;
-        position: relative;
-        left: -40px;
-        top: -2px;
+        position: absolute;
+        z-index: 2;
+        top: 34px;
         opacity: 0;
         color: #86919D;
     
-        &:hover {
-            color: #616161;
+        svg {
+            transition: all 0.25s;
+            opacity: 0;
+        }
+    
+        &.hover {
+            color: #424242;
+            opacity: 1 !important;
+    
+            svg {
+                opacity: 1 !important;
+            }
         }
     }
 
+    .hoverContent {
+        transition: all 0.25s;
+        position: absolute;
+        width: 100%;
+        opacity: 0;
+        z-index: 2;
+    }
+
     &:hover {
+        &.deleteHovered {
+            background-color: #FFFAFA !important;
+            [show-on-hover=true] {
+                opacity: 0 !important;
+            }
+        }
         background-color: #FAFAFA !important;
-        -webkit-mask-image: -webkit-linear-gradient(rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 100%) !important;
-        webkit-mask-image: webkit-linear-gradient(rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 100%) !important;
+        /*-webkit-mask-image: -webkit-linear-gradient(rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 100%) !important;
+        webkit-mask-image: webkit-linear-gradient(rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 100%) !important;*/
+        z-index: 2;
 
         .cell.highlightOnHover {
             color: theme.$primary;
         }
 
-        .moreOptions {
+        .hoverContent {
+            opacity: 1;
+        }
+
+        [show-on-hover=true] {
             opacity: 1;
         }
     }
@@ -44,4 +80,5 @@
     color: #1F2532;
     padding: 20px;
     font-weight: 300;
+    position: relative;
 }

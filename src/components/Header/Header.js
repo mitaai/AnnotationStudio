@@ -30,6 +30,7 @@ const Header = ({
   dashboardState,
   mode,
   setMode,
+  borderBottom,
   secondNavbarExtraContent,
 }) => {
   const [session, loading] = useSession();
@@ -122,6 +123,7 @@ const Header = ({
           dashboardState={dashboardState}
           mode={mode}
           setMode={setMode}
+          borderBottom={borderBottom}
           extraContent={secondNavbarExtraContent}
         />
       )}

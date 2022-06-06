@@ -1,5 +1,5 @@
 @use "sass:color";
-@use "../../style/theme";
+@use "../../../style/theme";
 
 .hoverableText {
     color: #355CBC;
@@ -10,7 +10,19 @@
     }
 }
 
-
+.rolePermissionsText {
+    color: #143380;
+    font-weight: 200;
+    cursor: pointer;
+    margin-bottom: 30px;
+    padding-left: 3px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    &:hover {
+        color: #355CBC;   
+    }
+}
 
 .createNewDocumentBtn {
     transition: all 0.5s;
@@ -48,16 +60,12 @@
     border-radius: 4px;
     text-align: center;
     color: #69697C !important;
-    
+    cursor: pointer;
     outline: none !important;
     box-shadow: none !important;
 
-
-    &:not(:disabled) {
-      cursor: pointer;
-      &:hover {
+    &:hover {
         background-color: #eeeeee !important;
-      }
     }
 }
 
@@ -171,62 +179,99 @@
     cursor: pointer;
   }
 
-  .additionalMetadata {
-    padding-top: 25px;
-    margin-bottom: 30px;  
-    transition: all 0.5s;
+  .addRegisteredUserBtn {
+    height: 36px;
+    border: 1px solid #CDCEDA;
+    margin-left: 4px;
+    border-radius: 4px;
+    background-color: #eeeeee;
     display: flex;
-    flex-direction: column;
-    overflow: hidden;
+    flex-direction: row;
+    cursor: pointer;
 
-    .additionalMetadataHeaders {
-      font-weight: 600;
-      margin-bottom: 10px;
-    }
-
-    input {
-      padding-top: 6px !important;
-      padding-bottom: 6px !important;
-      margin-right: 4px;
-      margin-bottom: 15px;
+    &:hover {
+        background-color: #f5f5f5;
     }
   }
-/*
-  .gradient {
-    animation-duration: 1.5s;
-    animation-fill-mode: forwards;
-    animation-iteration-count: infinite;
-    animation-name: placeHolderShimmer;
-    animation-timing-function: linear;
-    background: linear-gradient(to right, rgba(250,250,250, 0.08), rgba(250,250,250, 0.54));
-    background-size: 80vw 640px;
-    position: relative;
-  }
 
-  @keyframes placeHolderShimmer {
-    0% {
-      background-position: -80vw
+  .actionBtn {
+    background-color: #f0f0f0;
+    border: 1px solid #CDCEDA;
+    &:hover {
+        background-color: #f7f7f7;
     }
-    100% {
-      backgorund-position: 80vw
+
+    &.red {
+      color: #E20101 !important;
+      border: 1px solid #E20101 !important;
+      background-color: #FCECEB !important;
     }
   }
-*/
-  .gradient {
-    background: linear-gradient(
-      to right,
-      rgba(250,250,250, 0.08),
-      rgba(250, 250, 250, 0.74),
-      rgba(250,250,250, 0.08),
-    ), #f0f0f0;
-    background-repeat: repeat-y;
-    background-size: 400px 500px;
-    background-position: -400px 0;
-    animation: shine 1.8s infinite ease;
+
+  .deleteGroupBtn {
+      transition: all 0.5s;
+      background-color: #FCECEB;
+      border: 1px solid #E20101;
+      color: #E20101;
+      border-radius: 4px;
+      margin: 0px auto;
+      padding: 6px 14px;
+      font-size: 16px;
+      cursor: pointer;
+
+      &:hover {
+          background-color: #FFD3D0;
+      }
   }
 
-  @keyframes shine {
-    to {
-      background-position: calc(100% + 400px) 0;
+  .groupNameHeaderInput {
+    transition: all 0.5s;
+    font-size: 26px;
+    font-weight: 300;
+    border: 1px solid transparent;
+    outline: none;
+    background: transparent;
+    color: #212121 !important;
+    text-overflow: ellipsis;
+    
+    &.edit {
+        background: linear-gradient(0deg, #F1F1F1, transparent);
+        border-bottom: 1px solid #e2e2e2;
+        padding: 4px 55px 4px 14px;
+        width: 100% !important;
+
+        &.saveHovered {
+            border-bottom: 1px solid #10A268;
+            background: linear-gradient(0deg, #F0FAF6, transparent);
+        }
+
+        &.cancelHovered {
+            border-bottom: 1px solid #E20101;
+            background: linear-gradient(0deg, #FBF1F1, transparent);
+        }
+    }
+  }
+
+  .pencilEditButton {
+    .pencil, .pencilFill {
+      transition: all 0.5s;
+    }
+    
+    .pencil {
+      opacity: 1;
+    }
+
+    .pencilFill {
+      opacity: 0,
+    }
+
+    &:hover {
+      .pencil {
+        opacity: 0;
+      }
+  
+      .pencilFill {
+        opacity: 1,
+      }
     }
   }

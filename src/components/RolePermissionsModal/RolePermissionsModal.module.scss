@@ -1,0 +1,16 @@
+.closeModalBtn {
+    transition: all 0.5s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #BDBDBD;
+    border-radius: 6px;
+    color: #BDBDBD;
+    cursor: pointer;
+
+    &:hover {
+        border-color: #E20101;
+        background-color: #FCECEB;
+        color: #E20101;
+    }
+  }

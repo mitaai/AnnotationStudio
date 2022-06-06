@@ -943,7 +943,7 @@ function AnnotationCard({
         }
 
         .edit-annotation-btn:hover {
-          color: #015999;
+          color: #355CBC;
         }
 
         .truncated-annotation, .truncated-annotation .text-quote {

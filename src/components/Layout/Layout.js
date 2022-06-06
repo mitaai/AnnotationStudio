@@ -21,6 +21,7 @@ function Layout({
   setMode,
   backgroundColor,
   noContainer,
+  borderBottom,
   secondNavbarExtraContent,
 }) {
   const content = (
@@ -60,6 +61,7 @@ function Layout({
           dashboardState={dashboardState}
           mode={mode}
           setMode={setMode}
+          borderBottom={borderBottom}
           secondNavbarExtraContent={secondNavbarExtraContent}
         />
         <div style={{

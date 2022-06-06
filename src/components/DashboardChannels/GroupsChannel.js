@@ -226,6 +226,7 @@ export default function GroupsChannel({
           setAsc={setAsc}
           headerText="Groups"
           createNewText="New Group"
+          createNewHref="/groups/new"
           searchPlaceholderText="Search Group Titles"
           headerTextWidth={70}
           headerLink={`/groups?${dashboardState}`}

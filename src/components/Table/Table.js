@@ -1,6 +1,8 @@
-import React, { useEffect } from 'react';
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+import React, { useEffect, useState } from 'react';
 import $ from 'jquery';
-import { ThreeDotsVertical } from 'react-bootstrap-icons';
+import Router from 'next/router';
 import styles from './Table.module.scss';
 
 export default function Table({
@@ -21,6 +23,8 @@ export default function Table({
     ]
   */
 
+  const [rowItemHoveredKey, setRowItemHoveredKey] = useState();
+
   const rowItemId = (i) => `row-item-${id}-${i}`;
   const rowHeight = height !== undefined ? `${height} - 65px` : undefined;
 
@@ -35,34 +39,78 @@ export default function Table({
     ),
   );
 
-  const rowItem = ({ columns, moreOptions }, rowItemIndex) => (
+  const rowItem = ({
+    key, href, columns, hoverContent, deleteHovered,
+  }, rowItemIndex) => (
     <>
       <div
+        key={key}
         id={rowItemId(rowItemIndex)}
-        className={styles.rowItem}
+        className={`${styles.rowItem} ${deleteHovered && styles.deleteHovered}`}
         style={{
           backgroundColor: rowItemIndex % 2 === 0 ? '#FFFFFF' : '#FDFDFD',
         }}
+        onClick={href ? (ev) => {
+          if (ev.target.closest('.table-hover-content') === null) {
+            Router.push({ pathname: href });
+          }
+        } : () => {}}
+        onMouseEnter={() => setRowItemHoveredKey(key)}
+        onMouseLeave={() => setRowItemHoveredKey()}
       >
-        {columns.map(({ content, style, highlightOnHover }, columnIndex) => (
-          <div
-            className={`${styles.cell} ${highlightOnHover ? styles.highlightOnHover : ''}`}
-            style={{
-              flex: columnHeaders[columnIndex].flex,
-              minWidth: columnHeaders[columnIndex].minWidth,
-              ...(style || {}),
-            }}
-          >
-            {content}
-          </div>
-        ))}
-        {moreOptions && (
-        <div className={styles.moreOptions}>
-          <div style={{ position: 'absolute', width: 10 }}>
-            <ThreeDotsVertical size={18} />
-          </div>
-        </div>
-        )}
+        {hoverContent && <div className={`table-hover-content ${styles.hoverContent}`}>{hoverContent}</div>}
+        {columns.map(({
+          content, style, highlightOnHover, slideOnHover,
+        }, columnIndex) => {
+          let cnt = content;
+          const contentStyle = {};
+          const rowItemHovered = rowItemHoveredKey === key && !deleteHovered;
+          if (slideOnHover) {
+            if (slideOnHover.leftDisplacement) {
+              contentStyle.paddingLeft = rowItemHovered ? slideOnHover.leftDisplacement : 0;
+            } else if (slideOnHover.rightDisplacement) {
+              contentStyle.paddingRight = rowItemHovered ? slideOnHover.leftDisplacement : 0;
+            }
+
+            cnt = (
+              <div style={{
+                transition: 'all 0.5s', position: 'relative', display: 'flex', flexDirection: 'row', height: '100%', ...contentStyle,
+              }}
+              >
+                {slideOnHover.leftContent && (
+                <div
+                  className="table-hover-content"
+                  style={{ transition: 'all 0.5s', opacity: rowItemHovered ? 1 : 0, ...slideOnHover.leftContent.style }}
+                >
+                  {slideOnHover.leftContent.html}
+                </div>
+                )}
+                <div>{content}</div>
+                {slideOnHover.rightContent && (
+                <div
+                  className="table-hover-content"
+                  style={{ transition: 'all 0.5s', opacity: rowItemHovered ? 1 : 0, ...slideOnHover.rightContent.style }}
+                >
+                  {slideOnHover.rightContent.html}
+                </div>
+                )}
+              </div>
+            );
+          }
+
+          return (
+            <div
+              className={`${styles.cell} ${highlightOnHover && !deleteHovered ? styles.highlightOnHover : ''}`}
+              style={{
+                flex: columnHeaders[columnIndex].flex,
+                minWidth: columnHeaders[columnIndex].minWidth,
+                ...(style || {}),
+              }}
+            >
+              {cnt}
+            </div>
+          );
+        })}
       </div>
     </>
   );

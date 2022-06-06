@@ -348,6 +348,7 @@ export default function DocumentsChannel({
           setAsc={setAsc}
           headerText="Documents"
           createNewText="New Document"
+          createNewHref="/documents/new"
           searchPlaceholderText="Search Documents (title, authors, etc)"
           headerTextWidth={110}
           headerLink={`/documents?${dashboardState}&tab=${selectedGroupId === 'privateGroup' ? 'mine' : 'shared'}`}

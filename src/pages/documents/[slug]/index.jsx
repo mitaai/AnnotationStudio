@@ -51,10 +51,11 @@ const DocumentPage = ({
   const dashboardState = `${query && query.did !== undefined && query.slug !== undefined ? `did=${query.did}&slug=${query.slug}&dp=${query.dp}&` : ''}gid=${query && query.gid}`;
   let validQuery = false;
   let defaultPermissions = 0;
-  if ((query && (query.mine === 'true' || query.mine === 'false')) && query.aid !== undefined) {
+  if ((query && (query.mine === 'true' || query.mine === 'false' || query.sharedWithMe === 'true')) && query.aid !== undefined) {
     if (annotations.find((anno) => anno._id === query.aid) !== undefined) {
       validQuery = true;
-      defaultPermissions = query.mine === 'true' ? 0 : 1;
+      const defaultP = query.sharedWithMe === 'true' ? 2 : 1;
+      defaultPermissions = query.mine === 'true' ? 0 : defaultP;
     }
   }
 
