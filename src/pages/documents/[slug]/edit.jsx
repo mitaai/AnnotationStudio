@@ -7,9 +7,9 @@ import {
 import Layout from '../../../components/Layout';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import UnauthorizedCard from '../../../components/UnauthorizedCard';
-import DocumentForm from '../../../components/DocumentForm';
 
 import { prefetchDocumentBySlug } from '../../../utils/docUtil';
+import CreateEditDocument from '../../../components/CreateEditDocument';
 
 const EditDocument = ({
   query, document, alerts, statefulSession,
@@ -22,13 +22,18 @@ const EditDocument = ({
     slug,
     dp,
     gid,
+    // eslint-disable-next-line no-unused-vars
     exportDocument,
   } = query || {};
+  // eslint-disable-next-line no-unused-vars
   const dashboardStateQuery = {
     did, slug, dp, gid,
   };
 
   const cloudfrontUrl = process.env.NEXT_PUBLIC_SIGNING_URL.split('/url')[0];
+
+  const showEditDocumentContent = session && document && !loading && !pageLoading;
+  const userUnauthorizedToViewContent = document.owner !== session?.user?.id && session?.user?.role !== 'admin';
 
   useEffect(() => {
     if (document && document.text && (document.uploadContentType === 'text/slate-html' || document.uploadContentType === 'text/html')
@@ -57,54 +62,44 @@ const EditDocument = ({
   }, [document]);
 
   return (
-    <Layout
-      alerts={errors}
-      type="document"
-      title={document ? `Edit Document: ${document.title}` : 'error'}
-      document={document}
-      statefulSession={statefulSession}
-    >
-      <Col lg="12" className="mx-auto">
-        <Card>
-          {((!session && loading) || (session && pageLoading)) && (
-            <LoadingSpinner />
-          )}
-          {!session && !loading && (
-            <UnauthorizedCard />
-          )}
-          {session && document && !loading && !pageLoading && (
-            <>
-              {(document.owner === session.user.id || session.user.role === 'admin') && (
+    showEditDocumentContent && !userUnauthorizedToViewContent
+      ? (
+        <CreateEditDocument
+          session={session}
+          loading={loading}
+          statefulSession={statefulSession}
+          document={document}
+        />
+      )
+      : (
+        <Layout
+          alerts={errors}
+          type="document"
+          title={document ? `Edit Document: ${document.title}` : 'error'}
+          document={document}
+          statefulSession={statefulSession}
+        >
+          <Col lg="12" className="mx-auto">
+            <Card>
+              {((!session && loading) || (session && pageLoading)) && (
+              <LoadingSpinner />
+              )}
+              {!session && !loading && (
+              <UnauthorizedCard />
+              )}
+              {session && !document && !loading && !pageLoading && (
               <>
-                <Card.Header><Card.Title>Edit document</Card.Title></Card.Header>
-                <Card.Body>
-                  <DocumentForm
-                    mode="edit"
-                    session={session}
-                    exportDocument={exportDocument}
-                    dashboardStateQuery={dashboardStateQuery}
-                    data={document}
-                    setErrors={setErrors}
-                    errors={errors}
-                    setPageLoading={setPageLoading}
-                  />
-                </Card.Body>
+                <Card.Header><Card.Title>Document not found</Card.Title></Card.Header>
+                <Card.Body>Sorry, this document could not be found.</Card.Body>
               </>
               )}
-              {document.owner !== session.user.id && session.user.role !== 'admin' && (
-                <UnauthorizedCard />
+              {showEditDocumentContent && userUnauthorizedToViewContent && (
+              <UnauthorizedCard />
               )}
-            </>
-          )}
-          {session && !document && !loading && !pageLoading && (
-            <>
-              <Card.Header><Card.Title>Document not found</Card.Title></Card.Header>
-              <Card.Body>Sorry, this document could not be found.</Card.Body>
-            </>
-          )}
-        </Card>
-      </Col>
-    </Layout>
+            </Card>
+          </Col>
+        </Layout>
+      )
   );
 };
 

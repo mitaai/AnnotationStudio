@@ -206,7 +206,7 @@ const GroupList = ({ query, initAlerts, statefulSession }) => {
                     )
                     : name || 'undefined',
                   style: { fontWeight: 400 },
-                  highlightOnHover: true,
+                  highlightOnHover: _id !== 'privateGroup',
                 },
                 { content: role || '-', style: { color: '#86919D' } },
                 { content: owner || '-', style: { color: '#86919D' } },

@@ -145,7 +145,7 @@ const DocumentsIndex = ({
           marginRight={5}
           text={groupNamesObj && groupNamesObj[id]}
         />
-      )) : (<Badge>[no groups - &quot;Personal&quot;]</Badge>));
+      )) : (<Badge>[&quot;Personal&quot; - no groups ]</Badge>));
 
   const deleteDocument = (event) => {
     setListLoading(true);
