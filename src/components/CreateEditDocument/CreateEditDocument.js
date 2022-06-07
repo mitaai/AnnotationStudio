@@ -54,6 +54,7 @@ const CreateEditDocument = ({
 
   const [minimize, setMinimize] = useState();
   const [showUploadModal, setShowUploadModal] = useState();
+  const [showDeleteDocumentModal, setShowDeleteDocumentModal] = useState();
 
   const [slateDocument, setSlateDocument] = useState();
   const [slateLoading, setSlateLoading] = useState();
@@ -650,9 +651,9 @@ const CreateEditDocument = ({
                     <div className={styles.additionalMetadataHeaders}>Rights Status</div>
                     <Select
                       options={[
-                        { text: 'Copyrighted', key: 'copyrighted' },
-                        { text: 'Woow', key: 'woow' },
-                        { text: 'Blalal', key: 'blalal' },
+                        { text: 'Copyrighted', key: 'Copyrighted' },
+                        { text: 'Creative Commons', key: 'Creative Commons' },
+                        { text: 'Public Domain', key: 'Public Domain' },
                       ]}
                       selectedOptionKey={rightsStatus}
                       setSelectedOptionKey={setRightsStatus}
@@ -850,8 +851,51 @@ const CreateEditDocument = ({
                 selectedOptionKey={status}
                 setSelectedOptionKey={setStatus}
               />
+              <div style={{ flex: 1, marginBottom: 40 }} />
+              {spacer}
+              <div
+                style={{ marginTop: 40 }}
+                className={styles.deleteDocumentBtn}
+                onClick={() => setShowDeleteDocumentModal(true)}
+              >
+                Delete Document
+              </div>
             </div>
           </div>
+          <Modal
+            id="delete-group-modal"
+            size="lg"
+            show={showDeleteDocumentModal}
+            onHide={() => setShowDeleteDocumentModal()}
+          >
+            <Modal.Body style={{ display: 'flex', flexDirection: 'column' }}>
+              <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                <div style={{
+                  flex: 1, fontSize: 22, fontWeight: 'bold', color: '#363D4E', marginLeft: 5,
+                }}
+                >
+                  Delete Group
+                </div>
+                <div
+                  className={styles.cancelUploadBtn}
+                  onClick={() => setShowDeleteDocumentModal()}
+                >
+                  <X size={20} />
+                </div>
+              </div>
+              <div style={{
+                display: 'flex', flexDirection: 'row', marginTop: 50, marginBottom: 70,
+              }}
+              >
+                <Button
+                  variant="danger"
+                  onClick={() => {}}
+                >
+                  Delete Document
+                </Button>
+              </div>
+            </Modal.Body>
+          </Modal>
           <Modal id="upload-document-modal" size="lg" show={showUploadModal} onHide={() => setShowUploadModal()}>
             <Modal.Body style={{ display: 'flex', flexDirection: 'column' }}>
               <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>

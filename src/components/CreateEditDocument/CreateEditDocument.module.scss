@@ -247,6 +247,22 @@
       margin-bottom: 15px;
     }
   }
+
+  .deleteDocumentBtn {
+    transition: all 0.5s;
+    background-color: #FCECEB;
+    border: 1px solid #E20101;
+    color: #E20101;
+    border-radius: 4px;
+    margin: 0px auto;
+    padding: 6px 14px;
+    font-size: 16px;
+    cursor: pointer;
+
+    &:hover {
+        background-color: #FFD3D0;
+    }
+  }
 /*
   .gradient {
     animation-duration: 1.5s;
