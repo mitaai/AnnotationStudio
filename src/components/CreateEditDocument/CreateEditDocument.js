@@ -739,7 +739,7 @@ const CreateEditDocument = ({
                         )}
                       {(fileUploaded || document) && (
                       <div style={{
-                        position: 'absolute', right: minimize ? 47 : 13, top: 8.5, transition,
+                        position: 'absolute', right: minimize ? 67 : 13, top: 8.5, transition,
                       }}
                       >
                         <DocumentZoomSlider
@@ -792,7 +792,7 @@ const CreateEditDocument = ({
                         marginBottom: 30,
                         transition: 'opacity 0.75s, filter 1s',
                         opacity: documentText ? 1 : 0,
-                        filter: `blur(${documentText ? 0 : 4}px)`,
+                        filter: `blur(${documentText ? 0 : 6}px)`,
                       }}
                     >
                       <Document

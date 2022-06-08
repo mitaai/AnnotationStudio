@@ -196,6 +196,7 @@ const ISOutline = ({
         {`
             [data-testid='slate-toolbar'] {
               border-radius: 0px;
+              border-top: none;
             }
 
             #outline-container-container {

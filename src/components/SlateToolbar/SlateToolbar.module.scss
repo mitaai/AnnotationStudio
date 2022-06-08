@@ -40,6 +40,26 @@
   button {
     border: none;
   }
+
+  &[type='button'], button {
+    color: #6c757d !important;
+    border-color: #6c757d !important;
+
+    &.active {
+      color: white !important;
+    }
+  
+    &:focus {
+      background-color: #6c757d !important;
+      border-color: #6c757d !important;
+    }
+  
+    &:hover {
+      background-color: #6c757d !important;
+      border-color: #6c757d !important;
+      color: white !important;
+    }
+  }
 }
 
 .toolbar-button-extra-padding button {
