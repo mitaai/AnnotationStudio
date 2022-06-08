@@ -80,7 +80,9 @@ export default function Table({
                 {slideOnHover.leftContent && (
                 <div
                   className="table-hover-content"
-                  style={{ transition: 'all 0.5s', opacity: rowItemHovered ? 1 : 0, ...slideOnHover.leftContent.style }}
+                  style={{
+                    transition: 'all 0.5s', width: 0, opacity: rowItemHovered ? 1 : 0, ...slideOnHover.leftContent.style,
+                  }}
                 >
                   {slideOnHover.leftContent.html}
                 </div>
@@ -89,7 +91,9 @@ export default function Table({
                 {slideOnHover.rightContent && (
                 <div
                   className="table-hover-content"
-                  style={{ transition: 'all 0.5s', opacity: rowItemHovered ? 1 : 0, ...slideOnHover.rightContent.style }}
+                  style={{
+                    transition: 'all 0.5s', width: 0, opacity: rowItemHovered ? 1 : 0, ...slideOnHover.rightContent.style,
+                  }}
                 >
                   {slideOnHover.rightContent.html}
                 </div>

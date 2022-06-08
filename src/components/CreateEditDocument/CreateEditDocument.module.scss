@@ -263,6 +263,10 @@
         background-color: #FFD3D0;
     }
   }
+
+  .progressBar .progress-bar{
+    transition: all 0.5s;
+  }
 /*
   .gradient {
     animation-duration: 1.5s;
@@ -295,6 +299,11 @@
     background-size: 400px 500px;
     background-position: -400px 0;
     animation: shine 1.8s infinite ease;
+  }
+
+  .deleteUploadHovered {
+      // border-bottom: 1px solid #E20101 !important;
+      background: #FBF1F1 !important
   }
 
   @keyframes shine {

@@ -134,7 +134,7 @@ const handler = async (req, res) => {
         textAnalysisId,
       };
       Object.keys(fieldsToSet).forEach((key) => {
-        if (fieldsToSet[key] === undefined) {
+        if (fieldsToSet[key] === undefined || fieldsToSet[key] === '') {
           delete fieldsToSet[key];
         }
       });

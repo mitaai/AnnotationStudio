@@ -1,16 +1,54 @@
 import { useSession } from 'next-auth/client';
+import { useRouter } from 'next/router';
 import CreateEditDocument from '../../components/CreateEditDocument';
 
-const NewDocument = ({ statefulSession }) => {
+const NewDocument = ({ statefulSession, query, refererUrl }) => {
   const [session, loading] = useSession();
+  const router = useRouter();
+  const pathname = refererUrl || '/documents';
+  const {
+    did,
+    slug,
+    dp,
+    gid,
+  } = query || {};
+  const dashboardStateQuery = refererUrl ? {
+    did, slug, dp, gid,
+  } : {};
   return (
     <CreateEditDocument
       mode="new"
       session={session}
       loading={loading}
       statefulSession={statefulSession}
+      onCancel={() => {
+        router.push({
+          pathname,
+          query: {
+            ...dashboardStateQuery,
+          },
+        });
+      }}
+      onSave={(ops) => {
+        router.push({
+          pathname: ops?.slug ? `/documents/${ops.slug}` : '/documents',
+          query: {
+            alert: 'createdDocument',
+          },
+        });
+      }}
     />
   );
 };
+
+export async function getServerSideProps(context) {
+  return {
+    props: {
+      ...context.props,
+      query: context.query,
+      refererUrl: context?.req?.headers?.referer?.split('?')[0] || null,
+    },
+  };
+}
 
 export default NewDocument;

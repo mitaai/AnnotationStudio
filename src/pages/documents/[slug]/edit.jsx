@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import {
   Card, Col,
 } from 'react-bootstrap';
+import { useRouter } from 'next/router';
 import Layout from '../../../components/Layout';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import UnauthorizedCard from '../../../components/UnauthorizedCard';
@@ -11,9 +12,11 @@ import { prefetchDocumentBySlug } from '../../../utils/docUtil';
 import CreateEditDocument from '../../../components/CreateEditDocument';
 
 const EditDocument = ({
-  query, document, alerts, statefulSession,
+  query, document, alerts, statefulSession, refererUrl,
 }) => {
   const [session, loading] = useSession();
+  const router = useRouter();
+  const pathname = refererUrl || '/documents';
   // eslint-disable-next-line no-unused-vars
   const [pageLoading, setPageLoading] = useState(false);
   // eslint-disable-next-line no-unused-vars
@@ -23,10 +26,7 @@ const EditDocument = ({
     slug,
     dp,
     gid,
-    // eslint-disable-next-line no-unused-vars
-    exportDocument,
   } = query || {};
-  // eslint-disable-next-line no-unused-vars
   const dashboardStateQuery = {
     did, slug, dp, gid,
   };
@@ -44,6 +44,22 @@ const EditDocument = ({
           loading={loading}
           statefulSession={statefulSession}
           document={document}
+          onCancel={() => {
+            router.push({
+              pathname,
+              query: {
+                ...dashboardStateQuery,
+              },
+            });
+          }}
+          onSave={(ops) => {
+            router.push({
+              pathname: `/documents/${document?.slug || ops.slug}`,
+              query: {
+                alert: 'editedDocument',
+              },
+            });
+          }}
         />
       )
       : (
@@ -95,7 +111,9 @@ export async function getServerSideProps(context) {
     };
   });
 
-  return { props };
+  return {
+    props: { ...props, refererUrl: context?.req?.headers?.referer?.split('?')[0] || null },
+  };
 }
 
 export default EditDocument;

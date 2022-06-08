@@ -6,7 +6,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import $ from 'jquery';
 import {
-  Button, Modal, Spinner,
+  Button, Modal, ProgressBar, Spinner,
 } from 'react-bootstrap';
 import {
   ChevronCompactRight, Plus, Search, X, Check,
@@ -18,8 +18,10 @@ import {
 import {
   DEFAULTS_LIST,
   DEFAULTS_TABLE,
+  deserializeHTMLToDocument,
   EditablePlugins,
   pipe,
+  serializeHTMLFromNodes,
   withCodeBlock,
   withDeserializeHTML,
   withImageUpload,
@@ -30,6 +32,9 @@ import {
 } from '@udecode/slate-plugins';
 import { withHistory } from 'slate-history';
 import unfetch from 'unfetch';
+import slugify from '@sindresorhus/slugify';
+import cryptoRandomString from 'crypto-random-string';
+import ReactS3Uploader from 'react-s3-uploader';
 import Layout from '../Layout';
 import UnauthorizedCard from '../UnauthorizedCard';
 import LoadingSpinner from '../LoadingSpinner';
@@ -42,13 +47,23 @@ import SelectInput from '../SelectInput';
 import TileBadge from '../TileBadge';
 import { getGroupsByGroupIds } from '../../utils/groupUtil';
 import { DeepCopyObj } from '../../utils/docUIUtils';
+import DocumentZoomSlider from '../DocumentZoomSlider';
+import { updateAllAnnotationsOnDocument } from '../../utils/annotationUtil';
 
 const CreateEditDocument = ({
-  statefulSession, document, session, loading, mode = 'new',
+  statefulSession,
+  document,
+  session,
+  loading,
+  mode = 'new',
+  onCancel = () => {},
+  onSave = () => {},
 }) => {
-  const [groups, setGroups] = useState([]);
-  const [groupData, setGroupData] = useState([]);
+  console.log('document', document);
+  const [groups, setGroups] = useState();
+  const [groupData, setGroupData] = useState();
   const [errors, setErrors] = useState([]);
+  const [savingDocument, setSavingDocument] = useState();
 
   const [changesMade, setChangesMade] = useState();
   const [initialMount, setInitialMount] = useState(true);
@@ -57,41 +72,31 @@ const CreateEditDocument = ({
   const [showUploadModal, setShowUploadModal] = useState();
   const [showDeleteDocumentModal, setShowDeleteDocumentModal] = useState();
 
-  // console.log('document', document);
-
   const [loadingDocumentText, setLoadingDocumentText] = useState(true);
   const canEditDocument = mode === 'new' || (document
     && document.state === 'draft'
     && (document.uploadContentType === 'text/slate-html' || document.uploadContentType === 'text/html'));
-  let cannotEditMessage;
-  if (!canEditDocument) {
-    if (document.state === 'draft') {
-      // pass
-    } else {
-      cannotEditMessage = (
-        <span style={{ color: '#616161', marginRight: 'auto' }}>
-          <span style={{ fontWeight: 500, marginRight: 4 }}>
-            {document.state === 'published' ? 'Published' : 'Archived'}
-            {' '}
-            Document
-          </span>
-          <span style={{ fontWeight: 300, color: '#E20101', opacity: 0.4 }}>(cannot be edited)</span>
-        </span>
-      );
-    }
-  }
+
+  const [contentType, setContentType] = useState('');
+  const [htmlValue, setHtmlValue] = useState();
   const [documentText, setDocumentText] = useState();
   const [slateDocument, setSlateDocument] = useState();
   const [slateLoading, setSlateLoading] = useState();
 
+  const [deleteUploadHovered, setDeleteUploadHovered] = useState();
+
+  const [progress, setProgress] = useState({});
   const [fileName, setFileName] = useState();
+
+  const fileUploading = progress.started || htmlValue !== undefined;
+  const fileUploaded = htmlValue !== undefined && documentText !== undefined;
 
   /*
     Properties of metadata form
   */
   const [showAdditionalMetadata, setShowAdditionalMetadata] = useState();
   const [title, setTitle] = useState(document?.title || '');
-  const [typeOfResource, setTypeOfResource] = useState(document?.resourceType || 'book');
+  const [resourceType, setResourceType] = useState(document?.resourceType || 'book');
   const [status, setStatus] = useState(document?.state);
   const [contributors, setContributors] = useState(document?.contributors || [{ type: 'Author', name: '' }]);
   // aditional metadata
@@ -102,15 +107,16 @@ const CreateEditDocument = ({
   const [volume, setVolume] = useState('');
   const [edition, setEdition] = useState('');
   const [series, setSeries] = useState('');
-  const [numberInSeries, setNumberInSeries] = useState('');
+  const [seriesNumber, setSeriesNumber] = useState('');
   const [url, setUrl] = useState('');
-  const [dateAccessed, setDateAccessed] = useState(new Date(document.accessed) || new Date());
+  const [dateAccessed, setDateAccessed] = useState(new Date(document?.accessed));
 
   // life cycle of this state
   // 2) waiting to be used
   // 1) in use
   // 0) not in use and then sent back to state = 2
   const [addingContributor, setAddingContributor] = useState(2);
+  const [initalizedSharedDocuments, setInitalizedSharedDocuments] = useState();
   const [groupsShared, setGroupsShared] = useState({
     core: {},
     contributions: {},
@@ -147,19 +153,23 @@ const CreateEditDocument = ({
     setContributors(newContributors);
   };
 
-  const addGroup = (grp) => {
-    const g = DeepCopyObj(grp);
+  const addGroups = (grps) => {
+    const gs = DeepCopyObj(grps);
     const newGroupsShared = DeepCopyObj(groupsShared);
     const newOrderOfGroupsShared = DeepCopyObj(orderOfGroupsShared);
-    const ids = g.members.filter(({ role }) => role === 'owner' || role === 'manager').map((m) => m.id);
-    if (ids.includes(session.user.id)) {
-      newGroupsShared.core[g._id] = g;
-      newOrderOfGroupsShared.core.push(g._id);
-    } else {
-      newGroupsShared.contributions[g._id] = g;
-      newOrderOfGroupsShared.contributions.push(g._id);
-    }
 
+    gs.map((g) => {
+      const ids = g.members.filter(({ role }) => role === 'owner' || role === 'manager').map((m) => m.id);
+      if (ids.includes(session.user.id)) {
+        newGroupsShared.core[g._id] = g;
+        newOrderOfGroupsShared.core.push(g._id);
+      } else {
+        newGroupsShared.contributions[g._id] = g;
+        newOrderOfGroupsShared.contributions.push(g._id);
+      }
+
+      return null;
+    });
     setGroupsShared(newGroupsShared);
     setOrderOfGroupsShared(newOrderOfGroupsShared);
   };
@@ -185,17 +195,108 @@ const CreateEditDocument = ({
     setGroupsShared(newGroupsShared);
   };
 
-  // eslint-disable-next-line no-unused-vars
+  const createDocument = async () => {
+    const slug = `${slugify(title)}-${cryptoRandomString({ length: 5, type: 'hex' })}`;
+    const postUrl = '/api/document';
+    const newDocument = {
+      uploadContentType: htmlValue ? contentType : 'text/slate-html',
+      title: title === '' ? (fileName || 'Untitled') : title,
+      groups: orderOfGroupsShared.core.concat(orderOfGroupsShared.contributions),
+      slug,
+      resourceType,
+      contributors,
+      publisher,
+      publicationDate,
+      edition,
+      url,
+      accessed: dateAccessed,
+      rightsStatus,
+      location: publisherLocation,
+      state: status,
+      text: htmlValue || serializeHTMLFromNodes({ plugins, nodes: slateDocument }),
+      volume,
+      issue: undefined,
+      pageNumbers: undefined,
+      publication: undefined,
+      series,
+      seriesNumber,
+      notes: undefined,
+      textAnalysisId: undefined,
+    };
+
+    const res = await unfetch(postUrl, {
+      method: 'POST',
+      body: JSON.stringify(newDocument),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    if (res.status === 200) {
+      const result = await res.json();
+      return Promise.resolve(result);
+    } if (res.status === 413) {
+      return Promise.reject(Error(
+        'Sorry, this file is too large to use on Annotation Studio. '
+        + 'You may try breaking it up into smaller parts.',
+      ));
+    }
+    return Promise.reject(Error(`Unable to create document: error ${res.status} received from server`));
+  };
+
+  const editDocument = async () => {
+    const patchUrl = `/api/document/${document.id}`;
+    const newDocument = {
+      title: title === '' ? 'Untitled' : title,
+      groups: orderOfGroupsShared.core.concat(orderOfGroupsShared.contributions),
+      slug: document.slug,
+      resourceType,
+      contributors,
+      publisher,
+      publicationDate,
+      edition,
+      url,
+      accessed: dateAccessed,
+      rightsStatus,
+      location: publisherLocation,
+      state: status,
+      text: canEditDocument
+        ? serializeHTMLFromNodes({ plugins, nodes: slateDocument })
+        : undefined,
+      volume,
+      issue: undefined,
+      pageNumbers: undefined,
+      publication: undefined,
+      series,
+      seriesNumber,
+      notes: undefined,
+      textAnalysisId: undefined,
+    };
+
+    const res = await unfetch(patchUrl, {
+      method: 'PATCH',
+      body: JSON.stringify(newDocument),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    if (res.status === 200) {
+      const result = await res.json();
+      if (newDocument.state === 'draft') {
+        return Promise.resolve(result);
+      } return Promise.resolve(await updateAllAnnotationsOnDocument(newDocument));
+    }
+    return Promise.reject(Error(`Unable to edit document: error ${res.status} received from server`));
+  };
+
   const [documentZoom, setDocumentZoom] = useState(100);
-  // eslint-disable-next-line no-unused-vars
-  const [documentHeight, setDocumentHeight] = useState();
 
   const scale = documentZoom / 100;
   const documentWidth = 750;
 
   const extraWidth = 0;
-  const documentIsPDF = false;
-  // document && document.uploadContentType && document.uploadContentType.includes('pdf');
+  const documentIsPDF = (
+    document && document.uploadContentType && document.uploadContentType.includes('pdf')
+  ) || (htmlValue && contentType);
 
 
   const withPlugins = [
@@ -212,6 +313,66 @@ const CreateEditDocument = ({
   ];
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
+
+  const deleteUploadedDocument = () => {
+    setContentType('');
+    setHtmlValue();
+    setDocumentText();
+    setProgress({});
+    setFileName();
+    setDeleteUploadHovered();
+    setDocumentZoom(100);
+  };
+
+  const numRetries = 60;
+  const origPercent = 25;
+
+  const timeout = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  const fetchRetry = async (fileUrl, options = {}, retries = numRetries, backoff = 2400) => {
+    const retryCodes = [403, 408, 500, 502, 503, 504, 522, 524];
+    return unfetch(fileUrl, options)
+      .then(async (res) => {
+        if (res.ok) {
+          setProgress({
+            started: true,
+            percent: 100,
+            status: 'Complete',
+          });
+          const text = await res.text();
+          return text;
+        } if (retries > 0 && retryCodes.includes(res.status)) {
+          setProgress(
+            {
+              started: true,
+              percent: origPercent + (
+                ((numRetries - retries) / numRetries) * (100 - origPercent)
+              ),
+              status: 'Waiting',
+            },
+          );
+          await timeout(backoff);
+          return fetchRetry(fileUrl, options, retries - 1, backoff);
+        }
+        setProgress(
+          {
+            started: false,
+            percent: 100,
+            status: 'Failed',
+          },
+        );
+        throw new Error('Failed');
+      })
+      .then((text) => text)
+      .catch((err) => setErrors((prevState) => [...prevState, { text: err.message, variant: 'danger' }]));
+  };
+
+  const getProcessedDocument = async (fileUrl) => fetchRetry(fileUrl, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'text/html',
+    },
+  });
 
 
   const transition = 'all 0.5s';
@@ -276,7 +437,7 @@ const CreateEditDocument = ({
               left: -112 + (minimize ? 5 : 0),
             }}
             onClick={() => setShowUploadModal(true)}
-            disabled={fileName !== undefined}
+            disabled={progress.started}
           >
             Upload
           </Button>
@@ -287,8 +448,7 @@ const CreateEditDocument = ({
               transition,
               left: -92 + (minimize ? 5 : 0),
             }}
-            onClick={() => setShowUploadModal(true)}
-            disabled={fileName !== undefined}
+            onClick={onCancel}
           >
             Cancel
           </Button>
@@ -306,7 +466,17 @@ const CreateEditDocument = ({
           ? (
             <Button
               className={styles.createNewDocumentBtn}
-              onClick={() => {}}
+              onClick={() => {
+                setSavingDocument(true);
+                createDocument()
+                  .then((res) => {
+                    onSave({ slug: res.ops[0].slug });
+                  })
+                  .catch((err) => {
+                    setErrors((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
+                    setSavingDocument();
+                  });
+              }}
             >
               Create Document
             </Button>
@@ -314,7 +484,17 @@ const CreateEditDocument = ({
           : (
             <Button
               className={styles.saveChangesBtn}
-              onClick={() => {}}
+              onClick={() => {
+                setSavingDocument(true);
+                editDocument()
+                  .then(() => {
+                    onSave();
+                  })
+                  .catch((err) => {
+                    setErrors((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
+                    setSavingDocument();
+                  });
+              }}
               disabled={!changesMade}
             >
               Save Changes
@@ -341,7 +521,7 @@ const CreateEditDocument = ({
     </div>
   );
 
-  const queriedGroups = groupData.filter(({ name }) => {
+  const queriedGroups = (groupData || []).filter(({ name }) => {
     // eslint-disable-next-line no-useless-escape
     const r = groupQuery ? new RegExp(`\.\*${groupQuery}\.\*`, 'i') : new RegExp('\.\*', 'i');
     return name.search(r) !== -1;
@@ -368,7 +548,7 @@ const CreateEditDocument = ({
               className={styles.searchGroupRow}
               onClick={() => {
                 if (!selectedAlready) {
-                  addGroup(g);
+                  addGroups([g]);
                   setSearchGroupDropdownOpen();
                 }
               }}
@@ -391,8 +571,8 @@ const CreateEditDocument = ({
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    slateDocument, title, typeOfResource, status, contributors, publicationDate, publisher,
-    publisherLocation, rightsStatus, volume, edition, series, numberInSeries, url,
+    slateDocument, title, resourceType, status, contributors, publicationDate, publisher,
+    publisherLocation, rightsStatus, volume, edition, series, seriesNumber, url,
     dateAccessed,
   ]);
 
@@ -425,8 +605,10 @@ const CreateEditDocument = ({
   }, [session]);
 
   useEffect(() => {
+    if (!document) { return; }
+    // loading document text
     const cloudfrontUrl = process.env.NEXT_PUBLIC_SIGNING_URL.split('/url')[0];
-    if (document && document.text
+    if (document.text
       && document.text.length < 255 && document.text.includes(cloudfrontUrl)) {
       unfetch(document.text.substring(
         document.text.indexOf(cloudfrontUrl), document.text.indexOf('.html') + 5,
@@ -445,9 +627,34 @@ const CreateEditDocument = ({
         setLoadingDocumentText();
       });
     } else {
+      setDocumentText(document.text);
       setLoadingDocumentText();
     }
   }, [document]);
+
+  useEffect(() => {
+    if (document && groupData && !initalizedSharedDocuments) {
+      const documentGroupData = groupData.filter(({ _id }) => document.groups.includes(_id));
+      addGroups(documentGroupData);
+      setInitalizedSharedDocuments(true);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [groupData, document]);
+
+  useEffect(() => {
+    if (documentText && !loadingDocumentText) {
+      // eslint-disable-next-line no-undef
+      const txtHtml = (mode === 'edit' && document) ? new DOMParser().parseFromString(documentText, 'text/html') : undefined;
+      if (txtHtml) {
+        const initSlateValue = (mode === 'edit' && document && (!document.uploadContentType
+          || (!document.uploadContentType.includes('pdf') && !document.uploadContentType.includes('epub') && !document.uploadContentType.includes('application'))))
+          ? deserializeHTMLToDocument({ plugins, element: txtHtml.body })
+          : slateInitialValue;
+        setSlateDocument(initSlateValue);
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [documentText, loadingDocumentText]);
 
   useEffect(() => {
     // another thing we must do is set all the links in the document to target="_blank" so that
@@ -457,6 +664,13 @@ const CreateEditDocument = ({
       $('#document-container a').attr('target', '_blank');
     }
   }, [loadingDocumentText]);
+
+  useEffect(() => {
+    console.log('progress', progress);
+    if (progress.started && showUploadModal) {
+      setShowUploadModal();
+    }
+  }, [progress]);
 
   return (
     <>
@@ -488,12 +702,13 @@ const CreateEditDocument = ({
               position: 'absolute', height: '100%', transition, ...state.leftPanel,
             }}
             >
-              {!canEditDocument ? (
+              {!canEditDocument || fileUploading || fileUploaded ? (
                 <>
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <div
-                      className={fileName !== undefined ? styles.gradient : ''}
+                      className={(deleteUploadHovered && fileUploaded && styles.deleteUploadHovered) || (fileUploading && !fileUploaded ? styles.gradient : '')}
                       style={{
+                        transition,
                         display: 'flex',
                         flexDirection: 'row',
                         alignItems: 'center',
@@ -504,17 +719,37 @@ const CreateEditDocument = ({
                         paddingRight: 13,
                       }}
                     >
-                      {fileName !== undefined ? (
-                        <>
-                          <span style={{ color: '#616161', fontWeight: 400, marginRight: 'auto' }}>{fileName}</span>
-                          <div className={styles.cancelUploadBtn} onClick={() => setFileName()}>
-                            <X size={20} />
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          {cannotEditMessage}
-                        </>
+                      <div
+                        className={styles.cancelUploadBtn}
+                        style={{ opacity: fileUploaded ? 1 : 0, transition }}
+                        onClick={fileUploaded ? deleteUploadedDocument : () => {}}
+                        onMouseEnter={fileUploaded ? () => setDeleteUploadHovered(true) : () => {}}
+                        onMouseLeave={fileUploaded ? () => setDeleteUploadHovered() : () => {}}
+                      >
+                        <X size={20} />
+                      </div>
+                      {(fileUploading || fileUploaded)
+                        && (
+                        <span style={{
+                          transition, color: deleteUploadHovered && fileUploaded ? '#E20101' : '#616161', fontWeight: 500, marginLeft: 8, position: 'relative', left: fileUploaded ? 0 : -15,
+                        }}
+                        >
+                          {fileName || (fileUploaded ? 'File Uploaded' : 'Uploading document...')}
+                        </span>
+                        )}
+                      {(fileUploaded || document) && (
+                      <div style={{
+                        position: 'absolute', right: minimize ? 47 : 13, top: 8.5, transition,
+                      }}
+                      >
+                        <DocumentZoomSlider
+                          stateful
+                          documentZoom={documentZoom}
+                          setDocumentZoom={setDocumentZoom}
+                          style={{ backgroundColor: '#f8f8f8', border: '1px solid #CDCEDA' }}
+                          min={100}
+                        />
+                      </div>
                       )}
                     </div>
                   </div>
@@ -530,22 +765,34 @@ const CreateEditDocument = ({
                       transition,
                     }}
                   >
-                    <div
-                      style={{
-                        width: documentWidth * scale,
-                        height: (documentHeight * scale) || 100,
-                      }}
-                    />
+                    {fileUploading && !fileUploaded && progress.percent
+                      && (
+                      <ProgressBar
+                        className={styles.progressBar}
+                        style={{
+                          width: documentWidth - 100,
+                          position: 'absolute',
+                          top: 'max(25%, 100px)',
+                          left: `calc(50% - ${(documentWidth - 100) / 2}px`,
+                        }}
+                        now={progress.percent.toFixed(0)}
+                        label={`${progress.percent.toFixed(0)}%`}
+                      />
+                      )}
                     <div
                       id="document-container-col"
                       style={{
                         transform: `scale(${scale}) translateY(0px)`,
-                        transformOrigin: 'top left',
+                        transformOrigin: 'top center',
                         minWidth: documentWidth,
                         maxWidth: documentWidth,
-                        position: 'absolute',
-                        top: 20,
+                        position: 'relative',
                         left: 'calc(50% - 375px)',
+                        marginTop: 10,
+                        marginBottom: 30,
+                        transition: 'opacity 0.75s, filter 1s',
+                        opacity: documentText ? 1 : 0,
+                        filter: `blur(${documentText ? 0 : 4}px)`,
                       }}
                     >
                       <Document
@@ -560,7 +807,7 @@ const CreateEditDocument = ({
                         documentHighlightedAndLoaded
                         addAnnotationToChannels={() => {}}
                         annotateDocument={undefined}
-                        documentToAnnotate={{ ...document, text: documentText || document.text }}
+                        documentToAnnotate={{ ...document, text: documentText || document?.text }}
                         documentZoom={documentZoom}
                         alerts={[]}
                         setAlerts={setErrors}
@@ -604,7 +851,7 @@ const CreateEditDocument = ({
                     </div>
                   </div>
                   )}
-                  <div id="outline-container-container" style={{ paddingBottom: 40 }}>
+                  <div id="outline-container-container">
                     <EditablePlugins
                       readOnly={false}
                       plugins={plugins}
@@ -694,8 +941,8 @@ const CreateEditDocument = ({
                     { text: 'Web Page', key: 'Web Page' },
                     { text: 'Other', key: 'Other' },
                   ]}
-                  selectedOptionKey={typeOfResource}
-                  setSelectedOptionKey={setTypeOfResource}
+                  selectedOptionKey={resourceType}
+                  setSelectedOptionKey={setResourceType}
                 />
               </div>
               <div style={{
@@ -834,8 +1081,8 @@ const CreateEditDocument = ({
                     <div className={styles.additionalMetadataHeaders}>Number in series</div>
                     <input
                       placeholder="Number"
-                      value={numberInSeries}
-                      onChange={(ev) => setNumberInSeries(ev.target.value)}
+                      value={seriesNumber}
+                      onChange={(ev) => setSeriesNumber(ev.target.value)}
                     />
                   </div>
                 </div>
@@ -1006,6 +1253,32 @@ const CreateEditDocument = ({
             </div>
           </div>
           <Modal
+            id="save-document-modal"
+            size="lg"
+            show={savingDocument}
+            onHide={() => {}}
+          >
+            <Modal.Body style={{ display: 'flex', flexDirection: 'column' }}>
+              <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                <div style={{
+                  flex: 1, fontSize: 22, fontWeight: 'bold', color: '#363D4E', marginLeft: 5,
+                }}
+                >
+                  {mode === 'edit' ? 'Saving Document' : 'Creating Document'}
+                </div>
+              </div>
+              <div style={{
+                display: 'flex', flexDirection: 'column', marginTop: 30, marginBottom: 20, alignItems: 'center', justifyContent: 'center',
+              }}
+              >
+                <div style={{ fontSize: 14, color: '#757575', textAlign: 'center' }}>
+                  {`Do not close browser window or navigate to another link while document is being ${mode === 'edit' ? 'saved' : 'created'}!`}
+                </div>
+                <ProgressBar style={{ width: '100%' }} now={100} animated />
+              </div>
+            </Modal.Body>
+          </Modal>
+          <Modal
             id="delete-group-modal"
             size="lg"
             show={showDeleteDocumentModal}
@@ -1017,7 +1290,7 @@ const CreateEditDocument = ({
                   flex: 1, fontSize: 22, fontWeight: 'bold', color: '#363D4E', marginLeft: 5,
                 }}
                 >
-                  Delete Group
+                  Delete Document
                 </div>
                 <div
                   className={styles.cancelUploadBtn}
@@ -1032,7 +1305,7 @@ const CreateEditDocument = ({
               >
                 <Button
                   variant="danger"
-                  onClick={() => {}}
+                  onClick={() => onCancel()}
                 >
                   Delete Document
                 </Button>
@@ -1068,9 +1341,55 @@ const CreateEditDocument = ({
                 >
                   <div style={{ color: '#898C95', fontSize: 17, fontWeight: 300 }}>Upload PDF, DOCX, ODT, or EPUB</div>
                   <div id="file-input-container">
-                    <input
-                      type="file"
-                      onChange={(ev) => setFileName(ev.target.value.split('C:\\fakepath\\')[1])}
+                    <ReactS3Uploader
+                      signingUrl={process.env.NEXT_PUBLIC_SIGNING_URL}
+                      signingUrlMethod="GET"
+                      accept=".docx,.pdf,.odt,.epub"
+                      s3path="files/"
+                      disabled={savingDocument || (progress.started && progress.status !== 'Complete' && progress.status !== 'Failed')}
+                      onProgress={(percent, stats, file) => {
+                        if (fileName === undefined) {
+                          setFileName(file.name);
+                        }
+                        setProgress(
+                          {
+                            started: true,
+                            percent: percent / (100 / origPercent),
+                            status: stats,
+                          },
+                        );
+                      }}
+                      onError={((msg) => setErrors((prevState) => [...prevState, { text: msg, variant: 'danger' }]))}
+                      onFinish={async (signRes, file) => {
+                        const fileUrl = signRes.signedUrl.substring(
+                          0, signRes.signedUrl.indexOf('?'),
+                        );
+                        const processedUrl = `${fileUrl.substring(
+                          0, fileUrl.indexOf('files'),
+                        )}processed/${signRes.filename.substring(
+                          0, signRes.filename.lastIndexOf('.'),
+                        )}.html`;
+                        const fileObj = {
+                          name: signRes.filename,
+                          size: file.size,
+                          contentType: file.type,
+                          url: fileUrl,
+                          processedUrl,
+                        };
+                        await getProcessedDocument(fileObj.processedUrl)
+                          .then((res) => {
+                            // console.log('getProcessedDocument res', res);
+                            setDocumentText(res);
+                            setHtmlValue(fileObj.processedUrl);
+                            setContentType(fileObj.contentType);
+                          })
+                          .catch((err) => {
+                            setErrors((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
+                          });
+                      }}
+                      uploadRequestHeaders={{ 'x-amz-acl': 'public-read' }}
+                      onChange={() => {}}
+                      onBlur={() => {}}
                     />
                   </div>
                   <div style={{
@@ -1121,40 +1440,22 @@ const CreateEditDocument = ({
           border-radius: 0px;
         }
 
-        #outline-container-container {
-          height: calc(100vh - 250px);
-          padding: 20px 0px;
-          overflow: overlay;
-        }
-
-        #outline-container {
-          background: white;
-          width: 750px;
-          min-height: 971px !important;
-          height: auto !important;
-          margin: 0px auto;
-          border: none;
-          border-radius: 0px;
-          box-shadow: 3px 3px 9px 0px rgb(0 0 0 / 38%) !important;
-          outline: none !important;
-          resize: none;
-        }
-
         [data-testid='slate-toolbar'] {
           border-radius: 0px;
         }
 
         #outline-container-container {
-          height: calc(100vh - 303px);
-          padding: 20px 0px;
+          height: calc(100% - 50px);
+          padding: 30px 0px 40px 0px;
           overflow: overlay;
           position: relative;
         }
 
         #outline-container {
+          background: white;
           transition: left 0.5s;
           position: absolute;
-          left: ${0};
+          left: calc(50% - ${documentWidth / 2}px);
           background: white;
           width: ${documentWidth}px;
           min-height: 971px !important;
