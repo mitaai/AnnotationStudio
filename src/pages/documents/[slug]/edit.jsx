@@ -1,6 +1,5 @@
-import unfetch from 'unfetch';
 import { useSession } from 'next-auth/client';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Card, Col,
 } from 'react-bootstrap';
@@ -15,7 +14,9 @@ const EditDocument = ({
   query, document, alerts, statefulSession,
 }) => {
   const [session, loading] = useSession();
-  const [pageLoading, setPageLoading] = useState(true);
+  // eslint-disable-next-line no-unused-vars
+  const [pageLoading, setPageLoading] = useState(false);
+  // eslint-disable-next-line no-unused-vars
   const [errors, setErrors] = useState(alerts || []);
   const {
     did,
@@ -30,41 +31,15 @@ const EditDocument = ({
     did, slug, dp, gid,
   };
 
-  const cloudfrontUrl = process.env.NEXT_PUBLIC_SIGNING_URL.split('/url')[0];
-
   const showEditDocumentContent = session && document && !loading && !pageLoading;
   const userUnauthorizedToViewContent = document.owner !== session?.user?.id && session?.user?.role !== 'admin';
 
-  useEffect(() => {
-    if (document && document.text && (document.uploadContentType === 'text/slate-html' || document.uploadContentType === 'text/html')
-      && document.text.length < 255 && document.text.includes(cloudfrontUrl)) {
-      unfetch(document.text.substring(
-        document.text.indexOf(cloudfrontUrl), document.text.indexOf('.html') + 5,
-      ), {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'text/html',
-        },
-      }).then((res) => {
-        res.text().then((result) => {
-          // eslint-disable-next-line no-param-reassign
-          document.text = result;
-          setPageLoading(false);
-        });
-      }).catch((err) => {
-        setErrors((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
-        setPageLoading(false);
-      });
-    } else {
-      setPageLoading(false);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [document]);
 
   return (
     showEditDocumentContent && !userUnauthorizedToViewContent
       ? (
         <CreateEditDocument
+          mode="edit"
           session={session}
           loading={loading}
           statefulSession={statefulSession}

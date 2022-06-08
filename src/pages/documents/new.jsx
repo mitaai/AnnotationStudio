@@ -5,6 +5,7 @@ const NewDocument = ({ statefulSession }) => {
   const [session, loading] = useSession();
   return (
     <CreateEditDocument
+      mode="new"
       session={session}
       loading={loading}
       statefulSession={statefulSession}

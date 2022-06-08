@@ -1,10 +1,10 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 /* eslint-disable react/no-array-index-key */
-/* eslint-disable no-unused-vars */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 import React, { useState, useEffect, useMemo } from 'react';
+import $ from 'jquery';
 import {
   Button, Modal, Spinner,
 } from 'react-bootstrap';
@@ -29,12 +29,13 @@ import {
   withTable,
 } from '@udecode/slate-plugins';
 import { withHistory } from 'slate-history';
+import unfetch from 'unfetch';
 import Layout from '../Layout';
 import UnauthorizedCard from '../UnauthorizedCard';
 import LoadingSpinner from '../LoadingSpinner';
-import DocumentForm from '../DocumentForm';
 import SlateToolbar from '../SlateToolbar';
 import Select from '../Select';
+import Document from '../Document';
 import styles from './CreateEditDocument.module.scss';
 import { plugins, withDivs } from '../../utils/slateUtil';
 import SelectInput from '../SelectInput';
@@ -43,7 +44,7 @@ import { getGroupsByGroupIds } from '../../utils/groupUtil';
 import { DeepCopyObj } from '../../utils/docUIUtils';
 
 const CreateEditDocument = ({
-  statefulSession, document, session, loading,
+  statefulSession, document, session, loading, mode = 'new',
 }) => {
   const [groups, setGroups] = useState([]);
   const [groupData, setGroupData] = useState([]);
@@ -56,6 +57,30 @@ const CreateEditDocument = ({
   const [showUploadModal, setShowUploadModal] = useState();
   const [showDeleteDocumentModal, setShowDeleteDocumentModal] = useState();
 
+  // console.log('document', document);
+
+  const [loadingDocumentText, setLoadingDocumentText] = useState(true);
+  const canEditDocument = mode === 'new' || (document
+    && document.state === 'draft'
+    && (document.uploadContentType === 'text/slate-html' || document.uploadContentType === 'text/html'));
+  let cannotEditMessage;
+  if (!canEditDocument) {
+    if (document.state === 'draft') {
+      // pass
+    } else {
+      cannotEditMessage = (
+        <span style={{ color: '#616161', marginRight: 'auto' }}>
+          <span style={{ fontWeight: 500, marginRight: 4 }}>
+            {document.state === 'published' ? 'Published' : 'Archived'}
+            {' '}
+            Document
+          </span>
+          <span style={{ fontWeight: 300, color: '#E20101', opacity: 0.4 }}>(cannot be edited)</span>
+        </span>
+      );
+    }
+  }
+  const [documentText, setDocumentText] = useState();
   const [slateDocument, setSlateDocument] = useState();
   const [slateLoading, setSlateLoading] = useState();
 
@@ -160,6 +185,19 @@ const CreateEditDocument = ({
     setGroupsShared(newGroupsShared);
   };
 
+  // eslint-disable-next-line no-unused-vars
+  const [documentZoom, setDocumentZoom] = useState(100);
+  // eslint-disable-next-line no-unused-vars
+  const [documentHeight, setDocumentHeight] = useState();
+
+  const scale = documentZoom / 100;
+  const documentWidth = 750;
+
+  const extraWidth = 0;
+  const documentIsPDF = false;
+  // document && document.uploadContentType && document.uploadContentType.includes('pdf');
+
+
   const withPlugins = [
     withReact,
     withHistory,
@@ -174,6 +212,7 @@ const CreateEditDocument = ({
   ];
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
+
 
   const transition = 'all 0.5s';
   const border = '1px solid #dddddd';
@@ -385,6 +424,40 @@ const CreateEditDocument = ({
     }
   }, [session]);
 
+  useEffect(() => {
+    const cloudfrontUrl = process.env.NEXT_PUBLIC_SIGNING_URL.split('/url')[0];
+    if (document && document.text
+      && document.text.length < 255 && document.text.includes(cloudfrontUrl)) {
+      unfetch(document.text.substring(
+        document.text.indexOf(cloudfrontUrl), document.text.indexOf('.html') + 5,
+      ), {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'text/html',
+        },
+      }).then((res) => {
+        res.text().then((result) => {
+          // replacing the cloudfront url with the actual text result from the url
+          setDocumentText(result);
+          setLoadingDocumentText();
+        });
+      }).catch(() => {
+        setLoadingDocumentText();
+      });
+    } else {
+      setLoadingDocumentText();
+    }
+  }, [document]);
+
+  useEffect(() => {
+    // another thing we must do is set all the links in the document to target="_blank" so that
+    // if the user clicks on a link it will open the url in another tab and presever the work
+    // they are doing on the document view page
+    if (!loadingDocumentText) {
+      $('#document-container a').attr('target', '_blank');
+    }
+  }, [loadingDocumentText]);
+
   return (
     <>
       <Layout
@@ -415,20 +488,90 @@ const CreateEditDocument = ({
               position: 'absolute', height: '100%', transition, ...state.leftPanel,
             }}
             >
-              {fileName ? (
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <div
-                    className={styles.gradient}
-                    style={{
-                      display: 'flex', flexDirection: 'row', alignItems: 'center', height: 49, backgroundColor: '#F0F0F0', borderBottom: '1px solid #ced4da', paddingLeft: 52, paddingRight: 13,
-                    }}
-                  >
-                    <span style={{ color: '#616161', fontWeight: 400, marginRight: 'auto' }}>{fileName}</span>
-                    <div className={styles.cancelUploadBtn} onClick={() => setFileName()}>
-                      <X size={20} />
+              {!canEditDocument ? (
+                <>
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <div
+                      className={fileName !== undefined ? styles.gradient : ''}
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        height: 49,
+                        backgroundColor: '#F0F0F0',
+                        borderBottom: '1px solid #ced4da',
+                        paddingLeft: 52,
+                        paddingRight: 13,
+                      }}
+                    >
+                      {fileName !== undefined ? (
+                        <>
+                          <span style={{ color: '#616161', fontWeight: 400, marginRight: 'auto' }}>{fileName}</span>
+                          <div className={styles.cancelUploadBtn} onClick={() => setFileName()}>
+                            <X size={20} />
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          {cannotEditMessage}
+                        </>
+                      )}
                     </div>
                   </div>
-                </div>
+                  <div
+                    id="document-container"
+                    style={{
+                      position: 'absolute',
+                      left: 0,
+                      top: 49,
+                      height: 'calc(100% - 49px)',
+                      width: state.leftPanel.width,
+                      padding: 20,
+                      transition,
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: documentWidth * scale,
+                        height: (documentHeight * scale) || 100,
+                      }}
+                    />
+                    <div
+                      id="document-container-col"
+                      style={{
+                        transform: `scale(${scale}) translateY(0px)`,
+                        transformOrigin: 'top left',
+                        minWidth: documentWidth,
+                        maxWidth: documentWidth,
+                        position: 'absolute',
+                        top: 20,
+                        left: 'calc(50% - 375px)',
+                      }}
+                    >
+                      <Document
+                        setShowUnsavedChangesToast={() => {}}
+                        setShowMaxTextLengthReached={() => {}}
+                        annotationIdBeingEdited={undefined}
+                        addActiveAnnotation={() => {}}
+                        removeActiveAnnotation={() => {}}
+                        displayAnnotationsInChannels={false}
+                        setChannelAnnotations={() => {}}
+                        annotations={[]}
+                        documentHighlightedAndLoaded
+                        addAnnotationToChannels={() => {}}
+                        annotateDocument={undefined}
+                        documentToAnnotate={{ ...document, text: documentText || document.text }}
+                        documentZoom={documentZoom}
+                        alerts={[]}
+                        setAlerts={setErrors}
+                        user={session ? session.user : undefined}
+                        showCannotAnnotateDocumentToast={false}
+                        setShowCannotAnnotateDocumentToast={() => {}}
+                        loadingDocument={loadingDocumentText}
+                      />
+                    </div>
+                  </div>
+                </>
               ) : (
                 <Slate
                   editor={editor}
@@ -981,7 +1124,7 @@ const CreateEditDocument = ({
         #outline-container-container {
           height: calc(100vh - 250px);
           padding: 20px 0px;
-          overflow: scroll;
+          overflow: overlay;
         }
 
         #outline-container {
@@ -995,6 +1138,179 @@ const CreateEditDocument = ({
           box-shadow: 3px 3px 9px 0px rgb(0 0 0 / 38%) !important;
           outline: none !important;
           resize: none;
+        }
+
+        [data-testid='slate-toolbar'] {
+          border-radius: 0px;
+        }
+
+        #outline-container-container {
+          height: calc(100vh - 303px);
+          padding: 20px 0px;
+          overflow: overlay;
+          position: relative;
+        }
+
+        #outline-container {
+          transition: left 0.5s;
+          position: absolute;
+          left: ${0};
+          background: white;
+          width: ${documentWidth}px;
+          min-height: 971px !important;
+          height: auto !important;
+          margin: 0px 20px;
+          border: none;
+          border-radius: 0px;
+          box-shadow: 3px 3px 9px 0px rgb(0 0 0 / 38%) !important;
+          outline: none !important;
+          resize: none;
+        }
+
+
+        [text-analysis='true'] {
+          transition: background-color 0.25s;
+        }
+
+        .ta-success[text-analysis='true'] {
+          background-color: rgba(2, 112, 255, 0.2);
+        }
+
+        .ta-success[text-analysis='true'].hover {
+          background-color: rgba(2, 78, 255, 0.6);
+        }
+
+        .ta-comment[text-analysis='true'] {
+          background-color: rgba(150, 150, 150, 0.2);
+        }
+
+        .ta-comment[text-analysis='true'].hover {
+          background-color: rgba(150, 150, 150, 0.4);
+        }
+
+        .ta-warning[text-analysis='true'] {
+          background-color: rgba(255, 210, 10, 0.3);
+        }
+
+        .ta-warning[text-analysis='true'].hover {
+          background-color: rgba(255, 210, 10, 0.6);
+        }
+
+        .ta-danger[text-analysis='true'] {
+          background-color: rgba(255, 59, 10, 0.3);
+        }
+
+        .ta-danger[text-analysis='true'].hover {
+          background-color: rgba(255, 59, 10, 0.6);
+        }
+        
+        body {
+          overflow: hidden !important;
+        }
+
+        #annotations-header-label {
+          padding: 12px 0px 0px 20px;
+        }
+
+        #document-container {
+          height: calc(100vh - ${200}px);
+          transition: height 0.5s;
+          overflow-y: overlay !important;
+          overflow-x: overlay !important;
+          padding: 25px 0px 15px 0px;
+        }
+
+        #document-inner-container {
+          display: flex;
+          flex-direction: row;
+          width: calc(100% + ${extraWidth}px);
+        }
+
+        
+
+        #document-container .annotation-channel-container{
+          height: 0px;
+          flex: 1;
+          position: relative;
+          z-index: 2;
+          top: -25px;
+        }
+        
+        #document-container #annotation-well-card-container {
+          min-height: 100%;
+          background-color: transparent;
+        }
+
+        #document-container #document-card-container {
+          min-height: 971px;
+          padding: 40px;
+          font-family: 'Times';
+          border-radius: 0px;
+          border: none;
+          box-shadow: ${documentIsPDF
+          ? 'none'
+          : '3px 3px 9px 0px rgba(0,0,0,0.38)'
+          };
+          ${documentIsPDF ? 'background: none;' : ''}
+        }
+
+        #document-container #annotation-well-card-container .card-body {
+          padding: 10px;
+        }
+            
+        #document-container #annotation-well-card-container .card-body #annotation-well-header {
+            margin-bottom: 10px;
+        }
+
+        #document-container #annotation-well-card-container .card-body #annotation-list-container > .col > .row {
+          margin-bottom: 5px;
+        }  
+
+        #document-container #annotation-well-card-container .card-body #annotation-list-container > .col > .row .card {
+          border: none;
+          box-shadow: 0px 0px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12), 0 1px 5px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        #document-container #annotation-well-card-container .card-body .btn-group:first-child {
+            margin-right: 10px;
+        }
+
+        #document-container #annotation-well-card-container .card-body .list-group-item {
+            padding: 5px 10px;
+        }
+
+        .text-currently-being-annotated.active {
+          background-color: rgba(0, 123, 255, 0.5);
+        }
+
+        #show-cannot-annotate-document-toast-container {
+          z-index: 1;
+          position: relative;
+          left: 10px;
+          top: 10px;
+          height: 0px;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+        }
+
+        #show-cannot-annotate-document-toast-container .toast {
+          border-color: rgb(220, 53, 70) !important;
+        }
+
+        #show-cannot-annotate-document-toast-container .toast-header {
+          background-color: rgba(220, 53, 70, 0.85) !important;
+          color: white !important; 
+        }
+
+        #show-cannot-annotate-document-toast-container .toast-header button {
+          color: white !important;
+        }
+
+        #comment-card-left-pointer, #comment-card-middle-pointer, #comment-card-right-pointer {
+          display: none;
+        }
+
+        .left #comment-card-left-pointer, .middle #comment-card-middle-pointer, .right #comment-card-right-pointer {
+          display: block !important;
         }
       `}
       </style>
