@@ -66,7 +66,7 @@
 }
 
 .uploadDocumentBtn {
-    position: absolute;
+    position: relative;
     top: 15px;
     width: 100px;
     height: 34px;
@@ -86,7 +86,8 @@
     &:not(:disabled) {
       cursor: pointer;
       &:hover {
-        background-color: #eeeeee !important;
+        color: theme.$primary !important;
+        background-color: #EFF5FF !important;
       }
     }
 }

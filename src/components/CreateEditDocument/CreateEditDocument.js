@@ -547,29 +547,18 @@ const CreateEditDocument = ({
 
   const statusTableRows = statesOfStatusTableRows[status];
 
-
+  const minimizeOffset = mode === 'edit' ? 215 : 233;
   const secondNavbarExtraContent = (
     <div style={{
       position: 'absolute', top: -8, left: -33, height: 64,
     }}
     >
       <div style={{
-        position: 'absolute', transition, left: `calc(100vw - ${minimize ? 233 : 450}px)`, height: '100%', display: 'flex', flexDirection: 'row',
+        position: 'absolute', transition, left: `calc(100vw - ${minimize ? minimizeOffset : 450}px)`, height: '100%', display: 'flex', flexDirection: 'row',
       }}
       >
-        {document === undefined ? (
-          <Button
-            className={styles.uploadDocumentBtn}
-            style={{
-              transition,
-              left: -112 + (minimize ? 5 : 0),
-            }}
-            onClick={() => setShowUploadModal(true)}
-            disabled={progress.started}
-          >
-            Upload
-          </Button>
-        ) : (
+        {document && (
+        <>
           <Button
             className={styles.cancelChangesBtn}
             style={{
@@ -580,17 +569,19 @@ const CreateEditDocument = ({
           >
             Cancel
           </Button>
+          <div style={{
+            transition,
+            height: 44,
+            width: 1,
+            backgroundColor: '#dddddd',
+            margin: `auto ${minimize ? 0 : 12}px auto 0px`,
+            opacity: minimize ? 0 : 1,
+          }}
+          />
+        </>
         )}
-        <div style={{
-          transition,
-          height: 44,
-          width: 1,
-          backgroundColor: '#dddddd',
-          margin: `auto ${minimize ? 0 : 12}px auto 0px`,
-          opacity: minimize ? 0 : 1,
-        }}
-        />
-        {document === undefined
+
+        {mode === 'new'
           ? (
             <Button
               className={styles.createNewDocumentBtn}
@@ -880,7 +871,7 @@ const CreateEditDocument = ({
                         )}
                       {(fileUploaded || document) && (
                       <div style={{
-                        position: 'absolute', right: minimize ? 67 : 13, top: 8.5, transition,
+                        position: 'absolute', right: minimize ? 49 : 13, top: 8.5, transition,
                       }}
                       >
                         <DocumentZoomSlider
@@ -978,6 +969,21 @@ const CreateEditDocument = ({
                     disabled={false}
                     style={{ borderTop: 'none', borderLeft: 'none', borderRight: 'none' }}
                   />
+                  <div style={{ position: 'absolute', width: '100%' }}>
+                    <Button
+                      className={styles.uploadDocumentBtn}
+                      style={{
+                        transition,
+                        top: -41.5,
+                        left: 50, // `calc(100% - 107.5px${minimize ? ' - 44px' : ''})`,
+                      }}
+                      onClick={() => setShowUploadModal(true)}
+                      disabled={progress.started}
+                    >
+                      Upload
+                    </Button>
+                  </div>
+
                   {slateLoading && (
                   <div
                     style={{

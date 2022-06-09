@@ -29,7 +29,7 @@ const handler = async (req, res) => {
         hasAccessToDelete = userObj.role === 'admin';
       }
       if (hasAccessToDelete) {
-        if (fileObj.bucketName && fileObj.processedUrlKey) {
+        if (fileObj.processedUrlKey) {
           const bucketParamsArr = [{
             Bucket: 'as4-processed-html',
             Key: fileObj.processedUrlKey,
