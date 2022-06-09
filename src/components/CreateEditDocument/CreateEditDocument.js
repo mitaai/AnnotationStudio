@@ -864,6 +864,7 @@ const CreateEditDocument = ({
                         paddingRight: 13,
                       }}
                     >
+                      {mode === 'new' && (
                       <div
                         className={styles.cancelUploadBtn}
                         style={{ opacity: fileUploaded ? 1 : 0, transition }}
@@ -873,6 +874,7 @@ const CreateEditDocument = ({
                       >
                         <X size={20} />
                       </div>
+                      )}
                       {(fileUploading || fileUploaded)
                         && (
                         <span style={{
@@ -882,6 +884,14 @@ const CreateEditDocument = ({
                           {fileName || (fileUploaded ? 'File Uploaded' : 'Uploading document...')}
                         </span>
                         )}
+                      {mode === 'edit' && document && (
+                      <div style={{
+                        position: 'relative', fontWeight: 500, marginLeft: 2, fontSize: 16, color: '#525252',
+                      }}
+                      >
+                        Edit Document
+                      </div>
+                      )}
                       {(fileUploaded || document) && (
                       <div style={{
                         position: 'absolute', right: minimize ? 49 : 13, top: 8.5, transition,
