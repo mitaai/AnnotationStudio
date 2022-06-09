@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable max-len */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable jsx-a11y/anchor-is-valid */
@@ -99,7 +98,7 @@ const CreateEditDocument = ({
   const [fileName, setFileName] = useState();
   const [onChangeMsg, setOnChangeMsg] = useState();
 
-  const [documentHeight, setDocumentHeight] = useState();
+  // const [documentHeight, setDocumentHeight] = useState();
 
   const fileUploading = progress.started || htmlValue !== undefined;
   const fileUploaded = htmlValue !== undefined && documentText !== undefined;
@@ -808,6 +807,7 @@ const CreateEditDocument = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showUploadModal]);
 
+  /*
   useEffect(() => {
     if (documentText) {
       setDocumentHeight($('#document-container-col').height());
@@ -815,8 +815,7 @@ const CreateEditDocument = ({
       setDocumentHeight();
     }
   }, [documentText]);
-
-  console.log('documentHeight', documentHeight);
+  */
 
   return (
     <>
@@ -934,7 +933,7 @@ const CreateEditDocument = ({
                         transformOrigin: 'top center',
                         minWidth: documentWidth,
                         maxWidth: documentWidth,
-                        height: documentHeight === undefined ? undefined : documentHeight,
+                        // height: documentHeight === undefined ? undefined : documentHeight,
                         position: 'relative',
                         left: 'calc(50% - 375px)',
                         marginTop: 10,
