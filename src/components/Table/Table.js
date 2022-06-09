@@ -9,8 +9,11 @@ export default function Table({
   id = 'tableID',
   height,
   maxWidth = 1140,
+  headerStyle = {},
   columnHeaders = [{ header: 'Empty Table', flex: 1, minWidth: 100 }],
   rows = [],
+  fadeOnScroll = true,
+  hoverable = true,
 }) {
   // example of rows
   /*
@@ -29,9 +32,11 @@ export default function Table({
   const rowHeight = height !== undefined ? `${height} - 65px` : undefined;
 
   const tableHeader = columnHeaders.map(
-    ({ header, flex }) => (
+    ({
+      header, flex, minWidth, style = {},
+    }) => (
       <div style={{
-        flex, color: '#1F2532', fontWeight: 400, padding: 20,
+        flex, minWidth, color: '#1F2532', fontWeight: 400, padding: 20, ...style,
       }}
       >
         {header}
@@ -46,7 +51,7 @@ export default function Table({
       <div
         key={key}
         id={rowItemId(rowItemIndex)}
-        className={`${styles.rowItem} ${deleteHovered && styles.deleteHovered}`}
+        className={`${styles.rowItem} ${deleteHovered && styles.deleteHovered} ${!hoverable && styles.noHover}`}
         style={{
           backgroundColor: rowItemIndex % 2 === 0 ? '#FFFFFF' : '#FDFDFD',
         }}
@@ -161,7 +166,9 @@ export default function Table({
   };
 
   useEffect(() => {
-    onScroll();
+    if (fadeOnScroll) {
+      onScroll();
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -171,7 +178,11 @@ export default function Table({
     }}
     >
       <div style={{
-        backgroundColor: '#F8F8F8', display: 'flex', flexDirection: 'row', borderBottom: '1px solid #EBEFF3',
+        backgroundColor: '#F8F8F8',
+        display: 'flex',
+        flexDirection: 'row',
+        borderBottom: '1px solid #EBEFF3',
+        ...headerStyle,
       }}
       >
         {tableHeader}

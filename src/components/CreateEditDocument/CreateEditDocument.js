@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 /* eslint-disable react/no-array-index-key */
@@ -52,6 +53,7 @@ import { DeepCopyObj } from '../../utils/docUIUtils';
 import DocumentZoomSlider from '../DocumentZoomSlider';
 import { updateAllAnnotationsOnDocument } from '../../utils/annotationUtil';
 import { deleteCloudfrontFiles, deleteDocumentById } from '../../utils/docUtil';
+import Table from '../Table';
 
 const CreateEditDocument = ({
   statefulSession,
@@ -63,7 +65,6 @@ const CreateEditDocument = ({
   onDelete = () => {},
   onSave = () => {},
 }) => {
-  console.log('document', document);
   const uploaderRef = useRef({});
   const [groups, setGroups] = useState();
   const [groupData, setGroupData] = useState();
@@ -345,8 +346,6 @@ const CreateEditDocument = ({
     setDocumentZoom(100);
   };
 
-  console.log('fileObj', fileObj);
-
   const numRetries = 60;
   const origPercent = 25;
 
@@ -442,6 +441,112 @@ const CreateEditDocument = ({
   };
 
   const state = states[minimize ? 'minimize' : 'default'];
+
+
+  const x = {
+    content: <X size={20} />,
+    style: {
+      color: '#E20101', padding: 15, display: 'flex', alignItems: 'center', justifyContent: 'center',
+    },
+  };
+  const check = {
+    content: <Check size={20} />,
+    style: {
+      color: '#10A268', padding: 15, display: 'flex', alignItems: 'center', justifyContent: 'center',
+    },
+  };
+  const checkAsterisk = {
+    content: [<Check size={20} />, <span style={{ color: '#757575' }}>*</span>],
+    style: {
+      color: '#10A268', padding: 15, display: 'flex', alignItems: 'center', justifyContent: 'center',
+    },
+  };
+  const rowHeaderStyle = {
+    padding: 15, backgroundColor: '#f6f6f6', borderRight: '1px solid #EBEFF3', textAlign: 'center', fontWeight: 500,
+  };
+  const statesOfStatusTableRows = {
+    draft: [
+      {
+        columns: [
+          { content: 'Me', style: rowHeaderStyle },
+          x,
+          checkAsterisk,
+          check,
+        ],
+      },
+      {
+        columns: [
+          { content: 'Group', style: rowHeaderStyle },
+          x,
+          x,
+          x,
+        ],
+      },
+      {
+        columns: [
+          { content: 'Public', style: rowHeaderStyle },
+          x,
+          x,
+          x,
+        ],
+      },
+    ],
+    published: [
+      {
+        columns: [
+          { content: 'Me', style: rowHeaderStyle },
+          check,
+          x,
+          check,
+        ],
+      },
+      {
+        columns: [
+          { content: 'Group', style: rowHeaderStyle },
+          check,
+          x,
+          check,
+        ],
+      },
+      {
+        columns: [
+          { content: 'Public', style: rowHeaderStyle },
+          x,
+          x,
+          x,
+        ],
+      },
+    ],
+    archived: [
+      {
+        columns: [
+          { content: 'Me', style: rowHeaderStyle },
+          check,
+          x,
+          x,
+        ],
+      },
+      {
+        columns: [
+          { content: 'Group', style: rowHeaderStyle },
+          check,
+          x,
+          x,
+        ],
+      },
+      {
+        columns: [
+          { content: 'Public', style: rowHeaderStyle },
+          x,
+          x,
+          x,
+        ],
+      },
+    ],
+  };
+
+  const statusTableRows = statesOfStatusTableRows[status];
+
 
   const secondNavbarExtraContent = (
     <div style={{
@@ -652,6 +757,7 @@ const CreateEditDocument = ({
       setDocumentText(document.text);
       setLoadingDocumentText();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [document]);
 
   useEffect(() => {
@@ -1278,11 +1384,60 @@ const CreateEditDocument = ({
                 options={[
                   { text: 'Draft', key: 'draft', disabled: documentCannotBeADraft },
                   { text: 'Published', key: 'published' },
-                  { text: 'Archived', key: 'Archived' },
+                  { text: 'Archived', key: 'archived' },
                 ]}
                 selectedOptionKey={status}
                 setSelectedOptionKey={setStatus}
               />
+              <div style={{ marginBottom: 20 }} />
+              <Table
+                key="document-status-table"
+                id="document-status-table"
+                height="100vh - 380px"
+                headerStyle={{ backgroundColor: '#f7f7f7' }}
+                hoverable={false}
+                columnHeaders={[
+                  {
+                    header: '',
+                    minWidth: 80,
+                    style: {
+                      padding: 12, borderRight: '1px solid #EBEFF3', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'transparent',
+                    },
+                  },
+                  {
+                    header: 'View',
+                    flex: 1,
+                    style: {
+                      padding: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 500, backgroundColor: '#f4f4f4',
+                    },
+                  },
+                  {
+                    header: 'Edit',
+                    flex: 1,
+                    style: {
+                      padding: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 500, backgroundColor: '#f4f4f4',
+                    },
+                  },
+                  {
+                    header: 'Annotate',
+                    flex: 1,
+                    style: {
+                      padding: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 500, backgroundColor: '#f4f4f4',
+                    },
+                  },
+                ]}
+                rows={statusTableRows}
+                fadeOnScroll={false}
+              />
+              <div style={{
+                color: '#6c757d', fontSize: 13, display: 'flex', flexDirection: 'row', marginTop: 10,
+              }}
+              >
+                <span style={{ fontSize: 16, marginRight: 2 }}>*</span>
+                <span>
+                  Only documents created using “Paste or type directly into the form” can be edited, even in Draft mode.
+                </span>
+              </div>
               <div style={{ flex: 1, marginBottom: 40 }} />
               {spacer}
               <div
@@ -1373,7 +1528,6 @@ const CreateEditDocument = ({
                             // delete document
                             deleteDocumentById(document.id).then((res) => {
                               const doc = res.value;
-                              console.log('deleted doc', doc);
                               let fObj = doc.fileObj;
                               if (fObj === undefined) {
                                 // we need to try to make a processedUrlKey and bucketName and

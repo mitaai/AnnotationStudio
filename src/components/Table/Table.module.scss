@@ -10,6 +10,10 @@
     background-color: white;
     cursor: pointer;
 
+    &.noHover {
+        cursor: default;
+    }
+
     [show-on-hover=true] {
         transition: all 0.25s;
         opacity: 0;
@@ -50,7 +54,7 @@
         z-index: 2;
     }
 
-    &:hover {
+    &:not(.noHover):hover {
         &.deleteHovered {
             background-color: #FFFAFA !important;
             [show-on-hover=true] {
