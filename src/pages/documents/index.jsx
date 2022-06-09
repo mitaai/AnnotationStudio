@@ -29,6 +29,7 @@ import NewPlusButton from '../../components/NewPlusButton';
 import PermissionsButtonGroup from '../../components/PermissionsButtonGroup';
 import { getGroupsByGroupIds } from '../../utils/groupUtil';
 import styles from './index.module.scss';
+import { escapeRegExp } from '../../utils/stringUtil';
 
 const DocumentsIndex = ({
   props,
@@ -88,7 +89,7 @@ const DocumentsIndex = ({
     title, contributors, groups, state,
   }) => {
     // eslint-disable-next-line no-useless-escape
-    const r = searchQuery ? new RegExp(`\.\*${searchQuery}\.\*`, 'i') : new RegExp('\.\*', 'i');
+    const r = searchQuery ? new RegExp(`\.\*${escapeRegExp(searchQuery)}\.\*`, 'i') : new RegExp('\.\*', 'i');
     if (title.search(r) !== -1
       || state.search(r) !== -1
       || contributors.some(({ name }) => name.search(r) !== -1)

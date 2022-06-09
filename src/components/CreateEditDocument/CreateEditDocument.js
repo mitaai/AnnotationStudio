@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable max-len */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable jsx-a11y/anchor-is-valid */
@@ -54,6 +55,7 @@ import DocumentZoomSlider from '../DocumentZoomSlider';
 import { updateAllAnnotationsOnDocument } from '../../utils/annotationUtil';
 import { deleteCloudfrontFiles, deleteDocumentById } from '../../utils/docUtil';
 import Table from '../Table';
+import { escapeRegExp } from '../../utils/stringUtil';
 
 const CreateEditDocument = ({
   statefulSession,
@@ -96,6 +98,8 @@ const CreateEditDocument = ({
   const [progress, setProgress] = useState({});
   const [fileName, setFileName] = useState();
   const [onChangeMsg, setOnChangeMsg] = useState();
+
+  const [documentHeight, setDocumentHeight] = useState();
 
   const fileUploading = progress.started || htmlValue !== undefined;
   const fileUploaded = htmlValue !== undefined && documentText !== undefined;
@@ -642,7 +646,7 @@ const CreateEditDocument = ({
 
   const queriedGroups = (groupData || []).filter(({ name }) => {
     // eslint-disable-next-line no-useless-escape
-    const r = groupQuery ? new RegExp(`\.\*${groupQuery}\.\*`, 'i') : new RegExp('\.\*', 'i');
+    const r = groupQuery ? new RegExp(`\.\*${escapeRegExp(groupQuery)}\.\*`, 'i') : new RegExp('\.\*', 'i');
     return name.search(r) !== -1;
   });// .sort();
 
@@ -804,6 +808,16 @@ const CreateEditDocument = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showUploadModal]);
 
+  useEffect(() => {
+    if (documentText) {
+      setDocumentHeight($('#document-container-col').height());
+    } else {
+      setDocumentHeight();
+    }
+  }, [documentText]);
+
+  console.log('documentHeight', documentHeight);
+
   return (
     <>
       <Layout
@@ -920,6 +934,7 @@ const CreateEditDocument = ({
                         transformOrigin: 'top center',
                         minWidth: documentWidth,
                         maxWidth: documentWidth,
+                        height: documentHeight === undefined ? undefined : documentHeight,
                         position: 'relative',
                         left: 'calc(50% - 375px)',
                         marginTop: 10,
@@ -951,6 +966,7 @@ const CreateEditDocument = ({
                         loadingDocument={loadingDocumentText}
                       />
                     </div>
+                    <div style={{ width: '100%', height: 0 }} />
                   </div>
                 </>
               ) : (

@@ -36,6 +36,7 @@ import styles from './index.module.scss';
 import TextDropdown from '../../../components/TextDropdown';
 import { copyToClipboard } from '../../../utils/docUIUtils';
 import LoadingSpinner from '../../../components/LoadingSpinner';
+import { escapeRegExp } from '../../../utils/stringUtil';
 
 
 const EditGroup = ({
@@ -273,7 +274,7 @@ const EditGroup = ({
   const queriedMembers = groupMembers
     ? groupMembers.filter(({ name, email, role }) => {
       // eslint-disable-next-line no-useless-escape
-      const r = searchQuery ? new RegExp(`\.\*${searchQuery}\.\*`, 'i') : new RegExp('\.\*', 'i');
+      const r = searchQuery ? new RegExp(`\.\*${escapeRegExp(searchQuery)}\.\*`, 'i') : new RegExp('\.\*', 'i');
       return name.search(r) !== -1 || email.search(r) !== -1 || role.search(r) !== -1;
     })
     : undefined;// .sort();

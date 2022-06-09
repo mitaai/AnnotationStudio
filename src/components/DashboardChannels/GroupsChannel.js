@@ -16,6 +16,7 @@ import {
 } from '../../utils/groupUtil';
 import PermissionsButtonGroup from '../PermissionsButtonGroup';
 import ChannelHeader from './ChannelHeader';
+import { escapeRegExp } from '../../utils/stringUtil';
 
 export default function GroupsChannel({
   width,
@@ -85,7 +86,7 @@ export default function GroupsChannel({
   const queryGroups = ({ name }) => {
     if (searchQuery) {
       // eslint-disable-next-line no-useless-escape
-      const r = searchQuery ? new RegExp(`\.\*${searchQuery}\.\*`, 'i') : new RegExp('\.\*', 'i');
+      const r = searchQuery ? new RegExp(`\.\*${escapeRegExp(searchQuery)}\.\*`, 'i') : new RegExp('\.\*', 'i');
       return name.search(r) !== -1;
     }
     return true;

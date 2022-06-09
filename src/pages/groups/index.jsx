@@ -32,6 +32,7 @@ import BadgeButton from '../../components/BadgeButton';
 import PermissionsButtonGroup from '../../components/PermissionsButtonGroup';
 import NewPlusButton from '../../components/NewPlusButton';
 import RolePermissionsModal from '../../components/RolePermissionsModal';
+import { escapeRegExp } from '../../utils/stringUtil';
 
 const GroupList = ({ query, initAlerts, statefulSession }) => {
   const [session, loading] = useSession();
@@ -52,7 +53,7 @@ const GroupList = ({ query, initAlerts, statefulSession }) => {
   const queriedGroups = permissionGroups
     ? permissionGroups.filter(({ name }) => {
     // eslint-disable-next-line no-useless-escape
-      const r = searchQuery ? new RegExp(`\.\*${searchQuery}\.\*`, 'i') : new RegExp('\.\*', 'i');
+      const r = searchQuery ? new RegExp(`\.\*${escapeRegExp(searchQuery)}\.\*`, 'i') : new RegExp('\.\*', 'i');
       return name.search(r) !== -1;
     })
     : undefined;// .sort();
