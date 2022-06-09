@@ -29,7 +29,9 @@ const SelectInput = ({
         />
       </div>
       <input
-        style={{ flex: 1, padding: '6px 10px', borderRadius: '0px 6px 6px 0px', color: '#424242' }}
+        style={{
+          flex: 1, padding: '6px 10px', borderRadius: '0px 6px 6px 0px', color: '#424242',
+        }}
         placeholder="Name"
         value={value}
         onChange={(ev) => setValue(ev.target.value)}
