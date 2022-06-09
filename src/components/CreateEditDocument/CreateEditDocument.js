@@ -162,6 +162,10 @@ const CreateEditDocument = ({
   };
 
   const removeContributor = (index) => {
+    if (contributors.length === 1 && index === 0) {
+      setContributors([]);
+      setAddingContributor(1);
+    }
     const newContributors = contributors.slice();
     newContributors.splice(index, 1);
     setContributors(newContributors);
@@ -402,18 +406,19 @@ const CreateEditDocument = ({
 
   const transition = 'all 0.5s';
   const border = '1px solid #dddddd';
+  const metadataContainerWidth = 500;
   const states = {
     default: {
       leftPanel: {
         left: 0,
-        width: 'calc(100vw - 450px)',
+        width: `calc(100vw - ${metadataContainerWidth}px)`,
       },
       rightPanel: {
-        left: 'calc(100vw - 450px)',
-        width: 450,
+        left: `calc(100vw - ${metadataContainerWidth}px)`,
+        width: metadataContainerWidth,
       },
       chevron: {
-        left: 'calc(100vw - 450px - 20px)',
+        left: `calc(100vw - ${metadataContainerWidth}px - 20px)`,
         transform: 'rotate(-45deg)',
       },
       chevronSpan: {
@@ -429,7 +434,7 @@ const CreateEditDocument = ({
       },
       rightPanel: {
         left: 'calc(100vw - 20px)',
-        width: 450,
+        width: metadataContainerWidth,
       },
       chevron: {
         left: 'calc(100vw - 20px - 20px)',
@@ -557,7 +562,7 @@ const CreateEditDocument = ({
     }}
     >
       <div style={{
-        position: 'absolute', transition, left: `calc(100vw - ${minimize ? minimizeOffset : 450}px)`, height: '100%', display: 'flex', flexDirection: 'row',
+        position: 'absolute', transition, left: `calc(100vw - ${minimize ? minimizeOffset : metadataContainerWidth}px)`, height: '100%', display: 'flex', flexDirection: 'row',
       }}
       >
         {document && (
@@ -1079,6 +1084,7 @@ const CreateEditDocument = ({
                 borderLeft: border,
                 padding: '20px 24px',
                 overflowY: 'overlay',
+                overflowX: 'hidden',
                 transition,
                 ...state.rightPanel,
               }}
@@ -1185,7 +1191,7 @@ const CreateEditDocument = ({
               <div
                 className={styles.additionalMetadata}
                 style={{
-                  minHeight: showAdditionalMetadata ? 450 : 0,
+                  minHeight: showAdditionalMetadata ? metadataContainerWidth : 0,
                   opacity: showAdditionalMetadata ? 1 : 0,
                 }}
               >
