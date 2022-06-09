@@ -489,7 +489,7 @@ const EditGroup = ({
                         backgroundColor: 'transparent',
                         fontStyle: searchQuery.length > 0 ? 'normal' : 'italic',
                       }}
-                      placeholder="Search group members (name, email, role)"
+                      placeholder="Search group (members name, email, role)"
                       onChange={(ev) => setSearchQuery(ev.target.value)}
                       value={searchQuery}
                     />

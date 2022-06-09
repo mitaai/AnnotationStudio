@@ -3,7 +3,9 @@
 /* eslint-disable react/no-array-index-key */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
-import React, { useState, useEffect, useMemo } from 'react';
+import React, {
+  useState, useEffect, useMemo, useRef,
+} from 'react';
 import $ from 'jquery';
 import {
   Button, Modal, ProgressBar, Spinner,
@@ -49,6 +51,7 @@ import { getGroupsByGroupIds } from '../../utils/groupUtil';
 import { DeepCopyObj } from '../../utils/docUIUtils';
 import DocumentZoomSlider from '../DocumentZoomSlider';
 import { updateAllAnnotationsOnDocument } from '../../utils/annotationUtil';
+import { deleteCloudfrontFiles, deleteDocumentById } from '../../utils/docUtil';
 
 const CreateEditDocument = ({
   statefulSession,
@@ -57,13 +60,16 @@ const CreateEditDocument = ({
   loading,
   mode = 'new',
   onCancel = () => {},
+  onDelete = () => {},
   onSave = () => {},
 }) => {
   console.log('document', document);
+  const uploaderRef = useRef({});
   const [groups, setGroups] = useState();
   const [groupData, setGroupData] = useState();
   const [errors, setErrors] = useState([]);
   const [savingDocument, setSavingDocument] = useState();
+  const [deletingDocument, setDeletingDocument] = useState();
 
   const [changesMade, setChangesMade] = useState();
   const [initialMount, setInitialMount] = useState(true);
@@ -79,6 +85,7 @@ const CreateEditDocument = ({
 
   const [contentType, setContentType] = useState('');
   const [htmlValue, setHtmlValue] = useState();
+  const [fileObj, setFileObj] = useState();
   const [documentText, setDocumentText] = useState();
   const [slateDocument, setSlateDocument] = useState();
   const [slateLoading, setSlateLoading] = useState();
@@ -87,9 +94,11 @@ const CreateEditDocument = ({
 
   const [progress, setProgress] = useState({});
   const [fileName, setFileName] = useState();
+  const [onChangeMsg, setOnChangeMsg] = useState();
 
   const fileUploading = progress.started || htmlValue !== undefined;
   const fileUploaded = htmlValue !== undefined && documentText !== undefined;
+  const cloudfrontUrl = process.env.NEXT_PUBLIC_SIGNING_URL.split('/url')[0];
 
   /*
     Properties of metadata form
@@ -97,7 +106,8 @@ const CreateEditDocument = ({
   const [showAdditionalMetadata, setShowAdditionalMetadata] = useState();
   const [title, setTitle] = useState(document?.title || '');
   const [resourceType, setResourceType] = useState(document?.resourceType || 'book');
-  const [status, setStatus] = useState(document?.state);
+  const [status, setStatus] = useState(document?.state || 'draft');
+  const documentCannotBeADraft = document?.state === 'published' || document?.state === 'archived';
   const [contributors, setContributors] = useState(document?.contributors || [{ type: 'Author', name: '' }]);
   // aditional metadata
   const [publicationDate, setPublicationDate] = useState('');
@@ -200,6 +210,7 @@ const CreateEditDocument = ({
     const postUrl = '/api/document';
     const newDocument = {
       uploadContentType: htmlValue ? contentType : 'text/slate-html',
+      fileObj,
       title: title === '' ? (fileName || 'Untitled') : title,
       groups: orderOfGroupsShared.core.concat(orderOfGroupsShared.contributions),
       slug,
@@ -212,7 +223,7 @@ const CreateEditDocument = ({
       accessed: dateAccessed,
       rightsStatus,
       location: publisherLocation,
-      state: status,
+      state: status || 'draft',
       text: htmlValue || serializeHTMLFromNodes({ plugins, nodes: slateDocument }),
       volume,
       issue: undefined,
@@ -258,7 +269,7 @@ const CreateEditDocument = ({
       accessed: dateAccessed,
       rightsStatus,
       location: publisherLocation,
-      state: status,
+      state: status || 'draft',
       text: canEditDocument
         ? serializeHTMLFromNodes({ plugins, nodes: slateDocument })
         : undefined,
@@ -292,6 +303,9 @@ const CreateEditDocument = ({
 
   const scale = documentZoom / 100;
   const documentWidth = 750;
+  const slateDocPos = `calc(50% - ${documentWidth / 2}px)`;
+  const slateLoadingPos = `calc(50% - ${(documentWidth / 2) - 20}px)`;
+  const toolbarHeight = 49;
 
   const extraWidth = 0;
   const documentIsPDF = (
@@ -314,15 +328,24 @@ const CreateEditDocument = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const editor = useMemo(() => pipe(createEditor(), ...withPlugins), []);
 
-  const deleteUploadedDocument = () => {
+  const deleteUploadedDocument = (deleteFiles) => {
+    if (deleteFiles && fileObj) {
+      deleteCloudfrontFiles({
+        noOwner: true,
+        fileObj,
+      });
+    }
     setContentType('');
     setHtmlValue();
     setDocumentText();
     setProgress({});
     setFileName();
+    setFileObj();
     setDeleteUploadHovered();
     setDocumentZoom(100);
   };
+
+  console.log('fileObj', fileObj);
 
   const numRetries = 60;
   const origPercent = 25;
@@ -607,7 +630,6 @@ const CreateEditDocument = ({
   useEffect(() => {
     if (!document) { return; }
     // loading document text
-    const cloudfrontUrl = process.env.NEXT_PUBLIC_SIGNING_URL.split('/url')[0];
     if (document.text
       && document.text.length < 255 && document.text.includes(cloudfrontUrl)) {
       unfetch(document.text.substring(
@@ -666,11 +688,24 @@ const CreateEditDocument = ({
   }, [loadingDocumentText]);
 
   useEffect(() => {
-    console.log('progress', progress);
     if (progress.started && showUploadModal) {
       setShowUploadModal();
+      setOnChangeMsg();
     }
+    if (progress.status === 'Failed') {
+      setTimeout((func) => {
+        func();
+      }, 1000, deleteUploadedDocument);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [progress]);
+
+  useEffect(() => {
+    if (!showUploadModal && onChangeMsg) {
+      setOnChangeMsg();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showUploadModal]);
 
   return (
     <>
@@ -712,17 +747,17 @@ const CreateEditDocument = ({
                         display: 'flex',
                         flexDirection: 'row',
                         alignItems: 'center',
-                        height: 49,
+                        height: toolbarHeight,
                         backgroundColor: '#F0F0F0',
                         borderBottom: '1px solid #ced4da',
-                        paddingLeft: 52,
+                        paddingLeft: 47,
                         paddingRight: 13,
                       }}
                     >
                       <div
                         className={styles.cancelUploadBtn}
                         style={{ opacity: fileUploaded ? 1 : 0, transition }}
-                        onClick={fileUploaded ? deleteUploadedDocument : () => {}}
+                        onClick={fileUploaded ? () => deleteUploadedDocument(true) : () => {}}
                         onMouseEnter={fileUploaded ? () => setDeleteUploadHovered(true) : () => {}}
                         onMouseLeave={fileUploaded ? () => setDeleteUploadHovered() : () => {}}
                       >
@@ -758,10 +793,11 @@ const CreateEditDocument = ({
                     style={{
                       position: 'absolute',
                       left: 0,
-                      top: 49,
-                      height: 'calc(100% - 49px)',
+                      top: toolbarHeight,
+                      height: `calc(100% - ${toolbarHeight}px)`,
                       width: state.leftPanel.width,
                       padding: 20,
+                      color: fileUploading && !fileUploaded ? 'transparent' : undefined,
                       transition,
                     }}
                   >
@@ -775,8 +811,9 @@ const CreateEditDocument = ({
                           top: 'max(25%, 100px)',
                           left: `calc(50% - ${(documentWidth - 100) / 2}px`,
                         }}
+                        variant={progress.status === 'Failed' ? 'danger' : 'primary'}
                         now={progress.percent.toFixed(0)}
-                        label={`${progress.percent.toFixed(0)}%`}
+                        label={progress.status === 'Failed' ? 'Failed' : `${progress.percent.toFixed(0)}%`}
                       />
                       )}
                     <div
@@ -836,7 +873,12 @@ const CreateEditDocument = ({
                     style={{ borderTop: 'none', borderLeft: 'none', borderRight: 'none' }}
                   />
                   {slateLoading && (
-                  <div className={styles['slate-loader']}>
+                  <div
+                    style={{
+                      position: 'absolute', zIndex: 5, left: slateLoadingPos, top: toolbarHeight + 30,
+                    }}
+                    className={styles['slate-loader']}
+                  >
                     <Spinner animation="border" role="status">
                       <span className="sr-only">Loading...</span>
                     </Spinner>
@@ -1234,7 +1276,7 @@ const CreateEditDocument = ({
               </div>
               <Select
                 options={[
-                  { text: 'Draft', key: 'draft' },
+                  { text: 'Draft', key: 'draft', disabled: documentCannotBeADraft },
                   { text: 'Published', key: 'published' },
                   { text: 'Archived', key: 'Archived' },
                 ]}
@@ -1268,21 +1310,24 @@ const CreateEditDocument = ({
                 </div>
               </div>
               <div style={{
-                display: 'flex', flexDirection: 'column', marginTop: 30, marginBottom: 20, alignItems: 'center', justifyContent: 'center',
+                display: 'flex', flexDirection: 'column', marginTop: 10, marginBottom: 20, alignItems: 'center', justifyContent: 'center',
               }}
               >
-                <div style={{ fontSize: 14, color: '#757575', textAlign: 'center' }}>
+                <ProgressBar style={{ width: '100%' }} now={100} animated />
+                <div style={{
+                  marginTop: 5, fontWeight: 500, fontSize: 14, color: '#9e9e9e', textAlign: 'center',
+                }}
+                >
                   {`Do not close browser window or navigate to another link while document is being ${mode === 'edit' ? 'saved' : 'created'}!`}
                 </div>
-                <ProgressBar style={{ width: '100%' }} now={100} animated />
               </div>
             </Modal.Body>
           </Modal>
           <Modal
-            id="delete-group-modal"
+            id="delete-document-modal"
             size="lg"
             show={showDeleteDocumentModal}
-            onHide={() => setShowDeleteDocumentModal()}
+            onHide={deletingDocument ? () => {} : () => setShowDeleteDocumentModal()}
           >
             <Modal.Body style={{ display: 'flex', flexDirection: 'column' }}>
               <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
@@ -1300,15 +1345,85 @@ const CreateEditDocument = ({
                 </div>
               </div>
               <div style={{
-                display: 'flex', flexDirection: 'row', marginTop: 50, marginBottom: 70,
+                display: 'flex', flexDirection: 'column', marginTop: 15, marginBottom: 30, padding: 15,
               }}
               >
-                <Button
-                  variant="danger"
-                  onClick={() => onCancel()}
+                <div style={{
+                  fontSize: 20, fontWeight: 400, color: '#757575', marginBottom: 20, padding: '3px 8px', border: '1px solid #eeeeee', borderRadius: 4, backgroundColor: '#fafafa',
+                }}
                 >
-                  Delete Document
-                </Button>
+                  <span>
+                    &quot;
+                    {title || 'Untitled'}
+                    &quot;
+                  </span>
+                </div>
+                {spacer}
+                <div style={{ fontWeight: 'bold', color: '#494949', marginTop: 20 }}>Are you sure you want to delete this document permanently?</div>
+                <div style={{ color: '#494949' }}>This action cannot be undone.</div>
+                <div style={{ display: 'flex', flexDirection: 'row', marginTop: 20 }}>
+                  {deletingDocument
+                    ? <ProgressBar style={{ width: '100%' }} now={100} variant="danger" animated />
+                    : (
+                      <Button
+                        variant="danger"
+                        onClick={() => {
+                          setDeletingDocument(true);
+                          if (mode === 'edit') {
+                            // delete document
+                            deleteDocumentById(document.id).then((res) => {
+                              const doc = res.value;
+                              console.log('deleted doc', doc);
+                              let fObj = doc.fileObj;
+                              if (fObj === undefined) {
+                                // we need to try to make a processedUrlKey and bucketName and
+                                // potentially a urlKey
+                                const onlyProcessedUrlKey = doc.uploadContentType === 'text/slate-html';
+                                if (doc.text && doc.text.length < 255 && doc.text.includes(cloudfrontUrl) && doc.text.includes('processed/')) {
+                                  const s3ProcessedFileName = doc.text.split('processed/')[1];
+                                  const key = s3ProcessedFileName.substring(0, s3ProcessedFileName.lastIndexOf('.html'));
+                                  fObj = {
+                                    urlKey: onlyProcessedUrlKey ? undefined : `files/${key}.pdf`,
+                                    processedUrlKey: `processed/${key}.html`,
+                                  };
+                                }
+                              }
+                              if (fObj !== undefined) {
+                                deleteCloudfrontFiles({
+                                  documentOwnerId: doc.owner,
+                                  fileObj: fObj,
+                                }).then(() => {
+                                  onDelete();
+                                }).catch((err) => {
+                                  setErrors((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
+                                  setShowDeleteDocumentModal();
+                                });
+                              } else {
+                                onDelete();
+                              }
+                            }).catch((err) => {
+                              setErrors((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
+                              setShowDeleteDocumentModal();
+                            });
+                          } else if (mode === 'new' && fileObj) {
+                            // we need to delete any file that was uploaded by the user for this
+                            // document
+                            deleteCloudfrontFiles({
+                              noOwner: true,
+                              fileObj,
+                            }).then(() => {
+                              onDelete();
+                            }).catch((err) => {
+                              setErrors((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
+                              setShowDeleteDocumentModal();
+                            });
+                          }
+                        }}
+                      >
+                        Yes, delete this document
+                      </Button>
+                    )}
+                </div>
               </div>
             </Modal.Body>
           </Modal>
@@ -1342,11 +1457,13 @@ const CreateEditDocument = ({
                   <div style={{ color: '#898C95', fontSize: 17, fontWeight: 300 }}>Upload PDF, DOCX, ODT, or EPUB</div>
                   <div id="file-input-container">
                     <ReactS3Uploader
+                      ref={uploaderRef}
                       signingUrl={process.env.NEXT_PUBLIC_SIGNING_URL}
                       signingUrlMethod="GET"
                       accept=".docx,.pdf,.odt,.epub"
                       s3path="files/"
                       disabled={savingDocument || (progress.started && progress.status !== 'Complete' && progress.status !== 'Failed')}
+                      autoUpload={false}
                       onProgress={(percent, stats, file) => {
                         if (fileName === undefined) {
                           setFileName(file.name);
@@ -1364,31 +1481,48 @@ const CreateEditDocument = ({
                         const fileUrl = signRes.signedUrl.substring(
                           0, signRes.signedUrl.indexOf('?'),
                         );
-                        const processedUrl = `${fileUrl.substring(
+                        const urlKey = fileUrl.substring(fileUrl.indexOf('files'));
+                        const baseCloudfrontURL = fileUrl.substring(
                           0, fileUrl.indexOf('files'),
-                        )}processed/${signRes.filename.substring(
+                        );
+                        const processedUrlKey = `processed/${signRes.filename.substring(
                           0, signRes.filename.lastIndexOf('.'),
                         )}.html`;
-                        const fileObj = {
+                        const processedUrl = `${baseCloudfrontURL}${processedUrlKey}`;
+                        const fileObject = {
                           name: signRes.filename,
                           size: file.size,
                           contentType: file.type,
                           url: fileUrl,
                           processedUrl,
+                          urlKey,
+                          processedUrlKey,
                         };
-                        await getProcessedDocument(fileObj.processedUrl)
+                        await getProcessedDocument(fileObject.processedUrl)
                           .then((res) => {
-                            // console.log('getProcessedDocument res', res);
                             setDocumentText(res);
-                            setHtmlValue(fileObj.processedUrl);
-                            setContentType(fileObj.contentType);
+                            setFileObj(fileObject);
+                            setHtmlValue(fileObject.processedUrl);
+                            setContentType(fileObject.contentType);
                           })
                           .catch((err) => {
                             setErrors((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
                           });
                       }}
                       uploadRequestHeaders={{ 'x-amz-acl': 'public-read' }}
-                      onChange={() => {}}
+                      onChange={(ev) => {
+                        const size = ev?.target?.files[0]?.size;
+                        if (size === undefined) { return; }
+                        // checking that file is <= 4MB
+                        if (size <= 4000000) {
+                          setOnChangeMsg({ msg: 'Uploading file.', color: '#10A268' });
+                          uploaderRef.current.uploadFile();
+                        } else {
+                          setOnChangeMsg({ msg: `File size to large ${(size / 1000000).toFixed(1)}MB, upload a new file.`, color: '#E20101' });
+                          uploaderRef.current.abort();
+                          uploaderRef.current.clear();
+                        }
+                      }}
                       onBlur={() => {}}
                     />
                   </div>
@@ -1398,12 +1532,14 @@ const CreateEditDocument = ({
                   >
                     Limit: 4 MB (file size may increase during processing)
                   </div>
+                  {onChangeMsg?.msg && (
                   <div style={{
-                    fontSize: 14, fontWeight: 'bold', color: '#888E9F', marginTop: 15, paddingLeft: 2,
+                    fontSize: 14, fontWeight: 'bold', color: onChangeMsg.color || '#888E9F', marginTop: 15, paddingLeft: 2,
                   }}
                   >
-                    Do not close broswer window while the file is being processed
+                    {onChangeMsg.msg}
                   </div>
+                  )}
                 </div>
               </div>
             </Modal.Body>
@@ -1455,7 +1591,7 @@ const CreateEditDocument = ({
           background: white;
           transition: left 0.5s;
           position: absolute;
-          left: calc(50% - ${documentWidth / 2}px);
+          left: ${slateDocPos};
           background: white;
           width: ${documentWidth}px;
           min-height: 971px !important;

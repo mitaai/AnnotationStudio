@@ -42,6 +42,7 @@ const handler = async (req, res) => {
           text,
           createdAt,
           updatedAt,
+          fileObj,
           uploadContentType,
           volume,
           issue,
@@ -70,6 +71,7 @@ const handler = async (req, res) => {
           text,
           createdAt,
           updatedAt,
+          fileObj,
           uploadContentType,
           volume,
           issue,
@@ -191,7 +193,8 @@ const handler = async (req, res) => {
         .findOneAndDelete(findCondition);
       // eslint-disable-next-line no-underscore-dangle
       if (doc && doc.value && doc.value._id) {
-        const { _id } = doc.value;
+        const { _id, fileObj } = doc.value;
+        console.log('fileObj', fileObj);
         await db
           .collection('annotations')
           .deleteMany({

@@ -17,8 +17,14 @@ const Select = ({
         style={{ color: selectedItem === undefined ? '#757575' : '#424242' }}
         title={selectedItem?.text || 'None'}
       >
-        {options.map(({ text, key }) => (
-          <Dropdown.Item key={key} onClick={() => setSelectedOptionKey(key)}>{text}</Dropdown.Item>
+        {options.map(({ text, key, disabled }) => (
+          <Dropdown.Item
+            key={key}
+            onClick={disabled ? () => {} : () => setSelectedOptionKey(key)}
+            disabled={disabled}
+          >
+            {text}
+          </Dropdown.Item>
         ))}
       </DropdownButton>
       <style jsx global>

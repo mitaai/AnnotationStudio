@@ -29,6 +29,19 @@ const NewDocument = ({ statefulSession, query, refererUrl }) => {
           },
         });
       }}
+      onDelete={() => {
+        router.push({
+          pathname,
+          query: {
+            ...dashboardStateQuery,
+            // if we delete the document then there is no document data (slug/did) to reference in
+            // the url
+            slug: undefined,
+            did: undefined,
+          },
+          alert: 'deletedDocument',
+        });
+      }}
       onSave={(ops) => {
         router.push({
           pathname: ops?.slug ? `/documents/${ops.slug}` : '/documents',
