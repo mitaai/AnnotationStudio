@@ -12,6 +12,7 @@ import {
 import styles from './DashboardChannels.module.scss';
 
 export default function DocumentTile({
+  documentTileId,
   name,
   groups = [],
   author,
@@ -97,6 +98,7 @@ export default function DocumentTile({
 
   return (
     <div
+      id={documentTileId}
       className={classNames}
       onClick={onClick}
       onMouseOver={() => setHovered(true)}

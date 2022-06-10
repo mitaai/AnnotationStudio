@@ -330,7 +330,6 @@
   color: #424242;
   font-size: 20px;
   font-weight: bold;
-  margin-right: 5px;
   cursor: pointer;
   &:hover {
     color: #22417D !important;
@@ -470,4 +469,23 @@
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.optionContainer {
+  transition: all 0.25s;
+  color: #424242;
+  position: relative;
+  z-index: 2;
+  background-color: transparent;
+  &:hover {
+    color: theme.$primary;
+    background-color: #EBF2FF;
+  }
+  &.red {
+    &:hover {
+      color: #E20101;
+      background-color: #FCECEB;
+    }
+  }
+
 }

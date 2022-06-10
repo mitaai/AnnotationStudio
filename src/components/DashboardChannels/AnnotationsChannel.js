@@ -1,6 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect, useRef } from 'react';
+import $ from 'jquery';
 import moment from 'moment';
 import { useRouter } from 'next/router';
 import debounce from 'lodash.debounce';
@@ -1248,6 +1249,7 @@ export default function AnnotationsChannel({
 
 
   let annotationTiles = [];
+  let rawAnnotationTiles;
   let showRefreshButton = true;
 
   if (mode === 'as') {
@@ -1259,22 +1261,22 @@ export default function AnnotationsChannel({
     } else if (annotations[slug][selectedPermissions].length === 0) {
       annotationTiles = <EmptyListMessage />;
     } else {
-      const annotationData = annotations[slug][selectedPermissions];
+      rawAnnotationTiles = annotations[slug][selectedPermissions];
 
       if (selectedPermissions === 'mine') {
-        annotationTiles = annotationData.map((anno) => toAnnotationsTile(anno, {
+        annotationTiles = rawAnnotationTiles.map((anno) => toAnnotationsTile(anno, {
           maxNumberOfTags: maxNumberOfAnnotationTags,
           shareableLink: `${origin}/documents/${anno.target.document.slug}?mine=false&aid=${anno._id}`,
           setAlerts,
         }));
       } else if (selectedPermissions === 'shared') {
-        annotationTiles = annotationData.map((anno) => toAnnotationsTile(anno, {
+        annotationTiles = rawAnnotationTiles.map((anno) => toAnnotationsTile(anno, {
           maxNumberOfTags: maxNumberOfAnnotationTags,
           shareableLink: `${origin}/documents/${anno.target.document.slug}?mine=false&aid=${anno._id}`,
           setAlerts,
         }));
       } else if (selectedPermissions === 'shared-with-me') {
-        annotationTiles = annotationData.map((anno) => toAnnotationsTile(anno, {
+        annotationTiles = rawAnnotationTiles.map((anno) => toAnnotationsTile(anno, {
           maxNumberOfTags: maxNumberOfAnnotationTags,
           shareableLink: `${origin}/documents/${anno.target.document.slug}?mine=false&aid=${anno._id}`,
           setAlerts,
@@ -1399,7 +1401,44 @@ export default function AnnotationsChannel({
       {generateFilters()}
     </div>
     )}
-    <div className={styles.tileContainer}>
+    <div
+      className={styles.tileContainer}
+      style={{ paddingTop: mode === 'as' ? 25 : undefined, transition: 'padding-top 0.25s' }}
+      onScroll={() => {
+        if (mode === 'is' || listLoading || refresh || !rawAnnotationTiles?.length) {
+          return;
+        }
+        rawAnnotationTiles.map(({ _id }) => {
+          const annoTile = $(`#${_id}`);
+          if (annoTile) {
+            const threshold = 66;
+            const stage1Height = 25;
+            const { top } = annoTile.position();
+
+            if (top < threshold - stage1Height) {
+              const h = annoTile.height();
+              const percentage = ((threshold - stage1Height) - top) / h;
+              if (percentage <= 1) {
+                annoTile.css(
+                  '-webkit-mask-image',
+                  `-webkit-linear-gradient(rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) ${percentage * 100}%, rgba(0, 0, 0, ${1 - percentage}) 100%)`,
+                );
+              }
+            } else if (top < threshold) {
+              const percentage = (threshold - top) / 25;
+              annoTile.css(
+                '-webkit-mask-image',
+                `-webkit-linear-gradient(rgba(0, 0, 0, ${1 - percentage}) 0%, rgba(0, 0, 0, 1) 100%)`,
+              );
+            } else {
+              annoTile.css('-webkit-mask-image', 'none');
+            }
+          }
+
+          return null;
+        });
+      }}
+    >
       {(listLoading || refresh) ? <ListLoadingSpinner /> : annotationTiles}
       { mode === 'as' && ASLoadMoreAnnos}
     </div>
@@ -1482,6 +1521,8 @@ export default function AnnotationsChannel({
             paddingRight: mode === 'as' ? 20 : 0,
             paddingTop: 0,
             paddingBottom: 0,
+            marginBottom: mode === 'as' ? 0 : undefined,
+            transition: 'margin-bottom 0.25s',
           }}
         >
           {tabSelectionLine}

@@ -13,13 +13,17 @@ export default function PermissionsButtonGroup({ buttons, variant = 'primary' })
   const badgeInitWidth = 8.25 + permissionTextMargin;
 
   const b = buttons.map(({
-    onClick, selected, text, count, icon, textWidth,
+    onClick, selected, text, count, queryCount, icon, textWidth,
   }) => {
-    const width = selected ? textWidth
+    const countWidth = selected ? textWidth
     + badgeInitWidth
     + badgeNumWidth * (count > 0
       ? Math.floor(Math.log10(count) + 1)
       : 1) : 0;
+
+    const queryCountWidth = queryCount !== undefined
+      ? (badgeNumWidth * (queryCount > 0 ? Math.floor(Math.log10(queryCount) + 2) : 2))
+      : 0;
     return (
       <Button
         key={text}
@@ -27,9 +31,9 @@ export default function PermissionsButtonGroup({ buttons, variant = 'primary' })
         onClick={onClick}
       >
         {icon}
-        <div className="mine" style={{ width }}>
+        <div className="mine" style={{ width: countWidth + queryCountWidth }}>
           <span className="text">{text}</span>
-          <Badge variant="light">{count}</Badge>
+          <Badge variant="light">{queryCount !== undefined ? `${queryCount}/${count}` : count}</Badge>
         </div>
       </Button>
     );
