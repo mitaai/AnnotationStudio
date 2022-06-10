@@ -60,12 +60,9 @@ jobs:
           echo "NEXT_PUBLIC_TINYMCE_API_KEY=${{ secrets.NEXT_PUBLIC_TINYMCE_API_KEY }}" >> .env.local
           echo "SITE=${{ secrets.SITE }}" >> .env.local
           echo "SITE_NAME=${{ secrets.SITE_NAME }}" >> .env.local
-
-      - name: Install @serverless/cli
-        run: npm install -g @serverless/cli
       
       - name: Deploy to AWS
-        uses: serverless/github-action@master
+        uses: serverless/github-action@v2
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
