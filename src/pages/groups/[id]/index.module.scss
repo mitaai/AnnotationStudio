@@ -1,0 +1,277 @@
+@use "sass:color";
+@use "../../../style/theme";
+
+.hoverableText {
+    color: #355CBC;
+    cursor: pointer;
+
+    &:hover {
+        color: #1D3E90;
+    }
+}
+
+.rolePermissionsText {
+    color: #143380;
+    font-weight: 200;
+    cursor: pointer;
+    margin-bottom: 30px;
+    padding-left: 3px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    &:hover {
+        color: #355CBC;   
+    }
+}
+
+.createNewDocumentBtn {
+    transition: all 0.5s;
+    top: 15px;
+    position: relative;
+    width: 165px;
+    height: 34px;
+    line-height: 34px;
+    padding: 0px;
+    font-weight: 300;
+    background-color: #355CBC !important;
+    border-radius: 4px;
+    color: white;
+    text-align: center;
+    cursor: pointer;
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+
+    &:hover {
+        background-color: #1D3E90 !important;
+    }
+}
+
+.uploadDocumentBtn {
+    position: absolute;
+    top: 15px;
+    width: 100px;
+    height: 34px;
+    line-height: 31px;
+    padding: 0px;
+    font-weight: 300;
+    border: 1px solid #CDCEDA !important;
+    background-color: #FFFFFF !important;
+    border-radius: 4px;
+    text-align: center;
+    color: #69697C !important;
+    cursor: pointer;
+    outline: none !important;
+    box-shadow: none !important;
+
+    &:hover {
+        background-color: #eeeeee !important;
+    }
+}
+
+.slate-container {
+    width: 750px;
+  }
+  
+  .slate-container-card {
+    display: flex;
+    justify-content: center;
+  }
+  
+  .slate-editor {
+    padding: 2rem 54.5px;
+    resize: vertical;
+    min-height: 300px;
+    height: 350px;
+    overflow-y: scroll;
+    border: 1px solid theme.$gray-400;
+    border-top: none;
+    border-radius: 0.25rem;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    -webkit-transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    &:focus {
+      border-color: theme.$primary;
+      outline: 0;
+      box-shadow: 0 0 0 0.2rem color.adjust(theme.$primary, $alpha: -0.75);
+    }
+    img {
+      display: block;
+      max-width: 100%;
+      padding: 10px 0px;
+      max-height: none;
+    }
+  }
+  
+  .slate-loader {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+    position: absolute;
+    width: 750px;
+    height: 350px;
+    background-color: rgba(255, 255, 255, 0.75);
+  }
+
+  .cancelUploadBtn {
+    transition: all 0.5s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #BDBDBD;
+    border-radius: 6px;
+    color: #BDBDBD;
+    cursor: pointer;
+
+    &:hover {
+        border-color: #E20101;
+        background-color: #FCECEB;
+        color: #E20101;
+    }
+  }
+
+  .metadataContainer input {
+      outline: none !important;
+      box-shadow: none !important;
+      background-color: #fafafa;
+      border: 1px solid #CDCEDA;
+      border-radius: 6px;
+      padding: 8px 12px;
+      
+      &:focus {
+          border-color: #355CBC;
+      }
+  }
+
+  .groupShareContainer {
+    border-radius: 4px;
+    border: 1px solid #CDCEDA;
+    background-color: #f9f9f9;
+    padding: 16px 14px 12px 14px;
+    line-height: 32px;
+    position: relative;
+    margin-top: 10px;
+  }
+
+  .searchGroupRow {
+    padding: 4px 24px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+      &:hover {
+          background-color: #eeeeee;
+      }
+  }
+
+  .chevronContainer {
+    position: absolute;
+    z-index: 2;
+    top: calc(35%);
+    background-color: #F9F9F9;
+    border-right: 1px solid transparent;
+    border-bottom: 1px solid transparent;
+    height: 40px;
+    width: 40px;
+    border-radius: 20px;
+    cursor: pointer;
+  }
+
+  .addRegisteredUserBtn {
+    height: 36px;
+    border: 1px solid #CDCEDA;
+    margin-left: 4px;
+    border-radius: 4px;
+    background-color: #eeeeee;
+    display: flex;
+    flex-direction: row;
+    cursor: pointer;
+
+    &:hover {
+        background-color: #f5f5f5;
+    }
+  }
+
+  .actionBtn {
+    background-color: #f0f0f0;
+    border: 1px solid #CDCEDA;
+    &:hover {
+        background-color: #f7f7f7;
+    }
+
+    &.red {
+      color: #E20101 !important;
+      border: 1px solid #E20101 !important;
+      background-color: #FCECEB !important;
+    }
+  }
+
+  .deleteGroupBtn {
+      transition: all 0.5s;
+      background-color: #FCECEB;
+      border: 1px solid #E20101;
+      color: #E20101;
+      border-radius: 4px;
+      margin: 0px auto;
+      padding: 6px 14px;
+      font-size: 16px;
+      cursor: pointer;
+
+      &:hover {
+          background-color: #FFD3D0;
+      }
+  }
+
+  .groupNameHeaderInput {
+    transition: all 0.5s;
+    font-size: 26px;
+    font-weight: 300;
+    border: 1px solid transparent;
+    outline: none;
+    background: transparent;
+    color: #212121 !important;
+    text-overflow: ellipsis;
+    
+    &.edit {
+        background: linear-gradient(0deg, #F1F1F1, transparent);
+        border-bottom: 1px solid #e2e2e2;
+        padding: 4px 55px 4px 14px;
+        width: 100% !important;
+
+        &.saveHovered {
+            border-bottom: 1px solid #10A268;
+            background: linear-gradient(0deg, #F0FAF6, transparent);
+        }
+
+        &.cancelHovered {
+            border-bottom: 1px solid #E20101;
+            background: linear-gradient(0deg, #FBF1F1, transparent);
+        }
+    }
+  }
+
+  .pencilEditButton {
+    .pencil, .pencilFill {
+      transition: all 0.5s;
+    }
+    
+    .pencil {
+      opacity: 1;
+    }
+
+    .pencilFill {
+      opacity: 0,
+    }
+
+    &:hover {
+      .pencil {
+        opacity: 0;
+      }
+  
+      .pencilFill {
+        opacity: 1,
+      }
+    }
+  }

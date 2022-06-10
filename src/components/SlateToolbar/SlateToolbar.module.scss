@@ -11,14 +11,22 @@
     }
   }
   display: flex;
+  flex-direction: row;
+  align-items: center;
   justify-content: center;
+  position: relative;
   padding: 0.5rem 10px 0.5rem;
   border-top-left-radius: 0.25rem;
   border-top-right-radius: 0.25rem;
-  background-color: rgba(0, 0, 0, 0.08);
+  background-color: #F0F0F0;
   border: 1px solid theme.$gray-400;
+  transition: background-color 0.5s;
   & > * {
     display: inline-block;
+  }
+
+  &.analysis-mode {
+    background-color: rgba(13, 109, 253, 0.1) !important;
   }
 }
 
@@ -27,10 +35,41 @@
   margin-left: 0.125rem;
   margin-right: 0.125rem;
   height: 2rem;
+  border: none;
+  
+  button {
+    border: none;
+  }
+
+  &[type='button'], button {
+    color: #6c757d !important;
+    border-color: #6c757d !important;
+
+    &.active {
+      color: white !important;
+    }
+  
+    &:focus {
+      background-color: #6c757d !important;
+      border-color: #6c757d !important;
+    }
+  
+    &:hover {
+      background-color: #6c757d !important;
+      border-color: #6c757d !important;
+      color: white !important;
+    }
+  }
+}
+
+.toolbar-button-extra-padding button {
+  padding-top: 5px;
+  padding-bottom: 5px;
 }
 
 .button-group-end {
-  margin-right: 1rem;
+  margin-right: 0rem;
+  border: none;
 }
 
 .export-button {
@@ -40,3 +79,43 @@
     font-size: 13px;
   }
 }
+
+.sortByDropdown.dangerDropdown > button{
+  background-color: #cc353a !important;
+  border-color: #cc353a !important;
+  color: white !important;
+}
+
+.sortByDropdown
+{
+  margin-left: 19px;
+  > button {
+    transition: all 0.25s;
+    padding: 4px 9px !important;
+    background: #EEEEEE;
+    color: #424242;
+    border-color: #ABABAB;
+    margin-right: 3px;
+    box-shadow: none !important;
+    outline: none !important;
+  
+    &:hover {
+      border-color: theme.$primary;
+      color: theme.$primary;
+      background: #EBF2FF;
+    }
+  
+    &:focus {
+      background: #EEEEEE;
+      color: #424242;
+      border-color: #ABABAB;
+    }
+  }
+}
+
+.sortByDropdownSelected > button, .sortByDropdownSelected > button:focus {
+  border-color: theme.$primary !important;
+  color: theme.$primary !important;
+  background: #EBF2FF !important;
+}
+

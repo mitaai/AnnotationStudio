@@ -774,3 +774,24 @@ const DocumentForm = ({
 };
 
 export default DocumentForm;
+
+
+/*
+<DocumentForm
+  mode="edit"
+  session={session}
+  exportDocument={exportDocument}
+  dashboardStateQuery={dashboardStateQuery}
+  data={document}
+  setErrors={setErrors}
+  errors={errors}
+  setPageLoading={setPageLoading}
+/>
+<DocumentForm
+  mode="new"
+  session={session}
+  setErrors={setErrors}
+  errors={errors}
+  setPageLoading={setPageLoading}
+/>
+*/

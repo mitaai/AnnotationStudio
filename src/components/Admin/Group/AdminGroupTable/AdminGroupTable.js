@@ -45,7 +45,7 @@ const AdminGroupTable = ({ group, setAlerts }) => {
                 drop="down"
                 title="Actions"
               >
-                <Dropdown.Item eventKey="1" href={`/groups/${group.id}/edit`}>Modify group</Dropdown.Item>
+                <Dropdown.Item eventKey="1" href={`/groups/${group.id}`}>Modify group</Dropdown.Item>
                 <Dropdown.Item eventKey="2" onClick={handleShowModal}>Delete group</Dropdown.Item>
               </DropdownButton>
             </td>

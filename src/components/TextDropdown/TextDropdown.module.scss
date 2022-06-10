@@ -1,0 +1,34 @@
+.textDropdown {
+    transition: all 0.5s;
+
+    > button {
+        transition: all 0.5s;
+        outline: none !important;
+        box-shadow: none !important;
+        color: inherit !important;
+        background-color: transparent !important;
+        border: 1px solid transparent !important;
+        padding: 4px 0px;
+    }
+
+    &.disabled {
+        > button {
+            cursor: default;
+            &::after {
+                display: none;
+            }
+        }
+    }
+
+    &:not(.disabled):hover {
+        > button {
+            padding: 4px 12px;
+            background-color: #F1F5FF !important;
+            border: 1px solid #D3DEFC !important;
+            color: #355CBC !important;
+        }
+        
+    }
+
+
+}

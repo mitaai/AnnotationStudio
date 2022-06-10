@@ -269,7 +269,7 @@ function FilterPopover({ session }) {
             <Switch
               isOn={expandAnnotations}
               // onColor="#1157d1"
-              onColor="#015999"
+              onColor="#355CBC"
               tooltipMessage={`${expandAnnotations ? 'Collapse' : 'Expand'} All Annotations`}
               handleToggle={() => setExpandAnnotations(!expandAnnotations)}
             />

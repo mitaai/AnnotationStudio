@@ -56,6 +56,7 @@ import {
   deleteOutline,
   exportDocumentToAnnotationStudio,
 } from '../../utils/outlineUtil';
+import NewPlusButton from '../NewPlusButton';
 
 export default function AnnotationsChannel({
   session,
@@ -1266,7 +1267,7 @@ export default function AnnotationsChannel({
       if (selectedPermissions === 'mine') {
         annotationTiles = rawAnnotationTiles.map((anno) => toAnnotationsTile(anno, {
           maxNumberOfTags: maxNumberOfAnnotationTags,
-          shareableLink: `${origin}/documents/${anno.target.document.slug}?mine=false&aid=${anno._id}`,
+          shareableLink: `${origin}/documents/${anno.target.document.slug}?mine=true&aid=${anno._id}`,
           setAlerts,
         }));
       } else if (selectedPermissions === 'shared') {
@@ -1278,7 +1279,7 @@ export default function AnnotationsChannel({
       } else if (selectedPermissions === 'shared-with-me') {
         annotationTiles = rawAnnotationTiles.map((anno) => toAnnotationsTile(anno, {
           maxNumberOfTags: maxNumberOfAnnotationTags,
-          shareableLink: `${origin}/documents/${anno.target.document.slug}?mine=false&aid=${anno._id}`,
+          shareableLink: `${origin}/documents/${anno.target.document.slug}?mine=false&&sharedWithMe=true&aid=${anno._id}`,
           setAlerts,
         }));
       }
@@ -1425,7 +1426,7 @@ export default function AnnotationsChannel({
                 );
               }
             } else if (top < threshold) {
-              const percentage = (threshold - top) / 25;
+              const percentage = (threshold - top) / stage1Height;
               annoTile.css(
                 '-webkit-mask-image',
                 `-webkit-linear-gradient(rgba(0, 0, 0, ${1 - percentage}) 0%, rgba(0, 0, 0, 1) 100%)`,
@@ -1687,9 +1688,8 @@ export default function AnnotationsChannel({
               </div>
             )
               : (
-                <TileBadge
-                  text="New + "
-                  color={!annotationsTabSelected ? 'yellow' : 'grey'}
+                <NewPlusButton
+                  backgroundColor="rgba(238,238,238,0.7)"
                   onClick={() => {
                     setShowNewOutlineModal(true);
                     setTab('outlines');

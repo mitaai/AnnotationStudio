@@ -46,6 +46,9 @@ export default function PermissionsButtonGroup({ buttons, variant = 'primary' })
       <style jsx global>
         {`
 
+        .btn-secondary .badge-light {
+          color: #bdbdbd;
+        }
         .permissions-buttons .btn div {
           transition: width 0.5s, opacity 1s;
           overflow: hidden;

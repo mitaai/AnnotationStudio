@@ -137,6 +137,26 @@ const deleteDocumentById = async (id) => {
   } return Promise.reject(Error(`Unable to delete document: error ${res.status} received from server`));
 };
 
+const deleteCloudfrontFiles = async ({
+  role, documentOwnerId, noOwner, fileObj,
+}) => {
+  const url = '/api/cloudfrontFiles/';
+  const body = {
+    role, ownerId: documentOwnerId, noOwner, fileObj,
+  };
+  const res = await unfetch(url, {
+    method: 'DELETE',
+    body: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (res.status === 200) {
+    const result = await res.json();
+    return Promise.resolve(result);
+  } return Promise.reject(Error(`Unable to delete cloudfront files: error ${res.status} received from server`));
+};
+
 const prefetchManyGroupNamesById = async (groupIds, cookie) => {
   const url = `${appendProtocolIfMissing(process.env.SITE)}/api/groups`;
   const body = { groupIds };
@@ -289,6 +309,7 @@ const getDocumentTextAnalysis = async ({
 export {
   addGroupNamesToDocuments,
   deleteDocumentById,
+  deleteCloudfrontFiles,
   getAllDocumentsByGroup,
   getDocumentsByUser,
   getManyGroupNamesById,
