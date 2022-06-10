@@ -61,6 +61,9 @@ jobs:
           echo "SITE=${{ secrets.SITE }}" >> .env.local
           echo "SITE_NAME=${{ secrets.SITE_NAME }}" >> .env.local
 
+      - name: Install @serverless/cli
+        run: npm install -g @serverless/cli
+      
       - name: Deploy to AWS
         uses: serverless/github-action@master
         env:
