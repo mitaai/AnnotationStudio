@@ -24,12 +24,14 @@
     }
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.105.0",
     "@google-cloud/language": "^4.3.2",
     "@sendgrid/mail": "^7.4.2",
     "@sindresorhus/slugify": "^1.1.0",
     "@tinymce/tinymce-react": "^3.9.0",
     "@udecode/slate-plugins": "^0.75.2",
     "apache-annotator": "^0.1.0",
+    "aws-sdk": "^2.1151.0",
     "bootstrap": "^4.6.0",
     "crypto-random-string": "^3.3.0",
     "date-fns": "^2.22.1",

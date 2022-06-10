@@ -48,7 +48,7 @@ const NewGroup = ({ statefulSession }) => {
       };
       return addGroupToUser(group, user).then(() => {
         Router.push({
-          pathname: `/groups/${group.id}/edit`,
+          pathname: `/groups/${group.id}`,
           query: { alert: 'newGroup' },
         });
       });
@@ -61,7 +61,16 @@ const NewGroup = ({ statefulSession }) => {
   });
 
   return (
-    <Layout alerts={alerts} type="group" title="New Group" statefulSession={statefulSession}>
+    <Layout
+      alerts={alerts}
+      type="group"
+      title="New Group"
+      statefulSession={statefulSession}
+      breadcrumbs={[
+        { name: 'Groups', href: '/groups' },
+        { name: 'Create a new group' },
+      ]}
+    >
       <Col lg="8" className="mx-auto">
         <Card>
           {((!session && loading) || (session && pageLoading)) && (

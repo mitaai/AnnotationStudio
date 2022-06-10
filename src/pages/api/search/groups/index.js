@@ -1,5 +1,6 @@
 import jwt from 'next-auth/jwt';
 import { connectToDatabase } from '../../../../utils/dbUtil';
+import { escapeRegExp } from '../../../../utils/stringUtil';
 
 const secret = process.env.AUTH_SECRET;
 
@@ -12,7 +13,7 @@ const handler = async (req, res) => {
         query, perPage, page, sort = {},
       } = req.body;
       // eslint-disable-next-line no-useless-escape
-      const r = query ? new RegExp(`\.\*${query}\.\*`, 'i') : new RegExp('\.\*', 'i');
+      const r = query ? new RegExp(`\.\*${escapeRegExp(query)}\.\*`, 'i') : new RegExp('\.\*', 'i');
       const { db } = await connectToDatabase();
       const arr = await db
         .collection('groups')

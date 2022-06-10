@@ -406,7 +406,7 @@ export default function Document({
       id="document-card-container"
     >
       <Card.Body>
-        <div id="document-content-container" ref={myRef}>
+        <div id="document-content-container" className={annotateDocument === undefined && 'unselectable'} ref={myRef}>
           <div dangerouslySetInnerHTML={{ __html: documentToAnnotate ? documentToAnnotate.text : '' }} />
         </div>
       </Card.Body>

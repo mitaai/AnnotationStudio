@@ -348,6 +348,7 @@ export default function DocumentsChannel({
           setAsc={setAsc}
           headerText="Documents"
           createNewText="New Document"
+          createNewHref="/documents/new"
           searchPlaceholderText="Search Documents (title, authors, etc)"
           headerTextWidth={110}
           headerLink={`/documents?${dashboardState}&tab=${selectedGroupId === 'privateGroup' ? 'mine' : 'shared'}`}
@@ -384,7 +385,7 @@ export default function DocumentsChannel({
                   );
                 }
               } else if (top < threshold) {
-                const percentage = (threshold - top) / 25;
+                const percentage = (threshold - top) / stage1Height;
                 documentTile.css(
                   '-webkit-mask-image',
                   `-webkit-linear-gradient(rgba(0, 0, 0, ${1 - percentage}) 0%, rgba(0, 0, 0, 1) 100%)`,
