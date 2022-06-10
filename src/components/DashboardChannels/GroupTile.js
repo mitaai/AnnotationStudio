@@ -101,8 +101,12 @@ export default function GroupTile({
             >
               <Dropdown.Toggle as={ThreeDotDropdown} id="dropdown-group-tile" />
               <Dropdown.Menu>
-                <Dropdown.Item eventKey="manage">Manage</Dropdown.Item>
-                <Dropdown.Item eventKey="remove-from-list">{archived ? 'Unarchive' : 'Archive'}</Dropdown.Item>
+                <Dropdown.Item eventKey="manage">
+                  {position === 'Member' ? 'View' : 'Manage'}
+                </Dropdown.Item>
+                <Dropdown.Item eventKey="remove-from-list">
+                  {archived ? 'Unarchive' : 'Archive'}
+                </Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>
           )}

@@ -74,7 +74,7 @@ export default function AnnotationShareableLinkIcon({
         }
 
         .annotation-shareable-link-icon-container:hover .annotation-shareable-link-icon {
-          color: #015999 !important;
+          color: #355CBC !important;
         }
 
         `}

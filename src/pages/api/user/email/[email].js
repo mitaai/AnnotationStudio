@@ -20,9 +20,9 @@ const handler = async (req, res) => {
         const doc = user[0];
         // eslint-disable-next-line no-underscore-dangle
         const id = doc._id;
-        const { name, groups } = doc;
+        const { name, groups, email } = doc;
         res.status(200).json({
-          id, name, groups,
+          id, name, groups, email,
         });
       } else res.status(404).end('Not Found');
     } else res.status(403).end('Invalid or expired token');

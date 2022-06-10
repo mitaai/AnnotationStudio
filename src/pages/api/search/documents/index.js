@@ -1,5 +1,6 @@
 import jwt from 'next-auth/jwt';
 import { connectToDatabase } from '../../../../utils/dbUtil';
+import { escapeRegExp } from '../../../../utils/stringUtil';
 
 const secret = process.env.AUTH_SECRET;
 
@@ -13,7 +14,7 @@ const handler = async (req, res) => {
       } = req.body;
 
       // eslint-disable-next-line no-useless-escape
-      const r = query ? new RegExp(`\.\*${query}\.\*`, 'i') : new RegExp('\.\*', 'i');
+      const r = query ? new RegExp(`\.\*${escapeRegExp(query)}\.\*`, 'i') : new RegExp('\.\*', 'i');
 
       let ownerCondition = condition.permissions === 'mine' ? { owner: token.id } : {};
       if (condition?.groupOwnersAndManagers) {

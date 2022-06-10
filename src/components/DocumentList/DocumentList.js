@@ -16,7 +16,7 @@ import { format } from 'date-fns';
 import LoadingSpinner from '../LoadingSpinner';
 import { deleteDocumentById } from '../../utils/docUtil';
 import ConfirmationDialog from '../ConfirmationDialog';
-import { ucFirst } from '../../utils/stringUtil';
+import { upperCaseFirstLetter } from '../../utils/stringUtil';
 import TileBadge from '../TileBadge';
 
 const DocumentList = ({
@@ -107,7 +107,7 @@ const DocumentList = ({
                     {getStateIcon(document.state)}
                     {document.state && (
                     <Badge className="d-sm-none d-xl-inline">
-                      {ucFirst(document.state)}
+                      {upperCaseFirstLetter(document.state)}
                     </Badge>
                     )}
                   </td>

@@ -20,6 +20,8 @@ const SecondNavbar = ({
   dashboardState,
   mode,
   setMode,
+  borderBottom,
+  extraContent,
 }) => {
   const metadataFields = {
     title: 'Title',
@@ -114,13 +116,20 @@ const SecondNavbar = ({
 
   return (
     <>
-      <Navbar bg="light" variant="light" className={`px-0 ${styles.secondnav}`} data-testid="second-navbar">
+      <Navbar
+        style={{ borderBottom: borderBottom || '1px solid #ececec' }}
+        className={`px-0 ${styles.secondnav}`}
+        bg="light"
+        variant="light"
+        data-testid="second-navbar"
+      >
         <Container fluid className="px-5">
           <Row className={styles.row} style={{ height: 48 }}>
             <Col
               md={type === 'document' ? documentColumnSize : size}
               style={{ display: 'flex' }}
             >
+              {extraContent}
               {mode === 'is' ? (
                 <>
                   <div style={{ position: 'absolute' }}>

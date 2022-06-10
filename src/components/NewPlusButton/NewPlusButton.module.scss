@@ -1,0 +1,42 @@
+@use "sass:color";
+@use "../../style/theme";
+
+.newPlusButton {
+    transition: all 0.25s;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 200;
+    height: 24px;
+    width: 24px;
+    border-radius: 8px;
+    border: 1px solid #E0E0E0;
+    margin-left: 11px;
+    cursor: pointer;
+    color: #424242;
+    background-color: #eeeeee;
+
+    .new {
+        transition: all 0.25s;
+        width: 0px;
+        overflow: hidden;
+        color: #424242;
+        font-size: 14px;
+    }
+
+    .plus {
+        position: relative;
+        top: -1px;
+        color: inherit;
+    }
+
+    &:hover {
+        width: 60px;
+
+        .new {
+            width: 30px;
+        }
+    }
+}

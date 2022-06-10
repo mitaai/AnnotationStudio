@@ -1,0 +1,44 @@
+.selectInputContainer {
+    display: flex;
+    flex-direction: row;
+
+    .deleteBtnContainer {
+        transition: all 0.5s;
+        height: 38px;
+        width: 0px;
+
+        .deleteBtn {
+            transition: all 0.5s;
+            position: absolute;
+            visibility: hidden;
+            opacity: 0;
+            margin-left: 4px;
+            height: 38px;
+            width: 38px;
+            border-radius: 6px;
+            border: 1px solid #E20101;
+            background-color: #FCECEB;
+            color: #E20101;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+
+            &:hover {
+                color: white;
+                background-color: #E20101;
+            }
+        }
+    }
+
+    &:hover:not(.focused) {
+        .deleteBtnContainer {
+            width: 38px;
+
+            .deleteBtn {
+                opacity: 1;
+                visibility: visible;
+            }
+        }
+    }
+}

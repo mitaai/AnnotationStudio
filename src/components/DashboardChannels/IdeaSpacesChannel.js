@@ -18,6 +18,7 @@ import {
 } from '../../utils/ideaspaceUtils';
 import { DeepCopyObj } from '../../utils/docUIUtils';
 import { ListLoadingSpinner } from './HelperComponents';
+import NewPlusButton from '../NewPlusButton';
 
 export default function IdeaSpacesChannel({
   width,
@@ -499,11 +500,7 @@ export default function IdeaSpacesChannel({
           )
             : (
               <>
-                <TileBadge
-                  text="New + "
-                  color="yellow"
-                  onClick={() => setShowNewIdeaSpaceModal(true)}
-                />
+                <NewPlusButton onClick={() => setShowNewIdeaSpaceModal(true)} />
                 <span style={{ flex: 1 }} />
                 <DropdownButton
                   key="ideaspaces-sortby-dropdown"

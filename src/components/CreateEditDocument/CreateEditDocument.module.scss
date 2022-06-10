@@ -1,0 +1,313 @@
+@use "sass:color";
+@use "../../style/theme";
+
+.hoverableText {
+    color: #355CBC;
+    cursor: pointer;
+
+    &:hover {
+        color: #1D3E90;
+    }
+}
+
+
+
+.createNewDocumentBtn {
+    transition: all 0.5s;
+    top: 15px;
+    position: relative;
+    width: 165px;
+    height: 34px;
+    line-height: 34px;
+    padding: 0px;
+    font-weight: 300;
+    background-color: #355CBC !important;
+    border-radius: 4px;
+    color: white;
+    text-align: center;
+    cursor: pointer;
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+
+    &:hover {
+        background-color: #1D3E90 !important;
+    }
+}
+
+.saveChangesBtn {
+    transition: all 0.5s;
+    top: 15px;
+    position: relative;
+    width: 145px;
+    height: 34px;
+    line-height: 34px;
+    padding: 0px;
+    font-weight: 300;
+    background-color: #355CBC !important;
+    border-radius: 4px;
+    color: white;
+    text-align: center;
+    cursor: pointer;
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+
+    &:disabled {
+        border: 1px solid #CDCEDA !important;
+        background-color: #e0e0e0 !important;
+        color: #616161;
+        cursor: default !important;
+    }
+
+    &:not(:disabled):hover {
+        background-color: #1D3E90 !important;
+    }
+}
+
+.uploadDocumentBtn {
+    position: relative;
+    top: 15px;
+    width: 100px;
+    height: 34px;
+    line-height: 31px;
+    padding: 0px;
+    font-weight: 300;
+    border: 1px solid #CDCEDA !important;
+    background-color: #FFFFFF !important;
+    border-radius: 4px;
+    text-align: center;
+    color: #69697C !important;
+    
+    outline: none !important;
+    box-shadow: none !important;
+
+
+    &:not(:disabled) {
+      cursor: pointer;
+      &:hover {
+        color: theme.$primary !important;
+        background-color: #EFF5FF !important;
+      }
+    }
+}
+
+.cancelChangesBtn {
+    position: absolute;
+    top: 15px;
+    width: 80px;
+    height: 34px;
+    line-height: 31px;
+    padding: 0px;
+    font-weight: 300;
+    border: 1px solid #CDCEDA !important;
+    background-color: #FFFFFF !important;
+    border-radius: 4px;
+    text-align: center;
+    color: #69697C !important;
+    
+    outline: none !important;
+    box-shadow: none !important;
+
+
+    &:not(:disabled) {
+      cursor: pointer;
+      &:hover {
+        background-color: #eeeeee !important;
+      }
+    }
+}
+
+.slate-container {
+    width: 750px;
+  }
+  
+  .slate-container-card {
+    display: flex;
+    justify-content: center;
+  }
+  
+  .slate-editor {
+    padding: 2rem 54.5px;
+    resize: vertical;
+    min-height: 300px;
+    height: 350px;
+    overflow-y: scroll;
+    border: 1px solid theme.$gray-400;
+    border-top: none;
+    border-radius: 0.25rem;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    -webkit-transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    &:focus {
+      border-color: theme.$primary;
+      outline: 0;
+      box-shadow: 0 0 0 0.2rem color.adjust(theme.$primary, $alpha: -0.75);
+    }
+    img {
+      display: block;
+      max-width: 100%;
+      padding: 10px 0px;
+      max-height: none;
+    }
+  }
+  
+  .slate-loader {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+    position: absolute;
+    width: 750px;
+    height: 350px;
+    background-color: rgba(255, 255, 255, 0.75);
+  }
+
+  .cancelUploadBtn {
+    transition: all 0.5s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #BDBDBD;
+    border-radius: 6px;
+    color: #BDBDBD;
+    cursor: pointer;
+
+    &:hover {
+        border-color: #E20101;
+        background-color: #FCECEB;
+        color: #E20101;
+    }
+  }
+
+  .metadataContainer input {
+      outline: none !important;
+      box-shadow: none !important;
+      background-color: #fafafa;
+      border: 1px solid #CDCEDA;
+      border-radius: 6px;
+      padding: 8px 12px;
+      
+      &:focus {
+          border-color: #355CBC;
+      }
+  }
+
+  .groupShareContainer {
+    border-radius: 4px;
+    border: 1px solid #CDCEDA;
+    background-color: #f9f9f9;
+    padding: 16px 14px 12px 14px;
+    line-height: 32px;
+    position: relative;
+    margin-top: 10px;
+  }
+
+  .searchGroupRow {
+    padding: 4px 24px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+      &:hover {
+          background-color: #eeeeee;
+      }
+  }
+
+  .chevronContainer {
+    position: absolute;
+    z-index: 2;
+    top: calc(35%);
+    background-color: #F9F9F9;
+    border-right: 1px solid transparent;
+    border-bottom: 1px solid transparent;
+    height: 40px;
+    width: 40px;
+    border-radius: 20px;
+    cursor: pointer;
+  }
+
+  .additionalMetadata {
+    padding-top: 25px; 
+    transition: all 0.5s;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    .additionalMetadataHeaders {
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    input {
+      padding-top: 6px !important;
+      padding-bottom: 6px !important;
+      margin-right: 4px;
+      margin-bottom: 15px;
+    }
+  }
+
+  .deleteDocumentBtn {
+    transition: all 0.5s;
+    background-color: #FCECEB;
+    border: 1px solid #E20101;
+    color: #E20101;
+    border-radius: 4px;
+    margin: 0px auto;
+    padding: 6px 14px;
+    font-size: 16px;
+    cursor: pointer;
+
+    &:hover {
+        background-color: #FFD3D0;
+    }
+  }
+
+  .progressBar .progress-bar{
+    transition: all 0.5s;
+  }
+/*
+  .gradient {
+    animation-duration: 1.5s;
+    animation-fill-mode: forwards;
+    animation-iteration-count: infinite;
+    animation-name: placeHolderShimmer;
+    animation-timing-function: linear;
+    background: linear-gradient(to right, rgba(250,250,250, 0.08), rgba(250,250,250, 0.54));
+    background-size: 80vw 640px;
+    position: relative;
+  }
+
+  @keyframes placeHolderShimmer {
+    0% {
+      background-position: -80vw
+    }
+    100% {
+      backgorund-position: 80vw
+    }
+  }
+*/
+  .gradient {
+    background: linear-gradient(
+      to right,
+      rgba(250,250,250, 0.08),
+      rgba(250, 250, 250, 0.74),
+      rgba(250,250,250, 0.08),
+    ), #f0f0f0;
+    background-repeat: repeat-y;
+    background-size: 400px 500px;
+    background-position: -400px 0;
+    animation: shine 1.8s infinite ease;
+  }
+
+  .deleteUploadHovered {
+      // border-bottom: 1px solid #E20101 !important;
+      background: #FBF1F1 !important
+  }
+
+  @keyframes shine {
+    to {
+      background-position: calc(100% + 400px) 0;
+    }
+  }

@@ -1,0 +1,25 @@
+.selectContainer {
+    color: #424242;
+
+    button {
+        width: 100%;
+        background-color: #F5F5F5;
+        color: inherit;
+        border: 1px solid #CDCEDA;
+        text-align: left !important;
+        &::after {
+            position: absolute !important;
+            right: 15px;
+            top: calc(50% - 2px);
+        }
+    }
+
+    div {
+        width: 100%;
+    }
+}
+
+.selectInputStyles button {
+    border-radius: 6px 0px 0px 6px !important;
+    border-right: none !important;
+}

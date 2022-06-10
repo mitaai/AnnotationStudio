@@ -1,110 +1,109 @@
-import unfetch from 'unfetch';
 import { useSession } from 'next-auth/client';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Card, Col,
 } from 'react-bootstrap';
+import { useRouter } from 'next/router';
 import Layout from '../../../components/Layout';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import UnauthorizedCard from '../../../components/UnauthorizedCard';
-import DocumentForm from '../../../components/DocumentForm';
 
 import { prefetchDocumentBySlug } from '../../../utils/docUtil';
+import CreateEditDocument from '../../../components/CreateEditDocument';
 
 const EditDocument = ({
-  query, document, alerts, statefulSession,
+  query, document, alerts, statefulSession, refererUrl,
 }) => {
   const [session, loading] = useSession();
-  const [pageLoading, setPageLoading] = useState(true);
+  const router = useRouter();
+  const pathname = refererUrl || '/documents';
+  // eslint-disable-next-line no-unused-vars
+  const [pageLoading, setPageLoading] = useState(false);
+  // eslint-disable-next-line no-unused-vars
   const [errors, setErrors] = useState(alerts || []);
   const {
     did,
     slug,
     dp,
     gid,
-    exportDocument,
   } = query || {};
   const dashboardStateQuery = {
     did, slug, dp, gid,
   };
 
-  const cloudfrontUrl = process.env.NEXT_PUBLIC_SIGNING_URL.split('/url')[0];
+  const showEditDocumentContent = session && document && !loading && !pageLoading;
+  const userUnauthorizedToViewContent = document.owner !== session?.user?.id && session?.user?.role !== 'admin';
 
-  useEffect(() => {
-    if (document && document.text && (document.uploadContentType === 'text/slate-html' || document.uploadContentType === 'text/html')
-      && document.text.length < 255 && document.text.includes(cloudfrontUrl)) {
-      unfetch(document.text.substring(
-        document.text.indexOf(cloudfrontUrl), document.text.indexOf('.html') + 5,
-      ), {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'text/html',
-        },
-      }).then((res) => {
-        res.text().then((result) => {
-          // eslint-disable-next-line no-param-reassign
-          document.text = result;
-          setPageLoading(false);
-        });
-      }).catch((err) => {
-        setErrors((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
-        setPageLoading(false);
-      });
-    } else {
-      setPageLoading(false);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [document]);
 
   return (
-    <Layout
-      alerts={errors}
-      type="document"
-      title={document ? `Edit Document: ${document.title}` : 'error'}
-      document={document}
-      statefulSession={statefulSession}
-    >
-      <Col lg="12" className="mx-auto">
-        <Card>
-          {((!session && loading) || (session && pageLoading)) && (
-            <LoadingSpinner />
-          )}
-          {!session && !loading && (
-            <UnauthorizedCard />
-          )}
-          {session && document && !loading && !pageLoading && (
-            <>
-              {(document.owner === session.user.id || session.user.role === 'admin') && (
+    showEditDocumentContent && !userUnauthorizedToViewContent
+      ? (
+        <CreateEditDocument
+          mode="edit"
+          session={session}
+          loading={loading}
+          statefulSession={statefulSession}
+          document={document}
+          onCancel={() => {
+            router.push({
+              pathname,
+              query: {
+                ...dashboardStateQuery,
+              },
+            });
+          }}
+          onDelete={() => {
+            router.push({
+              pathname,
+              query: {
+                ...dashboardStateQuery,
+                // if we delete the document then there is no document data (slug/did) to reference
+                // in the url
+                slug: undefined,
+                did: undefined,
+              },
+              alert: 'deletedDocument',
+            });
+          }}
+          onSave={(ops) => {
+            router.push({
+              pathname: `/documents/${document?.slug || ops.slug}`,
+              query: {
+                alert: 'editedDocument',
+              },
+            });
+          }}
+        />
+      )
+      : (
+        <Layout
+          alerts={errors}
+          type="document"
+          title={document ? `Edit Document: ${document.title}` : 'error'}
+          document={document}
+          statefulSession={statefulSession}
+        >
+          <Col lg="12" className="mx-auto">
+            <Card>
+              {((!session && loading) || (session && pageLoading)) && (
+              <LoadingSpinner />
+              )}
+              {!session && !loading && (
+              <UnauthorizedCard />
+              )}
+              {session && !document && !loading && !pageLoading && (
               <>
-                <Card.Header><Card.Title>Edit document</Card.Title></Card.Header>
-                <Card.Body>
-                  <DocumentForm
-                    mode="edit"
-                    session={session}
-                    exportDocument={exportDocument}
-                    dashboardStateQuery={dashboardStateQuery}
-                    data={document}
-                    setErrors={setErrors}
-                    errors={errors}
-                    setPageLoading={setPageLoading}
-                  />
-                </Card.Body>
+                <Card.Header><Card.Title>Document not found</Card.Title></Card.Header>
+                <Card.Body>Sorry, this document could not be found.</Card.Body>
               </>
               )}
-              {document.owner !== session.user.id && session.user.role !== 'admin' && (
-                <UnauthorizedCard />
+              {showEditDocumentContent && userUnauthorizedToViewContent && (
+              <UnauthorizedCard />
               )}
-            </>
-          )}
-          {session && !document && !loading && !pageLoading && (
-            <>
-              <Card.Header><Card.Title>Document not found</Card.Title></Card.Header>
-              <Card.Body>Sorry, this document could not be found.</Card.Body>
-            </>
-          )}
-        </Card>
-      </Col>
-    </Layout>
+            </Card>
+          </Col>
+        </Layout>
+      )
   );
 };
 
@@ -125,7 +124,9 @@ export async function getServerSideProps(context) {
     };
   });
 
-  return { props };
+  return {
+    props: { ...props, refererUrl: context?.req?.headers?.referer?.split('?')[0] || null },
+  };
 }
 
 export default EditDocument;

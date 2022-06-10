@@ -19,6 +19,10 @@ function Layout({
   dashboardState = '',
   mode,
   setMode,
+  backgroundColor,
+  noContainer,
+  borderBottom,
+  secondNavbarExtraContent,
 }) {
   const content = (
     <>
@@ -26,13 +30,10 @@ function Layout({
       {children}
     </>
   );
-  let innerContent;
-  if (docView) {
-    innerContent = content;
-  } else if (type === 'dashboard') {
-    innerContent = content;
-  } else {
-    innerContent = (
+
+  const innerContent = (docView || type === 'dashboard' || noContainer)
+    ? content
+    : (
       <Container style={type === 'admin' ? {
         height: '100%',
       } : {}}
@@ -40,7 +41,7 @@ function Layout({
         {content}
       </Container>
     );
-  }
+
   return (
     <>
       <Head>
@@ -60,11 +61,14 @@ function Layout({
           dashboardState={dashboardState}
           mode={mode}
           setMode={setMode}
+          borderBottom={borderBottom}
+          secondNavbarExtraContent={secondNavbarExtraContent}
         />
         <div style={{
           flex: 1,
           overflowY: docView ? 'hidden' : 'overlay',
-          paddingTop: docView ? 0 : 15,
+          paddingTop: (docView || noContainer) ? 0 : 15,
+          backgroundColor,
         }}
         >
           {innerContent}
