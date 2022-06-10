@@ -26,7 +26,6 @@
   "dependencies": {
     "@google-cloud/language": "^4.3.2",
     "@sendgrid/mail": "^7.4.2",
-    "@serverless/cli": "^1.6.0",
     "@sindresorhus/slugify": "^1.1.0",
     "@tinymce/tinymce-react": "^3.9.0",
     "@udecode/slate-plugins": "^0.75.2",
