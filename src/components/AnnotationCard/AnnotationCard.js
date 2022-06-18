@@ -11,7 +11,6 @@ import moment from 'moment';
 import {
   Card,
   Form,
-  Button,
   Badge,
   Dropdown,
   ListGroup,
@@ -21,11 +20,13 @@ import {
 } from 'react-bootstrap';
 import {
   TrashFill,
-  QuestionCircle,
+  Question,
   PeopleFill,
   PersonFill,
   PersonPlusFill,
   PenFill,
+  Check,
+  X,
 } from 'react-bootstrap-icons';
 import {
   Typeahead, Menu, MenuItem, Token,
@@ -129,6 +130,7 @@ function AnnotationCard({
     setUpdateFocusOfAnnotation,
   ] = useState(annotation.editing);
   const [hovered, setHovered] = useState();
+  const [annotationHeaderHovered, setAnnotationHeaderHovered] = useState();
   const [newSelectedUsersToShare, setNewSelectedUsersToShare] = useState(null);
 
   const leftRightPositionForAnnotation = annotationData.editing ? -10 : 15;
@@ -144,27 +146,27 @@ function AnnotationCard({
 
   const permissionText = [
     (
-      <>
+      <span style={{ marginRight: 'auto' }}>
         <PersonFill />
         {' '}
         Private
-      </>
+      </span>
     ),
     (
-      <>
+      <span style={{ marginRight: 'auto' }}>
         <PeopleFill />
         {' '}
         Shared with group(s)
-      </>
+      </span>
     ),
     (
-      <>
+      <span style={{ marginRight: 'auto' }}>
         <PersonPlusFill />
         {' '}
         {selectedUsersToShare.length === 1
           ? 'Shared with 1 user'
           : `Shared with ${selectedUsersToShare.length} users`}
-      </>
+      </span>
     ),
   ];
 
@@ -487,19 +489,14 @@ function AnnotationCard({
   }
 
   const handleClick = ({ event, click = () => {}, dbclick = () => {} }) => {
-    console.log('handleClick');
     if (refCardClickedAlready.current > 0) {
-      console.log('dbclick');
       dbclick(event);
       refCardClickedAlready.current = 0;
     } else {
       refCardClickedAlready.current = 1;
       setTimeout(() => {
         if (refCardClickedAlready.current === 1) {
-          console.log('click');
           click(event);
-        } else {
-          console.log('dbclick already');
         }
         refCardClickedAlready.current = 0;
       }, 200);
@@ -538,14 +535,14 @@ function AnnotationCard({
   };
 
   const saveButton = (
-    <Button
-      size="sm"
-      className="btn-save-annotation-edits"
-      variant="primary"
+    <div
+      id="save-annotation-btn"
       onClick={SaveAnnotation}
     >
-      Save
-    </Button>
+      <Check
+        style={{ fontSize: 17 }}
+      />
+    </div>
   );
 
   const annotationSaveButton = annotationMatchesCurrentFilters() ? saveButton : (
@@ -567,6 +564,10 @@ function AnnotationCard({
   const annotationShareableLinkIconClicked = (ev) => ev.target.closest('.annotation-shareable-link-icon') !== null;
   // eslint-disable-next-line no-undef
   const shareableLink = `${window.location.origin}/documents/${annotation.target.document.slug}?mine=false&aid=${annotationData._id}`;
+
+  const lightOrange = '#FEF6EB'; // 'rgba(255,165,10,0.10)'
+
+  const annotationPointerBorderColor = expanded ? ((annotationHeaderHovered && lightOrange) || '#FAFAFA') : undefined;
 
   const expandedAndFocus = () => {
     if (!expanded) {
@@ -615,22 +616,61 @@ function AnnotationCard({
           ? (
             <>
               <span className="annotation-pointer-background-left" />
-              <span className="annotation-pointer-left" />
+              <span className="annotation-pointer-left" style={{ borderLeftColor: annotationPointerBorderColor }} />
             </>
           )
           : (
             <>
               <span className="annotation-pointer-background-right" />
-              <span className="annotation-pointer-right" />
+              <span className="annotation-pointer-right" style={{ borderRightColor: annotationPointerBorderColor }} />
             </>
           )}
 
         {expanded ? (
           <>
+            <Card.Header
+              className={`annotation-header grey-background ${annotationData.editing ? 'editing' : ''}`}
+              style={{ display: 'flex', alignItems: 'center' }}
+              onClick={() => { setUpdateFocusOfAnnotation(true); }}
+              onMouseOver={() => { setAnnotationHeaderHovered(true); }}
+              onMouseLeave={() => { setAnnotationHeaderHovered(); }}
+            >
+              <span>{FirstNameLastInitial(annotationData.creator.name)}</span>
+              {!annotationData.editing && (
+              <>
+                <span style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                  <div style={{
+                    width: 3 * fontSizeMultiplier,
+                    height: 3 * fontSizeMultiplier,
+                    borderRadius: 1.5 * fontSizeMultiplier,
+                    background: '#616161',
+                    marginLeft: 10,
+                    marginRight: 10,
+                  }}
+                  />
+                  <span>{annotationData.modified === undefined ? '' : moment(annotationData.modified.toString()).format('MM/DD/YYYY')}</span>
+                </span>
+              </>
+              )}
+              <span style={{ flex: 1 }} />
+              <img
+                className="focus-icon-img"
+                style={{ opacity: annotationHeaderHovered ? 1 : 0 }}
+                src="/focus-icon.svg"
+                alt="focus annotation"
+              />
+            </Card.Header>
             {annotationData.editing
               ? (
                 <>
-                  <ListGroup variant="flush" style={{ borderTop: 'none', zIndex: 1, position: 'relative' }}>
+                  <ListGroup
+                    variant="flush"
+                    style={{
+                      borderTop: 'none',
+                      zIndex: 1,
+                      position: 'relative',
+                    }}
+                  >
                     <ListGroup.Item className="annotation-body">
                       <Form.Group controlId="exampleForm.ControlTextarea1">
                         <Form.Control
@@ -667,7 +707,7 @@ function AnnotationCard({
                         id="typeahead-annotation-tags"
                         disabled={savingAnnotation}
                         labelKey="tags"
-                        placeholder="tag"
+                        placeholder="tags"
                         multiple
                         selected={
                             newAnnotationTags === null
@@ -711,11 +751,27 @@ function AnnotationCard({
                           </Dropdown.Item>
                         </DropdownButton>
                       </div>
-                      <QuestionCircle
-                        id="question-circle-icon"
-                        style={{ marginLeft: 3 }}
+                      <div
+                        style={{
+                          position: 'relative',
+                          top: -2,
+                          backgroundColor: '#F4F4F4',
+                          width: 30,
+                          height: 30,
+                          color: '#424242',
+                          marginLeft: 4,
+                          display: 'flex',
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
                         onClick={() => { setShowMoreInfoShareModal(true); }}
-                      />
+                      >
+                        <Question
+                          id="question-circle-icon"
+                          style={{ fontSize: 17, color: '#424242' }}
+                        />
+                      </div>
                       <div id="typeahead-share-annotation-users-container" className={showPermissionNumber() === 2 ? 'show' : ''}>
                         <Typeahead
                           id="typeahead-share-annotation-users"
@@ -736,13 +792,78 @@ function AnnotationCard({
                           }}
                         />
                       </div>
+                      <div style={{ flex: 1 }} />
+                      {(newAnnotationTags !== null
+                        || newAnnotationPermissions !== null
+                        || newAnnotationText !== null)
+                        && annotationSaveButton}
+                      <div
+                        id="cancel-annotation-btn"
+                        onClick={CancelAnnotation}
+                      >
+                        <X
+                          style={{ fontSize: 17 }}
+                        />
+                      </div>
                     </ListGroup.Item>
                   </ListGroup>
                 </>
               )
               : (
                 <>
-                  <ListGroup variant="flush" style={{ borderTop: 'none', zIndex: 1, position: 'relative' }}>
+                  <ListGroup
+                    variant="flush"
+                    style={{
+                      transition: 'all 0.25s',
+                      borderTop: 'none',
+                      zIndex: 1,
+                      position: 'relative',
+                      padding: hovered ? '0px 0px 32px 0px' : '0px',
+                    }}
+                  >
+                    <div
+                      style={{
+                        position: 'absolute',
+                        width: '100%',
+                        height: 34,
+                        display: 'flex',
+                        alignItems: 'center',
+                        padding: '1px 7px',
+                        bottom: -2,
+                        right: 0,
+                      }}
+                    >
+                      <div style={{
+                        position: 'absolute', top: 2, left: '5px', width: 'calc(100% - 10px)', height: 1, backgroundColor: '#f6f6f6',
+                      }}
+                      />
+                      <span style={{ flex: 1 }} />
+                      <span
+                        className="edit-annotation-btn"
+                        onClick={() => {
+                          if (annotationIdBeingEdited !== undefined) {
+                            setShowUnsavedChangesToast(true);
+                          } else {
+                            annotationData.editing = true;
+                            SetAndSaveAnnotationData(annotationData);
+                          }
+                        }}
+                      >
+                        <PenFill
+                          style={{ marginRight: 7, position: 'relative', top: largeFontSize ? -2 : 0 }}
+                          size={14 * fontSizeMultiplier}
+                        />
+                      </span>
+                      <span style={{
+                        position: 'relative', width: 1, height: 17, backgroundColor: '#BDBDBD', marginRight: 7,
+                      }}
+                      />
+                      <TrashFill
+                        className="delete-annotation-btn"
+                        size={14 * fontSizeMultiplier}
+                        onClick={DeleteAnnotation}
+                      />
+                    </div>
                     <ListGroup.Item
                       className="annotation-body"
                       onClick={(ev) => {
@@ -796,88 +917,6 @@ function AnnotationCard({
                   </ListGroup>
                 </>
               )}
-            <Card.Header
-              className={`annotation-header grey-background ${annotationData.editing ? 'editing' : ''}`}
-              style={{ display: 'flex', alignItems: 'center' }}
-              onClick={() => { setUpdateFocusOfAnnotation(true); }}
-            >
-              <span>{FirstNameLastInitial(annotationData.creator.name)}</span>
-              {annotationData.editing ? (
-                <>
-                  <span style={{ flex: 1 }} />
-                  {annotationData.new ? (
-                    <TrashFill
-                      className="btn-cancel-annotation-edits"
-                      size="1em"
-                      variant="secondary"
-                      onClick={CancelAnnotation}
-                    />
-                  ) : (
-                    <Button
-                      className="btn-cancel"
-                      variant="secondary"
-                      size="sm"
-                      onClick={CancelAnnotation}
-                    >
-                      Cancel.
-                    </Button>
-                  )}
-
-                  {newAnnotationTags !== null
-                  || newAnnotationPermissions !== null
-                  || newAnnotationText !== null
-                    ? (
-                      annotationSaveButton
-                    ) : null }
-                </>
-              ) : (
-                <>
-                  <span style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                    <div style={{
-                      width: 3 * fontSizeMultiplier,
-                      height: 3 * fontSizeMultiplier,
-                      borderRadius: 1.5 * fontSizeMultiplier,
-                      background: '#616161',
-                      marginLeft: 10,
-                      marginRight: 10,
-                    }}
-                    />
-                    <span>{annotationData.modified === undefined ? '' : moment(annotationData.modified.toString()).format('MM/DD/YYYY')}</span>
-                  </span>
-                  <span style={{ flex: 1 }} />
-                  <span style={{ display: 'flex', alignItems: 'center' }}>
-                    {user.email === annotationData.creator.email
-                      && !annotationData.new
-                      && hovered && (
-                      <>
-                        <span
-                          className="edit-annotation-btn"
-                          onClick={() => {
-                            if (annotationIdBeingEdited !== undefined) {
-                              setShowUnsavedChangesToast(true);
-                            } else {
-                              annotationData.editing = true;
-                              SetAndSaveAnnotationData(annotationData);
-                            }
-                          }}
-                        >
-                          <PenFill
-                            style={{ marginRight: 7, position: 'relative', top: largeFontSize ? -2 : 0 }}
-                            size={14 * fontSizeMultiplier}
-                          />
-                        </span>
-                        <TrashFill
-                          className="delete-annotation-btn"
-                          size={14 * fontSizeMultiplier}
-                          onClick={DeleteAnnotation}
-                        />
-                      </>
-                    )}
-                  </span>
-
-                </>
-              )}
-            </Card.Header>
           </>
         ) : (
           <>
@@ -893,6 +932,7 @@ function AnnotationCard({
             >
               <Card.Header
                 className="annotation-header"
+                style={{ borderBottom: 'none' }}
                 onClick={(ev) => {
                   handleClick({
                     event: ev,
@@ -934,12 +974,66 @@ function AnnotationCard({
       </Card>
       <style jsx global>
         {`
+
+        .focus-icon-img {
+          transition: all 0.25s;
+          width: 16px;
+        }
+
+        .focus-icon-img:hover {
+          width: 19px;
+        }
+
+        .annotation-tags.list-group-item {
+          border: none !important;
+        }
+
+        #cancel-annotation-btn {
+          transition: all 0.25s;
+          position: relative;
+          top: -2px;
+          background-color: #F4F4F4;
+          width: 30px;
+          height: 30px;
+          color: #424242;
+          margin-left: 4px;
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          justify-content: center;
+        }
+
+        #cancel-annotation-btn:hover {
+          color: #E20101;
+          background-color: #FFE5E5;
+        }
+
+        #save-annotation-btn {
+          transition: all 0.25s;
+          position: relative;
+          top: -2px;
+          background-color: #F4F4F4;
+          width: 30px;
+          height: 30px;
+          color: #424242;
+          margin-left: 4px;
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          justify-content: center;
+        }
+
+        #save-annotation-btn:hover {
+          color: #355CBC;
+          background-color: #EBF2FF;
+        }
+
         .delete-annotation-btn, .edit-annotation-btn {
           color: #616161;
         }
 
         .delete-annotation-btn:hover {
-          color: #AC4545;
+          color: #E20101;
         }
 
         .edit-annotation-btn:hover {
@@ -969,11 +1063,39 @@ function AnnotationCard({
 
         .annotation-permissions {
           padding: 2px 5px;
+          display: flex;
+        }
+
+        .annotation-body .tox-sidebar-wrap {
+          margin: 1px 5px 5px 5px;
+          border: 1px solid #F5F5F5;
+        }
+
+        .annotation-body .tox-toolbar__group {
+          border: none !important;
+        }
+
+        .annotation-body .tox-toolbar__primary {
+          background: transparent !important;
         }
 
         #dropdown-permission-options {
-          font-size: 9px;
-          padding: 3px 6px;
+          font-size: 12px;
+          padding: 5px 6px;
+          border-radius: 0px;
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          background-color: #f4f4f4;
+          color: #424242;
+          border: 1px solid #F4F4F4;
+          width: 160px;
+          outline: none;
+          box-shadow: none;
+        }
+
+        #dropdown-permission-options svg {
+          margin-right: 4px;
         }
 
         #dropdown-permission-options-container {
@@ -995,6 +1117,7 @@ function AnnotationCard({
           border-radius: 0px;
           border: none;
           padding-left: 5px;
+          background-color: #FAFAFA;
         }
 
         #typeahead-share-annotation-users {
@@ -1085,7 +1208,7 @@ function AnnotationCard({
         }
 
         .annotation-header.card-header {
-          border-bottom: none !important;
+          border-top: none !important;
         }
 
         .annotation-card-container > .list-group {
@@ -1262,7 +1385,7 @@ function AnnotationCard({
 
       .annotation-header.grey-background:hover {
         transition: background-color 0.25s;
-        background-color: rgba(255,165,10,0.10) !important
+        background-color: ${lightOrange} !important
       }
 
       .grey-background {
@@ -1278,13 +1401,15 @@ function AnnotationCard({
       }
 
       .editing .annotation-tags {
-        padding: 0px !important;
+        padding: 0px 5px !important;
+        margin-bottom: 5px;
+        border-bottom: none;
       }
 
       .annotation-body {
         padding: 0.3rem;
         font-size: ${12 * fontSizeMultiplier}px;
-        border-bottom-width: 1px !important;
+        border-bottom-width: 0px !important;
       }
 
       .annotation-body textarea {

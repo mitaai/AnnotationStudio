@@ -878,6 +878,19 @@ const CreateEditDocument = ({
                         onMouseLeave={fileUploaded ? () => setDeleteUploadHovered() : () => {}}
                       >
                         <X size={20} />
+                        <span className={styles.deleteFileText}>
+                          <span style={{
+                            position: 'relative',
+                            left: 3,
+                            color: 'white',
+                            width: 75,
+                            textOverflow: 'clip',
+                            whiteSpace: 'nowrap',
+                          }}
+                          >
+                            Delete File
+                          </span>
+                        </span>
                       </div>
                       )}
                       {(fileUploading || fileUploaded)
@@ -1010,7 +1023,7 @@ const CreateEditDocument = ({
                       onClick={() => setShowUploadModal(true)}
                       disabled={progress.started}
                     >
-                      Upload
+                      Upload File
                     </Button>
                   </div>
 
@@ -1047,7 +1060,7 @@ const CreateEditDocument = ({
                           setSlateLoading(true);
                         }
                       }]}
-                      placeholder="Paste or type here"
+                      placeholder="Or paste/type text here"
                       id="outline-container"
                       className={styles['slate-editor']}
                     />
