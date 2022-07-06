@@ -62,18 +62,18 @@ jobs:
           echo "SITE=${{ secrets.SITE }}" >> .env.local
           echo "SITE_NAME=${{ secrets.SITE_NAME }}" >> .env.local
       
-      - name: Installing serverless/cli
-        run: npm install -g @serverless/cli
-      - name: Deploy Next.js app
-        run: npx serverless
+      #- name: Installing serverless/cli
+      #  run: npm install -g @serverless/cli
+      #- name: Deploy Next.js app
+      #  run: npx serverless
       
-      # - name: Deploy to AWS
-      #  uses: serverless/github-action@v2
-      #  env:
-      #    AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      #    AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      #    NEXT_PUBLIC_IDEA_SPACE_ENABLED: ${{ secrets.NEXT_PUBLIC_IDEA_SPACE_ENABLED }}
-      #    NEXT_PUBLIC_LOGO_SVG: ${{ secrets.NEXT_PUBLIC_LOGO_SVG }}
-      #    NEXT_PUBLIC_SIGNING_URL: ${{ secrets.NEXT_PUBLIC_SIGNING_URL }}
-      #    NEXT_PUBLIC_SITE_NAME: ${{ secrets.NEXT_PUBLIC_SITE_NAME }}
-      #    NEXT_PUBLIC_TINYMCE_API_KEY: ${{ secrets.NEXT_PUBLIC_TINYMCE_API_KEY }}
+      - name: Deploy to AWS
+        uses: serverless/github-action@v2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          NEXT_PUBLIC_IDEA_SPACE_ENABLED: ${{ secrets.NEXT_PUBLIC_IDEA_SPACE_ENABLED }}
+          NEXT_PUBLIC_LOGO_SVG: ${{ secrets.NEXT_PUBLIC_LOGO_SVG }}
+          NEXT_PUBLIC_SIGNING_URL: ${{ secrets.NEXT_PUBLIC_SIGNING_URL }}
+          NEXT_PUBLIC_SITE_NAME: ${{ secrets.NEXT_PUBLIC_SITE_NAME }}
+          NEXT_PUBLIC_TINYMCE_API_KEY: ${{ secrets.NEXT_PUBLIC_TINYMCE_API_KEY }}
