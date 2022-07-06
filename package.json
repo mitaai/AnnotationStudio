@@ -47,7 +47,7 @@
     "moment": "^2.29.1",
     "mongodb": "^3.6.3",
     "next": "^12.1.6",
-    "next-auth": "^3.27.0",
+    "next-auth": "^3.29.5",
     "nodemailer": "^6.4.17",
     "nookies": "^2.5.2",
     "nprogress": "^0.2.0",
