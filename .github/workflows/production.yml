@@ -62,12 +62,8 @@ jobs:
           echo "SITE=${{ secrets.SITE }}" >> .env.local
           echo "SITE_NAME=${{ secrets.SITE_NAME }}" >> .env.local
       
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+      - name: Installing serverless/cli
+        run: npm install -g @serverless/cli
       - name: Deploy Next.js app
         run: npx serverless
       
