@@ -157,36 +157,47 @@ This project is deployed to AWS CloudFront/S3/Lambda using the [Serverless Frame
 
 ### Configuration
 
-There are currently two environments, Preview and Production. They are configured with the following YAML files:
+There are currently two environments, Preview and Production. They are configured with the following files:
 
 - `serverless-preview.yml`
 - `serverless-prod.yml`
 - `.github/workflows/preview.yml`
 - `.github/workflows/production.yml`
+- `next.config.js`
 
-In the former two files, bucket names and distribution IDs are hard coded and must be changed for different AWS deployments. Normally these would not be checked into version control, but since our workflow relies on GitHub automation, it was required.
+In the first two files, bucket names and distribution IDs are hard coded and must be changed for different AWS deployments. Normally these would not be checked into version control, but since our workflow relies on GitHub automation, it was required.
 
 ### Environment variables
 
 In these deployments, environment variables are pulled from [GitHub Environments](https://docs.github.com/en/actions/reference/environments). Note that **any environment variables added to the project** must be manually added to the appropriate steps of `.github/workflows/preview.yml` and `.github/workflows/production.yml`, in addition to the GitHub Environments, to become available to deployments. They will be pulled from the relevant GitHub Environments and made available to the `secrets` object.
 
-For example, a developer might wish to add an environment variable `ADMIN_EMAIL`.
+For example, if a developer wishes to add a new environment variable `ADMIN_EMAIL`:
 
-First, the developer should go to the Settings for this GitHub repo and navigate to Environments on the sidebar. Values for this environment variable `ADMIN_EMAIL` should be added to both the "Preview" and "Production" environments.
+1. First, the developer should go to the Settings for this GitHub repo and navigate to Environments on the sidebar. Values for this environment variable `ADMIN_EMAIL` should be added to both the "Preview" and "Production" environments.
 
-Then, in code, the developer should add the following line to `.github/workflows/preview.yml` and `.github/workflows/production.yml` in the "Deploy to AWS" step, within the `env` block:
+2. Then, in code, the developer should add the following line to `.github/workflows/preview.yml` and `.github/workflows/production.yml` in the "Deploy to AWS" step, within the `env` block:
 
-```yml
-ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
-```
+    ```yml
+    ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+    ```
 
-And in both `serverless-preview.yml` and `serverless-prod.yml`, add the following line to `AnnotationStudio.inputs.build`:
+3. And in both `serverless-preview.yml` and `serverless-prod.yml`, add the following line to `AnnotationStudio.inputs.build`:
 
-```yml
-ADMIN_EMAIL: ${env.ADMIN_EMAIL}
-```
+    ```yml
+    ADMIN_EMAIL: ${env.ADMIN_EMAIL}
+    ```
+
+4. Finally, Next.JS needs to be made aware of the new environment variable, so add the following to `next.config.js` in the `env` object:
+
+    ```js
+    ADMIN_EMAIL: process.env.ADMIN_EMAIL,
+    ```
 
 That way, the new environment variable will be made available to the deployment in the appropriate steps.
+
+### Logs
+
+Logs can be inspected from the AWS Cloudfront console. Visit the [Monitoring](https://us-east-1.console.aws.amazon.com/cloudfront/v3/home?region=us-east-1#/monitoring) section of the Cloudfront console, choose Lambda@Edge, and find the two pairs of similarly-named Lambda@Edge functions (should have the same prefix). Each pair represents one deployment, either preview or production. To determine which is which, select one and choose "View metrics", then scroll down to "Associated distributions." If it says "app.annotation.studio" in the alternate domain names, then it is production, otherwise it is preview. To view logs, scroll back up to the top and click "View function logs," and choose us-east-1.
 
 ## To Vercel
 
