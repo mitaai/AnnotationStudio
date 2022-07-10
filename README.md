@@ -170,23 +170,23 @@ In the former two files, bucket names and distribution IDs are hard coded and mu
 
 In these deployments, environment variables are pulled from [GitHub Environments](https://docs.github.com/en/actions/reference/environments). Note that **any environment variables added to the project** must be manually added to the appropriate steps of `.github/workflows/preview.yml` and `.github/workflows/production.yml`, in addition to the GitHub Environments, to become available to deployments. They will be pulled from the relevant GitHub Environments and made available to the `secrets` object.
 
-For example, a developer might wish to add two environment variables: `ADMIN_EMAIL`, which they want made available to the app backend at build time; and `AWS_ACCESS_KEY_ID`, which they want made available to AWS at deploy time.
+For example, a developer might wish to add an environment variable `ADMIN_EMAIL`.
 
-First, the developer should go to the Settings for this GitHub repo and navigate to Environments on the sidebar. Values for both of these environment variables should be added to both the "Preview" and "Production" environments.
+First, the developer should go to the Settings for this GitHub repo and navigate to Environments on the sidebar. Values for this environment variable `ADMIN_EMAIL` should be added to both the "Preview" and "Production" environments.
 
-Then, in code, the developer should add the following line to `.github/workflows/preview.yml` and `.github/workflows/production.yml` in the "Create .env.local" step, within the `run` block:
-
-```yml
-echo "ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}" > .env.local
-```
-
-And add the follwoing line to the `env` block in the "Deploy to AWS" step:
+Then, in code, the developer should add the following line to `.github/workflows/preview.yml` and `.github/workflows/production.yml` in the "Deploy to AWS" step, within the `env` block:
 
 ```yml
-AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
 ```
 
-That way, each of these environment variables will be made available to the deployment in the appropriate steps.
+And in both `serverless-preview.yml` and `serverless-prod.yml`, add the following line to `AnnotationStudio.inputs.build`:
+
+```yml
+ADMIN_EMAIL: ${env.ADMIN_EMAIL}
+```
+
+That way, the new environment variable will be made available to the deployment in the appropriate steps.
 
 ## To Vercel
 
