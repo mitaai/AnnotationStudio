@@ -1,5 +1,5 @@
 AnnotationStudio:
-  component: "@sls-next/serverless-component@1.19.1-patch.1"
+  component: "@sls-next/serverless-component@3.7.0"
   inputs:
     bucketName: b5q90y-xu2rp9
     cloudfront:
