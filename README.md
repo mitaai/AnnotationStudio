@@ -180,10 +180,10 @@ Then, in code, the developer should add the following line to `.github/workflows
 ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
 ```
 
-And then, in both `serverless-preview.yml` and `serverless-prod.yml`, add the following line to `AnnotationStudio.inputs.build`:
+And in both `serverless-preview.yml` and `serverless-prod.yml`, add the following line to `AnnotationStudio.inputs.build`:
 
 ```yml
-ADMIN_EMAILs: ${env.ADMIN_EMAIL}
+ADMIN_EMAIL: ${env.ADMIN_EMAIL}
 ```
 
 That way, the new environment variable will be made available to the deployment in the appropriate steps.
