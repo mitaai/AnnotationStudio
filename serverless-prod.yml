@@ -2,6 +2,28 @@ AnnotationStudio:
   component: "@sls-next/serverless-component@3.7.0"
   inputs:
     bucketName: b5q90y-xu2rp9
+    build:
+      env:
+        ADMIN_EMAIL: ${env.ADMIN_EMAIL}
+        AUTH_SECRET: ${env.AUTH_SECRET}
+        AWS_ACCESS_KEY_ID: ${env.AWS_ACCESS_KEY_ID}
+        AWS_SECRET_ACCESS_KEY: ${env.AWS_SECRET_ACCESS_KEY}
+        DB_NAME: ${env.DB_NAME}
+        EMAIL_SERVER_USER: ${env.EMAIL_SERVER_USER}
+        EMAIL_SERVER_PASSWORD: ${env.EMAIL_SERVER_PASSWORD}
+        EMAIL_SERVER_HOST: ${env.EMAIL_SERVER_HOST}
+        EMAIL_SERVER_PORT: ${env.EMAIL_SERVER_PORT}
+        EMAIL_FROM: ${env.EMAIL_FROM}
+        MONGODB_URI: ${env.MONGODB_URI}
+        NEXT_PUBLIC_IDEA_SPACE_ENABLED: ${env.NEXT_PUBLIC_IDEA_SPACE_ENABLED}
+        NEXT_PUBLIC_LOGO_SVG: ${env.NEXT_PUBLIC_LOGO_SVG}
+        NEXT_PUBLIC_SIGNING_URL: ${env.NEXT_PUBLIC_SIGNING_URL}
+        NEXT_PUBLIC_SITE_NAME: ${env.NEXT_PUBLIC_SITE_NAME}
+        NEXT_PUBLIC_TINYMCE_API_KEY: ${env.NEXT_PUBLIC_TINYMCE_API_KEY}
+        NEXTAUTH_URL: ${env.NEXTAUTH_URL}
+        SITE: ${env.SITE}
+        SITE_NAME: ${env.SITE_NAME}
+        SUPPORT_EMAIL: ${env.SUPPORT_EMAIL}
     cloudfront:
       distributionId: E2L5RNSYYSE66M
       defaults:
