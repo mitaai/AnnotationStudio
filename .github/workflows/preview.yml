@@ -23,8 +23,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - uses: actions/checkout@v2
-      
       - name: Copy serverless-preview.yml to serverless.yml
         uses: canastro/copy-file-action@master
         with:
@@ -63,7 +61,7 @@ jobs:
           echo "SITE_NAME=${{ secrets.SITE_NAME }}" >> .env.local
 
       - name: Deploy to AWS
-        uses: serverless/github-action@master
+        uses: serverless/github-action@v3
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
