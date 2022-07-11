@@ -68,7 +68,7 @@
 .uploadDocumentBtn {
     position: relative;
     top: 15px;
-    width: 100px;
+    width: 120px;
     height: 34px;
     line-height: 31px;
     padding: 0px;
@@ -174,10 +174,25 @@
     color: #BDBDBD;
     cursor: pointer;
 
+    .deleteFileText {
+      transition: all 0.5s;
+      width: 0px;
+      overflow: hidden;
+      text-overflow: hidden;
+      font-size: 13px;
+      position: relative;
+    }
+
     &:hover {
         border-color: #E20101;
-        background-color: #FCECEB;
-        color: #E20101;
+        /*background-color: #FCECEB;*/
+        background-color: #E20101;
+        color: white;
+        /*color: #E20101;*/
+
+        .deleteFileText {
+          width: 75px;
+        }
     }
   }
 
