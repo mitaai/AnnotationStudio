@@ -698,22 +698,33 @@ function AnnotationCard({
                 transition: 'all 0.25s',
               }}
               >
-                <span
-                  className="edit-annotation-btn"
-                  onClick={() => {
-                    if (annotationIdBeingEdited !== undefined) {
-                      setShowUnsavedChangesToast(true);
-                    } else {
-                      annotationData.editing = true;
-                      SetAndSaveAnnotationData(annotationData);
-                    }
-                  }}
+                <OverlayTrigger
+                  overlay={(
+                    <Tooltip
+                      className="styled-tooltip"
+                    >
+                      Edit
+                    </Tooltip>
+                  )}
                 >
-                  <PenFill
-                    style={{ marginRight: 5, position: 'relative', top: largeFontSize ? -2 : -1 }}
-                    size={13}
-                  />
-                </span>
+                  <span
+                    className="edit-annotation-btn"
+                    onClick={() => {
+                      if (annotationIdBeingEdited !== undefined) {
+                        setShowUnsavedChangesToast(true);
+                      } else {
+                        annotationData.editing = true;
+                        SetAndSaveAnnotationData(annotationData);
+                      }
+                    }}
+                  >
+                    <PenFill
+                      style={{ marginRight: 5, position: 'relative', top: largeFontSize ? -2 : -1 }}
+                      size={13}
+                    />
+                  </span>
+                </OverlayTrigger>
+
                 <OverlayTrigger
                   overlay={(
                     <Tooltip
