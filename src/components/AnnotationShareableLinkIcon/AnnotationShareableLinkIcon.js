@@ -18,6 +18,7 @@ export default function AnnotationShareableLinkIcon({
   paddingLeft = 2,
   borderRadius = 1,
   border = 'none',
+  backgroundColor = 'rgb(245, 245, 245)',
 }) {
   return (
     <>
@@ -58,7 +59,7 @@ export default function AnnotationShareableLinkIcon({
 
         .annotation-shareable-link-icon-container {
           transition: background 0.25s;
-          background: rgb(245, 245, 245);
+          background: ${backgroundColor};
           color: #ABABAB;
           position: absolute;
           z-index: 2;

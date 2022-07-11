@@ -9,10 +9,10 @@ import React, {
 } from 'react';
 import $ from 'jquery';
 import {
-  Button, Modal, ProgressBar, Spinner,
+  Button, Modal, ProgressBar, Spinner, OverlayTrigger, Tooltip,
 } from 'react-bootstrap';
 import {
-  ChevronCompactRight, Plus, Search, X, Check,
+  ChevronCompactRight, Plus, Search, X, Check, PersonFill, PeopleFill, Globe, EyeFill, PencilSquare, ChatRightTextFill,
 } from 'react-bootstrap-icons';
 import { createEditor } from 'slate';
 import {
@@ -451,32 +451,46 @@ const CreateEditDocument = ({
   const state = states[minimize ? 'minimize' : 'default'];
 
 
+  const rowHeader = (icon, text) => (
+    <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'left' }}>
+      {icon}
+      <span style={{ marginLeft: 4 }}>{text}</span>
+    </span>
+  );
+
   const x = {
     content: <X size={20} />,
     style: {
-      color: '#E20101', padding: 15, display: 'flex', alignItems: 'center', justifyContent: 'center',
+      color: '#E20101', padding: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRight: '1px solid #EBEFF3',
     },
   };
+
   const check = {
     content: <Check size={20} />,
     style: {
-      color: '#10A268', padding: 15, display: 'flex', alignItems: 'center', justifyContent: 'center',
+      color: '#10A268', padding: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRight: '1px solid #EBEFF3',
     },
   };
+
   const checkAsterisk = {
     content: [<Check size={20} />, <span style={{ color: '#757575' }}>*</span>],
     style: {
-      color: '#10A268', padding: 15, display: 'flex', alignItems: 'center', justifyContent: 'center',
+      color: '#10A268', padding: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRight: '1px solid #EBEFF3',
     },
   };
+
   const rowHeaderStyle = {
     padding: 15, backgroundColor: '#f6f6f6', borderRight: '1px solid #EBEFF3', textAlign: 'center', fontWeight: 500,
   };
+
   const statesOfStatusTableRows = {
     draft: [
       {
         columns: [
-          { content: 'Me', style: rowHeaderStyle },
+          {
+            content: rowHeader(<PersonFill size={16} color="#424242" />, 'Me'),
+            style: rowHeaderStyle,
+          },
           x,
           checkAsterisk,
           check,
@@ -484,7 +498,10 @@ const CreateEditDocument = ({
       },
       {
         columns: [
-          { content: 'Group', style: rowHeaderStyle },
+          {
+            content: rowHeader(<PeopleFill size={16} color="#424242" />, 'Group'),
+            style: rowHeaderStyle,
+          },
           x,
           x,
           x,
@@ -492,7 +509,10 @@ const CreateEditDocument = ({
       },
       {
         columns: [
-          { content: 'Public', style: rowHeaderStyle },
+          {
+            content: rowHeader(<Globe size={16} color="#424242" />, 'Public'),
+            style: rowHeaderStyle,
+          },
           x,
           x,
           x,
@@ -502,7 +522,10 @@ const CreateEditDocument = ({
     published: [
       {
         columns: [
-          { content: 'Me', style: rowHeaderStyle },
+          {
+            content: rowHeader(<PersonFill size={16} color="#424242" />, 'Me'),
+            style: rowHeaderStyle,
+          },
           check,
           x,
           check,
@@ -510,7 +533,10 @@ const CreateEditDocument = ({
       },
       {
         columns: [
-          { content: 'Group', style: rowHeaderStyle },
+          {
+            content: rowHeader(<PeopleFill size={16} color="#424242" />, 'Group'),
+            style: rowHeaderStyle,
+          },
           check,
           x,
           check,
@@ -518,7 +544,10 @@ const CreateEditDocument = ({
       },
       {
         columns: [
-          { content: 'Public', style: rowHeaderStyle },
+          {
+            content: rowHeader(<Globe size={16} color="#424242" />, 'Public'),
+            style: rowHeaderStyle,
+          },
           x,
           x,
           x,
@@ -528,7 +557,10 @@ const CreateEditDocument = ({
     archived: [
       {
         columns: [
-          { content: 'Me', style: rowHeaderStyle },
+          {
+            content: rowHeader(<PersonFill size={16} color="#424242" />, 'Me'),
+            style: rowHeaderStyle,
+          },
           check,
           x,
           x,
@@ -536,7 +568,10 @@ const CreateEditDocument = ({
       },
       {
         columns: [
-          { content: 'Group', style: rowHeaderStyle },
+          {
+            content: rowHeader(<PeopleFill size={16} color="#424242" />, 'Group'),
+            style: rowHeaderStyle,
+          },
           check,
           x,
           x,
@@ -544,7 +579,10 @@ const CreateEditDocument = ({
       },
       {
         columns: [
-          { content: 'Public', style: rowHeaderStyle },
+          {
+            content: rowHeader(<Globe size={16} color="#424242" />, 'Public'),
+            style: rowHeaderStyle,
+          },
           x,
           x,
           x,
@@ -878,6 +916,19 @@ const CreateEditDocument = ({
                         onMouseLeave={fileUploaded ? () => setDeleteUploadHovered() : () => {}}
                       >
                         <X size={20} />
+                        <span className={styles.deleteFileText}>
+                          <span style={{
+                            position: 'relative',
+                            left: 3,
+                            color: 'white',
+                            width: 75,
+                            textOverflow: 'clip',
+                            whiteSpace: 'nowrap',
+                          }}
+                          >
+                            Delete File
+                          </span>
+                        </span>
                       </div>
                       )}
                       {(fileUploading || fileUploaded)
@@ -1000,18 +1051,27 @@ const CreateEditDocument = ({
                     style={{ borderTop: 'none', borderLeft: 'none', borderRight: 'none' }}
                   />
                   <div style={{ position: 'absolute', width: '100%' }}>
-                    <Button
-                      className={styles.uploadDocumentBtn}
-                      style={{
-                        transition,
-                        top: -41.5,
-                        left: 50, // `calc(100% - 107.5px${minimize ? ' - 44px' : ''})`,
-                      }}
-                      onClick={() => setShowUploadModal(true)}
-                      disabled={progress.started}
+                    <OverlayTrigger
+                      placement="bottom"
+                      overlay={(
+                        <Tooltip className="styled-tooltip bottom">
+                          PDF, DOCX, ODT, EPUB
+                        </Tooltip>
+                  )}
                     >
-                      Upload
-                    </Button>
+                      <Button
+                        className={styles.uploadDocumentBtn}
+                        style={{
+                          transition,
+                          top: -41.5,
+                          left: 50, // `calc(100% - 107.5px${minimize ? ' - 44px' : ''})`,
+                        }}
+                        onClick={() => setShowUploadModal(true)}
+                        disabled={progress.started}
+                      >
+                        Upload File
+                      </Button>
+                    </OverlayTrigger>
                   </div>
 
                   {slateLoading && (
@@ -1047,7 +1107,7 @@ const CreateEditDocument = ({
                           setSlateLoading(true);
                         }
                       }]}
-                      placeholder="Paste or type here"
+                      placeholder="Or paste/type text here"
                       id="outline-container"
                       className={styles['slate-editor']}
                     />
@@ -1427,47 +1487,49 @@ const CreateEditDocument = ({
                 setSelectedOptionKey={setStatus}
               />
               <div style={{ marginBottom: 20 }} />
-              <Table
-                key="document-status-table"
-                id="document-status-table"
-                height="100vh - 380px"
-                headerStyle={{ backgroundColor: '#f7f7f7' }}
-                hoverable={false}
-                columnHeaders={[
-                  {
-                    header: '',
-                    minWidth: 80,
-                    style: {
-                      padding: 12, borderRight: '1px solid #EBEFF3', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'transparent',
+              <div style={{ display: 'flex', flexDirection: 'row' }}>
+                <Table
+                  key="document-status-table"
+                  id="document-status-table"
+                  headerStyle={{ backgroundColor: '#f7f7f7' }}
+                  hoverable={false}
+                  columnHeaders={[
+                    {
+                      header: '',
+                      minWidth: 100,
+                      style: {
+                        padding: 12, borderRight: '1px solid #EBEFF3', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'transparent',
+                      },
                     },
-                  },
-                  {
-                    header: 'View',
-                    flex: 1,
-                    style: {
-                      padding: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 500, backgroundColor: '#f4f4f4',
+                    {
+                      header: rowHeader(<EyeFill size={16} color="#424242" />, 'View'),
+                      flex: 1,
+                      style: {
+                        padding: 12, borderRight: '1px solid #EBEFF3', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 500, backgroundColor: '#f4f4f4',
+                      },
                     },
-                  },
-                  {
-                    header: 'Edit',
-                    flex: 1,
-                    style: {
-                      padding: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 500, backgroundColor: '#f4f4f4',
+                    {
+                      header: rowHeader(<PencilSquare size={16} color="#424242" />, 'Edit'),
+                      flex: 1,
+                      style: {
+                        padding: 12, borderRight: '1px solid #EBEFF3', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 500, backgroundColor: '#f4f4f4',
+                      },
                     },
-                  },
-                  {
-                    header: 'Annotate',
-                    flex: 1,
-                    style: {
-                      padding: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 500, backgroundColor: '#f4f4f4',
+                    {
+                      header: rowHeader(<ChatRightTextFill size={16} color="#424242" />, 'Annotate'),
+                      flex: 1,
+                      minWidth: 100,
+                      style: {
+                        padding: 12, borderRight: '1px solid #EBEFF3', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 500, backgroundColor: '#f4f4f4',
+                      },
                     },
-                  },
-                ]}
-                rows={statusTableRows}
-                fadeOnScroll={false}
-              />
+                  ]}
+                  rows={statusTableRows}
+                  fadeOnScroll={false}
+                />
+              </div>
               <div style={{
-                color: '#6c757d', fontSize: 13, display: 'flex', flexDirection: 'row', marginTop: 10,
+                color: '#6c757d', fontSize: 13, display: 'flex', flexDirection: 'row', marginTop: 25,
               }}
               >
                 <span style={{ fontSize: 16, marginRight: 2 }}>*</span>
