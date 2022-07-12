@@ -698,6 +698,7 @@ function AnnotationCard({
                 transition: 'all 0.25s',
               }}
               >
+                {user.email === annotationData.creator.email && (
                 <OverlayTrigger
                   overlay={(
                     <Tooltip
@@ -724,6 +725,7 @@ function AnnotationCard({
                     />
                   </span>
                 </OverlayTrigger>
+                )}
 
                 <OverlayTrigger
                   overlay={(
