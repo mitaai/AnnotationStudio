@@ -9,6 +9,7 @@ import DocumentZoomSlider from '../DocumentZoomSlider/DocumentZoomSlider';
 import styles from './SecondNavbar.module.scss';
 import ArrowButton from '../ArrowButtton/ArrowButton';
 import TextAnalysisPopover from '../TextAnalysisPopover';
+import { useWindowSize } from '../../utils/customHooks';
 
 const SecondNavbar = ({
   session,
@@ -45,21 +46,14 @@ const SecondNavbar = ({
   };
 
   const [showMoreDocumentInfo, setShowMoreDocumentInfo] = useState();
+  const windowSize = useWindowSize();
   const [mobileView, setMobileView] = useState();
 
   useEffect(() => {
     if (type === 'document') {
-      // eslint-disable-next-line no-undef
-      const w = window;
-      w.addEventListener('resize', () => {
-        if (w.innerWidth < 1000) {
-          setMobileView(true);
-        } else if (w.innerWidth >= 1000) {
-          setMobileView();
-        }
-      });
+      setMobileView(windowSize.width < 1000);
     }
-  }, [type]);
+  }, [type, windowSize]);
 
   const documentColumnSize = mobileView ? 12 : 7;
 

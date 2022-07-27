@@ -18,6 +18,7 @@ import { GroupsChannel, DocumentsChannel, AnnotationsChannel } from '../componen
 import IdeaSpacesChannel from '../components/DashboardChannels/IdeaSpacesChannel';
 import AnnotationTile from '../components/DashboardChannels/AnnotationTile';
 import SplashPage from '../components/SplashPage';
+import { useWindowSize } from '../utils/customHooks';
 
 export default function Home({
   query,
@@ -29,6 +30,7 @@ export default function Home({
 }) {
   const [session, loading] = useSession();
   const [alerts, setAlerts] = useState(initAlerts || []);
+  const windowSize = useWindowSize();
   const [mobileView, setMobileView] = useState();
   const [offsetLeft, setOffsetLeft] = useState();
   const [allAnnotations, setAllAnnotations] = useState();
@@ -230,25 +232,20 @@ export default function Home({
   };
 
   useEffect(() => {
-    // eslint-disable-next-line no-undef
-    const w = window;
-    const checkWindowWidth = () => {
-      const minLeft = w.innerWidth
-        * (channelPos.groups.width.vw / 100)
-        + channelPos.groups.left.px;
-      if (w.innerWidth < channelsMinWidth) {
-        setMobileView(true);
-        setOffsetLeft(0);
-      } else if (minLeft < channelPos.documents.minLeft) {
-        setMobileView(true);
-        setOffsetLeft((w.innerWidth - channelsMinWidth) / 2);
-      } else if (w.innerWidth >= channelsMinWidth) {
-        setMobileView();
-      }
-    };
-    w.addEventListener('resize', checkWindowWidth);
-    checkWindowWidth();
-  }, []);
+    const minLeft = windowSize.width
+      * (channelPos.groups.width.vw / 100)
+      + channelPos.groups.left.px;
+    if (windowSize.width < channelsMinWidth) {
+      setMobileView(true);
+      setOffsetLeft(0);
+    } else if (minLeft < channelPos.documents.minLeft) {
+      setMobileView(true);
+      setOffsetLeft((windowSize.width - channelsMinWidth) / 2);
+    } else if (windowSize.width >= channelsMinWidth) {
+      setMobileView();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [windowSize]);
 
   useEffect(() => {
     // this makes sure that these changes in state came from click on the Open Idea Space button
