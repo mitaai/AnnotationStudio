@@ -103,6 +103,8 @@ const DocumentsIndex = ({
     return groupNamesObj && groups.some((id) => (groupNamesObj[id] || '').search(r) !== -1);
   };
 
+  console.log('sharedDocuments', sharedDocuments);
+
   const documents = key === 'mine' ? mineDocuments : sharedDocuments;
   const queriedDocuments = Array.isArray(documents) ? documents.filter(filterDocuments) : undefined;
 
