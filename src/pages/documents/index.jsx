@@ -103,22 +103,23 @@ const DocumentsIndex = ({
     return groupNamesObj && groups.some((id) => (groupNamesObj[id] || '').search(r) !== -1);
   };
 
-  console.log('sharedDocuments', sharedDocuments);
-
   const documents = key === 'mine' ? mineDocuments : sharedDocuments;
   const queriedDocuments = Array.isArray(documents) ? documents.filter(filterDocuments) : undefined;
 
-  const contributorsListToContributorsContent = (members) => {
-    console.log('members', members);
-    const contributors = {};
+  const contributorsListToContributorsContent = (contributors) => {
+    if (contributors === undefined) {
+      return undefined;
+    }
 
-    for (let i = 0; i < members.length; i += 1) {
-      const { name, type } = members[i];
+    const contributorsObj = {};
+
+    for (let i = 0; i < contributors.length; i += 1) {
+      const { name, type } = contributors[i];
       if (name.length > 0) {
-        if (contributors[type]) {
-          contributors[type].push(name);
+        if (contributorsObj[type]) {
+          contributorsObj[type].push(name);
         } else {
-          contributors[type] = [name];
+          contributorsObj[type] = [name];
         }
       }
     }
@@ -128,7 +129,7 @@ const DocumentsIndex = ({
     };
     const content = [];
     // eslint-disable-next-line no-restricted-syntax
-    for (const [type, names] of Object.entries(contributors)) {
+    for (const [type, names] of Object.entries(contributorsObj)) {
       content[orderOfContributions[type.toLowerCase()]] = (
         <div style={{ fontSize: 14, marginBottom: 5, lineHeight: '17px' }}>
           <div style={{ fontWeight: 500, color: '#616161' }}>{`${type}${names.length > 1 ? 's' : ''}`}</div>
