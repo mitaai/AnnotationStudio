@@ -1,22 +1,5 @@
 import React from 'react';
 
-const useBoolean = () => {
-  const [state, setState] = React.useState();
-
-  const handleTrue = () => setState(true);
-  const handleFalse = () => setState(false);
-  const handleToggle = () => setState(!state);
-
-  return [
-    state,
-    {
-      setTrue: handleTrue,
-      setFalse: handleFalse,
-      setToggle: handleToggle,
-    },
-  ];
-};
-
 // Hook
 function useWindowSize() {
   // Initialize state with undefined width/height so server and client renders match
@@ -64,6 +47,6 @@ function useWindowSize() {
 }
 
 export {
-  useBoolean,
+  // eslint-disable-next-line import/prefer-default-export
   useWindowSize,
 };
