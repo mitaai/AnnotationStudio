@@ -109,6 +109,7 @@ const DocumentsIndex = ({
   const queriedDocuments = Array.isArray(documents) ? documents.filter(filterDocuments) : undefined;
 
   const contributorsListToContributorsContent = (members) => {
+    console.log('members', members);
     const contributors = {};
 
     for (let i = 0; i < members.length; i += 1) {
