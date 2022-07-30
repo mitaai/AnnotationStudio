@@ -30,12 +30,17 @@ import PermissionsButtonGroup from '../../components/PermissionsButtonGroup';
 import { getGroupsByGroupIds } from '../../utils/groupUtil';
 import styles from './index.module.scss';
 import { escapeRegExp } from '../../utils/stringUtil';
+import { useWindowSize } from '../../utils/customHooks';
 
 const DocumentsIndex = ({
   props,
   query,
   statefulSession,
 }) => {
+  const windowSize = useWindowSize();
+  const [mobileView, setMobileView] = useState();
+  // how much the footer height changes when the app goes from desktop view to mobile view
+  const footerHeightDelta = 53;
   const router = useRouter();
   const dashboardState = `${query.did !== undefined && query.slug !== undefined ? `did=${query.did}&slug=${query.slug}&dp=${query.dp}&` : ''}gid=${query.gid}`;
 
@@ -263,6 +268,10 @@ const DocumentsIndex = ({
   */
 
   useEffect(() => {
+    setMobileView(windowSize.width < 1000);
+  }, [windowSize]);
+
+  useEffect(() => {
     if (session?.user?.id) {
       if (key === 'mine' && (mineDocuments === undefined || refresh)) {
         setListLoading(true);
@@ -318,7 +327,7 @@ const DocumentsIndex = ({
       {loading && <LoadingSpinner />}
       {session && !loading && (
       <>
-        <div style={{ height: 'calc(100vh - 234px)', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ height: `calc(100vh - 234px - ${mobileView ? footerHeightDelta : 0}px)`, display: 'flex', flexDirection: 'column' }}>
           <div style={{
             fontSize: 26, fontWeight: 300, marginBottom: 35, display: 'flex', flexDirection: 'row', alignItems: 'center',
           }}
@@ -404,7 +413,7 @@ const DocumentsIndex = ({
             <Table
               key="groups-table"
               id="groups-table"
-              height="100vh - 380px"
+              height={`100vh - 380px - ${mobileView ? footerHeightDelta : 0}px`}
               loading={listLoading}
               columnHeaders={[
                 { header: 'TITLE', flex: 6 },

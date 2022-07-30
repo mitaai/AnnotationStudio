@@ -9,7 +9,6 @@ import DocumentZoomSlider from '../DocumentZoomSlider/DocumentZoomSlider';
 import styles from './SecondNavbar.module.scss';
 import ArrowButton from '../ArrowButtton/ArrowButton';
 import TextAnalysisPopover from '../TextAnalysisPopover';
-import { useWindowSize } from '../../utils/customHooks';
 
 const SecondNavbar = ({
   session,
@@ -23,6 +22,7 @@ const SecondNavbar = ({
   setMode,
   borderBottom,
   extraContent,
+  windowSize,
 }) => {
   const metadataFields = {
     title: 'Title',
@@ -46,7 +46,6 @@ const SecondNavbar = ({
   };
 
   const [showMoreDocumentInfo, setShowMoreDocumentInfo] = useState();
-  const windowSize = useWindowSize();
   const [mobileView, setMobileView] = useState();
 
   useEffect(() => {
@@ -117,7 +116,11 @@ const SecondNavbar = ({
         variant="light"
         data-testid="second-navbar"
       >
-        <Container fluid className="px-5">
+        <Container
+          fluid
+          className={[windowSize.smallerThanOrEqual.isTabletOrMobile ? styles.mobileView : '', 'px-5'].join(' ')}
+          style={{ transition: 'padding 0.5s' }}
+        >
           <Row className={styles.row} style={{ height: 48 }}>
             <Col
               md={type === 'document' ? documentColumnSize : size}

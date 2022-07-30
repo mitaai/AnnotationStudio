@@ -11,6 +11,7 @@ import SecondNavbar from '../SecondNavbar';
 import FeedbackButton from '../FeedbackButton';
 import { appendProtocolIfMissing } from '../../utils/fetchUtil';
 import styles from './Header.module.scss';
+import { useWindowSize } from '../../utils/customHooks';
 
 const getEditProfileUrl = (email) => {
   const slug = email.replace(/[*+~.()'"!:@]/g, '-');
@@ -34,11 +35,16 @@ const Header = ({
   secondNavbarExtraContent,
 }) => {
   const [session, loading] = useSession();
+  const windowSize = useWindowSize();
   const router = useRouter();
   return (
     <header className={`as-header ${styles.header}`} sticky="top">
       <Navbar bg="dark" variant="dark" className="px-0">
-        <Container fluid className="px-5">
+        <Container
+          fluid
+          className={[windowSize.smallerThanOrEqual.isTabletOrMobile ? styles.mobileView : '', 'px-5'].join(' ')}
+          style={{ transition: 'padding 0.5s' }}
+        >
           <Navbar.Brand href="/">
             {process.env.NEXT_PUBLIC_LOGO_SVG && (
               <img
@@ -125,6 +131,7 @@ const Header = ({
           setMode={setMode}
           borderBottom={borderBottom}
           extraContent={secondNavbarExtraContent}
+          windowSize={windowSize}
         />
       )}
     </header>

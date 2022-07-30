@@ -10,13 +10,26 @@ function useWindowSize() {
     isDesktopOrLaptop: true, // default
     isBigScreen: false,
     isTabletOrMobile: false,
-
+    isMobilePhone: false,
+    smallerThanOrEqual: {
+      isBigScreen: true,
+      isDesktopOrLaptop: true,
+      isTabletOrMobile: false,
+      isMobilePhone: false,
+    },
+    greaterThan: {
+      isBigScreen: false,
+      isDesktopOrLaptop: false,
+      isTabletOrMobile: true,
+      isMobilePhone: true,
+    },
   });
 
   const breakPoints = [
+    ['isMobilePhone', 600],
     ['isTabletOrMobile', 1224],
     ['isDesktopOrLaptop', 1824],
-    ['isTabletOrMobile', Infinity],
+    ['isBigScreen', Infinity],
   ];
 
   React.useEffect(() => {
@@ -27,10 +40,23 @@ function useWindowSize() {
       const obj = {
         width: w.innerWidth,
         height: w.innerHeight,
+        greaterThan: {},
+        smallerThanOrEqual: {},
       };
 
+      let foundScreenSize = false;
       // setting the screen breakpoint
-      obj[breakPoints.find(([, maxWidth]) => obj.width <= maxWidth)[0]] = true;
+      breakPoints.map(([key, maxWidth]) => {
+        const bool = obj.width <= maxWidth;
+        if (!foundScreenSize) {
+          obj[key] = bool;
+          foundScreenSize = bool;
+        }
+
+        obj.greaterThan[key] = !bool;
+        obj.smallerThanOrEqual[key] = bool;
+        return null;
+      });
 
       // Set window width/height to state
       setWindowSize(obj);

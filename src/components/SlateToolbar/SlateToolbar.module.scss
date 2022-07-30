@@ -13,8 +13,8 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: center;
   position: relative;
+  padding-left: max(calc(50% - 275px), 187px) !important;
   padding: 0.5rem 10px 0.5rem;
   border-top-left-radius: 0.25rem;
   border-top-right-radius: 0.25rem;

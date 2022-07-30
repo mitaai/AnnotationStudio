@@ -40,42 +40,42 @@ export default function Home({
   const router = useRouter();
   const newReg = query && query.alert && query.alert === 'completeRegistration';
 
-  const channelsMinWidth = 1220;
+  const channelsMinWidth = 1375;
   const ASISChannelPositions = {
     as: {
       groups: {
         width: { vw: 22, px: -20 },
-        minWidth: 300,
+        minWidth: 375,
         left: { vw: 0, px: 30 },
         minLeft: 30,
         opacity: 1,
       },
       documents: {
         width: { vw: 38, px: -40 },
-        minWidth: 400,
+        minWidth: 490,
         left: { vw: 22, px: 25 },
-        minLeft: 350,
+        minLeft: 425,
         opacity: 1,
       },
       annotations: {
         width: { vw: 40, px: -40 },
-        minWidth: 400,
+        minWidth: 430,
         left: { vw: 60, px: 0 },
-        minLeft: 770,
+        minLeft: 935,
         opacity: 1,
       },
       ideaspaces: {
         width: { vw: 30, px: -40 },
         minWidth: 300,
         left: { vw: 100, px: 0 },
-        minLeft: 1230,
+        minLeft: 1385,
         opacity: 0,
       },
     },
     is: {
       groups: {
         width: { vw: 20, px: -20 },
-        minWidth: 300,
+        minWidth: 375,
         left: { vw: -60, px: 60 },
         minLeft: -640,
         opacity: 0,
@@ -84,7 +84,7 @@ export default function Home({
         width: { vw: 40, px: -40 },
         minWidth: 400,
         left: { vw: -40, px: 55 },
-        minLeft: -320,
+        minLeft: -245,
         opacity: 0,
       },
       annotations: {
