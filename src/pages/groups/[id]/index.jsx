@@ -37,6 +37,7 @@ import TextDropdown from '../../../components/TextDropdown';
 import { copyToClipboard } from '../../../utils/docUIUtils';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import { escapeRegExp } from '../../../utils/stringUtil';
+import { useWindowSize } from '../../../utils/customHooks';
 
 
 const EditGroup = ({
@@ -47,6 +48,7 @@ const EditGroup = ({
 }) => {
   // eslint-disable-next-line no-unused-vars
   const [session, loading] = useSession();
+  const windowSize = useWindowSize();
   const [alerts, setAlerts] = useState(initAlerts || []);
   const [canEditGroup, setCanEditGroup] = useState();
 
@@ -98,51 +100,103 @@ const EditGroup = ({
 
   const transition = 'all 0.5s';
   const border = '1px solid #dddddd';
+  const inviteLinkContainerWidth = windowSize.isMobilePhone ? windowSize.width - 20 : 450;
   const states = {
     default: {
-      leftPanel: {
-        opacity: 1,
-        left: 0,
-        width: 'calc(100vw - 450px)',
+      desktopView: {
+        leftPanel: {
+          opacity: 1,
+          left: 0,
+          width: `calc(100vw - ${inviteLinkContainerWidth}px)`,
+        },
+        rightPanel: {
+          opacity: 1,
+          left: `calc(100vw - ${inviteLinkContainerWidth}px)`,
+          width: inviteLinkContainerWidth,
+        },
+        chevron: {
+          opacity: 1,
+          left: `calc(100vw - ${inviteLinkContainerWidth}px - 20px)`,
+          transform: 'rotate(-45deg)',
+        },
+        chevronSpan: {
+          opacity: 1,
+          top: 3,
+          left: 6,
+          transform: 'rotate(45deg)',
+        },
       },
-      rightPanel: {
-        opacity: 1,
-        left: 'calc(100vw - 450px)',
-        width: 450,
-      },
-      chevron: {
-        opacity: 1,
-        left: 'calc(100vw - 450px - 20px)',
-        transform: 'rotate(-45deg)',
-      },
-      chevronSpan: {
-        opacity: 1,
-        top: 3,
-        left: 6,
-        transform: 'rotate(45deg)',
+      mobileView: {
+        leftPanel: {
+          opacity: 1,
+          left: 0,
+          width: 'calc(100vw - 20px)',
+        },
+        rightPanel: {
+          opacity: 1,
+          left: `calc(100vw - ${inviteLinkContainerWidth}px)`,
+          width: inviteLinkContainerWidth,
+        },
+        chevron: {
+          opacity: 1,
+          left: `calc(100vw - ${inviteLinkContainerWidth}px - 20px)`,
+          transform: `rotate(${windowSize.isMobilePhone ? 135 : -45}deg)`,
+          backgroundColor: windowSize.isMobilePhone ? 'white' : undefined,
+        },
+        chevronSpan: {
+          opacity: 1,
+          top: windowSize.isMobilePhone ? 5 : 3,
+          left: 6,
+          transform: `rotate(${windowSize.isMobilePhone ? -135 : 45}deg)`,
+        },
       },
     },
     minimize: {
-      leftPanel: {
-        opacity: 1,
-        left: 0,
-        width: 'calc(100vw - 20px)',
+      desktopView: {
+        leftPanel: {
+          opacity: 1,
+          left: 0,
+          width: 'calc(100vw - 20px)',
+        },
+        rightPanel: {
+          opacity: 1,
+          left: 'calc(100vw - 20px)',
+          width: inviteLinkContainerWidth,
+        },
+        chevron: {
+          opacity: 1,
+          left: 'calc(100vw - 20px - 20px)',
+          transform: 'rotate(-45deg)',
+        },
+        chevronSpan: {
+          opacity: 1,
+          top: 5,
+          left: 4,
+          transform: 'rotate(-135deg)',
+        },
       },
-      rightPanel: {
-        opacity: 1,
-        left: 'calc(100vw - 20px)',
-        width: 450,
-      },
-      chevron: {
-        opacity: 1,
-        left: 'calc(100vw - 20px - 20px)',
-        transform: 'rotate(-45deg)',
-      },
-      chevronSpan: {
-        opacity: 1,
-        top: 5,
-        left: 4,
-        transform: 'rotate(-135deg)',
+      mobileView: {
+        leftPanel: {
+          opacity: 1,
+          left: 0,
+          width: 'calc(100vw - 20px)',
+        },
+        rightPanel: {
+          opacity: 1,
+          left: 'calc(100vw - 20px)',
+          width: inviteLinkContainerWidth,
+        },
+        chevron: {
+          opacity: 1,
+          left: 'calc(100vw - 20px - 20px)',
+          transform: 'rotate(-45deg)',
+        },
+        chevronSpan: {
+          opacity: 1,
+          top: 5,
+          left: 4,
+          transform: 'rotate(-135deg)',
+        },
       },
     },
     cannotEdit: {
@@ -154,7 +208,7 @@ const EditGroup = ({
       rightPanel: {
         opacity: 1,
         left: 'calc(100vw + 20px)',
-        width: 450,
+        width: inviteLinkContainerWidth,
       },
       chevron: {
         opacity: 1,
@@ -170,7 +224,12 @@ const EditGroup = ({
     },
   };
 
-  const state = states[(canEditGroup && (minimize ? 'minimize' : 'default')) || 'cannotEdit'];
+  let state;
+  if (canEditGroup) {
+    state = states[minimize ? 'minimize' : 'default'][windowSize.smallerThanOrEqual.isTabletOrMobile ? 'mobileView' : 'desktopView'];
+  } else {
+    state = states.cannotEdit;
+  }
 
   const addRegisteredUserStates = {
     0: {
@@ -611,11 +670,23 @@ const EditGroup = ({
               </div>
             </div>
             <div
+              style={{
+                transition,
+                position: 'absolute',
+                left: windowSize.isMobilePhone && !minimize ? 0 : -20,
+                opacity: windowSize.isMobilePhone && !minimize ? 1 : 0,
+                backgroundColor: 'white',
+                width: 20,
+                height: '100%',
+              }}
+            />
+            <div
               className={styles.chevronContainer}
               style={{
                 transition,
                 borderLeft: border,
                 borderTop: border,
+                zIndex: 11,
                 ...state.chevron,
               }}
               onClick={() => setMinimize(!minimize)}
@@ -630,6 +701,7 @@ const EditGroup = ({
             <div
               className={styles.metadataContainer}
               style={{
+                zIndex: 1,
                 display: 'flex',
                 flexDirection: 'column',
                 position: 'absolute',

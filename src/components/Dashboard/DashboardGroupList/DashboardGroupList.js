@@ -6,6 +6,7 @@ import {
 import GroupRoleBadge from '../../GroupRoleBadge';
 import { deepEqual } from '../../../utils/objectUtil';
 
+
 const DashboardGroupList = ({
   session,
 }) => {

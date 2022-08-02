@@ -18,6 +18,7 @@ import { GroupsChannel, DocumentsChannel, AnnotationsChannel } from '../componen
 import IdeaSpacesChannel from '../components/DashboardChannels/IdeaSpacesChannel';
 import AnnotationTile from '../components/DashboardChannels/AnnotationTile';
 import SplashPage from '../components/SplashPage';
+import { useWindowSize } from '../utils/customHooks';
 
 export default function Home({
   query,
@@ -29,6 +30,7 @@ export default function Home({
 }) {
   const [session, loading] = useSession();
   const [alerts, setAlerts] = useState(initAlerts || []);
+  const windowSize = useWindowSize();
   const [mobileView, setMobileView] = useState();
   const [offsetLeft, setOffsetLeft] = useState();
   const [allAnnotations, setAllAnnotations] = useState();
@@ -38,42 +40,42 @@ export default function Home({
   const router = useRouter();
   const newReg = query && query.alert && query.alert === 'completeRegistration';
 
-  const channelsMinWidth = 1220;
+  const channelsMinWidth = 1375;
   const ASISChannelPositions = {
     as: {
       groups: {
         width: { vw: 22, px: -20 },
-        minWidth: 300,
+        minWidth: 375,
         left: { vw: 0, px: 30 },
         minLeft: 30,
         opacity: 1,
       },
       documents: {
         width: { vw: 38, px: -40 },
-        minWidth: 400,
+        minWidth: 490,
         left: { vw: 22, px: 25 },
-        minLeft: 350,
+        minLeft: 425,
         opacity: 1,
       },
       annotations: {
         width: { vw: 40, px: -40 },
-        minWidth: 400,
+        minWidth: 430,
         left: { vw: 60, px: 0 },
-        minLeft: 770,
+        minLeft: 935,
         opacity: 1,
       },
       ideaspaces: {
         width: { vw: 30, px: -40 },
         minWidth: 300,
         left: { vw: 100, px: 0 },
-        minLeft: 1230,
+        minLeft: 1385,
         opacity: 0,
       },
     },
     is: {
       groups: {
         width: { vw: 20, px: -20 },
-        minWidth: 300,
+        minWidth: 375,
         left: { vw: -60, px: 60 },
         minLeft: -640,
         opacity: 0,
@@ -82,7 +84,7 @@ export default function Home({
         width: { vw: 40, px: -40 },
         minWidth: 400,
         left: { vw: -40, px: 55 },
-        minLeft: -320,
+        minLeft: -245,
         opacity: 0,
       },
       annotations: {
@@ -230,25 +232,20 @@ export default function Home({
   };
 
   useEffect(() => {
-    // eslint-disable-next-line no-undef
-    const w = window;
-    const checkWindowWidth = () => {
-      const minLeft = w.innerWidth
-        * (channelPos.groups.width.vw / 100)
-        + channelPos.groups.left.px;
-      if (w.innerWidth < channelsMinWidth) {
-        setMobileView(true);
-        setOffsetLeft(0);
-      } else if (minLeft < channelPos.documents.minLeft) {
-        setMobileView(true);
-        setOffsetLeft((w.innerWidth - channelsMinWidth) / 2);
-      } else if (w.innerWidth >= channelsMinWidth) {
-        setMobileView();
-      }
-    };
-    w.addEventListener('resize', checkWindowWidth);
-    checkWindowWidth();
-  }, []);
+    const minLeft = windowSize.width
+      * (channelPos.groups.width.vw / 100)
+      + channelPos.groups.left.px;
+    if (windowSize.width < channelsMinWidth) {
+      setMobileView(true);
+      setOffsetLeft(0);
+    } else if (minLeft < channelPos.documents.minLeft) {
+      setMobileView(true);
+      setOffsetLeft((windowSize.width - channelsMinWidth) / 2);
+    } else if (windowSize.width >= channelsMinWidth) {
+      setMobileView();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [windowSize]);
 
   useEffect(() => {
     // this makes sure that these changes in state came from click on the Open Idea Space button

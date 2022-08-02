@@ -17,6 +17,7 @@ import {
 import PermissionsButtonGroup from '../PermissionsButtonGroup';
 import ChannelHeader from './ChannelHeader';
 import { escapeRegExp } from '../../utils/stringUtil';
+import { useWindowSize } from '../../utils/customHooks';
 
 export default function GroupsChannel({
   width,
@@ -38,6 +39,10 @@ export default function GroupsChannel({
   const [selectedItem, setSelectedItem] = useState('by-date-created');
   const [asc, setAsc] = useState();
   const [searchQuery, setSearchQuery] = useState();
+
+  const size = useWindowSize();
+
+  console.log('size', size);
 
   const moveGroupTileToList = (archived, groupId) => {
     if (archived) {

@@ -6,20 +6,16 @@ import Image from 'react-bootstrap/Image';
 import Link from 'next/link';
 import moment from 'moment';
 import styles from './Footer.module.scss';
+import { useWindowSize } from '../../utils/customHooks';
 
 function Footer() {
   const [mobileView, setMobileView] = useState();
+  const windowSize = useWindowSize();
+
   useEffect(() => {
-    // eslint-disable-next-line no-undef
-    const w = window;
-    w.addEventListener('resize', () => {
-      if (w.innerWidth < 1000) {
-        setMobileView(true);
-      } else if (w.innerWidth >= 1000) {
-        setMobileView();
-      }
-    });
-  }, []);
+    setMobileView(windowSize.width < 1000);
+  }, [windowSize]);
+
   return (
     <footer className={`footer mt-auto py-3 as-footer ${styles.footer}`}>
       <Container fluid className="px-5">

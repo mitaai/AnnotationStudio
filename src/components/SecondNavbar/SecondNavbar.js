@@ -22,6 +22,7 @@ const SecondNavbar = ({
   setMode,
   borderBottom,
   extraContent,
+  windowSize,
 }) => {
   const metadataFields = {
     title: 'Title',
@@ -49,17 +50,9 @@ const SecondNavbar = ({
 
   useEffect(() => {
     if (type === 'document') {
-      // eslint-disable-next-line no-undef
-      const w = window;
-      w.addEventListener('resize', () => {
-        if (w.innerWidth < 1000) {
-          setMobileView(true);
-        } else if (w.innerWidth >= 1000) {
-          setMobileView();
-        }
-      });
+      setMobileView(windowSize.width < 1000);
     }
-  }, [type]);
+  }, [type, windowSize]);
 
   const documentColumnSize = mobileView ? 12 : 7;
 
@@ -123,7 +116,11 @@ const SecondNavbar = ({
         variant="light"
         data-testid="second-navbar"
       >
-        <Container fluid className="px-5">
+        <Container
+          fluid
+          className={[windowSize.smallerThanOrEqual.isTabletOrMobile ? styles.mobileView : '', 'px-5'].join(' ')}
+          style={{ transition: 'padding 0.5s' }}
+        >
           <Row className={styles.row} style={{ height: 48 }}>
             <Col
               md={type === 'document' ? documentColumnSize : size}

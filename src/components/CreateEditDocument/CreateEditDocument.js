@@ -55,6 +55,7 @@ import { updateAllAnnotationsOnDocument } from '../../utils/annotationUtil';
 import { deleteCloudfrontFiles, deleteDocumentById } from '../../utils/docUtil';
 import Table from '../Table';
 import { escapeRegExp } from '../../utils/stringUtil';
+import { useWindowSize } from '../../utils/customHooks';
 
 const CreateEditDocument = ({
   statefulSession,
@@ -66,6 +67,7 @@ const CreateEditDocument = ({
   onDelete = () => {},
   onSave = () => {},
 }) => {
+  const windowSize = useWindowSize();
   const uploaderRef = useRef({});
   const [groups, setGroups] = useState();
   const [groupData, setGroupData] = useState();
@@ -406,50 +408,92 @@ const CreateEditDocument = ({
 
   const transition = 'all 0.5s';
   const border = '1px solid #dddddd';
-  const metadataContainerWidth = 500;
+  const metadataContainerWidth = windowSize.isMobilePhone ? windowSize.width - 20 : 500;
   const states = {
     default: {
-      leftPanel: {
-        left: 0,
-        width: `calc(100vw - ${metadataContainerWidth}px)`,
+      desktopView: {
+        leftPanel: {
+          left: 0,
+          width: `calc(100vw - ${metadataContainerWidth}px)`,
+        },
+        rightPanel: {
+          left: `calc(100vw - ${metadataContainerWidth}px)`,
+          width: metadataContainerWidth,
+        },
+        chevron: {
+          left: `calc(100vw - ${metadataContainerWidth}px - 20px)`,
+          transform: 'rotate(-45deg)',
+        },
+        chevronSpan: {
+          top: 3,
+          left: 6,
+          transform: 'rotate(45deg)',
+        },
       },
-      rightPanel: {
-        left: `calc(100vw - ${metadataContainerWidth}px)`,
-        width: metadataContainerWidth,
-      },
-      chevron: {
-        left: `calc(100vw - ${metadataContainerWidth}px - 20px)`,
-        transform: 'rotate(-45deg)',
-      },
-      chevronSpan: {
-        top: 3,
-        left: 6,
-        transform: 'rotate(45deg)',
+      mobileView: {
+        leftPanel: {
+          left: 0,
+          width: 'calc(100vw - 20px)',
+        },
+        rightPanel: {
+          left: `calc(100vw - ${metadataContainerWidth}px)`,
+          width: metadataContainerWidth,
+        },
+        chevron: {
+          left: `calc(100vw - ${metadataContainerWidth}px - 20px)`,
+          transform: `rotate(${windowSize.isMobilePhone ? 135 : -45}deg)`,
+          backgroundColor: windowSize.isMobilePhone ? 'white' : undefined,
+        },
+        chevronSpan: {
+          top: windowSize.isMobilePhone ? 5 : 3,
+          left: 6,
+          transform: `rotate(${windowSize.isMobilePhone ? -135 : 45}deg)`,
+        },
       },
     },
     minimize: {
-      leftPanel: {
-        left: 0,
-        width: 'calc(100vw - 20px)',
+      desktopView: {
+        leftPanel: {
+          left: 0,
+          width: 'calc(100vw - 20px)',
+        },
+        rightPanel: {
+          left: 'calc(100vw - 20px)',
+          width: metadataContainerWidth,
+        },
+        chevron: {
+          left: 'calc(100vw - 20px - 20px)',
+          transform: 'rotate(-45deg)',
+        },
+        chevronSpan: {
+          top: 5,
+          left: 4,
+          transform: 'rotate(-135deg)',
+        },
       },
-      rightPanel: {
-        left: 'calc(100vw - 20px)',
-        width: metadataContainerWidth,
-      },
-      chevron: {
-        left: 'calc(100vw - 20px - 20px)',
-        transform: 'rotate(-45deg)',
-      },
-      chevronSpan: {
-        top: 5,
-        left: 4,
-        transform: 'rotate(-135deg)',
+      mobileView: {
+        leftPanel: {
+          left: 0,
+          width: 'calc(100vw - 20px)',
+        },
+        rightPanel: {
+          left: 'calc(100vw - 20px)',
+          width: metadataContainerWidth,
+        },
+        chevron: {
+          left: 'calc(100vw - 20px - 20px)',
+          transform: 'rotate(-45deg)',
+        },
+        chevronSpan: {
+          top: 5,
+          left: 4,
+          transform: 'rotate(-135deg)',
+        },
       },
     },
   };
 
-  const state = states[minimize ? 'minimize' : 'default'];
-
+  const state = states[minimize ? 'minimize' : 'default'][windowSize.smallerThanOrEqual.isTabletOrMobile ? 'mobileView' : 'desktopView'];
 
   const rowHeader = (icon, text) => (
     <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'left' }}>
@@ -592,15 +636,22 @@ const CreateEditDocument = ({
   };
 
   const statusTableRows = statesOfStatusTableRows[status];
-
   const minimizeOffset = mode === 'edit' ? 215 : 233;
+
+  const buttonOffsetXStates = {
+    desktop: minimize ? minimizeOffset : metadataContainerWidth,
+    mobile: minimizeOffset - 71,
+  };
+
+  const buttonOffsetXState = buttonOffsetXStates[windowSize.smallerThanOrEqual.isTabletOrMobile ? 'mobile' : 'desktop'];
+
   const secondNavbarExtraContent = (
     <div style={{
-      position: 'absolute', top: -8, left: -33, height: 64,
+      position: 'absolute', top: windowSize.isMobilePhone ? 4 : -8, left: windowSize.isMobilePhone ? -40 : -33, height: 64,
     }}
     >
       <div style={{
-        position: 'absolute', transition, left: `calc(100vw - ${minimize ? minimizeOffset : metadataContainerWidth}px)`, height: '100%', display: 'flex', flexDirection: 'row',
+        position: 'absolute', transition, left: `calc(100vw - ${buttonOffsetXState}px)`, height: '100%', display: 'flex', flexDirection: 'row',
       }}
       >
         {document && (
@@ -609,7 +660,7 @@ const CreateEditDocument = ({
             className={styles.cancelChangesBtn}
             style={{
               transition,
-              left: -92 + (minimize ? 5 : 0),
+              left: -92 + (minimize || windowSize.smallerThanOrEqual.isTabletOrMobile ? 5 : 0),
             }}
             onClick={onCancel}
           >
@@ -620,8 +671,8 @@ const CreateEditDocument = ({
             height: 44,
             width: 1,
             backgroundColor: '#dddddd',
-            margin: `auto ${minimize ? 0 : 12}px auto 0px`,
-            opacity: minimize ? 0 : 1,
+            margin: `auto ${minimize || windowSize.smallerThanOrEqual.isTabletOrMobile ? 0 : 12}px auto 0px`,
+            opacity: minimize || windowSize.smallerThanOrEqual.isTabletOrMobile ? 0 : 1,
           }}
           />
         </>
@@ -860,6 +911,8 @@ const CreateEditDocument = ({
   }, [documentText]);
   */
 
+  console.log('windowSize', windowSize);
+
   return (
     <>
       <Layout
@@ -871,7 +924,7 @@ const CreateEditDocument = ({
         ]}
         title="New Document"
         statefulSession={statefulSession}
-        secondNavbarExtraContent={secondNavbarExtraContent}
+        secondNavbarExtraContent={windowSize.greaterThan.isMobilePhone && secondNavbarExtraContent}
         noContainer
       >
         {!session && loading && (
@@ -903,7 +956,7 @@ const CreateEditDocument = ({
                         height: toolbarHeight,
                         backgroundColor: '#F0F0F0',
                         borderBottom: '1px solid #ced4da',
-                        paddingLeft: 47,
+                        paddingLeft: mode === 'edit' && windowSize.smallerThanOrEqual.isTabletOrMobile ? 30 : 47,
                         paddingRight: 13,
                       }}
                     >
@@ -950,7 +1003,7 @@ const CreateEditDocument = ({
                       )}
                       {(fileUploaded || document) && (
                       <div style={{
-                        position: 'absolute', right: minimize ? 49 : 13, top: 8.5, transition,
+                        position: 'absolute', right: !minimize || windowSize.smallerThanOrEqual.isTabletOrMobile ? 13 : 49, top: 8.5, transition,
                       }}
                       >
                         <DocumentZoomSlider
@@ -1064,7 +1117,7 @@ const CreateEditDocument = ({
                         style={{
                           transition,
                           top: -41.5,
-                          left: 50, // `calc(100% - 107.5px${minimize ? ' - 44px' : ''})`,
+                          left: windowSize.smallerThanOrEqual.isTabletOrMobile ? 27 : 50,
                         }}
                         onClick={() => setShowUploadModal(true)}
                         disabled={progress.started}
@@ -1117,6 +1170,17 @@ const CreateEditDocument = ({
               )}
             </div>
             <div
+              style={{
+                transition,
+                position: 'absolute',
+                left: windowSize.isMobilePhone && !minimize ? 0 : -20,
+                opacity: windowSize.isMobilePhone && !minimize ? 1 : 0,
+                backgroundColor: 'white',
+                width: 20,
+                height: '100%',
+              }}
+            />
+            <div
               className={styles.chevronContainer}
               style={{
                 transition,
@@ -1149,6 +1213,7 @@ const CreateEditDocument = ({
                 ...state.rightPanel,
               }}
             >
+              {windowSize.isMobilePhone && secondNavbarExtraContent}
               <div style={{
                 fontSize: 22, fontWeight: 'bold', color: '#424242', marginBottom: 20,
               }}
@@ -1173,7 +1238,7 @@ const CreateEditDocument = ({
                 fontSize: 16, color: '#424242', fontWeight: 'bold', marginBottom: 10,
               }}
               >
-                Type Of Resource
+                Type of Resource
               </div>
               <div style={{ marginBottom: 20 }}>
                 <Select
@@ -1544,7 +1609,7 @@ const CreateEditDocument = ({
                 className={styles.deleteDocumentBtn}
                 onClick={() => setShowDeleteDocumentModal(true)}
               >
-                Delete Document
+                {`${mode === 'edit' ? 'Delete' : 'Cancel'} Document`}
               </div>
             </div>
           </div>
@@ -1589,7 +1654,7 @@ const CreateEditDocument = ({
                   flex: 1, fontSize: 22, fontWeight: 'bold', color: '#363D4E', marginLeft: 5,
                 }}
                 >
-                  Delete Document
+                  {`${mode === 'edit' ? 'Delete' : 'Cancel'} Document`}
                 </div>
                 <div
                   className={styles.cancelUploadBtn}
@@ -1613,7 +1678,11 @@ const CreateEditDocument = ({
                   </span>
                 </div>
                 {spacer}
-                <div style={{ fontWeight: 'bold', color: '#494949', marginTop: 20 }}>Are you sure you want to delete this document permanently?</div>
+                <div
+                  style={{ fontWeight: 'bold', color: '#494949', marginTop: 20 }}
+                >
+                  {`Are you sure you want to ${mode === 'edit' ? 'delete' : 'cancel'} this document permanently?`}
+                </div>
                 <div style={{ color: '#494949' }}>This action cannot be undone.</div>
                 <div style={{ display: 'flex', flexDirection: 'row', marginTop: 20 }}>
                   {deletingDocument
@@ -1673,7 +1742,7 @@ const CreateEditDocument = ({
                           }
                         }}
                       >
-                        Yes, delete this document
+                        {`Yes, ${mode === 'edit' ? 'delete' : 'cancel'} this document`}
                       </Button>
                     )}
                 </div>

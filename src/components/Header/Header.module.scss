@@ -8,3 +8,35 @@
   margin-right: 0.5rem;
   margin-bottom: 0.3rem;
 }
+
+.mobileView {
+  padding-left: 30px !important;
+  padding-right: 10px !important;
+}
+
+.menuButton {
+  button {
+    transition: all 0.5s;
+    background-color: rgba(255,255,255,0.02) !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+
+    &:focus {
+      background-color: rgba(255,255,255,0.02) !important;
+    }
+    &:hover {
+      background-color: rgba(255,255,255,0.08) !important;
+    }
+
+    &::after {
+      display: none !important;
+    }
+  }
+
+  > div {
+    left: -155px;
+    top: 40px;
+    width: 200px !important;
+  }
+}
