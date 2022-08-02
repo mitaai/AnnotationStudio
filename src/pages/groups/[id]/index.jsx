@@ -701,7 +701,7 @@ const EditGroup = ({
             <div
               className={styles.metadataContainer}
               style={{
-                zIndex: 10,
+                zIndex: 1,
                 display: 'flex',
                 flexDirection: 'column',
                 position: 'absolute',

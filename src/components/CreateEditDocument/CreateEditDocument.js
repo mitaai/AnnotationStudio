@@ -1238,7 +1238,7 @@ const CreateEditDocument = ({
                 fontSize: 16, color: '#424242', fontWeight: 'bold', marginBottom: 10,
               }}
               >
-                Type Of Resource
+                Type of Resource
               </div>
               <div style={{ marginBottom: 20 }}>
                 <Select
@@ -1609,7 +1609,7 @@ const CreateEditDocument = ({
                 className={styles.deleteDocumentBtn}
                 onClick={() => setShowDeleteDocumentModal(true)}
               >
-                Delete Document
+                {`${mode === 'edit' ? 'Delete' : 'Cancel'} Document`}
               </div>
             </div>
           </div>
@@ -1654,7 +1654,7 @@ const CreateEditDocument = ({
                   flex: 1, fontSize: 22, fontWeight: 'bold', color: '#363D4E', marginLeft: 5,
                 }}
                 >
-                  Delete Document
+                  {`${mode === 'edit' ? 'Delete' : 'Cancel'} Document`}
                 </div>
                 <div
                   className={styles.cancelUploadBtn}
@@ -1678,7 +1678,11 @@ const CreateEditDocument = ({
                   </span>
                 </div>
                 {spacer}
-                <div style={{ fontWeight: 'bold', color: '#494949', marginTop: 20 }}>Are you sure you want to delete this document permanently?</div>
+                <div
+                  style={{ fontWeight: 'bold', color: '#494949', marginTop: 20 }}
+                >
+                  {`Are you sure you want to ${mode === 'edit' ? 'delete' : 'cancel'} this document permanently?`}
+                </div>
                 <div style={{ color: '#494949' }}>This action cannot be undone.</div>
                 <div style={{ display: 'flex', flexDirection: 'row', marginTop: 20 }}>
                   {deletingDocument
@@ -1738,7 +1742,7 @@ const CreateEditDocument = ({
                           }
                         }}
                       >
-                        Yes, delete this document
+                        {`Yes, ${mode === 'edit' ? 'delete' : 'cancel'} this document`}
                       </Button>
                     )}
                 </div>

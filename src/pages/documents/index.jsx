@@ -97,7 +97,7 @@ const DocumentsIndex = ({
     const r = searchQuery ? new RegExp(`\.\*${escapeRegExp(searchQuery)}\.\*`, 'i') : new RegExp('\.\*', 'i');
     if (title.search(r) !== -1
       || state.search(r) !== -1
-      || contributors.some(({ name }) => name.search(r) !== -1)
+      || contributors?.some(({ name }) => name.search(r) !== -1)
     ) { return true; }
 
     if (groups.length === 0) {
@@ -105,7 +105,7 @@ const DocumentsIndex = ({
       return 'Personal'.search(r) !== -1;
     }
 
-    return groupNamesObj && groups.some((id) => (groupNamesObj[id] || '').search(r) !== -1);
+    return groupNamesObj && groups?.some((id) => (groupNamesObj[id] || '').search(r) !== -1);
   };
 
   const documents = key === 'mine' ? mineDocuments : sharedDocuments;
