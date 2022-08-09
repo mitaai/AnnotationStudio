@@ -751,7 +751,6 @@ function AnnotationCard({
                     onClick={() => {
                       // eslint-disable-next-line no-undef
                       copyToClipboard(document, shareableLink);
-                      console.log('documentFilters.filters.permissions', documentFilters.filters.permissions);
                       setAlerts((prevState) => [...prevState, { text: 'Link copied to clipboard', variant: 'success' }]);
                     }}
                   />

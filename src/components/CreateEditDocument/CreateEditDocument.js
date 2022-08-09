@@ -96,6 +96,8 @@ const CreateEditDocument = ({
 
   const [deleteUploadHovered, setDeleteUploadHovered] = useState();
 
+  const [clearTitleHovered, setClearTitleHovered] = useState();
+
   const [progress, setProgress] = useState({});
   const [fileName, setFileName] = useState();
   const [onChangeMsg, setOnChangeMsg] = useState();
@@ -897,6 +899,13 @@ const CreateEditDocument = ({
   }, [progress]);
 
   useEffect(() => {
+    if (fileName && (title === undefined || title.length === 0)) {
+      setTitle(fileName);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fileName]);
+
+  useEffect(() => {
     if (!showUploadModal && onChangeMsg) {
       setOnChangeMsg();
     }
@@ -1259,14 +1268,30 @@ const CreateEditDocument = ({
               >
                 Title
               </div>
-              <input
-                placeholder={fileName || 'Untitled'}
-                style={{
-                  marginBottom: 20,
-                }}
-                value={title}
-                onChange={(ev) => setTitle(ev.target.value)}
-              />
+              <div className={[
+                styles.titleInputContainer,
+                clearTitleHovered ? styles.clearTitleHovered : '',
+              ].join(' ')}
+              >
+                <input
+                  placeholder={fileName || 'Untitled'}
+                  style={{
+                    flex: 1,
+                  }}
+                  type="text"
+                  value={title}
+                  maxLength={100}
+                  onChange={(ev) => setTitle(ev.target.value)}
+                />
+                <div
+                  className={styles.clearTitleIcon}
+                  onClick={() => setTitle('')}
+                  onMouseEnter={() => setClearTitleHovered(true)}
+                  onMouseLeave={() => setClearTitleHovered()}
+                >
+                  <X size={18} />
+                </div>
+              </div>
               <div style={{
                 fontSize: 16, color: '#424242', fontWeight: 'bold', marginBottom: 10,
               }}
