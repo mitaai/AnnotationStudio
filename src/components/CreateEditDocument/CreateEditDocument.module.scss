@@ -279,9 +279,89 @@
     }
   }
 
+  .titleInputContainer {
+    display: flex;
+    flex-direction: row;
+    position: relative;
+    margin-bottom: 20px;
+
+    input {
+      transition: all 0.5s;
+    }
+
+    &.clearTitleHovered input {
+      border: 1px solid #E20101 !important;
+    }
+
+    &:hover {
+      .clearTitleIcon {
+        opacity: 1.0;
+      }
+    }
+
+    .clearTitleIcon {
+      opacity: 0;
+      transition: all 0.5s;
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      top: 1px;
+      right: 1px;
+      height: 40px;
+      width: 40px;
+      background-color: rgba(245, 245, 245, 0.9);
+      border-radius: 0px 6px 6px 0px;
+      cursor: pointer;
+  
+      &:hover {
+        background-color: rgba(252, 236, 235, 0.9);
+        color: #E20101;
+      }
+    }
+  }
+
+  
+
   .progressBar .progress-bar{
     transition: all 0.5s;
   }
+
+  .statusButtonGroup, .statusButtonGroupActive {
+    box-shadow: none !important;
+    outline: none !important;
+    transition: all 0.5s;
+  }
+
+  .statusButtonGroup {
+    color: #424242 !important;
+    background-color: #F5F5F5;
+    border: 1px solid #CDCEDA;
+
+    &:hover {
+      color: #355CBC !important;
+      background-color: #F5F5F5;
+      border: 1px solid #CDCEDA;
+    }
+
+    &.disabled, &.disabled:hover {
+      background-color: transparent !important;
+      color: #757575 !important;
+    }
+  }
+
+  .statusButtonGroupActive {
+    color: #355CBC !important;
+    background-color: #EBF2FF;
+    border: 1px solid #CDCEDA;
+
+    &:hover {
+      color: #355CBC !important;
+      background-color: #EBF2FF;
+      border: 1px solid #CDCEDA;
+    }
+  }
+
 /*
   .gradient {
     animation-duration: 1.5s;
@@ -326,3 +406,4 @@
       background-position: calc(100% + 400px) 0;
     }
   }
+  

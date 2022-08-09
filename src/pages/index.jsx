@@ -54,7 +54,7 @@ export default function Home({
         width: { vw: 38, px: -40 },
         minWidth: 490,
         left: { vw: 22, px: 25 },
-        minLeft: 425,
+        minLeft: 420,
         opacity: 1,
       },
       annotations: {
@@ -365,12 +365,16 @@ export default function Home({
                   // console.log(session);
                 }
                 if (id !== selectedGroupId) {
-                // if a new group is selected the selected document id and
-                // slug should be cleared and set to undefined
+                  // if a new group is selected the selected document id and
+                  // slug should be cleared and set to undefined
                   setSelectedGroupId(id);
                   setSelectedDocumentId();
                   setSelectedDocumentSlug();
-                  setDocumentPermissions('core-documents');
+                  if (id === 'privateGroup') {
+                    setDocumentPermissions('mine');
+                  } else {
+                    setDocumentPermissions('core-documents');
+                  }
                 }
               }}
               setSelectedDocumentId={setSelectedDocumentId}

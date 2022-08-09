@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import { useState } from 'react';
 import Router from 'next/router';
 import moment from 'moment';
@@ -83,14 +84,16 @@ export default function DocumentTile({
       marginLeft={5}
     />);
   } else {
-    tileBadges = tileBadges.concat(g.map(({ _id, name: n }) => (
-      <TileBadge
-        key={_id}
-        onClick={() => setSelectedGroupId(_id)}
-        color="grey"
-        text={n}
-        marginLeft={5}
-      />
+    tileBadges = tileBadges.concat(g.map((grp) => (grp
+      ? (
+        <TileBadge
+          key={grp?._id}
+          onClick={() => setSelectedGroupId(grp?._id)}
+          color="grey"
+          text={grp?.name}
+          marginLeft={5}
+        />
+      ) : <></>
     )));
   }
 

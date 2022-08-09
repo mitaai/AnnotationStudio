@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import $ from 'jquery';
 import {
-  PersonFill,
+  Archive,
+  ClipboardCheck,
 } from 'react-bootstrap-icons';
 import GroupTile from './GroupTile';
 import {
@@ -17,7 +18,6 @@ import {
 import PermissionsButtonGroup from '../PermissionsButtonGroup';
 import ChannelHeader from './ChannelHeader';
 import { escapeRegExp } from '../../utils/stringUtil';
-import { useWindowSize } from '../../utils/customHooks';
 
 export default function GroupsChannel({
   width,
@@ -39,10 +39,6 @@ export default function GroupsChannel({
   const [selectedItem, setSelectedItem] = useState('by-date-created');
   const [asc, setAsc] = useState();
   const [searchQuery, setSearchQuery] = useState();
-
-  const size = useWindowSize();
-
-  console.log('size', size);
 
   const moveGroupTileToList = (archived, groupId) => {
     if (archived) {
@@ -152,7 +148,7 @@ export default function GroupsChannel({
         : undefined,
       selected: groupPermissions === 'active',
       onClick: () => { setGroupPermissions('active'); },
-      icon: <PersonFill size="1.2em" />,
+      icon: <ClipboardCheck size="1.2em" />,
     },
     {
       text: 'Archived',
@@ -163,7 +159,7 @@ export default function GroupsChannel({
         : undefined,
       selected: groupPermissions === 'archived',
       onClick: () => { setGroupPermissions('archived'); },
-      icon: <PersonFill size="1.2em" />,
+      icon: <Archive size="1.2em" />,
     },
   ];
 
