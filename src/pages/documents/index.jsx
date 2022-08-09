@@ -11,7 +11,11 @@ import {
 import {
   Folder2Open,
   PencilFill,
-  PersonFill, Plus, Search, X,
+  PersonFill,
+  Plus,
+  Search,
+  X,
+  Trash,
 } from 'react-bootstrap-icons';
 import { useRouter } from 'next/router';
 import Layout from '../../components/Layout';
@@ -481,7 +485,7 @@ const DocumentsIndex = ({
                   onMouseEnter={() => setRowDeleteHovered(_id)}
                   onMouseLeave={() => setRowDeleteHovered()}
                 >
-                  <X size={24} />
+                  <Trash size={20} />
                 </div>
                 ),
                 moreOptions: [

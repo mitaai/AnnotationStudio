@@ -6,7 +6,14 @@ import Router from 'next/router';
 import $ from 'jquery';
 import {
   Check,
-  ChevronCompactRight, InfoCircle, Pencil, PencilFill, Plus, Search, X,
+  ChevronCompactRight,
+  InfoCircle,
+  Pencil,
+  PencilFill,
+  Plus,
+  Search,
+  X,
+  Trash,
 } from 'react-bootstrap-icons';
 import { useState, useRef, useEffect } from 'react';
 import { debounce } from 'lodash';
@@ -655,7 +662,7 @@ const EditGroup = ({
                           onMouseEnter={() => setRowDeleteHovered(id)}
                           onMouseLeave={() => setRowDeleteHovered()}
                         >
-                          <X size={24} />
+                          <Trash size={20} />
                         </div>
                       ),
                       moreOptions: [

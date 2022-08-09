@@ -132,7 +132,7 @@ export default function DocumentsChannel({
           group: selectedGroupId,
           permissions: documentPermissions,
           groupOwnersAndManagers,
-          noDrafts: true,
+          noDrafts: false,
         },
       }).then(({ documents: docs }) => setQueriedDocuments(docs));
     } else {
@@ -178,7 +178,7 @@ export default function DocumentsChannel({
           mine: documentPermissions === 'mine',
           groupOwnersAndManagers,
           permissions,
-          noDrafts: true,
+          noDrafts: false,
           sort: { updatedAt: -1 },
         })
           .then(async (data) => {

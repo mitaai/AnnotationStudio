@@ -400,38 +400,63 @@ const DocumentPage = ({
         top = trueTop;
       }
 
-      lastHighestPoint = top + $(`#document-container #${annos[i]._id}`).height();
-      $(`#document-container #${annos[i]._id}`).css('top', `${top}px`);
-      // now that we have placed the annotation in its correct spot
-      // we need to set the line that visually connects the annotation to the text
+      const annotationCardElement = $(`#document-container #${annos[i]._id}`);
+      lastHighestPoint = top + annotationCardElement.height();
+      if (i === focusIndex && Math.abs(top - annotationCardElement.position().top) < 1) {
+        /*
+        const wiggle = 50;
+        const duration = 100;
+        const lft = annotationCardElement.position().left;
+        annotationCardElement.animate({
+          left: lft + wiggle,
+        }, duration, () => {
+          // Animation complete.
+          annotationCardElement.animate({
+            left: lft - (wiggle * 2),
+          }, duration * 5, () => {
+            // Animation complete.
+            annotationCardElement.animate({
+              left: lft,
+            }, duration, () => {
+              // Animation complete.
+              console.log('done');
+            });
+          });
+        });
+        */
+      } else {
+        annotationCardElement.css('top', `${top}px`);
+        // now that we have placed the annotation in its correct spot
+        // we need to set the line that visually connects the annotation to the text
 
-      // setting line 1
-      adjustLine(
-        $(`#document-container #${annos[i]._id} .annotation-pointer-${side}`).get(0),
-        {
-          offsetTop: trueTop - top + 13,
-          offsetLeft: offsetLeftForLine1,
-          offsetWidth: 0,
-          offsetHeight: 0,
-        },
-        $(`#document-container #${annos[i]._id} .line1`).get(0),
-      );
-      // setting line 2 which will have the beginning point of line 1 endpoint
-      adjustLine(
-        {
-          offsetTop: trueTop - top + 13,
-          offsetLeft: offsetLeftForLine1,
-          offsetWidth: 0,
-          offsetHeight: 0,
-        },
-        {
-          offsetTop: trueTop - top + 13,
-          offsetLeft: offsetLeftForLine2,
-          offsetWidth: 0,
-          offsetHeight: 0,
-        },
-        $(`#document-container #${annos[i]._id} .line2`).get(0),
-      );
+        // setting line 1
+        adjustLine(
+          $(`#document-container #${annos[i]._id} .annotation-pointer-${side}`).get(0),
+          {
+            offsetTop: trueTop - top + 13,
+            offsetLeft: offsetLeftForLine1,
+            offsetWidth: 0,
+            offsetHeight: 0,
+          },
+          $(`#document-container #${annos[i]._id} .line1`).get(0),
+        );
+        // setting line 2 which will have the beginning point of line 1 endpoint
+        adjustLine(
+          {
+            offsetTop: trueTop - top + 13,
+            offsetLeft: offsetLeftForLine1,
+            offsetWidth: 0,
+            offsetHeight: 0,
+          },
+          {
+            offsetTop: trueTop - top + 13,
+            offsetLeft: offsetLeftForLine2,
+            offsetWidth: 0,
+            offsetHeight: 0,
+          },
+          $(`#document-container #${annos[i]._id} .line2`).get(0),
+        );
+      }
     }
 
     // the next thing we need to do is place all annotations

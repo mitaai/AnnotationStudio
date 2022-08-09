@@ -9,10 +9,10 @@ import React, {
 } from 'react';
 import $ from 'jquery';
 import {
-  Button, Modal, ProgressBar, Spinner, OverlayTrigger, Tooltip,
+  Button, Modal, ProgressBar, Spinner, OverlayTrigger, Tooltip, ButtonGroup,
 } from 'react-bootstrap';
 import {
-  ChevronCompactRight, Plus, Search, X, Check, PersonFill, PeopleFill, Globe, EyeFill, PencilSquare, ChatRightTextFill,
+  ChevronCompactRight, Plus, Search, X, Check, PersonFill, PeopleFill, EyeFill, PencilSquare, ChatRightTextFill,
 } from 'react-bootstrap-icons';
 import { createEditor } from 'slate';
 import {
@@ -551,6 +551,7 @@ const CreateEditDocument = ({
           x,
         ],
       },
+      /*
       {
         columns: [
           {
@@ -562,6 +563,7 @@ const CreateEditDocument = ({
           x,
         ],
       },
+      */
     ],
     published: [
       {
@@ -586,6 +588,7 @@ const CreateEditDocument = ({
           check,
         ],
       },
+      /*
       {
         columns: [
           {
@@ -597,6 +600,7 @@ const CreateEditDocument = ({
           x,
         ],
       },
+      */
     ],
     archived: [
       {
@@ -621,6 +625,7 @@ const CreateEditDocument = ({
           x,
         ],
       },
+      /*
       {
         columns: [
           {
@@ -632,6 +637,7 @@ const CreateEditDocument = ({
           x,
         ],
       },
+      */
     ],
   };
 
@@ -654,29 +660,25 @@ const CreateEditDocument = ({
         position: 'absolute', transition, left: `calc(100vw - ${buttonOffsetXState}px)`, height: '100%', display: 'flex', flexDirection: 'row',
       }}
       >
-        {document && (
-        <>
-          <Button
-            className={styles.cancelChangesBtn}
-            style={{
-              transition,
-              left: -92 + (minimize || windowSize.smallerThanOrEqual.isTabletOrMobile ? 5 : 0),
-            }}
-            onClick={onCancel}
-          >
-            Cancel
-          </Button>
-          <div style={{
+        <Button
+          className={styles.cancelChangesBtn}
+          style={{
             transition,
-            height: 44,
-            width: 1,
-            backgroundColor: '#dddddd',
-            margin: `auto ${minimize || windowSize.smallerThanOrEqual.isTabletOrMobile ? 0 : 12}px auto 0px`,
-            opacity: minimize || windowSize.smallerThanOrEqual.isTabletOrMobile ? 0 : 1,
+            left: -92 + (minimize || windowSize.smallerThanOrEqual.isTabletOrMobile ? 5 : 0),
           }}
-          />
-        </>
-        )}
+          onClick={mode === 'new' ? () => setShowDeleteDocumentModal(true) : onCancel}
+        >
+          Cancel
+        </Button>
+        <div style={{
+          transition,
+          height: 44,
+          width: 1,
+          backgroundColor: '#dddddd',
+          margin: `auto ${minimize || windowSize.smallerThanOrEqual.isTabletOrMobile ? 0 : 12}px auto 0px`,
+          opacity: minimize || windowSize.smallerThanOrEqual.isTabletOrMobile ? 0 : 1,
+        }}
+        />
 
         {mode === 'new'
           ? (
@@ -911,7 +913,38 @@ const CreateEditDocument = ({
   }, [documentText]);
   */
 
-  console.log('windowSize', windowSize);
+  const statusSelected = {
+    draft: status === 'draft',
+    published: status === 'published',
+    archived: status === 'archived',
+  };
+
+  const draftBtn = (
+    <Button
+      className={[
+        statusSelected.draft ? styles.statusButtonGroupActive : styles.statusButtonGroup,
+        documentCannotBeADraft ? styles.disabled : '',
+      ].join(' ')}
+      variant={`${statusSelected.draft ? 'outline-' : 'outline-'}primary`}
+      onClick={documentCannotBeADraft ? () => {} : () => setStatus('draft')}
+    >
+      Draft
+    </Button>
+  );
+
+  const draftBtnGroup = documentCannotBeADraft ? (
+    <OverlayTrigger
+      key="overlay-trigger-draft-btn"
+      placement="top"
+      overlay={(
+        <Tooltip className="styled-tooltip top">
+          This document has already been published or archived
+        </Tooltip>
+      )}
+    >
+      {draftBtn}
+    </OverlayTrigger>
+  ) : draftBtn;
 
   return (
     <>
@@ -1542,15 +1575,34 @@ const CreateEditDocument = ({
               >
                 Status
               </div>
-              <Select
-                options={[
-                  { text: 'Draft', key: 'draft', disabled: documentCannotBeADraft },
-                  { text: 'Published', key: 'published' },
-                  { text: 'Archived', key: 'archived' },
-                ]}
-                selectedOptionKey={status}
-                setSelectedOptionKey={setStatus}
-              />
+              <ButtonGroup aria-label="Basic example">
+                {draftBtnGroup}
+                <Button
+                  className={statusSelected.published ? styles.statusButtonGroupActive : styles.statusButtonGroup}
+                  variant={`${statusSelected.published ? 'outline-' : 'outline-'}primary`}
+                  onClick={() => setStatus('published')}
+                >
+                  Published
+                </Button>
+                <Button
+                  className={statusSelected.archived ? styles.statusButtonGroupActive : styles.statusButtonGroup}
+                  variant={`${statusSelected.archived ? 'outline-' : 'outline-'}primary`}
+                  onClick={() => setStatus('archived')}
+                >
+                  Archived
+                </Button>
+              </ButtonGroup>
+              {!documentCannotBeADraft && (statusSelected.archived || statusSelected.published) && (
+                <div style={{
+                  color: '#6c757d', fontSize: 13, display: 'flex', flexDirection: 'row', marginTop: 8, paddingLeft: 5,
+                }}
+                >
+                  <span>
+                    Note: Once a document has been Published or Archived, you will no longer be able to edit its content or revert its status to Draft. If you wish to modify the content of a document in the future, save it as a Draft. (Metadata can always be edited, regardless of document status.)
+                  </span>
+                </div>
+              )}
+
               <div style={{ marginBottom: 20 }} />
               <div style={{ display: 'flex', flexDirection: 'row' }}>
                 <Table
@@ -1603,14 +1655,6 @@ const CreateEditDocument = ({
                 </span>
               </div>
               <div style={{ flex: 1, marginBottom: 40 }} />
-              {spacer}
-              <div
-                style={{ marginTop: 40 }}
-                className={styles.deleteDocumentBtn}
-                onClick={() => setShowDeleteDocumentModal(true)}
-              >
-                {`${mode === 'edit' ? 'Delete' : 'Cancel'} Document`}
-              </div>
             </div>
           </div>
           <Modal
@@ -1739,6 +1783,8 @@ const CreateEditDocument = ({
                               setErrors((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
                               setShowDeleteDocumentModal();
                             });
+                          } else {
+                            onDelete();
                           }
                         }}
                       >

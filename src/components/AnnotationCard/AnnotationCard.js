@@ -564,8 +564,14 @@ function AnnotationCard({
   );
 
   const annotationShareableLinkIconClicked = (ev) => ev.target.closest('.annotation-shareable-link-icon') !== null;
+  let permissionsString = '';
+  if (documentFilters.filters.permissions === 0) {
+    permissionsString = 'mine=true&';
+  } else if (documentFilters.filters.permissions === 1) {
+    permissionsString = 'mine=false&';
+  }
   // eslint-disable-next-line no-undef
-  const shareableLink = `${window.location.origin}/documents/${annotation.target.document.slug}?mine=false&aid=${annotationData._id}`;
+  const shareableLink = `${window.location.origin}/documents/${annotation.target.document.slug}?${permissionsString}aid=${annotationData._id}`;
 
   const lightOrange = '#FEF6EB'; // 'rgba(255,165,10,0.10)'
 
@@ -745,6 +751,7 @@ function AnnotationCard({
                     onClick={() => {
                       // eslint-disable-next-line no-undef
                       copyToClipboard(document, shareableLink);
+                      console.log('documentFilters.filters.permissions', documentFilters.filters.permissions);
                       setAlerts((prevState) => [...prevState, { text: 'Link copied to clipboard', variant: 'success' }]);
                     }}
                   />
@@ -754,7 +761,7 @@ function AnnotationCard({
 
               <OverlayTrigger
                 overlay={(
-                  <Tooltip className="styled-tooltip">Focus annotation</Tooltip>
+                  <Tooltip className="styled-tooltip">Align annotation</Tooltip>
                 )}
               >
                 <span

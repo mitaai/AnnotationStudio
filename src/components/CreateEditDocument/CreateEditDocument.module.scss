@@ -282,6 +282,42 @@
   .progressBar .progress-bar{
     transition: all 0.5s;
   }
+
+  .statusButtonGroup, .statusButtonGroupActive {
+    box-shadow: none !important;
+    outline: none !important;
+    transition: all 0.5s;
+  }
+
+  .statusButtonGroup {
+    color: #424242 !important;
+    background-color: #F5F5F5;
+    border: 1px solid #CDCEDA;
+
+    &:hover {
+      color: #355CBC !important;
+      background-color: #F5F5F5;
+      border: 1px solid #CDCEDA;
+    }
+
+    &.disabled, &.disabled:hover {
+      background-color: transparent !important;
+      color: #757575 !important;
+    }
+  }
+
+  .statusButtonGroupActive {
+    color: #355CBC !important;
+    background-color: #EBF2FF;
+    border: 1px solid #CDCEDA;
+
+    &:hover {
+      color: #355CBC !important;
+      background-color: #EBF2FF;
+      border: 1px solid #CDCEDA;
+    }
+  }
+
 /*
   .gradient {
     animation-duration: 1.5s;
@@ -326,3 +362,4 @@
       background-position: calc(100% + 400px) 0;
     }
   }
+  
