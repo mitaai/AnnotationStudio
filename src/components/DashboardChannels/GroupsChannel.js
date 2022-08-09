@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import $ from 'jquery';
 import {
-  PersonFill,
+  Archive,
+  ClipboardCheck,
 } from 'react-bootstrap-icons';
 import GroupTile from './GroupTile';
 import {
@@ -147,7 +148,7 @@ export default function GroupsChannel({
         : undefined,
       selected: groupPermissions === 'active',
       onClick: () => { setGroupPermissions('active'); },
-      icon: <PersonFill size="1.2em" />,
+      icon: <ClipboardCheck size="1.2em" />,
     },
     {
       text: 'Archived',
@@ -158,7 +159,7 @@ export default function GroupsChannel({
         : undefined,
       selected: groupPermissions === 'archived',
       onClick: () => { setGroupPermissions('archived'); },
-      icon: <PersonFill size="1.2em" />,
+      icon: <Archive size="1.2em" />,
     },
   ];
 

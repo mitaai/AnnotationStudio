@@ -11,7 +11,7 @@ import {
   Button, ButtonGroup, Card, Spinner,
 } from 'react-bootstrap';
 import {
-  PencilSquare, TrashFill, Plus, BoxArrowRight, InfoCircle, Search, PersonFill, LockFill,
+  PencilSquare, TrashFill, Plus, BoxArrowRight, InfoCircle, Search, LockFill, ClipboardCheck, Archive,
 } from 'react-bootstrap-icons';
 import moment from 'moment';
 import styles from './index.module.scss';
@@ -107,7 +107,7 @@ const GroupList = ({ query, initAlerts, statefulSession }) => {
                 queryCount: groupPermissions === 'active' ? queriedGroups?.length : undefined,
                 selected: groupPermissions === 'active',
                 onClick: () => setGroupPermissions('active'),
-                icon: <PersonFill size="1.2em" />,
+                icon: <ClipboardCheck size="1.2em" />,
               },
               {
                 text: 'Archived',
@@ -116,7 +116,7 @@ const GroupList = ({ query, initAlerts, statefulSession }) => {
                 queryCount: groupPermissions === 'archive' ? queriedGroups?.length : undefined,
                 selected: groupPermissions === 'archive',
                 onClick: () => setGroupPermissions('archive'),
-                icon: <PersonFill size="1.2em" />,
+                icon: <Archive size="1.2em" />,
               },
             ]}
           />

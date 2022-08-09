@@ -16,6 +16,7 @@ import {
   Search,
   X,
   Trash,
+  PeopleFill,
 } from 'react-bootstrap-icons';
 import { useRouter } from 'next/router';
 import Layout from '../../components/Layout';
@@ -150,16 +151,17 @@ const DocumentsIndex = ({
     return <>{content}</>;
   };
 
-  const groupsToTileBadges = (groups) => (
-    groups && groups.length > 0
-      ? groups.map((id) => (
+  const groupsToTileBadges = (groups) => (groups && groups.length > 0
+    ? groups.map((id) => (groupNamesObj && groupNamesObj[id]
+      ? (
         <TileBadge
           key={`group-tile-badge-${id}`}
           color="grey"
           marginRight={5}
-          text={groupNamesObj && groupNamesObj[id]}
+          text={groupNamesObj[id]}
         />
-      )) : (<Badge>[&quot;Personal&quot; - no groups ]</Badge>));
+      ) : <></>
+    )) : (<Badge>[&quot;Personal&quot; - no groups ]</Badge>));
 
   const deleteDocument = (event) => {
     setListLoading(true);
@@ -357,7 +359,7 @@ const DocumentsIndex = ({
                   queryCount: key === 'shared' ? queriedDocuments?.length : undefined,
                   selected: key === 'shared',
                   onClick: () => setKey('shared'),
-                  icon: <PersonFill size="1.2em" />,
+                  icon: <PeopleFill size="1.2em" />,
                 },
               ]}
             />
