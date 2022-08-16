@@ -156,7 +156,7 @@ export default function AnnotationTile({
                 onExited={() => setHovered()}
                 overlay={(
                   <Popover id="popover-basic">
-                    <Popover.Content style={{ color: '#636363' }}>{moment(activityDate).format('LLLL')}</Popover.Content>
+                    <Popover.Content style={{ color: '#636363' }}>{`Updated: ${moment(activityDate).format('MMMM Do YYYY, h:mm a')}`}</Popover.Content>
                   </Popover>
               )}
               >
