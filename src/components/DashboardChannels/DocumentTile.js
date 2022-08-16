@@ -181,8 +181,12 @@ export default function DocumentTile({
           }}
           >
             <div className={styles.memberText}>
-              <span>{author}</span>
-              <span className={styles.dotSeperator} />
+              {author && author.length > 0 && (
+              <>
+                <span>{author}</span>
+                <span className={styles.dotSeperator} />
+              </>
+              )}
               <OverlayTrigger
                 key="document-activity-date-tooltip"
                 placement="bottom"
@@ -191,7 +195,7 @@ export default function DocumentTile({
                   <Popover
                     id="popover-basic"
                   >
-                    <Popover.Content style={{ color: '#636363' }}>{moment(activityDate).format('LLLL')}</Popover.Content>
+                    <Popover.Content style={{ color: '#636363' }}>{`Updated: ${moment(activityDate).format('MMMM Do YYYY, h:mm a')}`}</Popover.Content>
                   </Popover>
             )}
               >

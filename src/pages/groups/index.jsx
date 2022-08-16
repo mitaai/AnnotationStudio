@@ -121,12 +121,14 @@ const GroupList = ({ query, initAlerts, statefulSession }) => {
             ]}
           />
         </div>
-        <div
-          className={styles.rolePermissionsText}
-          onClick={() => setShowGroupRolePermissionsModal(true)}
-        >
-          <InfoCircle size={14} style={{ marginRight: 4, position: 'relative', top: 0 }} />
-          <span>Role permissions explained</span>
+        <div style={{ display: 'flex' }}>
+          <span
+            className={styles.rolePermissionsText}
+            onClick={() => setShowGroupRolePermissionsModal(true)}
+          >
+            <InfoCircle size={14} style={{ marginRight: 4, position: 'relative', top: 0 }} />
+            <span>Role permissions explained</span>
+          </span>
         </div>
         <div style={{ display: 'flex', flexDirection: 'row' }}>
           <div style={{
