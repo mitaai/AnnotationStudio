@@ -1,14 +1,21 @@
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
 import React, { useState, useEffect } from 'react';
+import Router from 'next/router';
 import {
-  Nav, Navbar, Breadcrumb, Container, Modal, Table, Row, Col, OverlayTrigger, Popover,
+  Nav, Navbar, Breadcrumb, Container, Modal, Row, Col, OverlayTrigger, Popover, Tooltip,
 } from 'react-bootstrap';
-import { InfoCircleFill, InfoSquare } from 'react-bootstrap-icons';
+import {
+  InfoCircleFill, InfoSquare, PencilFill, X,
+} from 'react-bootstrap-icons';
+import moment from 'moment';
 import FilterPopover from '../FilterPopover';
 import { publicationFieldName } from '../../utils/metadataUtil';
 import DocumentZoomSlider from '../DocumentZoomSlider/DocumentZoomSlider';
 import styles from './SecondNavbar.module.scss';
 import ArrowButton from '../ArrowButtton/ArrowButton';
 import TextAnalysisPopover from '../TextAnalysisPopover';
+import Table from '../Table';
 
 const SecondNavbar = ({
   session,
@@ -30,20 +37,44 @@ const SecondNavbar = ({
     contributors: 'Contributors',
     publication: document ? publicationFieldName(document.resourceType) : 'Publication',
     series: 'Series',
-    seriesNumber: 'Series number',
+    seriesNumber: 'Number in series',
     volume: 'Volume',
     issue: 'Issue',
     pageNumbers: 'Page numbers',
     edition: 'Edition',
     publisher: 'Publisher',
     publicationDate: 'Publication date',
-    location: 'Location',
+    publicationTitle: 'Publication title',
+    websiteTitle: 'Website title',
+    newspaperTitle: 'Newspaper title',
+    magazineTitle: 'Magazine title',
+    journalTitle: 'Journal Title',
+    bookTitle: 'Book title',
+    location: 'Publication location',
     rightsStatus: 'Rights status',
     url: 'URL',
     accessed: 'Accessed',
     notes: 'Notes',
     state: 'State',
   };
+
+  const resourceTypeMetadata = {
+    book: ['title', 'publicationDate', 'publisher', 'location', 'rightsStatus', 'volume', 'edition', 'series', 'seriesNumber', 'url', 'accessed'],
+    'book section': ['title', 'bookTitle', 'publicationDate', 'publisher', 'location', 'rightsStatus', 'volume', 'edition', 'pageNumbers', 'series', 'seriesNumber', 'url', 'accessed'],
+    'journal article': ['title', 'journalTitle', 'publicationDate', 'publisher', 'location', 'rightsStatus', 'volume', 'edition', 'pageNumbers', 'url', 'accessed'],
+    'magazine article': ['title', 'magazineTitle', 'publicationDate', 'publisher', 'location', 'rightsStatus', 'volume', 'edition', 'pageNumbers', 'url', 'accessed'],
+    'newspaper article': ['title', 'newspaperTitle', 'publicationDate', 'publisher', 'location', 'rightsStatus', 'volume', 'edition', 'pageNumbers', 'url', 'accessed'],
+    'web page': ['title', 'websiteTitle', 'publicationDate', 'publisher', 'rightsStatus', 'url', 'accessed'],
+    other: ['title', 'publicationTitle', 'publicationDate', 'publisher', 'location', 'rightsStatus', 'pageNumbers', 'url', 'accessed'],
+
+  };
+
+  const rowHeaderWidth = 200;
+
+  const rowHeaderStyle = {
+    paddingLeft: 15, backgroundColor: '#f6f6f6', textAlign: 'left', justifyContent: 'center', alignItems: 'center', borderRight: '1px solid #EBEFF3', fontWeight: 500, width: rowHeaderWidth, height: 64,
+  };
+
 
   const [showMoreDocumentInfo, setShowMoreDocumentInfo] = useState();
   const [mobileView, setMobileView] = useState();
@@ -55,6 +86,9 @@ const SecondNavbar = ({
   }, [type, windowSize]);
 
   const documentColumnSize = mobileView ? 12 : 7;
+
+  console.log('document', document);
+  console.log('session', session);
 
   const breadcrumbsContent = Array.isArray(breadcrumbs)
     ? breadcrumbs.map(({ name, href }) => (
@@ -223,40 +257,66 @@ const SecondNavbar = ({
           onHide={() => setShowMoreDocumentInfo(false)}
           aria-labelledby="document-metadata-modal"
         >
-          <Modal.Header closeButton>
-            <Modal.Title id="document-metadata-modal" className={styles['modal-title']}>
-              Metadata
-            </Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <Table bordered size="sm">
-              <tbody>
-                {Object.keys(metadataFields).map((key) => {
-                  let str = '';
-                  if (document[key] !== undefined) {
-                    if (Array.isArray(document[key])) {
-                      str = document[key].map((v, i) => (
-                        typeof (v) === 'object'
-                          ? `${i === 0
-                            ? ''
-                            : ', '}${v.type}: ${v.name}`
-                          : v
-                      ));
-                    } else {
-                      str = document[key];
-                    }
-                    return (
-                      <tr key={key}>
-                        <td className={styles['meta-field-name']}>
-                          <strong>{metadataFields[key]}</strong>
-                        </td>
-                        <td>{str}</td>
-                      </tr>
-                    );
-                  } return '';
+          <Modal.Header style={{
+            paddingLeft: 20, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}
+          >
+            <div style={{ fontSize: 20, fontWeight: 500 }}>Metadata</div>
+            {(session?.user?.role === 'admin' || session?.user?.id === document?.owner)
+            && (
+            <OverlayTrigger
+              overlay={(
+                <Tooltip className="styled-tooltip">
+                  Edit metadata
+                </Tooltip>
+            )}
+            >
+              <PencilFill
+                className={styles.editMetadataBtn}
+                onClick={() => Router.push({
+                  pathname: `/documents/${document?.slug}/edit`,
                 })}
-              </tbody>
-            </Table>
+              />
+            </OverlayTrigger>
+            )}
+            <div className={styles.closeModalBtn} style={{ marginLeft: 'auto' }} onClick={() => setShowMoreDocumentInfo()}>
+              <X size={20} />
+            </div>
+          </Modal.Header>
+          <Modal.Body style={{ backgroundColor: '#FBFBFB', borderRadius: 6 }}>
+            <Table
+              key="document-status-table"
+              id="document-status-table"
+              headerStyle={{ backgroundColor: '#f7f7f7' }}
+              hoverable={false}
+              noColumnHeaders
+              columnHeaders={[
+                {
+                  minWidth: rowHeaderWidth,
+                  style: {
+                    padding: 0, borderRight: '1px solid #EBEFF3', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'transparent',
+                  },
+                },
+                {
+                  flex: 1,
+                  style: {
+                    padding: 0, borderRight: '1px solid #EBEFF3', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 500, backgroundColor: '#f4f4f4',
+                  },
+                },
+              ]}
+              rows={resourceTypeMetadata[document.resourceType.toLowerCase()].map((key) => ({
+                columns: [
+                  {
+                    content: metadataFields[key],
+                    style: rowHeaderStyle,
+                  },
+                  {
+                    content: key === 'accessed' ? moment(document[key]).format('MMMM Do YYYY, h:mm a') : document[key],
+                  },
+                ],
+              }))}
+              fadeOnScroll={false}
+            />
           </Modal.Body>
         </Modal>
       )}

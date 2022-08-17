@@ -427,6 +427,7 @@ const DocumentsIndex = ({
                 { header: 'GROUPS', flex: 4 },
                 { header: 'STATUS', flex: 2 },
                 { header: 'CREATED', flex: 3 },
+                { header: '', minWidth: 0 },
               ]}
               rows={queriedDocuments.map(({
                 _id, title, contributors, slug, state, createdAt, owner, groups,
@@ -464,7 +465,8 @@ const DocumentsIndex = ({
                   { content: contributorsListToContributorsContent(contributors) || '-', style: { color: '#86919D' } },
                   { content: groupsToTileBadges(groups) || '-', style: { color: '#86919D' } },
                   { content: state || '-', style: { color: '#86919D' } },
-                  { content: (createdAt && moment(createdAt).format('MMM DD, YYYY')) || '-', style: { color: '#86919D' } },
+                  { content: (createdAt && `${moment(createdAt).format('MMM DD, YYYY')} by Joshua M.`) || '-', style: { color: '#86919D', fontSize: 14 } },
+                  { content: '' },
                 ],
                 hoverContent: session?.user?.id === owner && (
                 // eslint-disable-next-line jsx-a11y/interactive-supports-focus
