@@ -56,6 +56,7 @@ import { deleteCloudfrontFiles, deleteDocumentById } from '../../utils/docUtil';
 import Table from '../Table';
 import { escapeRegExp } from '../../utils/stringUtil';
 import { useWindowSize } from '../../utils/customHooks';
+import AdditionalMetadataObj from './AdditionalMetaData';
 
 const CreateEditDocument = ({
   statefulSession,
@@ -113,21 +114,29 @@ const CreateEditDocument = ({
   */
   const [showAdditionalMetadata, setShowAdditionalMetadata] = useState();
   const [title, setTitle] = useState(document?.title || '');
-  const [resourceType, setResourceType] = useState(document?.resourceType || 'book');
+  const [resourceType, setResourceType] = useState(document?.resourceType || 'Book');
   const [status, setStatus] = useState(document?.state || 'draft');
   const documentCannotBeADraft = document?.state === 'published' || document?.state === 'archived';
   const [contributors, setContributors] = useState(document?.contributors || [{ type: 'Author', name: '' }]);
   // aditional metadata
+  const [publicationTitle, setPublicationTitle] = useState('');
   const [publicationDate, setPublicationDate] = useState('');
   const [publisher, setPublisher] = useState('');
   const [publisherLocation, setPublisherLocation] = useState('');
   const [rightsStatus, setRightsStatus] = useState('copyrighted');
   const [volume, setVolume] = useState('');
   const [edition, setEdition] = useState('');
+  const [issue, setIssue] = useState('');
   const [series, setSeries] = useState('');
   const [seriesNumber, setSeriesNumber] = useState('');
   const [url, setUrl] = useState('');
-  const [dateAccessed, setDateAccessed] = useState(new Date(document?.accessed));
+  const [dateAccessed, setDateAccessed] = useState(document?.accessed ? new Date(document?.accessed) : new Date());
+  const [pages, setPages] = useState('');
+  const [websiteTitle, setWebsiteTitle] = useState('');
+  const [newspaperTitle, setNewspaperTitle] = useState('');
+  const [magazineTitle, setMagazineTitle] = useState('');
+  const [journalTitle, setJournalTitle] = useState('');
+  const [bookTitle, setBookTitle] = useState('');
 
   // life cycle of this state
   // 2) waiting to be used
@@ -147,6 +156,62 @@ const CreateEditDocument = ({
   const showContributionsInput = groupsShared?.contributions
     && Object.keys(groupsShared.contributions).length > 0;
   const showNoGroupsSelected = !(showCoreDocumentsInput || showContributionsInput);
+
+  // just incase if older version of AS4 used different keys for resource type we need to map it to
+  // what the resource type keys are now
+  const resourceTypePermutationsObj = {
+    book: 'Book',
+    'book section': 'Book Section',
+    'journal article': 'Journal Article',
+    'magazine article': 'Magazine Article',
+    'newspaper article': 'Newspaper Article',
+    'web page': 'Web Page',
+    other: 'Other',
+  };
+
+  const additionalMetadataObj = AdditionalMetadataObj({
+    setPublicationTitle,
+    publicationDate,
+    setPublicationDate,
+    publisher,
+    setPublisher,
+    publisherLocation,
+    setPublisherLocation,
+    rightsStatus,
+    setRightsStatus,
+    volume,
+    setVolume,
+    edition,
+    setEdition,
+    issue,
+    setIssue,
+    series,
+    setSeries,
+    seriesNumber,
+    setSeriesNumber,
+    url,
+    setUrl,
+    dateAccessed,
+    setDateAccessed,
+    pages,
+    setPages,
+    websiteTitle,
+    setWebsiteTitle,
+    newspaperTitle,
+    setNewspaperTitle,
+    magazineTitle,
+    setMagazineTitle,
+    journalTitle,
+    setJournalTitle,
+    bookTitle,
+    setBookTitle,
+  });
+
+  const resourceTypeOptions = Object.entries(additionalMetadataObj).map(([key, obj]) => ({ key, text: obj.text }));
+
+  const rt = additionalMetadataObj[resourceType] ? resourceType : resourceTypePermutationsObj[resourceType];
+  const { additionalMetadataHeight } = additionalMetadataObj[rt];
+
 
   const updateContributors = (index, { name, type }) => {
     const newContributors = contributors.slice();
@@ -230,7 +295,14 @@ const CreateEditDocument = ({
       contributors,
       publisher,
       publicationDate,
+      publicationTitle,
+      websiteTitle,
+      newspaperTitle,
+      magazineTitle,
+      journalTitle,
+      bookTitle,
       edition,
+      issue,
       url,
       accessed: dateAccessed,
       rightsStatus,
@@ -238,8 +310,7 @@ const CreateEditDocument = ({
       state: status || 'draft',
       text: htmlValue || serializeHTMLFromNodes({ plugins, nodes: slateDocument }),
       volume,
-      issue: undefined,
-      pageNumbers: undefined,
+      pageNumbers: pages,
       publication: undefined,
       series,
       seriesNumber,
@@ -275,9 +346,15 @@ const CreateEditDocument = ({
       resourceType,
       contributors,
       publisher,
+      publicationTitle,
       publicationDate,
       edition,
       url,
+      websiteTitle,
+      newspaperTitle,
+      magazineTitle,
+      journalTitle,
+      bookTitle,
       accessed: dateAccessed,
       rightsStatus,
       location: publisherLocation,
@@ -287,7 +364,7 @@ const CreateEditDocument = ({
         : undefined,
       volume,
       issue: undefined,
-      pageNumbers: undefined,
+      pageNumbers: pages,
       publication: undefined,
       series,
       seriesNumber,
@@ -1300,15 +1377,7 @@ const CreateEditDocument = ({
               </div>
               <div style={{ marginBottom: 20 }}>
                 <Select
-                  options={[
-                    { text: 'Book', key: 'Book' },
-                    { text: 'Book Section', key: 'Book Section' },
-                    { text: 'Journal Article', key: 'Journal Article' },
-                    { text: 'Magazine Article', key: 'Magazine Article' },
-                    { text: 'Newspaper Article', key: 'Newspaper Article' },
-                    { text: 'Web Page', key: 'Web Page' },
-                    { text: 'Other', key: 'Other' },
-                  ]}
+                  options={resourceTypeOptions}
                   selectedOptionKey={resourceType}
                   setSelectedOptionKey={setResourceType}
                 />
@@ -1374,104 +1443,11 @@ const CreateEditDocument = ({
               <div
                 className={styles.additionalMetadata}
                 style={{
-                  minHeight: showAdditionalMetadata ? metadataContainerWidth : 0,
+                  minHeight: showAdditionalMetadata ? additionalMetadataHeight : 0,
                   opacity: showAdditionalMetadata ? 1 : 0,
                 }}
               >
-                <div style={{ display: 'flex', flexDireciton: 'row' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-                    <div className={styles.additionalMetadataHeaders}>Publication Date</div>
-                    <input
-                      placeholder="Date"
-                      value={publicationDate}
-                      onChange={(ev) => setPublicationDate(ev.target.value)}
-                    />
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-                    <div className={styles.additionalMetadataHeaders}>Publisher</div>
-                    <input
-                      placeholder="Publisher"
-                      value={publisher}
-                      onChange={(ev) => setPublisher(ev.target.value)}
-                    />
-                  </div>
-                </div>
-                <div style={{ display: 'flex', flexDireciton: 'row' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-                    <div className={styles.additionalMetadataHeaders}>Publication Location</div>
-                    <input
-                      placeholder="Location"
-                      value={publisherLocation}
-                      onChange={(ev) => setPublisherLocation(ev.target.value)}
-                    />
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-                    <div className={styles.additionalMetadataHeaders}>Rights Status</div>
-                    <Select
-                      options={[
-                        { text: 'Copyrighted', key: 'Copyrighted' },
-                        { text: 'Creative Commons', key: 'Creative Commons' },
-                        { text: 'Public Domain', key: 'Public Domain' },
-                      ]}
-                      selectedOptionKey={rightsStatus}
-                      setSelectedOptionKey={setRightsStatus}
-                    />
-                  </div>
-                </div>
-                <div style={{ display: 'flex', flexDireciton: 'row' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-                    <div className={styles.additionalMetadataHeaders}>Volume</div>
-                    <input
-                      placeholder="Volume"
-                      value={volume}
-                      onChange={(ev) => setVolume(ev.target.value)}
-                    />
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-                    <div className={styles.additionalMetadataHeaders}>Edition</div>
-                    <input
-                      placeholder="Edition"
-                      value={edition}
-                      onChange={(ev) => setEdition(ev.target.value)}
-                    />
-                  </div>
-                </div>
-                <div style={{ display: 'flex', flexDireciton: 'row' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-                    <div className={styles.additionalMetadataHeaders}>Series</div>
-                    <input
-                      placeholder="Series"
-                      value={series}
-                      onChange={(ev) => setSeries(ev.target.value)}
-                    />
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-                    <div className={styles.additionalMetadataHeaders}>Number in series</div>
-                    <input
-                      placeholder="Number"
-                      value={seriesNumber}
-                      onChange={(ev) => setSeriesNumber(ev.target.value)}
-                    />
-                  </div>
-                </div>
-                <div style={{ display: 'flex', flexDireciton: 'row' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-                    <div className={styles.additionalMetadataHeaders}>URL</div>
-                    <input
-                      placeholder="URL"
-                      value={url}
-                      onChange={(ev) => setUrl(ev.target.value)}
-                    />
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-                    <div className={styles.additionalMetadataHeaders}>Date Accessed</div>
-                    <input
-                      placeholder="Date"
-                      value={dateAccessed}
-                      onChange={(ev) => setDateAccessed(ev.target.value)}
-                    />
-                  </div>
-                </div>
+                {additionalMetadataObj[resourceType]?.html}
               </div>
               <div
                 className={styles.hoverableText}

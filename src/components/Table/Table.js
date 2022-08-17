@@ -10,6 +10,7 @@ export default function Table({
   height,
   maxWidth = 1140,
   headerStyle = {},
+  noColumnHeaders,
   columnHeaders = [{ header: 'Empty Table', flex: 1, minWidth: 100 }],
   rows = [],
   fadeOnScroll = true,
@@ -54,6 +55,7 @@ export default function Table({
         className={`${styles.rowItem} ${deleteHovered && styles.deleteHovered} ${!hoverable && styles.noHover}`}
         style={{
           backgroundColor: rowItemIndex % 2 === 0 ? '#FFFFFF' : '#FDFDFD',
+          ...(rowItemIndex === rows.length - 1 ? { borderBottom: 'none' } : {}),
         }}
         onClick={href ? (ev) => {
           if (ev.target.closest('.table-hover-content') === null) {
@@ -181,7 +183,7 @@ export default function Table({
         backgroundColor: '#F8F8F8',
         display: 'flex',
         flexDirection: 'row',
-        borderBottom: '1px solid #EBEFF3',
+        borderBottom: noColumnHeaders ? 'none' : '1px solid #EBEFF3',
         ...headerStyle,
       }}
       >

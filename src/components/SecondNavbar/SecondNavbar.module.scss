@@ -49,3 +49,31 @@
   padding-left: 30px !important;
   padding-right: 10px !important;
 }
+
+.closeModalBtn {
+  transition: all 0.5s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #BDBDBD;
+  border-radius: 6px;
+  color: #BDBDBD;
+  cursor: pointer;
+
+  &:hover {
+      border-color: #E20101;
+      background-color: #FCECEB;
+      color: #E20101;
+  }
+}
+
+.editMetadataBtn {
+  color: #424242;
+  transition: all 0.5s;
+  cursor: pointer;
+  margin-left: 5px;
+
+  &:hover {
+    color: theme.$primary;
+  }
+}
