@@ -96,8 +96,6 @@ const SecondNavbar = ({
 
     const contributorsOrder = ['Author', 'Editor', 'Translator', 'Contributor'];
 
-    console.log('Object.entries(contributorsObj)', Object.entries(contributorsObj));
-
     return contributorsOrder.map((contributorType) => (
       contributorsObj[contributorType] ? (
         <div style={{
@@ -106,18 +104,12 @@ const SecondNavbar = ({
         >
           <div style={{ fontWeight: 500, fontSize: 16, flex: 1 }}>{contributorType}</div>
           <div style={{ fontWeight: 300, fontSize: 14, flex: 1 }}>
-            {(() => {
-              console.log('contributorsObj[contributorType]', contributorsObj[contributorType]);
-              return 'contributors';
-            })()}
-
+            {contributorsObj[contributorType]}
           </div>
         </div>
       ) : <></>
     ));
   };
-
-  console.log('document', document);
 
   useEffect(() => {
     if (type === 'document') {
@@ -138,9 +130,6 @@ const SecondNavbar = ({
   }, []);
 
   const documentColumnSize = mobileView ? 12 : 7;
-
-  console.log('document', document);
-  console.log('session', session);
 
   const breadcrumbsContent = Array.isArray(breadcrumbs)
     ? breadcrumbs.map(({ name, href }) => (
@@ -383,7 +372,7 @@ const SecondNavbar = ({
                         );
                       }
 
-                      return metadataFields[key];
+                      return document[key];
                     })(),
                   },
                 ],
