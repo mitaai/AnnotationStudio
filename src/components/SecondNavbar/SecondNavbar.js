@@ -82,13 +82,14 @@ const SecondNavbar = ({
   const [mobileView, setMobileView] = useState();
 
   const contributorsArrayToHtml = (contributors) => {
-    console.log('contributors', contributors);
     const contributorsObj = {};
     contributors.map(({ type: cType, name }) => {
-      if (Array.isArray(contributorsObj[cType])) {
-        contributorsObj[cType].push(name);
-      } else {
-        contributorsObj[cType] = [name];
+      if (name?.length > 0) {
+        if (Array.isArray(contributorsObj[cType])) {
+          contributorsObj[cType].push(name);
+        } else {
+          contributorsObj[cType] = [name];
+        }
       }
       return null;
     });
@@ -98,13 +99,21 @@ const SecondNavbar = ({
     console.log('Object.entries(contributorsObj)', Object.entries(contributorsObj));
 
     return contributorsOrder.map((contributorType) => (
-      <div style={{
-        display: 'flex', flexDirection: 'column', flex: 1, color: '#424242',
-      }}
-      >
-        <div style={{ fontWeight: 500, fontSize: 16, flex: 1 }}>{contributorType}</div>
-        <div style={{ fontWeight: 300, fontSize: 14, flex: 1 }}>{contributorsObj[contributorType].join(', ')}</div>
-      </div>
+      contributorsObj[contributorType] ? (
+        <div style={{
+          display: 'flex', flexDirection: 'column', flex: 1, color: '#424242',
+        }}
+        >
+          <div style={{ fontWeight: 500, fontSize: 16, flex: 1 }}>{contributorType}</div>
+          <div style={{ fontWeight: 300, fontSize: 14, flex: 1 }}>
+            {(() => {
+              console.log('contributorsObj[contributorType]', contributorsObj[contributorType]);
+              return 'contributors';
+            })()}
+
+          </div>
+        </div>
+      ) : <></>
     ));
   };
 
