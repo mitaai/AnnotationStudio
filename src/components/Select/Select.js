@@ -3,6 +3,7 @@ import { DropdownButton, Dropdown } from 'react-bootstrap';
 import styles from './Select.module.scss';
 
 const Select = ({
+  style = {},
   selectedOptionKey,
   setSelectedOptionKey = () => {},
   options = [],
@@ -14,7 +15,7 @@ const Select = ({
     <>
       <DropdownButton
         className={`${styles.selectContainer} ${inSelectInput ? styles.selectInputStyles : ''}`}
-        style={{ color: selectedItem === undefined ? '#757575' : '#424242' }}
+        style={{ color: selectedItem === undefined ? '#757575' : '#424242', ...style }}
         title={selectedItem?.text || 'None'}
       >
         {options.map(({ text, key, disabled }) => (
