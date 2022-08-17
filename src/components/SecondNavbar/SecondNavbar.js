@@ -16,6 +16,7 @@ import styles from './SecondNavbar.module.scss';
 import ArrowButton from '../ArrowButtton/ArrowButton';
 import TextAnalysisPopover from '../TextAnalysisPopover';
 import Table from '../Table';
+import { getUserById } from '../../utils/userUtil';
 
 const SecondNavbar = ({
   session,
@@ -56,34 +57,76 @@ const SecondNavbar = ({
     accessed: 'Accessed',
     notes: 'Notes',
     state: 'State',
+    created: 'Created by',
   };
 
   const resourceTypeMetadata = {
-    book: ['title', 'resourceType', 'publicationDate', 'publisher', 'location', 'rightsStatus', 'volume', 'edition', 'series', 'seriesNumber', 'url', 'accessed'],
-    'book section': ['title', 'resourceType', 'bookTitle', 'publicationDate', 'publisher', 'location', 'rightsStatus', 'volume', 'edition', 'pageNumbers', 'series', 'seriesNumber', 'url', 'accessed'],
-    'journal article': ['title', 'resourceType', 'journalTitle', 'publicationDate', 'publisher', 'location', 'rightsStatus', 'volume', 'edition', 'pageNumbers', 'url', 'accessed'],
-    'magazine article': ['title', 'resourceType', 'magazineTitle', 'publicationDate', 'publisher', 'location', 'rightsStatus', 'volume', 'edition', 'pageNumbers', 'url', 'accessed'],
-    'newspaper article': ['title', 'resourceType', 'newspaperTitle', 'publicationDate', 'publisher', 'location', 'rightsStatus', 'volume', 'edition', 'pageNumbers', 'url', 'accessed'],
-    'web page': ['title', 'resourceType', 'websiteTitle', 'publicationDate', 'publisher', 'rightsStatus', 'url', 'accessed'],
-    other: ['title', 'resourceType', 'publicationTitle', 'publicationDate', 'publisher', 'location', 'rightsStatus', 'pageNumbers', 'url', 'accessed'],
+    book: ['title', 'contributors', 'resourceType', 'publicationDate', 'publisher', 'location', 'rightsStatus', 'volume', 'edition', 'series', 'seriesNumber', 'url', 'accessed', 'created'],
+    'book section': ['title', 'contributors', 'resourceType', 'bookTitle', 'publicationDate', 'publisher', 'location', 'rightsStatus', 'volume', 'edition', 'pageNumbers', 'series', 'seriesNumber', 'url', 'accessed', 'created'],
+    'journal article': ['title', 'contributors', 'resourceType', 'journalTitle', 'publicationDate', 'publisher', 'location', 'rightsStatus', 'volume', 'edition', 'pageNumbers', 'url', 'accessed', 'created'],
+    'magazine article': ['title', 'contributors', 'resourceType', 'magazineTitle', 'publicationDate', 'publisher', 'location', 'rightsStatus', 'volume', 'edition', 'pageNumbers', 'url', 'accessed', 'created'],
+    'newspaper article': ['title', 'contributors', 'resourceType', 'newspaperTitle', 'publicationDate', 'publisher', 'location', 'rightsStatus', 'volume', 'edition', 'pageNumbers', 'url', 'accessed', 'created'],
+    'web page': ['title', 'contributors', 'resourceType', 'websiteTitle', 'publicationDate', 'publisher', 'rightsStatus', 'url', 'accessed', 'created'],
+    other: ['title', 'contributors', 'resourceType', 'publicationTitle', 'publicationDate', 'publisher', 'location', 'rightsStatus', 'pageNumbers', 'url', 'accessed', 'created'],
 
   };
 
   const rowHeaderWidth = 200;
 
   const rowHeaderStyle = {
-    paddingLeft: 15, backgroundColor: '#f6f6f6', textAlign: 'left', justifyContent: 'center', alignItems: 'center', borderRight: '1px solid #EBEFF3', fontWeight: 500, width: rowHeaderWidth, height: 64,
+    paddingLeft: 15, backgroundColor: '#f6f6f6', textAlign: 'left', justifyContent: 'center', alignItems: 'center', borderRight: '1px solid #EBEFF3', fontWeight: 500, width: rowHeaderWidth, minHeight: 64,
   };
 
-
+  const [docViewDocumentOwner, setDocViewDocumentOwner] = useState();
   const [showMoreDocumentInfo, setShowMoreDocumentInfo] = useState();
   const [mobileView, setMobileView] = useState();
+
+  const contributorsArrayToHtml = (contributors) => {
+    console.log('contributors', contributors);
+    const contributorsObj = {};
+    contributors.map(({ type: cType, name }) => {
+      if (Array.isArray(contributorsObj[cType])) {
+        contributorsObj[cType].push(name);
+      } else {
+        contributorsObj[cType] = [name];
+      }
+      return null;
+    });
+
+    const contributorsOrder = ['Author', 'Editor', 'Translator', 'Contributor'];
+
+    console.log('Object.entries(contributorsObj)', Object.entries(contributorsObj));
+
+    return contributorsOrder.map((contributorType) => (
+      <div style={{
+        display: 'flex', flexDirection: 'column', flex: 1, color: '#424242',
+      }}
+      >
+        <div style={{ fontWeight: 500, fontSize: 16, flex: 1 }}>{contributorType}</div>
+        <div style={{ fontWeight: 300, fontSize: 14, flex: 1 }}>{contributorsObj[contributorType].join(', ')}</div>
+      </div>
+    ));
+  };
+
+  console.log('document', document);
 
   useEffect(() => {
     if (type === 'document') {
       setMobileView(windowSize.width < 1000);
     }
   }, [type, windowSize]);
+
+  useEffect(() => {
+    if (document && docView) {
+      const fetchOwnerName = async () => {
+        await getUserById(document.owner)
+          .then((result) => setDocViewDocumentOwner(result.name))
+          .catch(() => console.log("couldn't retrieve owner name"));
+      };
+
+      fetchOwnerName();
+    }
+  }, []);
 
   const documentColumnSize = mobileView ? 12 : 7;
 
@@ -311,7 +354,28 @@ const SecondNavbar = ({
                     style: rowHeaderStyle,
                   },
                   {
-                    content: key === 'accessed' ? moment(document[key]).format('MMMM Do YYYY, h:mm a') : document[key],
+                    content: (() => {
+                      if (key === 'accessed') {
+                        return moment(document[key]).format('MMMM Do YYYY, h:mm a');
+                      }
+                      if (key === 'contributors') {
+                        return contributorsArrayToHtml(document[key]);
+                      }
+
+                      if (key === 'created') {
+                        return (
+                          <>
+                            <span>{docViewDocumentOwner}</span>
+                            <span style={{ color: '#757575' }}>
+                              {' '}
+                              {` on ${moment(document.createdAt).format('MMMM Do YYYY, h:mm a')}`}
+                            </span>
+                          </>
+                        );
+                      }
+
+                      return metadataFields[key];
+                    })(),
                   },
                 ],
               }))}
