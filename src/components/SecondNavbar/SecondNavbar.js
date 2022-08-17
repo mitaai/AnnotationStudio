@@ -59,13 +59,13 @@ const SecondNavbar = ({
   };
 
   const resourceTypeMetadata = {
-    book: ['title', 'publicationDate', 'publisher', 'location', 'rightsStatus', 'volume', 'edition', 'series', 'seriesNumber', 'url', 'accessed'],
-    'book section': ['title', 'bookTitle', 'publicationDate', 'publisher', 'location', 'rightsStatus', 'volume', 'edition', 'pageNumbers', 'series', 'seriesNumber', 'url', 'accessed'],
-    'journal article': ['title', 'journalTitle', 'publicationDate', 'publisher', 'location', 'rightsStatus', 'volume', 'edition', 'pageNumbers', 'url', 'accessed'],
-    'magazine article': ['title', 'magazineTitle', 'publicationDate', 'publisher', 'location', 'rightsStatus', 'volume', 'edition', 'pageNumbers', 'url', 'accessed'],
-    'newspaper article': ['title', 'newspaperTitle', 'publicationDate', 'publisher', 'location', 'rightsStatus', 'volume', 'edition', 'pageNumbers', 'url', 'accessed'],
-    'web page': ['title', 'websiteTitle', 'publicationDate', 'publisher', 'rightsStatus', 'url', 'accessed'],
-    other: ['title', 'publicationTitle', 'publicationDate', 'publisher', 'location', 'rightsStatus', 'pageNumbers', 'url', 'accessed'],
+    book: ['title', 'resourceType', 'publicationDate', 'publisher', 'location', 'rightsStatus', 'volume', 'edition', 'series', 'seriesNumber', 'url', 'accessed'],
+    'book section': ['title', 'resourceType', 'bookTitle', 'publicationDate', 'publisher', 'location', 'rightsStatus', 'volume', 'edition', 'pageNumbers', 'series', 'seriesNumber', 'url', 'accessed'],
+    'journal article': ['title', 'resourceType', 'journalTitle', 'publicationDate', 'publisher', 'location', 'rightsStatus', 'volume', 'edition', 'pageNumbers', 'url', 'accessed'],
+    'magazine article': ['title', 'resourceType', 'magazineTitle', 'publicationDate', 'publisher', 'location', 'rightsStatus', 'volume', 'edition', 'pageNumbers', 'url', 'accessed'],
+    'newspaper article': ['title', 'resourceType', 'newspaperTitle', 'publicationDate', 'publisher', 'location', 'rightsStatus', 'volume', 'edition', 'pageNumbers', 'url', 'accessed'],
+    'web page': ['title', 'resourceType', 'websiteTitle', 'publicationDate', 'publisher', 'rightsStatus', 'url', 'accessed'],
+    other: ['title', 'resourceType', 'publicationTitle', 'publicationDate', 'publisher', 'location', 'rightsStatus', 'pageNumbers', 'url', 'accessed'],
 
   };
 
