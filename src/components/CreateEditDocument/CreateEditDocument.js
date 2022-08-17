@@ -310,7 +310,7 @@ const CreateEditDocument = ({
       state: status || 'draft',
       text: htmlValue || serializeHTMLFromNodes({ plugins, nodes: slateDocument }),
       volume,
-      pageNumbers: undefined,
+      pageNumbers: pages,
       publication: undefined,
       series,
       seriesNumber,
