@@ -119,24 +119,24 @@ const CreateEditDocument = ({
   const documentCannotBeADraft = document?.state === 'published' || document?.state === 'archived';
   const [contributors, setContributors] = useState(document?.contributors || [{ type: 'Author', name: '' }]);
   // aditional metadata
-  const [publicationTitle, setPublicationTitle] = useState('');
-  const [publicationDate, setPublicationDate] = useState('');
-  const [publisher, setPublisher] = useState('');
-  const [publisherLocation, setPublisherLocation] = useState('');
-  const [rightsStatus, setRightsStatus] = useState('copyrighted');
-  const [volume, setVolume] = useState('');
-  const [edition, setEdition] = useState('');
-  const [issue, setIssue] = useState('');
-  const [series, setSeries] = useState('');
-  const [seriesNumber, setSeriesNumber] = useState('');
-  const [url, setUrl] = useState('');
+  const [publicationTitle, setPublicationTitle] = useState(document?.publicationTitle || '');
+  const [publicationDate, setPublicationDate] = useState(document?.publicationDate || '');
+  const [publisher, setPublisher] = useState(document?.publisher || '');
+  const [publisherLocation, setPublisherLocation] = useState(document?.location || '');
+  const [rightsStatus, setRightsStatus] = useState(document?.rightsStatus || 'copyrighted');
+  const [volume, setVolume] = useState(document?.volume || '');
+  const [edition, setEdition] = useState(document?.edition || '');
+  const [issue, setIssue] = useState(document?.issue || '');
+  const [series, setSeries] = useState(document?.series || '');
+  const [seriesNumber, setSeriesNumber] = useState(document?.seriesNumber || '');
+  const [url, setUrl] = useState(document?.url || '');
   const [dateAccessed, setDateAccessed] = useState(document?.accessed ? new Date(document?.accessed) : new Date());
-  const [pages, setPages] = useState('');
-  const [websiteTitle, setWebsiteTitle] = useState('');
-  const [newspaperTitle, setNewspaperTitle] = useState('');
-  const [magazineTitle, setMagazineTitle] = useState('');
-  const [journalTitle, setJournalTitle] = useState('');
-  const [bookTitle, setBookTitle] = useState('');
+  const [pages, setPages] = useState(document?.pageNumbers || '');
+  const [websiteTitle, setWebsiteTitle] = useState(document?.websiteTitle || '');
+  const [newspaperTitle, setNewspaperTitle] = useState(document?.newspaperTitle || '');
+  const [magazineTitle, setMagazineTitle] = useState(document?.magazineTitle || '');
+  const [journalTitle, setJournalTitle] = useState(document?.journalTitle || '');
+  const [bookTitle, setBookTitle] = useState(document?.bookTitle || '');
 
   // life cycle of this state
   // 2) waiting to be used
