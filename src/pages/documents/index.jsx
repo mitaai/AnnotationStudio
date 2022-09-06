@@ -114,7 +114,11 @@ const DocumentsIndex = ({
   };
 
   const documents = key === 'mine' ? mineDocuments : sharedDocuments;
-  const queriedDocuments = Array.isArray(documents) ? documents.filter(filterDocuments) : undefined;
+  const queriedDocuments = Array.isArray(documents)
+    ? documents
+      .filter(filterDocuments)
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    : undefined;
 
   const contributorsListToContributorsContent = (contributors) => {
     if (contributors === undefined) {
