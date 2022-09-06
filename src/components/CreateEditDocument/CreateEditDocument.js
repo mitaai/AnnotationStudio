@@ -119,24 +119,24 @@ const CreateEditDocument = ({
   const documentCannotBeADraft = document?.state === 'published' || document?.state === 'archived';
   const [contributors, setContributors] = useState(document?.contributors || [{ type: 'Author', name: '' }]);
   // aditional metadata
-  const [publicationTitle, setPublicationTitle] = useState('');
-  const [publicationDate, setPublicationDate] = useState('');
-  const [publisher, setPublisher] = useState('');
-  const [publisherLocation, setPublisherLocation] = useState('');
-  const [rightsStatus, setRightsStatus] = useState('copyrighted');
-  const [volume, setVolume] = useState('');
-  const [edition, setEdition] = useState('');
-  const [issue, setIssue] = useState('');
-  const [series, setSeries] = useState('');
-  const [seriesNumber, setSeriesNumber] = useState('');
-  const [url, setUrl] = useState('');
+  const [publicationTitle, setPublicationTitle] = useState(document?.publicationTitle || '');
+  const [publicationDate, setPublicationDate] = useState(document?.publicationDate || '');
+  const [publisher, setPublisher] = useState(document?.publisher || '');
+  const [publisherLocation, setPublisherLocation] = useState(document?.location || '');
+  const [rightsStatus, setRightsStatus] = useState(document?.rightsStatus || 'copyrighted');
+  const [volume, setVolume] = useState(document?.volume || '');
+  const [edition, setEdition] = useState(document?.edition || '');
+  const [issue, setIssue] = useState(document?.issue || '');
+  const [series, setSeries] = useState(document?.series || '');
+  const [seriesNumber, setSeriesNumber] = useState(document?.seriesNumber || '');
+  const [url, setUrl] = useState(document?.url || '');
   const [dateAccessed, setDateAccessed] = useState(document?.accessed ? new Date(document?.accessed) : new Date());
-  const [pages, setPages] = useState('');
-  const [websiteTitle, setWebsiteTitle] = useState('');
-  const [newspaperTitle, setNewspaperTitle] = useState('');
-  const [magazineTitle, setMagazineTitle] = useState('');
-  const [journalTitle, setJournalTitle] = useState('');
-  const [bookTitle, setBookTitle] = useState('');
+  const [pages, setPages] = useState(document?.pageNumbers || '');
+  const [websiteTitle, setWebsiteTitle] = useState(document?.websiteTitle || '');
+  const [newspaperTitle, setNewspaperTitle] = useState(document?.newspaperTitle || '');
+  const [magazineTitle, setMagazineTitle] = useState(document?.magazineTitle || '');
+  const [journalTitle, setJournalTitle] = useState(document?.journalTitle || '');
+  const [bookTitle, setBookTitle] = useState(document?.bookTitle || '');
 
   // life cycle of this state
   // 2) waiting to be used
@@ -167,6 +167,97 @@ const CreateEditDocument = ({
     'newspaper article': 'Newspaper Article',
     'web page': 'Web Page',
     other: 'Other',
+  };
+
+  const resourceTypeMetadataObj = (rt) => {
+    if (rt === 'book' || rt === 'Book') {
+      return {
+        publicationDate,
+        publisher,
+        location: publisherLocation,
+        rightsStatus,
+        volume,
+        edition,
+        series,
+        seriesNumber,
+        url,
+        accessed: dateAccessed,
+      };
+    }
+
+    if (rt === 'book section' || rt === 'Book Section') {
+      return {
+        bookTitle,
+        publicationDate,
+        publisher,
+        location: publisherLocation,
+        rightsStatus,
+        volume,
+        edition,
+        pageNumbers: pages,
+        series,
+        seriesNumber,
+        url,
+        accessed: dateAccessed,
+      };
+    }
+
+    if (rt === 'journal article' || rt === 'Journal Article') {
+      return {
+        journalTitle,
+        publicationDate,
+        publisher,
+        location: publisherLocation,
+        rightsStatus,
+        volume,
+        issue,
+        pageNumbers: pages,
+        url,
+        accessed: dateAccessed,
+      };
+    }
+
+    if (rt === 'magazine article' || rt === 'Magazine Article') {
+      return {
+        magazineTitle,
+        publicationDate,
+        publisher,
+        location: publisherLocation,
+        rightsStatus,
+        volume,
+        issue,
+        pageNumbers: pages,
+        url,
+        accessed: dateAccessed,
+      };
+    }
+
+    if (rt === 'web page' || rt === 'Web Page') {
+      return {
+        websiteTitle,
+        publicationDate,
+        publisher,
+        location: publisherLocation,
+        rightsStatus,
+        url,
+        accessed: dateAccessed,
+      };
+    }
+
+    if (rt === 'other' || rt === 'Other') {
+      return {
+        publicationTitle,
+        publicationDate,
+        publisher,
+        location: publisherLocation,
+        rightsStatus,
+        pageNumbers: pages,
+        url,
+        accessed: dateAccessed,
+      };
+    }
+
+    return {};
   };
 
   const additionalMetadataObj = AdditionalMetadataObj({
@@ -285,6 +376,8 @@ const CreateEditDocument = ({
   const createDocument = async () => {
     const slug = `${slugify(title)}-${cryptoRandomString({ length: 5, type: 'hex' })}`;
     const postUrl = '/api/document';
+
+    const resourceTypeAdditionalMetadata = resourceTypeMetadataObj(rt);
     const newDocument = {
       uploadContentType: htmlValue ? contentType : 'text/slate-html',
       fileObj,
@@ -293,29 +386,12 @@ const CreateEditDocument = ({
       slug,
       resourceType,
       contributors,
-      publisher,
-      publicationDate,
-      publicationTitle,
-      websiteTitle,
-      newspaperTitle,
-      magazineTitle,
-      journalTitle,
-      bookTitle,
-      edition,
-      issue,
-      url,
-      accessed: dateAccessed,
-      rightsStatus,
-      location: publisherLocation,
       state: status || 'draft',
       text: htmlValue || serializeHTMLFromNodes({ plugins, nodes: slateDocument }),
-      volume,
-      pageNumbers: pages,
       publication: undefined,
-      series,
-      seriesNumber,
       notes: undefined,
       textAnalysisId: undefined,
+      ...resourceTypeAdditionalMetadata,
     };
 
     const res = await unfetch(postUrl, {
@@ -339,37 +415,21 @@ const CreateEditDocument = ({
 
   const editDocument = async () => {
     const patchUrl = `/api/document/${document.id}`;
+    const resourceTypeAdditionalMetadata = resourceTypeMetadataObj(rt);
     const newDocument = {
       title: title === '' ? 'Untitled' : title,
       groups: orderOfGroupsShared.core.concat(orderOfGroupsShared.contributions),
       slug: document.slug,
       resourceType,
       contributors,
-      publisher,
-      publicationTitle,
-      publicationDate,
-      edition,
-      url,
-      websiteTitle,
-      newspaperTitle,
-      magazineTitle,
-      journalTitle,
-      bookTitle,
-      accessed: dateAccessed,
-      rightsStatus,
-      location: publisherLocation,
       state: status || 'draft',
       text: canEditDocument
         ? serializeHTMLFromNodes({ plugins, nodes: slateDocument })
         : undefined,
-      volume,
-      issue: undefined,
-      pageNumbers: pages,
       publication: undefined,
-      series,
-      seriesNumber,
       notes: undefined,
       textAnalysisId: undefined,
+      ...resourceTypeAdditionalMetadata,
     };
 
     const res = await unfetch(patchUrl, {
