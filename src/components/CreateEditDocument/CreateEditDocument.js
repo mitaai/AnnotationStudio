@@ -1065,6 +1065,8 @@ const CreateEditDocument = ({
     archived: status === 'archived',
   };
 
+  const currentStatusCheck = <Check size={20} style={{ position: 'relative', top: -2 }} />;
+
   const draftBtn = (
     <Button
       className={[
@@ -1074,7 +1076,8 @@ const CreateEditDocument = ({
       variant={`${statusSelected.draft ? 'outline-' : 'outline-'}primary`}
       onClick={documentCannotBeADraft ? () => {} : () => setStatus('draft')}
     >
-      Draft
+      <span>Draft</span>
+      {(document?.state === 'draft' || !document?.state) && currentStatusCheck}
     </Button>
   );
 
@@ -1643,14 +1646,16 @@ const CreateEditDocument = ({
                   variant={`${statusSelected.published ? 'outline-' : 'outline-'}primary`}
                   onClick={() => setStatus('published')}
                 >
-                  Published
+                  <span>Published</span>
+                  {document?.state === 'published' && currentStatusCheck}
                 </Button>
                 <Button
                   className={statusSelected.archived ? styles.statusButtonGroupActive : styles.statusButtonGroup}
                   variant={`${statusSelected.archived ? 'outline-' : 'outline-'}primary`}
                   onClick={() => setStatus('archived')}
                 >
-                  Archived
+                  <span>Archived</span>
+                  {document?.state === 'archived' && currentStatusCheck}
                 </Button>
               </ButtonGroup>
               {!documentCannotBeADraft && (statusSelected.archived || statusSelected.published) && (
