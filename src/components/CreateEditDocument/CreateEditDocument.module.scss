@@ -337,6 +337,7 @@
     color: #424242 !important;
     background-color: #F5F5F5;
     border: 1px solid #CDCEDA;
+    font-weight: 500 !important;
 
     &:hover {
       color: #355CBC !important;
@@ -347,6 +348,7 @@
     &.disabled, &.disabled:hover {
       background-color: transparent !important;
       color: #757575 !important;
+      font-weight: normal !important;
     }
   }
 
@@ -354,6 +356,7 @@
     color: #355CBC !important;
     background-color: #EBF2FF;
     border: 1px solid #CDCEDA;
+    font-weight: 500 !important;
 
     &:hover {
       color: #355CBC !important;

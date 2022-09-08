@@ -30,7 +30,7 @@ const getUserById = async (id) => {
 };
 
 const getUsersByIds = async (userIds) => {
-  const url = `/api/users`;
+  const url = '/api/users';
   const body = { userIds };
   const res = await unfetch(url, {
     method: 'POST',

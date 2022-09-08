@@ -36,6 +36,8 @@ import { getGroupsByGroupIds } from '../../utils/groupUtil';
 import styles from './index.module.scss';
 import { escapeRegExp } from '../../utils/stringUtil';
 import { useWindowSize } from '../../utils/customHooks';
+import { FirstNameLastInitial } from '../../utils/nameUtil';
+import { getUsersByIds } from '../../utils/userUtil';
 
 const DocumentsIndex = ({
   props,
@@ -54,6 +56,7 @@ const DocumentsIndex = ({
   const tabToUse = tab || 'shared';
   // const isPrivateGroup = query && query.gid === 'privateGroup';
 
+  const [userNames, setUserNames] = useState({});
   const [key, setKey] = useState(tabToUse);
   const [groupNamesObj, setGroupNamesObj] = useState();
   const [mineDocuments, setMineDocuments] = useState();
@@ -296,6 +299,19 @@ const DocumentsIndex = ({
       } else if (key === 'shared' && (sharedDocuments === undefined || refresh)) {
         getSharedDocumentsByGroup({ groups: session.user.groups })
           .then(async ({ docs }) => {
+            const userIds = docs.map(({ owner }) => owner);
+            await getUsersByIds(userIds).then((result) => {
+              const { users } = result;
+              // the function inside the reduce method reduces the array to an object mapping user
+              // id to user name
+              const usersObj = users.reduce((obj, { _id, name }) => {
+                // eslint-disable-next-line no-param-reassign
+                obj[_id] = FirstNameLastInitial(name);
+                return obj;
+              });
+
+              setUserNames((prevState) => ({ ...prevState, ...usersObj }));
+            }).catch(() => {});
             setSharedDocuments(docs);
           })
           .catch((err) => {
@@ -308,6 +324,11 @@ const DocumentsIndex = ({
 
   useEffect(() => {
     if (session?.user) {
+      if (userNames[session.user.id] === undefined) {
+        setUserNames((prevState) => ({
+          ...prevState, [session.user.id]: FirstNameLastInitial(session.user.name),
+        }));
+      }
       const groupIds = session.user.groups.map(({ id }) => id);
       getGroupsByGroupIds(groupIds)
         .then((res) => {
@@ -469,7 +490,17 @@ const DocumentsIndex = ({
                   { content: contributorsListToContributorsContent(contributors) || '-', style: { color: '#86919D' } },
                   { content: groupsToTileBadges(groups) || '-', style: { color: '#86919D' } },
                   { content: state || '-', style: { color: '#86919D' } },
-                  { content: (createdAt && `${moment(createdAt).format('MMM DD, YYYY')} by Joshua M.`) || '-', style: { color: '#86919D', fontSize: 14 } },
+                  {
+                    content: (createdAt && (
+                    <span style={{ flexDirection: 'column', display: 'flex' }}>
+                      <span>
+                        {`${moment(createdAt).format('MMM DD, YYYY')}`}
+                      </span>
+                      {userNames[owner] && <span>{`by ${userNames[owner]}`}</span>}
+                    </span>
+                    )) || '-',
+                    style: { color: '#86919D', fontSize: 14 },
+                  },
                   { content: '' },
                 ],
                 hoverContent: session?.user?.id === owner && (
