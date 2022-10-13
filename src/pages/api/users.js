@@ -5,9 +5,9 @@ import { connectToDatabase } from '../../utils/dbUtil';
 const secret = process.env.AUTH_SECRET;
 
 const handler = async (req, res) => {
-  const token = await jwt.getToken({ req, secret });
   const { method } = req;
   if (method === 'PATCH') {
+    const token = await jwt.getToken({ req, secret });
     if (token && token.exp > 0) {
       const { db } = await connectToDatabase();
       const userObj = await db

@@ -1,8 +1,12 @@
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+/* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable no-underscore-dangle */
 import { useState, useEffect, useRef } from 'react';
-import { Card, InputGroup, FormControl } from 'react-bootstrap';
 import {
-  ArrowDown, ArrowDownUp, ArrowUp, Search,
+  Card, InputGroup, FormControl, Button, Modal,
+} from 'react-bootstrap';
+import {
+  ArrowDown, ArrowDownUp, ArrowUp, Search, X,
 } from 'react-bootstrap-icons';
 import { debounce } from 'lodash';
 import AdminDashboard from '../AdminDashboard';
@@ -12,6 +16,9 @@ import AdminGroupList from '../Group/AdminGroupList';
 import AdminHeader from '../AdminHeader';
 import { getUsersByIds } from '../../../utils/userUtil';
 import { searchForDocuments, searchForGroups, searchForUsers } from '../../../utils/docUtil';
+import AddNewUserForm from './AddNewUserForm';
+
+import styles from './AdminPanel.module.scss';
 
 const AdminPanel = ({
   setAlerts, activeKey, setKey, // session,
@@ -44,6 +51,8 @@ const AdminPanel = ({
   const [groupsSortState, setGroupsSortState] = useState({ field: 'createdAt', direction: 'desc' });
   const [namesState, setNamesState] = useState({});
   const perPage = 20;
+
+  const [showAddUserModal, setShowAddUserModal] = useState();
 
   const SortIcon = ({ field }) => {
     let sortState;
@@ -244,7 +253,7 @@ const AdminPanel = ({
         <Card.Body style={{ display: 'flex', flexDirection: 'column' }}>
           {activeKey === 'dashboard' && (<AdminDashboard />)}
           {activeKey !== 'dashboard' && (
-          <div style={{ position: 'relative' }}>
+          <div style={{ position: 'relative', display: 'flex', flexDireciton: 'row' }}>
             <InputGroup className="mb-3">
               <InputGroup.Text id="search-icon-container">
                 <Search size={14} />
@@ -258,6 +267,32 @@ const AdminPanel = ({
                 aria-describedby="basic-addon1"
               />
             </InputGroup>
+            <Button
+              onClick={() => setShowAddUserModal(true)}
+              style={{ height: 38, width: 130, marginLeft: 5 }}
+            >
+              Add user
+            </Button>
+            <Modal show={showAddUserModal} onHide={() => setShowAddUserModal()}>
+              <Modal.Body>
+                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                  <div style={{
+                    flex: 1, fontSize: 22, fontWeight: 'bold', color: '#363D4E', marginLeft: 5, marginBottom: 20,
+                  }}
+                  >
+                    Add New User
+                  </div>
+                  <div
+                    style={{ marginBottom: 15 }}
+                    className={styles.closeModalBtn}
+                    onClick={() => setShowAddUserModal()}
+                  >
+                    <X size={20} />
+                  </div>
+                </div>
+                <AddNewUserForm onHide={() => setShowAddUserModal()} setAlerts={setAlerts} />
+              </Modal.Body>
+            </Modal>
           </div>
           )}
           <div style={{ flex: 1, overflowY: 'overlay', display: 'flex' }}>
