@@ -860,85 +860,108 @@ function AnnotationCard({
                         }}
                       />
                     </ListGroup.Item>
-                    <ListGroup.Item className="annotation-permissions">
-                      <div id="dropdown-permission-options-container">
-                        <DropdownButton drop="down" variant="outline-primary" id="dropdown-permission-options" title={permissionText[showPermissionNumber()]} disabled={savingAnnotation}>
-                          <Dropdown.Item
-                            onClick={() => { handleAnnotationPermissionsChange(0); }}
-                          >
-                            <PersonFill />
-                            {' '}
-                            Private
-                          </Dropdown.Item>
-                          <Dropdown.Item
-                            onClick={() => { handleAnnotationPermissionsChange(1); }}
-                          >
-                            <PeopleFill />
-                            {' '}
-                            Share with group(s)
-                          </Dropdown.Item>
-                          <Dropdown.Item
-                            onClick={() => { handleAnnotationPermissionsChange(2); }}
-                          >
-                            <PersonPlusFill />
-                            {' '}
-                            Share with user(s)
-                          </Dropdown.Item>
-                        </DropdownButton>
-                      </div>
-                      <div
-                        style={{
-                          position: 'relative',
-                          top: -2,
-                          backgroundColor: '#F4F4F4',
-                          width: 30,
-                          height: 30,
-                          color: '#424242',
-                          marginLeft: 4,
-                          display: 'flex',
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                        onClick={() => { setShowMoreInfoShareModal(true); }}
-                      >
-                        <Question
-                          id="question-circle-icon"
-                          style={{ fontSize: 17, color: '#424242' }}
-                        />
-                      </div>
-                      <div id="typeahead-share-annotation-users-container" className={showPermissionNumber() === 2 ? 'show' : ''}>
-                        <Typeahead
-                          id="typeahead-share-annotation-users"
-                          disabled={savingAnnotation}
-                          labelKey="name"
-                          placeholder="search by user name or email"
-                          multiple
-                          highlightOnlyResult
-                          renderToken={renderUserShareToken}
-                          renderMenu={renderUserShareMenu}
-                          selected={selectedUsersToShare}
-                          options={membersIntersection}
-                          onChange={(s) => {
-                            if (newAnnotationPermissions === null) {
-                              setNewAnnotationPermissions(showPermissionNumber);
-                            }
-                            setNewSelectedUsersToShare(s);
+                    <ListGroup.Item className="annotation-permissions" style={{ display: 'flex', flexDirection: 'column' }}>
+                      <div style={{ display: 'flex', flexDirection: 'row' }}>
+                        <div id="dropdown-permission-options-container">
+                          <DropdownButton drop="down" variant="outline-primary" id="dropdown-permission-options" title={permissionText[showPermissionNumber()]} disabled={savingAnnotation}>
+                            <Dropdown.Item
+                              onClick={() => { handleAnnotationPermissionsChange(0); }}
+                            >
+                              <PersonFill />
+                              {' '}
+                              Private
+                            </Dropdown.Item>
+                            <Dropdown.Item
+                              onClick={() => { handleAnnotationPermissionsChange(1); }}
+                            >
+                              <PeopleFill />
+                              {' '}
+                              Share with group(s)
+                            </Dropdown.Item>
+                            <Dropdown.Item
+                              onClick={() => { handleAnnotationPermissionsChange(2); }}
+                            >
+                              <PersonPlusFill />
+                              {' '}
+                              Share with user(s)
+                            </Dropdown.Item>
+                          </DropdownButton>
+                        </div>
+                        <div
+                          style={{
+                            position: 'relative',
+                            top: -2,
+                            backgroundColor: '#F4F4F4',
+                            width: 30,
+                            height: 30,
+                            color: '#424242',
+                            marginLeft: 4,
+                            display: 'flex',
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            justifyContent: 'center',
                           }}
-                        />
-                      </div>
-                      <div style={{ flex: 1 }} />
-                      {(newAnnotationTags !== null
+                          onClick={() => { setShowMoreInfoShareModal(true); }}
+                        >
+                          <Question
+                            id="question-circle-icon"
+                            style={{ fontSize: 17, color: '#424242' }}
+                          />
+                        </div>
+                        <div style={{ flex: 1 }} />
+                        {(newAnnotationTags !== null
                         || newAnnotationPermissions !== null
                         || newAnnotationText !== null)
+                        && showPermissionNumber() !== 2
                         && annotationSaveButton}
-                      <div
-                        id="cancel-annotation-btn"
-                        onClick={CancelAnnotation}
-                      >
-                        <X
-                          style={{ fontSize: 17 }}
-                        />
+                        {showPermissionNumber() !== 2 && (
+                        <div
+                          id="cancel-annotation-btn"
+                          onClick={CancelAnnotation}
+                        >
+                          <X
+                            style={{ fontSize: 17 }}
+                          />
+                        </div>
+                        )}
+                      </div>
+                      <div style={{ display: showPermissionNumber() === 2 ? 'flex' : 'none', flexDirection: 'row' }}>
+                        <div id="typeahead-share-annotation-users-container" className={showPermissionNumber() === 2 ? 'show' : ''}>
+                          <Typeahead
+                            id="typeahead-share-annotation-users"
+                            disabled={savingAnnotation}
+                            labelKey="name"
+                            placeholder="search by user name or email"
+                            multiple
+                            highlightOnlyResult
+                            renderToken={renderUserShareToken}
+                            renderMenu={renderUserShareMenu}
+                            selected={selectedUsersToShare}
+                            options={membersIntersection}
+                            onChange={(s) => {
+                              if (newAnnotationPermissions === null) {
+                                setNewAnnotationPermissions(showPermissionNumber);
+                              }
+                              setNewSelectedUsersToShare(s);
+                            }}
+                          />
+                        </div>
+
+                        {(newAnnotationTags !== null
+                        || newAnnotationPermissions !== null
+                        || newAnnotationText !== null)
+                        && showPermissionNumber() === 2
+                        && annotationSaveButton}
+                        {showPermissionNumber() === 2 && (
+                        <div
+                          id="cancel-annotation-btn"
+                          onClick={CancelAnnotation}
+                        >
+                          <X
+                            style={{ fontSize: 17 }}
+                          />
+                        </div>
+                        )}
                       </div>
                     </ListGroup.Item>
                   </ListGroup>
@@ -1217,6 +1240,7 @@ function AnnotationCard({
         }
 
         #typeahead-share-annotation-users-container {
+          flex: 1;
           margin-top: 2px;
           display: none;
         }

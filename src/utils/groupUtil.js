@@ -89,6 +89,7 @@ const addUserToGroup = async (
         'Content-Type': 'application/json',
       },
     });
+
     if (res.status === 200) {
       const response = await res.json();
       const memberCount = response.value.members.length;
