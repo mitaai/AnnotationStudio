@@ -75,7 +75,7 @@ const FeedbackModal = ({ show, setShow, session }) => (
           <Modal.Footer style={{ display: 'flex', justifyContent: 'space-between' }}>
             <Button variant="outline-secondary" onClick={() => { setShow(false); }}>Cancel</Button>
             <Button
-              variant="success"
+              variant="primary"
               type="submit"
               onClick={props.handleSubmit}
               disabled={props.isSubmitting || props.errors.feedback || props.values.feedback === ''}
