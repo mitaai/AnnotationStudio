@@ -1,5 +1,5 @@
 import { ObjectID } from 'mongodb';
-import jwt from 'next-auth/jwt';
+import { getToken } from 'next-auth/jwt';
 // import { calculatePacketSizes } from '../../utils/annotationUtil';
 import { connectToDatabase } from '../../utils/dbUtil';
 
@@ -12,12 +12,12 @@ const handler = async (req, res) => {
       deleteReferenceToText,
     } = req.query;
     if (deleteReferenceToText !== undefined) {
-      const token = await jwt.getToken({ req, secret });
+      const token = await getToken({ req, secret, raw: false });
       if (token && token.exp > 0) {
         const { db } = await connectToDatabase();
         const userObj = await db
           .collection('users')
-          .findOne({ _id: ObjectID(token.id) });
+          .findOne({ _id: ObjectID(token.sub) });
         const { role } = userObj;
         if (role === 'admin') {
           const condition = {
@@ -43,7 +43,7 @@ const handler = async (req, res) => {
       } else res.status(403).end('Invalid or expired token');
     } else res.status(403).end('Badly Formatted Request');
   } else if (method === 'POST') {
-    const token = await jwt.getToken({ req, secret });
+    const token = await getToken({ req, secret, raw: false });
     if (token && token.exp > 0) {
       const {
         userId,
@@ -53,7 +53,7 @@ const handler = async (req, res) => {
         // range,
       } = req.body;
       if (userId) {
-        if (userId === token.id) {
+        if (userId === token) {
           const { db } = await connectToDatabase();
           const condition = {
             $or: [

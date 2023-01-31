@@ -1,5 +1,5 @@
 import { ObjectID } from 'mongodb';
-import jwt from 'next-auth/jwt';
+import { getToken } from 'next-auth/jwt';
 import { S3 } from 'aws-sdk';
 import { connectToDatabase } from '../../../utils/dbUtil';
 
@@ -9,7 +9,7 @@ const secret = process.env.AUTH_SECRET;
 const handler = async (req, res) => {
   const { method } = req;
   if (method === 'DELETE') {
-    const token = await jwt.getToken({ req, secret });
+    const token = await getToken({ req, secret, raw: false });
     if (token && token.exp > 0) {
       const {
         role,
@@ -22,10 +22,10 @@ const handler = async (req, res) => {
       } = req.body;
       const { db } = await connectToDatabase();
       let hasAccessToDelete = false;
-      if (noOwner || token.id === ownerId || role === 'admin') {
+      if (noOwner || token.sub === ownerId || role === 'admin') {
         hasAccessToDelete = true;
       } else {
-        const userObj = await db.collection('users').findOne({ _id: ObjectID(token.id) });
+        const userObj = await db.collection('users').findOne({ _id: ObjectID(token.sub) });
         hasAccessToDelete = userObj.role === 'admin';
       }
       if (hasAccessToDelete) {

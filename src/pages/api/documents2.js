@@ -1,4 +1,4 @@
-import jwt from 'next-auth/jwt';
+import { getToken } from 'next-auth/jwt';
 import { connectToDatabase } from '../../utils/dbUtil';
 
 const secret = process.env.AUTH_SECRET;
@@ -9,7 +9,7 @@ const handler = async (req, res) => {
     text: 0,
   };
   if (method === 'POST') {
-    const token = await jwt.getToken({ req, secret });
+    const token = await getToken({ req, secret, raw: false });
     if (token && token.exp > 0) {
       const {
         page,

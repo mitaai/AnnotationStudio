@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Router from 'next/router';
-import { useSession } from 'next-auth/client';
+import { useSession } from 'next-auth/react';
 import {
   Card,
 } from 'react-bootstrap';
@@ -12,7 +12,8 @@ import AdminUserTable from '../../../components/Admin/User/AdminUserTable';
 
 const AdminManageUser = (props) => {
   const { user, initAlert, statefulSession } = props;
-  const [session, loading] = useSession();
+  const { data: session, status } = useSession();
+  const loading = status === 'loading';
   const [alerts, setAlerts] = useState(initAlert || []);
   return (
     <Layout

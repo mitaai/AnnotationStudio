@@ -1,4 +1,4 @@
-import jwt from 'next-auth/jwt';
+import { getToken } from 'next-auth/jwt';
 import { ObjectID } from 'mongodb';
 import { connectToDatabase } from '../../../utils/dbUtil';
 
@@ -6,7 +6,7 @@ const secret = process.env.AUTH_SECRET;
 
 const handler = async (req, res) => {
   const { method } = req;
-  const token = await jwt.getToken({ req, secret });
+  const token = await getToken({ req, secret, raw: false });
   if (method === 'GET') {
     const { db } = await connectToDatabase();
     if (ObjectID.isValid(req.query.id)) {
@@ -14,7 +14,7 @@ const handler = async (req, res) => {
       if (token && token.exp > 0) {
         const userObj = await db
           .collection('users')
-          .findOne({ _id: ObjectID(token.id) });
+          .findOne({ _id: ObjectID(token.sub) });
         querierRole = userObj.role;
       }
       const doc = await db
@@ -117,7 +117,7 @@ const handler = async (req, res) => {
       if (ObjectID.isValid(req.query.id)) {
         const userObj = await db
           .collection('users')
-          .findOne({ _id: ObjectID(token.id) });
+          .findOne({ _id: ObjectID(token.sub) });
         const { role } = userObj;
         if (role === 'admin') {
           const doc = await db

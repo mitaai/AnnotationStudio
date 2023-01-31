@@ -1,6 +1,6 @@
 import fetch from 'unfetch';
 import { Formik } from 'formik';
-import { useSession } from 'next-auth/client';
+import { useSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import {
   Button, Card, Col, Form, Row,
@@ -13,7 +13,8 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import UnauthorizedCard from '../../components/UnauthorizedCard';
 
 const NewGroup = ({ statefulSession }) => {
-  const [session, loading] = useSession();
+  const { data: session, status } = useSession();
+  const loading = status === 'loading';
   const [pageLoading, setPageLoading] = useState(true);
   const [alerts, setAlerts] = useState([]);
 

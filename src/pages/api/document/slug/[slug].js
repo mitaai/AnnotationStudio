@@ -1,5 +1,5 @@
 import { ObjectID } from 'mongodb';
-import jwt from 'next-auth/jwt';
+import { getToken } from 'next-auth/jwt';
 import { connectToDatabase } from '../../../../utils/dbUtil';
 
 const secret = process.env.AUTH_SECRET;
@@ -7,17 +7,17 @@ const secret = process.env.AUTH_SECRET;
 const handler = async (req, res) => {
   const { method } = req;
   if (method === 'GET') {
-    const token = await jwt.getToken({ req, secret });
+    const token = await getToken({ req, secret, raw: false });
     if (token && token.exp > 0) {
       const { db } = await connectToDatabase();
       const userObj = await db
         .collection('users')
-        .findOne({ _id: ObjectID(token.id) });
+        .findOne({ _id: ObjectID(token.sub) });
       const userGroups = (userObj.groups && userObj.groups.length > 0)
         ? userObj.groups.map((group) => group.id)
         : [];
       const findCondition = { slug: req.query.slug };
-      if (userObj.role !== 'admin') findCondition.$or = [{ groups: { $in: userGroups } }, { owner: token.id }];
+      if (userObj.role !== 'admin') findCondition.$or = [{ groups: { $in: userGroups } }, { owner: token }];
       const doc = await db
         .collection('documents')
         .find(findCondition)

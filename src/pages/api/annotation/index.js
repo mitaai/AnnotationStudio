@@ -1,4 +1,4 @@
-import jwt from 'next-auth/jwt';
+import { getToken } from 'next-auth/jwt';
 import { connectToDatabase } from '../../../utils/dbUtil';
 
 const secret = process.env.AUTH_SECRET;
@@ -8,7 +8,7 @@ const handler = async (req, res) => {
   if (method === 'POST') {
     if (req.body.body && req.body.permissions && req.body.target) {
       if (req.body.target.document && req.body.target.document.slug) {
-        const token = await jwt.getToken({ req, secret });
+        const token = await getToken({ req, secret, raw: false });
         if (token && token.exp > 0) {
           const created = new Date(Date.now());
           const modified = created;
@@ -18,7 +18,7 @@ const handler = async (req, res) => {
           } = req.body;
           if (!body.type) body.type = 'TextualBody';
           if (!body.format) body.format = 'text/html';
-          if (!creator.id) creator.id = token.id;
+          if (!creator.id) creator.id = token;
           if (!creator.name) creator.name = token.name;
           if (!creator.email) creator.email = token.email;
           const { db } = await connectToDatabase();

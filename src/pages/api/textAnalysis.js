@@ -1,5 +1,5 @@
 import { ObjectID } from 'mongodb';
-import jwt from 'next-auth/jwt';
+import { getToken } from 'next-auth/jwt';
 import { connectToDatabase } from '../../utils/dbUtil';
 import { calculateSizeOfDataInMB } from '../../utils/annotationUtil';
 // Imports the Google Cloud client library
@@ -13,7 +13,7 @@ const secret = process.env.AUTH_SECRET;
 const handler = async (req, res) => {
   const { method } = req;
   if (method === 'POST') {
-    const token = await jwt.getToken({ req, secret });
+    const token = await getToken({ req, secret, raw: false });
     if (token && token.exp > 0) {
       const {
         document,
