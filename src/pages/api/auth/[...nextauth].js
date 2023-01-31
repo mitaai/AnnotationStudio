@@ -1,14 +1,18 @@
+/* eslint-disable camelcase */
 /* eslint-disable no-param-reassign */
 import NextAuth from 'next-auth';
-import Providers from 'next-auth/providers';
-import Adapters from 'next-auth/adapters';
+import EmailProvider from 'next-auth/providers/email';
+import { MongoDBAdapter } from '@next-auth/mongodb-adapter';
+// import Adapters from 'next-auth/adapters';
 import sendVerificationRequestOverride from '../../../utils/verificationUtil';
-import Models from '../../../models';
+import clientPromise from '../../../lib/mongodb';
+// import Models from '../../../models';
 import { appendProtocolIfMissing } from '../../../utils/fetchUtil';
 
+const maxAge = 30 * 24 * 60 * 60; // 30 days
 const options = {
   providers: [
-    Providers.Email({
+    EmailProvider({
       server: {
         host: process.env.EMAIL_SERVER_HOST,
         port: process.env.EMAIL_SERVER_PORT,
@@ -24,6 +28,11 @@ const options = {
     }),
   ],
 
+  adapter: MongoDBAdapter(clientPromise, {
+    databaseName: process.env.DB_NAME,
+  }),
+
+  /*
   adapter: Adapters.TypeORM.Adapter(
     {
       type: 'mongodb',
@@ -39,12 +48,13 @@ const options = {
       },
     },
   ),
+  */
 
   debug: true,
 
   session: {
-    jwt: true,
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    strategy: 'jwt',
+    maxAge, // 30 days
     updateAge: 24 * 60 * 60, // 24 hours
   },
 
@@ -52,7 +62,8 @@ const options = {
 
   jwt: {
     secret: process.env.AUTH_SECRET,
-    raw: true,
+    raw: false,
+    maxAge,
   },
 
   pages: {
@@ -62,17 +73,19 @@ const options = {
   },
 
   callbacks: {
-    jwt: async (token, user) => {
-      const isSignIn = !!(user);
-      if (isSignIn) {
-        token.auth_time = Number(new Date());
-        token.id = user.id;
-      }
-      return Promise.resolve(token);
+    jwt: async (session) => {
+      const {
+        token,
+        user,
+      } = session;
+      const auth_time = user?.id || token?.sub ? Number(new Date()) : undefined;
+      return Promise.resolve({ ...token, auth_time });
     },
 
-    session: async (session, sessionToken) => {
-      const { id } = sessionToken;
+    session: async (args) => {
+      const { session, token } = args;
+
+      const { sub: id } = token;
       const url = `${appendProtocolIfMissing(process.env.SITE)}/api/user/${id}`;
       // eslint-disable-next-line no-undef
       const res = await fetch(url, {

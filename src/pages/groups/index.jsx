@@ -4,7 +4,7 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import { useSession } from 'next-auth/client';
+import { useSession } from 'next-auth/react';
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
@@ -35,7 +35,8 @@ import RolePermissionsModal from '../../components/RolePermissionsModal';
 import { escapeRegExp } from '../../utils/stringUtil';
 
 const GroupList = ({ query, initAlerts, statefulSession }) => {
-  const [session, loading] = useSession();
+  const { data: session, status } = useSession();
+  const loading = status === 'loading';
   const [alerts, setAlerts] = useState(initAlerts);
   const [pageLoading, setPageLoading] = useState(true);
   const [groupPermissions, setGroupPermissions] = useState('active');

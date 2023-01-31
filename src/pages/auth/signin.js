@@ -1,7 +1,7 @@
 import { setCookie } from 'nookies';
 import Router from 'next/router';
 import React, { useState } from 'react';
-import { getCsrfToken, useSession } from 'next-auth/client';
+import { getCsrfToken, useSession } from 'next-auth/react';
 import { Button, Card, Form } from 'react-bootstrap';
 import Layout from '../../components/Layout';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -12,7 +12,8 @@ const SignIn = ({
   props,
   updateSession,
 }) => {
-  const [session, loading] = useSession();
+  const { data: session, status } = useSession();
+  const loading = status === 'loading';
 
   const {
     cToken,

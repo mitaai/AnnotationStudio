@@ -1,4 +1,4 @@
-import jwt from 'next-auth/jwt';
+import { getToken } from 'next-auth/jwt';
 import cryptoRandomString from 'crypto-random-string';
 import { connectToDatabase } from '../../../utils/dbUtil';
 
@@ -8,7 +8,7 @@ const handler = async (req, res) => {
   const { method } = req;
   if (method === 'POST') {
     if (req.body.group) {
-      const jwtTok = await jwt.getToken({ req, secret });
+      const jwtTok = await getToken({ req, secret });
       if (jwtTok && jwtTok.exp > 0) {
         const createdAt = new Date(Date.now());
         const updatedAt = createdAt;

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useSession } from 'next-auth/client';
+import { useSession } from 'next-auth/react';
 import { Formik } from 'formik';
 import * as yup from 'yup';
 import {
@@ -14,7 +14,8 @@ import { appendProtocolIfMissing } from '../../../utils/fetchUtil';
 
 const EditProfile = ({ user, updateSession, statefulSession }) => {
   // eslint-disable-next-line prefer-const
-  let [session, loading] = useSession();
+  let { data: session, status } = useSession();
+  const loading = status === 'loading';
   if ((!session || !session.user || !session.user.firstName)
     && statefulSession && statefulSession.user && statefulSession.user.firstName) {
     session = statefulSession;

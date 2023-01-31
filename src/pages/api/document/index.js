@@ -1,4 +1,4 @@
-import jwt from 'next-auth/jwt';
+import { getToken } from 'next-auth/jwt';
 import { connectToDatabase } from '../../../utils/dbUtil';
 import { uploadSlateToS3 } from '../../../utils/s3Util';
 
@@ -7,7 +7,7 @@ const secret = process.env.AUTH_SECRET;
 const handler = async (req, res) => {
   const { method } = req;
   if (method === 'POST') {
-    const token = await jwt.getToken({ req, secret });
+    const token = await getToken({ req, secret, raw: false });
     if (token && token.exp > 0) {
       const dateCreated = new Date(Date.now());
       let { groups } = req.body;
@@ -93,7 +93,7 @@ const handler = async (req, res) => {
           .collection('documents')
           .insertOne(
             {
-              owner: token.id,
+              owner: token,
               createdAt: dateCreated,
               updatedAt: dateCreated,
               text,

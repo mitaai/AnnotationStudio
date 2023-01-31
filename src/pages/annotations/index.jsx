@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useSession } from 'next-auth/client';
+import { useSession } from 'next-auth/react';
 import { Card } from 'react-bootstrap';
 import Layout from '../../components/Layout';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -10,7 +10,8 @@ const AnnotationsListVIew = ({
   props, statefulSession,
 }) => {
   const { tab } = props;
-  const [session, loading] = useSession();
+  const { data: session, status } = useSession();
+  const loading = status === 'loading';
   const [alerts, setAlerts] = useState([]);
 
   return (

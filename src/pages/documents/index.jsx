@@ -4,7 +4,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react';
 import moment from 'moment';
-import { useSession } from 'next-auth/client';
+import { useSession } from 'next-auth/react';
 import {
   Spinner, Badge, Modal, Button,
 } from 'react-bootstrap';
@@ -52,7 +52,8 @@ const DocumentsIndex = ({
   const dashboardState = `${query.did !== undefined && query.slug !== undefined ? `did=${query.did}&slug=${query.slug}&dp=${query.dp}&` : ''}gid=${query.gid}`;
 
   const { tab, initAlert } = props;
-  const [session, loading] = useSession();
+  const { data: session, status } = useSession();
+  const loading = status === 'loading';
   const tabToUse = tab || 'shared';
   // const isPrivateGroup = query && query.gid === 'privateGroup';
 

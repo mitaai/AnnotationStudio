@@ -1,11 +1,13 @@
 
-import { useSession } from 'next-auth/client';
+import { useSession } from 'next-auth/react';
 import { Button, Card } from 'react-bootstrap';
 import Layout from '../../components/Layout';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
 const VerifyRequest = () => {
-  const [session, loading] = useSession();
+  const { data: session, status } = useSession();
+  const loading = status === 'loading';
+
   return (
     <Layout
       type="signin"

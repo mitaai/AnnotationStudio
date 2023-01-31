@@ -1,6 +1,6 @@
 import { userSession } from '../../utils/testUtil';
 
-const client = jest.genMockFromModule('next-auth/client');
+const client = jest.genMockFromModule('next-auth/react');
 
 const useSession = jest.fn(() => [
   userSession,

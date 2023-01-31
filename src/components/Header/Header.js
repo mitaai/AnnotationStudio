@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import React, { useState } from 'react';
-import { useSession } from 'next-auth/client';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import Container from 'react-bootstrap/Container';
 import {
@@ -37,10 +37,11 @@ const Header = ({
   borderBottom,
   secondNavbarExtraContent,
 }) => {
-  const [session, loading] = useSession();
+  const { data: session, status } = useSession();
   const [modalShow, setModalShow] = useState();
   const windowSize = useWindowSize();
   const router = useRouter();
+  const loading = status === 'loading';
 
   const navbarItems = windowSize.width >= 800
     ? (

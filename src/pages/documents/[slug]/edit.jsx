@@ -1,4 +1,4 @@
-import { useSession } from 'next-auth/client';
+import { useSession } from 'next-auth/react';
 import React, { useState } from 'react';
 import {
   Card, Col,
@@ -14,7 +14,8 @@ import CreateEditDocument from '../../../components/CreateEditDocument';
 const EditDocument = ({
   query, document, alerts, statefulSession, refererUrl,
 }) => {
-  const [session, loading] = useSession();
+  const { data: session, status } = useSession();
+  const loading = status === 'loading';
   const router = useRouter();
   const pathname = refererUrl || '/documents';
   // eslint-disable-next-line no-unused-vars

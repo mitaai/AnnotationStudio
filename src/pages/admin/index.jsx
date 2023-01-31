@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useSession } from 'next-auth/client';
+import { useSession } from 'next-auth/react';
 import {
   Card,
 } from 'react-bootstrap';
@@ -10,7 +10,8 @@ import Layout from '../../components/Layout';
 const AdminView = ({ props, statefulSession }) => {
   const { tab, initAlerts } = props;
   const [key, setKey] = useState(tab || 'dashboard');
-  const [session, loading] = useSession();
+  const { data: session, status } = useSession();
+  const loading = status === 'loading';
   const [alerts, setAlerts] = useState(initAlerts || []);
   return (
     <Layout type="admin" alerts={alerts} statefulSession={statefulSession}>

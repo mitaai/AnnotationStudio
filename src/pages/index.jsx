@@ -5,7 +5,7 @@ import $ from 'jquery';
 import {
   Button, Card,
 } from 'react-bootstrap';
-import { useSession } from 'next-auth/client';
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import Router, { useRouter } from 'next/router';
 
@@ -28,7 +28,7 @@ export default function Home({
   updateSession,
   groupToken,
 }) {
-  const [session, loading] = useSession();
+  const { data: session, status } = useSession();
   const [alerts, setAlerts] = useState(initAlerts || []);
   const windowSize = useWindowSize();
   const [mobileView, setMobileView] = useState();
@@ -39,6 +39,7 @@ export default function Home({
   const [groupMembers, setGroupMembers] = useState({});
   const router = useRouter();
   const newReg = query && query.alert && query.alert === 'completeRegistration';
+  const loading = status === 'loading';
 
   const channelsMinWidth = 1375;
   const ASISChannelPositions = {

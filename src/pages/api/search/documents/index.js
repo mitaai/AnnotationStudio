@@ -1,4 +1,4 @@
-import jwt from 'next-auth/jwt';
+import { getToken } from 'next-auth/jwt';
 import { connectToDatabase } from '../../../../utils/dbUtil';
 import { escapeRegExp } from '../../../../utils/stringUtil';
 
@@ -7,7 +7,7 @@ const secret = process.env.AUTH_SECRET;
 const handler = async (req, res) => {
   const { method } = req;
   if (method === 'POST') {
-    const token = await jwt.getToken({ req, secret });
+    const token = await getToken({ req, secret, raw: false });
     if (token && token.exp > 0) {
       const {
         query, perPage, page, sort = {}, condition,
@@ -16,7 +16,7 @@ const handler = async (req, res) => {
       // eslint-disable-next-line no-useless-escape
       const r = query ? new RegExp(`\.\*${escapeRegExp(query)}\.\*`, 'i') : new RegExp('\.\*', 'i');
 
-      let ownerCondition = condition.permissions === 'mine' ? { owner: token.id } : {};
+      let ownerCondition = condition.permissions === 'mine' ? { owner: token } : {};
       if (condition?.groupOwnersAndManagers) {
         const obj = { $in: condition.groupOwnersAndManagers };
         if (condition.permissions === 'core-documents') {

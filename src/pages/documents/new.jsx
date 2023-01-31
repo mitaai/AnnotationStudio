@@ -1,9 +1,10 @@
-import { useSession } from 'next-auth/client';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import CreateEditDocument from '../../components/CreateEditDocument';
 
 const NewDocument = ({ statefulSession, query, refererUrl }) => {
-  const [session, loading] = useSession();
+  const { data: session, status } = useSession();
+  const loading = status === 'loading';
   const router = useRouter();
   const pathname = refererUrl || '/documents';
   const {

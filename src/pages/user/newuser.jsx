@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import { parseCookies, destroyCookie } from 'nookies';
 import { useState, useEffect } from 'react';
-import { useSession, getSession } from 'next-auth/client';
+import { useSession, getSession } from 'next-auth/react';
 import unfetch from 'unfetch';
 import { Formik } from 'formik';
 import * as yup from 'yup';
@@ -21,7 +21,8 @@ import { appendProtocolIfMissing } from '../../utils/fetchUtil';
 const NewUser = ({
   groupId, ans_grouptoken, updateSession, statefulSession,
 }) => {
-  const [session, loading] = useSession();
+  const { data: session, status } = useSession();
+  const loading = status === 'loading';
   const [pageLoading, setPageLoading] = useState(true);
 
   useEffect(() => {

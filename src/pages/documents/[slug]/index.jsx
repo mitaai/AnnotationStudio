@@ -4,7 +4,7 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-restricted-syntax */
 import { useState, useEffect, useRef } from 'react';
-import { useSession } from 'next-auth/client';
+import { useSession } from 'next-auth/react';
 import $ from 'jquery';
 import {
   Modal,
@@ -124,7 +124,8 @@ const DocumentPage = ({
   const [showCannotAnnotateDocumentToast, setShowCannotAnnotateDocumentToast] = useState(false);
   const [showMaxedAnnotationLengthToast, setShowMaxedAnnotationLengthToast] = useState();
 
-  const [session, loading] = useSession();
+  const { data: session, status } = useSession();
+  const loading = status === 'loading';
   // interesection between user's groups and groups the document is shared to
   const [groupIntersection, setGroupIntersection] = useState();
   // other users this user can share annotations with, generated from groupIntersection

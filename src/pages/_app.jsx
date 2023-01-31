@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import { useState } from 'react';
-import { Provider } from 'next-auth/client';
+import { SessionProvider } from 'next-auth/react';
 import Router from 'next/router';
 import NProgress from 'nprogress';
 import 'nprogress/nprogress.css';
@@ -18,8 +18,8 @@ Router.events.on('routeChangeError', () => NProgress.done());
 export default function AnnotationStudio({ Component, pageProps }) {
   const [session, setSession] = useState(pageProps.session);
   return (
-    <Provider session={pageProps.session}>
+    <SessionProvider session={pageProps.session}>
       <Component {...pageProps} statefulSession={session} updateSession={setSession} />
-    </Provider>
+    </SessionProvider>
   );
 }

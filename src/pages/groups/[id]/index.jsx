@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
-import { useSession } from 'next-auth/client';
+import { useSession } from 'next-auth/react';
 import Router from 'next/router';
 import $ from 'jquery';
 import {
@@ -54,7 +54,8 @@ const EditGroup = ({
   statefulSession,
 }) => {
   // eslint-disable-next-line no-unused-vars
-  const [session, loading] = useSession();
+  const { data: session, status } = useSession();
+  const loading = status === 'loading';
   const windowSize = useWindowSize();
   const [alerts, setAlerts] = useState(initAlerts || []);
   const [canEditGroup, setCanEditGroup] = useState();

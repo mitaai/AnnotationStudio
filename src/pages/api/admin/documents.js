@@ -1,5 +1,5 @@
 import { ObjectID } from 'mongodb';
-import jwt from 'next-auth/jwt';
+import { getToken } from 'next-auth/jwt';
 import { connectToDatabase } from '../../../utils/dbUtil';
 
 const secret = process.env.AUTH_SECRET;
@@ -10,12 +10,12 @@ const handler = async (req, res) => {
     text: 0,
   };
   if (method === 'GET') {
-    const token = await jwt.getToken({ req, secret });
+    const token = await getToken({ req, secret, raw: false });
     if (token && token.exp > 0) {
       const { db } = await connectToDatabase();
       const userObj = await db
         .collection('users')
-        .findOne({ _id: ObjectID(token.id) });
+        .findOne({ _id: ObjectID(token.sub) });
       const { role } = userObj;
       if (role === 'admin') {
         const { query } = req;
