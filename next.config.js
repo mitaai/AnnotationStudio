@@ -3,7 +3,6 @@ module.exports = {
     config.externals.push('mongodb-client-encryption');
     return config;
   },
-  target: 'serverless',
   env: {
     ADMIN_EMAIL: process.env.ADMIN_EMAIL,
     AUTH_SECRET: process.env.AUTH_SECRET,
