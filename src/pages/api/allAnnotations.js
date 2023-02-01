@@ -53,7 +53,7 @@ const handler = async (req, res) => {
         // range,
       } = req.body;
       if (userId) {
-        if (userId === token) {
+        if (userId === token.sub) {
           const { db } = await connectToDatabase();
           const condition = {
             $or: [
