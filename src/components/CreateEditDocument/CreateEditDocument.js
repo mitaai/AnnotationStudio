@@ -826,8 +826,8 @@ const CreateEditDocument = ({
               onClick={() => {
                 setSavingDocument(true);
                 createDocument()
-                  .then((res) => {
-                    onSave({ slug: res.ops[0].slug });
+                  .then(({ slug }) => {
+                    onSave({ slug });
                   })
                   .catch((err) => {
                     setErrors((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);

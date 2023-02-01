@@ -55,6 +55,7 @@ import {
   updateOutlineData,
   deleteOutline,
   exportDocumentToAnnotationStudio,
+  getOutlineById,
 } from '../../utils/outlineUtil';
 import NewPlusButton from '../NewPlusButton';
 
@@ -1001,8 +1002,9 @@ export default function AnnotationsChannel({
   const createNewOutline = async () => {
     setCreatingOutline(true);
     await createOutline({ name: newOutlineName, document: documentInitialValue })
-      .then(async (newOutline) => {
-        const newOutlines = DeepCopyObj(outlines)
+      .then(async (res) => {
+        await getOutlineById(res.insertedId).then((newOutline) => {
+          const newOutlines = DeepCopyObj(outlines)
           .concat([newOutline])
           .sort(byDateUpdatedAt);
         // saving changes to outlines
@@ -1017,8 +1019,12 @@ export default function AnnotationsChannel({
         // closing modal and stopping loading ui
         setCreatingOutline();
         setShowNewOutlineModal();
+        }).catch(() => {
+          setAlerts([{ text: 'Error opening new outline. Please refresh page and try again', variant: 'danger' }]);
+        });
       })
-      .catch(() => {
+      .catch((err) => {
+        setAlerts([{ text: 'Error creating outline. Please refresh page and try again', variant: 'danger' }]);
         setCreatingOutline();
         setShowNewOutlineModal();
       });

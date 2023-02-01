@@ -18,7 +18,22 @@ const createOutline = async ({ name, document }) => {
   });
   if (res.status === 200) {
     const result = await res.json();
-    return Promise.resolve(result.ops[0]);
+    return Promise.resolve(result);
+  }
+  return Promise.reject(Error(`Unable to create idea space: error ${res.status} received from server`));
+};
+
+const getOutlineById = async (id) => {
+  const url = `/api/outline/${id}`;
+  const res = await unfetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (res.status === 200) {
+    const result = await res.json();
+    return Promise.resolve(result);
   }
   return Promise.reject(Error(`Unable to create idea space: error ${res.status} received from server`));
 };
@@ -111,6 +126,7 @@ const exportDocumentToAnnotationStudio = async ({ author = '', composition, call
 export {
   createOutline,
   getAllOutlines,
+  getOutlineById,
   updateOutlineData,
   deleteOutline,
   exportDocumentToAnnotationStudio,

@@ -14,7 +14,22 @@ const createIdeaSpace = async ({ name, annotationIds = {} }) => {
   });
   if (res.status === 200) {
     const result = await res.json();
-    return Promise.resolve(result.ops[0]);
+    return Promise.resolve(result);
+  }
+  return Promise.reject(Error(`Unable to create idea space: error ${res.status} received from server`));
+};
+
+const getIdeaSpaceById = async (id) => {
+  const url = `/api/ideaspace/${id}`;
+  const res = await unfetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (res.status === 200) {
+    const result = await res.json();
+    return Promise.resolve(result);
   }
   return Promise.reject(Error(`Unable to create idea space: error ${res.status} received from server`));
 };
@@ -71,6 +86,7 @@ const updateIdeaSpaceData = async ({ id, annotationIds, name }) => {
 export {
   createIdeaSpace,
   getAllIdeaSpaces,
+  getIdeaSpaceById,
   deleteIdeaSpace,
   updateIdeaSpaceData,
 };

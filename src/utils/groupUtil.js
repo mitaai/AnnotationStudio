@@ -261,6 +261,17 @@ const renameGroup = async (group, newName) => {
   } return Promise.reject(Error(`Unable to update user: error ${res.status} received from server`));
 };
 
+const getInviteTokenById = async (id) => {
+  const url = `/api/invite/id/${id}`;
+  const res = await unfetch(url, {
+    method: 'GET',
+  });
+  if (res.status === 200) {
+    const token = await res.json();
+    return Promise.resolve(token);
+  } return Promise.reject(Error(`Unable to get invite token: error ${res.status} received from server`));
+};
+
 const generateInviteToken = async (group) => {
   const { id } = group;
   const url = '/api/invite';
@@ -273,23 +284,26 @@ const generateInviteToken = async (group) => {
     },
   });
   if (res.status === 200) {
-    const response = await res.json();
-    if (!response.ops[0].token) {
-      return Promise.reject(Error(`Unable to add token to group: ${JSON.stringify(response)}`));
-    }
-    const groupUrl = `/api/group/${id}`;
-    const groupBody = { inviteToken: response.ops[0].token };
-    const groupRes = await unfetch(groupUrl, {
-      method: 'PATCH',
-      body: JSON.stringify(groupBody),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    if (groupRes.status === 200) {
-      const groupResponse = await groupRes.json();
-      return Promise.resolve(groupResponse);
-    } return Promise.reject(Error(`Unable to add token to group: error ${res.status} received from server`));
+    const { insertedId } = await res.json();
+    const tokenResult = await getInviteTokenById(insertedId)
+    if (tokenResult.token) {
+      const groupUrl = `/api/group/${id}`;
+      const groupBody = { inviteToken: tokenResult.token };
+      const groupRes = await unfetch(groupUrl, {
+        method: 'PATCH',
+        body: JSON.stringify(groupBody),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+  
+      if (groupRes.status === 200) {
+        const groupResponse = await groupRes.json();
+        return Promise.resolve(groupResponse);
+      } return Promise.reject(Error(`Unable to add token to group: error ${res.status} received from server`));
+    } return Promise.reject(tokenResult)
+    
+    
   } return Promise.reject(Error(`Unable to generate token: error ${res.status} received from server`));
 };
 
@@ -404,6 +418,7 @@ export {
   deleteGroup,
   deleteGroupById,
   deleteInviteToken,
+  getInviteTokenById,
   generateInviteToken,
   getGroupById,
   prefetchGroupById,
