@@ -127,7 +127,7 @@ const handler = async (req, res) => {
           });
         }
       } else if (userId) {
-        if (userId === token) {
+        if (userId === token.sub) {
           const { db } = await connectToDatabase();
           const condition = { 'creator.id': userId };
           if (limit) {
@@ -209,7 +209,7 @@ const handler = async (req, res) => {
         const { role } = userObj;
         let findCondition = {
           'target.document.slug': documentToUpdate.slug,
-          'target.document.owner.id': token,
+          'target.document.owner.id': token.sub,
         };
         if (role === 'admin') {
           findCondition = { 'target.document.slug': documentToUpdate.slug };
