@@ -15,7 +15,7 @@ const handler = async (req, res) => {
       affiliation,
     } = req.body || {};
     if (firstName && lastName && email && affiliation) {
-      const token = await getToken({ req, secret, raw: false });
+      const token = await getToken({ req, secret });
       if (token && token.exp > 0) {
         const { db } = await connectToDatabase();
         const createdAt = new Date(Date.now());

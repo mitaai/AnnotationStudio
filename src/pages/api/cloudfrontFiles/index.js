@@ -9,7 +9,7 @@ const secret = process.env.AUTH_SECRET;
 const handler = async (req, res) => {
   const { method } = req;
   if (method === 'DELETE') {
-    const token = await getToken({ req, secret, raw: false });
+    const token = await getToken({ req, secret });
     if (token && token.exp > 0) {
       const {
         role,
@@ -22,7 +22,7 @@ const handler = async (req, res) => {
       } = req.body;
       const { db } = await connectToDatabase();
       let hasAccessToDelete = false;
-      if (noOwner || token.sub === ownerId || role === 'admin') {
+      if (noOwner || ownerId === token.sub || role === 'admin') {
         hasAccessToDelete = true;
       } else {
         const userObj = await db.collection('users').findOne({ _id: ObjectID(token.sub) });

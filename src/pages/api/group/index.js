@@ -7,13 +7,13 @@ const handler = async (req, res) => {
   const { method } = req;
   if (method === 'POST') {
     if (req.body.name) {
-      const token = await getToken({ req, secret, raw: false });
+      const token = await getToken({ req, secret });
       if (token && token.exp > 0) {
         const createdAt = new Date(Date.now());
         const updatedAt = createdAt;
         const { name, ownerName } = req.body;
         const members = [{
-          id: token,
+          id: token.sub,
           name: ownerName || token.name,
           email: token.email,
           role: 'owner',

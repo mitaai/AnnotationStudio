@@ -6,7 +6,7 @@ const secret = process.env.AUTH_SECRET;
 const handler = async (req, res) => {
   const { method } = req;
   if (method === 'POST') {
-    const token = await getToken({ req, secret, raw: false });
+    const token = await getToken({ req, secret });
     if (token && token.exp > 0) {
       if (req.body.name && req.body.text) {
         sgMail.setApiKey(process.env.EMAIL_SERVER_PASSWORD);

@@ -6,7 +6,7 @@ const secret = process.env.AUTH_SECRET;
 const handler = async (req, res) => {
   const { method } = req;
   if (method === 'POST') {
-    const token = await getToken({ req, secret, raw: false });
+    const token = await getToken({ req, secret });
     if (token && token.exp > 0) {
       const dateCreated = new Date(Date.now());
       const {
@@ -22,7 +22,7 @@ const handler = async (req, res) => {
           .collection('outlines')
           .insertOne(
             {
-              owner: token,
+              owner: token.sub,
               createdAt: dateCreated,
               updatedAt: dateCreated,
               name,
@@ -33,10 +33,10 @@ const handler = async (req, res) => {
       }
     } else res.status(403).end('Invalid or expired token');
   } else if (method === 'GET') {
-    const token = await getToken({ req, secret, raw: false });
+    const token = await getToken({ req, secret });
     if (token && token.exp > 0) {
       const { db } = await connectToDatabase();
-      const condition = { owner: token };
+      const condition = { owner: token.sub };
       const arr = await db
         .collection('outlines')
         .find(condition)

@@ -7,7 +7,7 @@ const secret = process.env.AUTH_SECRET;
 const handler = async (req, res) => {
   const { method } = req;
   if (method === 'GET') {
-    const token = await getToken({ req, secret, raw: false });
+    const token = await getToken({ req, secret });
     if (token && token.exp > 0) {
       const { db } = await connectToDatabase();
       const userObj = await db
@@ -17,7 +17,7 @@ const handler = async (req, res) => {
         ? userObj.groups.map((group) => group.id)
         : [];
       const findCondition = { _id: ObjectID(req.query.id) };
-      if (userObj.role !== 'admin') findCondition.$or = [{ groups: { $in: userGroups } }, { owner: token }];
+      if (userObj.role !== 'admin') findCondition.$or = [{ groups: { $in: userGroups } }, { owner: token.sub }];
       const doc = await db
         .collection('documents')
         .find(findCondition)
@@ -97,7 +97,7 @@ const handler = async (req, res) => {
       } else res.status(404).end('Not Found');
     } else res.status(403).end('Invalid or expired token');
   } else if (method === 'PATCH') {
-    const token = await getToken({ req, secret, raw: false });
+    const token = await getToken({ req, secret });
     if (token && token.exp > 0) {
       const {
         title,
@@ -188,7 +188,7 @@ const handler = async (req, res) => {
         .collection('users')
         .findOne({ _id: ObjectID(token.sub) });
       const findCondition = { _id: ObjectID(req.query.id) };
-      if (userObj.role !== 'admin') findCondition.owner = token;
+      if (userObj.role !== 'admin') findCondition.owner = token.sub;
       const doc = await db
         .collection('documents')
         .findOneAndUpdate(
@@ -204,14 +204,14 @@ const handler = async (req, res) => {
       res.status(200).json(doc);
     } else res.status(403).end('Invalid or expired token');
   } else if (method === 'DELETE') {
-    const token = await getToken({ req, secret, raw: false });
+    const token = await getToken({ req, secret });
     if (token && token.exp > 0) {
       const { db } = await connectToDatabase();
       const userObj = await db
         .collection('users')
         .findOne({ _id: ObjectID(token.sub) });
       const findCondition = { _id: ObjectID(req.query.id) };
-      if (userObj.role !== 'admin') findCondition.owner = token;
+      if (userObj.role !== 'admin') findCondition.owner = token.sub;
       const doc = await db
         .collection('documents')
         .findOneAndDelete(findCondition);

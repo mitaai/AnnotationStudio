@@ -79,7 +79,8 @@ const options = {
         user,
       } = session;
       const auth_time = user?.id || token?.sub ? Number(new Date()) : undefined;
-      return Promise.resolve({ ...token, auth_time });
+      const name = user?.name;
+      return Promise.resolve({ ...token, auth_time, name });
     },
 
     session: async (args) => {

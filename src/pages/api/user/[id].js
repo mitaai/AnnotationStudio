@@ -6,7 +6,7 @@ const secret = process.env.AUTH_SECRET;
 
 const handler = async (req, res) => {
   const { method } = req;
-  const token = await getToken({ req, secret, raw: false });
+  const token = await getToken({ req, secret });
   if (method === 'GET') {
     const { db } = await connectToDatabase();
     if (ObjectID.isValid(req.query.id)) {

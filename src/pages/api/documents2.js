@@ -9,7 +9,7 @@ const handler = async (req, res) => {
     text: 0,
   };
   if (method === 'POST') {
-    const token = await getToken({ req, secret, raw: false });
+    const token = await getToken({ req, secret });
     if (token && token.exp > 0) {
       const {
         page,

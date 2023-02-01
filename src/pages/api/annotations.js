@@ -8,7 +8,7 @@ const secret = process.env.AUTH_SECRET;
 const handler = async (req, res) => {
   const { method } = req;
   if (method === 'POST') {
-    const token = await getToken({ req, secret, raw: false });
+    const token = await getToken({ req, secret });
     if (token && token.exp > 0) {
       const {
         slug,
@@ -127,7 +127,7 @@ const handler = async (req, res) => {
           });
         }
       } else if (userId) {
-        if (userId === token) {
+        if (userId === token.sub) {
           const { db } = await connectToDatabase();
           const condition = { 'creator.id': userId };
           if (limit) {
@@ -162,7 +162,7 @@ const handler = async (req, res) => {
         const condition = {
           'permissions.private': false,
           $or: [
-            { 'permissions.sharedTo': { $in: [token] } },
+            { 'permissions.sharedTo': { $in: [token.sub] } },
             { 'permissions.groups': { $in: groupIds } },
           ],
         };
@@ -200,7 +200,7 @@ const handler = async (req, res) => {
       const { documentToUpdate } = req.body;
       documentToUpdate.text = undefined;
       documentToUpdate.textSlate = undefined;
-      const token = await getToken({ req, secret, raw: false });
+      const token = await getToken({ req, secret });
       if (token && token.exp > 0) {
         const { db } = await connectToDatabase();
         const userObj = await db
@@ -209,7 +209,7 @@ const handler = async (req, res) => {
         const { role } = userObj;
         let findCondition = {
           'target.document.slug': documentToUpdate.slug,
-          'target.document.owner.id': token,
+          'target.document.owner.id': token.sub,
         };
         if (role === 'admin') {
           findCondition = { 'target.document.slug': documentToUpdate.slug };
@@ -231,14 +231,14 @@ const handler = async (req, res) => {
       } else res.status(403).end('Invalid or expired token');
     } else if (req.body.mode === 'userProfile' && req.body.creatorToUpdate) {
       const { creatorToUpdate } = req.body;
-      const token = await getToken({ req, secret, raw: false });
+      const token = await getToken({ req, secret });
       if (token && token.exp > 0) {
         const { db } = await connectToDatabase();
         const userObj = await db
           .collection('users')
           .findOne({ _id: ObjectID(token.sub) });
         const { role } = userObj;
-        if (role !== 'admin' && creatorToUpdate.id !== token) {
+        if (role !== 'admin' && creatorToUpdate.id !== token.sub) {
           res.status(403).end('Not authorized');
         } else {
           const findCondition = { 'creator.id': creatorToUpdate.id };
@@ -260,14 +260,14 @@ const handler = async (req, res) => {
       } else res.status(403).end('Invalid or expired token');
     } else if (req.body.mode === 'reassign' && req.body.oldCreatorId && req.body.newCreator) {
       const { oldCreatorId, newCreator } = req.body;
-      const token = await getToken({ req, secret, raw: false });
+      const token = await getToken({ req, secret });
       if (token && token.exp > 0) {
         const { db } = await connectToDatabase();
         const userObj = await db
           .collection('users')
           .findOne({ _id: ObjectID(token.sub) });
         const { role } = userObj;
-        if (role !== 'admin' && oldCreatorId !== token) {
+        if (role !== 'admin' && oldCreatorId !== token.sub) {
           res.status(403).end('Not authorized');
         } else {
           const findCondition = { 'creator.id': oldCreatorId };
