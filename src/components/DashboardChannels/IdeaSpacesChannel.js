@@ -28,6 +28,7 @@ export default function IdeaSpacesChannel({
   setAnnotationsBeingDragged,
   toAnnotationsTile,
   allAnnotations,
+  setAlerts,
 }) {
   const [ideaspaces, setIdeaspaces] = useState([]);
   const [openIdeaSpaceDragEnter, setOpenIdeaSpaceDragEnter] = useState();
@@ -353,6 +354,7 @@ export default function IdeaSpacesChannel({
         setShowNewIdeaSpaceModal();
       })
       .catch(() => {
+        setAlerts([{ text: 'Error creating Idea Space. Please refresh page and try again', variant: 'danger' }]);
         setCreatingIdeaSpace();
         setShowNewIdeaSpaceModal();
       });

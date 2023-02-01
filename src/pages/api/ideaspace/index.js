@@ -1,4 +1,5 @@
 import { getToken } from 'next-auth/jwt';
+import { ObjectId } from 'mongodb';
 import { connectToDatabase } from '../../../utils/dbUtil';
 
 const secret = process.env.AUTH_SECRET;
@@ -18,7 +19,7 @@ const handler = async (req, res) => {
         res.status(400).end('Missing idea space name');
       } else {
         const { db } = await connectToDatabase();
-        const doc = await db
+        const { insertedId } = await db
           .collection('ideaspaces')
           .insertOne(
             {
@@ -29,6 +30,12 @@ const handler = async (req, res) => {
               annotationIds,
             },
           );
+          
+        const condition = { _id: ObjectId(insertedId) };
+        const doc = await db
+        .collection('ideaspaces')
+        .findOne(condition)
+
         res.status(200).json(doc);
       }
     } else res.status(403).end('Invalid or expired token');

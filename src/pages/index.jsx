@@ -432,6 +432,7 @@ export default function Home({
               setAnnotationsBeingDragged={setAnnotationsBeingDragged}
               toAnnotationsTile={toAnnotationsTile}
               allAnnotations={allAnnotations}
+              setAlerts={setAlerts}
             />
           </div>
         </div>

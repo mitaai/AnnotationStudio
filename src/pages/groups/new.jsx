@@ -40,12 +40,12 @@ const NewGroup = ({ statefulSession }) => {
       const group = {
         id: result.insertedId,
         name,
-        ownerName: session.user.name || result.ops[0].members[0].name,
+        ownerName: session.user.name,
         memberCount: 1,
         role: 'owner',
       };
       const user = {
-        id: result.ops[0].members[0].id,
+        id: session.user.id,
       };
       return addGroupToUser(group, user).then(() => {
         Router.push({

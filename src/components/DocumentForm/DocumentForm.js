@@ -259,7 +259,7 @@ const DocumentForm = ({
     });
     if (res.status === 200) {
       const result = await res.json();
-      return Promise.resolve(result);
+      return Promise.resolve({ slug });
     } if (res.status === 413) {
       return Promise.reject(Error(
         'Sorry, this file is too large to use on Annotation Studio. '
@@ -287,10 +287,9 @@ const DocumentForm = ({
       },
     });
     if (res.status === 200) {
-      const result = await res.json();
       const documentToUpdate = { ...valuesWithSerializedText, slug };
       if (valuesWithSerializedText.state === 'draft') {
-        return Promise.resolve(result);
+        return Promise.resolve({ slug });
       } return Promise.resolve(await updateAllAnnotationsOnDocument(documentToUpdate));
     }
     return Promise.reject(Error(`Unable to edit document: error ${res.status} received from server`));
@@ -376,6 +375,7 @@ const DocumentForm = ({
           const submitFunction = mode === 'edit' ? editDocument : createDocument;
           submitFunction(values)
             .then((result) => {
+              console.log('result: ', result);
               const { slug } = mode === 'edit' ? data : result.ops[0];
               setErrors([]);
               if (exportDocument || mode !== 'edit') {
