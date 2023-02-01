@@ -8,7 +8,7 @@ const secret = process.env.AUTH_SECRET;
 const handler = async (req, res) => {
   const { method } = req;
   if (method === 'POST') {
-    const token = await getToken({ req, secret, raw: false });
+    const token = await getToken({ req, secret });
     if (token && token.exp > 0) {
       const {
         slug,
@@ -200,7 +200,7 @@ const handler = async (req, res) => {
       const { documentToUpdate } = req.body;
       documentToUpdate.text = undefined;
       documentToUpdate.textSlate = undefined;
-      const token = await getToken({ req, secret, raw: false });
+      const token = await getToken({ req, secret });
       if (token && token.exp > 0) {
         const { db } = await connectToDatabase();
         const userObj = await db
@@ -231,7 +231,7 @@ const handler = async (req, res) => {
       } else res.status(403).end('Invalid or expired token');
     } else if (req.body.mode === 'userProfile' && req.body.creatorToUpdate) {
       const { creatorToUpdate } = req.body;
-      const token = await getToken({ req, secret, raw: false });
+      const token = await getToken({ req, secret });
       if (token && token.exp > 0) {
         const { db } = await connectToDatabase();
         const userObj = await db
@@ -260,7 +260,7 @@ const handler = async (req, res) => {
       } else res.status(403).end('Invalid or expired token');
     } else if (req.body.mode === 'reassign' && req.body.oldCreatorId && req.body.newCreator) {
       const { oldCreatorId, newCreator } = req.body;
-      const token = await getToken({ req, secret, raw: false });
+      const token = await getToken({ req, secret });
       if (token && token.exp > 0) {
         const { db } = await connectToDatabase();
         const userObj = await db

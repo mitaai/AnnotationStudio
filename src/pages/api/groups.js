@@ -7,7 +7,7 @@ const secret = process.env.AUTH_SECRET;
 const handler = async (req, res) => {
   const { method } = req;
   if (method === 'POST') {
-    const token = await getToken({ req, secret, raw: false });
+    const token = await getToken({ req, secret });
     if (token && token.exp > 0) {
       const { groupIds } = req.body;
       if (groupIds) {
@@ -17,7 +17,7 @@ const handler = async (req, res) => {
           .findOne({ _id: ObjectID(token.sub) });
         const groupObjectIds = groupIds.map((id) => ObjectID(id));
         const findCondition = { _id: { $in: groupObjectIds } };
-        if (userObj.role !== 'admin') findCondition['members.id'] = token;
+        if (userObj.role !== 'admin') findCondition['members.id'] = token.sub;
         const projection = { _id: 1, name: 1 };
         const arr = await db
           .collection('groups')

@@ -7,7 +7,7 @@ const secret = process.env.AUTH_SECRET;
 const handler = async (req, res) => {
   const { method } = req;
   if (method === 'PATCH') {
-    const token = await getToken({ req, secret, raw: false });
+    const token = await getToken({ req, secret });
     if (token && token.exp > 0) {
       const { db } = await connectToDatabase();
       const userObj = await db
@@ -39,7 +39,7 @@ const handler = async (req, res) => {
       } else res.status(403).end('Unauthorized');
     } else res.status(403).end('Invalid or expired token');
   } else if (method === 'POST') {
-    const token = await getToken({ req, secret, raw: false });
+    const token = await getToken({ req, secret });
     if (token && token.exp > 0) {
       const { userIds } = req.body;
       if (userIds) {

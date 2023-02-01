@@ -7,7 +7,7 @@ const secret = process.env.AUTH_SECRET;
 const handler = async (req, res) => {
   const { method } = req;
   if (method === 'DELETE') {
-    const token = await getToken({ req, secret, raw: false });
+    const token = await getToken({ req, secret });
     if (token && token.exp > 0) {
       const {
         id,
@@ -19,7 +19,7 @@ const handler = async (req, res) => {
       res.status(200).json(doc);
     } else res.status(403).end('Invalid or expired token');
   } else if (method === 'PATCH') {
-    const token = await getToken({ req, secret, raw: false });
+    const token = await getToken({ req, secret });
     if (token && token.exp > 0) {
       const {
         name,
@@ -35,7 +35,7 @@ const handler = async (req, res) => {
       }
 
       const { db } = await connectToDatabase();
-      const findCondition = { _id: ObjectID(req.query.id), owner: token };
+      const findCondition = { _id: ObjectID(req.query.id), owner: token.sub };
       const doc = await db
         .collection('outlines')
         .findOneAndUpdate(

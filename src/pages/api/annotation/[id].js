@@ -7,7 +7,7 @@ const secret = process.env.AUTH_SECRET;
 const handler = async (req, res) => {
   const { method } = req;
   if (method === 'GET') {
-    const token = await getToken({ req, secret, raw: false });
+    const token = await getToken({ req, secret });
     if (token && token.exp > 0) {
       const { db } = await connectToDatabase();
       const doc = await db
@@ -41,14 +41,14 @@ const handler = async (req, res) => {
       } else res.status(404).end('Not Found');
     } else res.status(403).end('Invalid or expired token');
   } else if (method === 'PATCH') {
-    const token = await getToken({ req, secret, raw: false });
+    const token = await getToken({ req, secret });
     if (token && token.exp > 0) {
       const { db } = await connectToDatabase();
       const userObj = await db
         .collection('users')
         .findOne({ _id: ObjectID(token.sub) });
       const { role } = userObj;
-      let findCondition = { _id: ObjectID(req.query.id), 'creator.id': token };
+      let findCondition = { _id: ObjectID(req.query.id), 'creator.id': token.sub };
       if (role === 'admin') {
         findCondition = { _id: ObjectID(req.query.id) };
       }
@@ -72,14 +72,14 @@ const handler = async (req, res) => {
       } else res.status(400).end('Invalid request body: missing body or permissions');
     } else res.status(403).end('Invalid or expired token');
   } else if (method === 'DELETE') {
-    const token = await getToken({ req, secret, raw: false });
+    const token = await getToken({ req, secret });
     if (token && token.exp > 0) {
       const { db } = await connectToDatabase();
       const userObj = await db
         .collection('users')
         .findOne({ _id: ObjectID(token.sub) });
       const { role } = userObj;
-      let findCondition = { _id: ObjectID(req.query.id), 'creator.id': token };
+      let findCondition = { _id: ObjectID(req.query.id), 'creator.id': token.sub };
       if (role === 'admin') {
         findCondition = { _id: ObjectID(req.query.id) };
       }

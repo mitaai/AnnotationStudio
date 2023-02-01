@@ -7,7 +7,7 @@ const secret = process.env.AUTH_SECRET;
 const handler = async (req, res) => {
   const { method } = req;
   if (method === 'POST') {
-    const token = await getToken({ req, secret, raw: false });
+    const token = await getToken({ req, secret });
     if (token && token.exp > 0) {
       const {
         query, perPage, page, sort = {}, condition,
@@ -16,7 +16,7 @@ const handler = async (req, res) => {
       // eslint-disable-next-line no-useless-escape
       const r = query ? new RegExp(`\.\*${escapeRegExp(query)}\.\*`, 'i') : new RegExp('\.\*', 'i');
 
-      let ownerCondition = condition.permissions === 'mine' ? { owner: token } : {};
+      let ownerCondition = condition.permissions === 'mine' ? { owner: token.sub } : {};
       if (condition?.groupOwnersAndManagers) {
         const obj = { $in: condition.groupOwnersAndManagers };
         if (condition.permissions === 'core-documents') {

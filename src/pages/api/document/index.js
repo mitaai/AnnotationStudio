@@ -7,7 +7,7 @@ const secret = process.env.AUTH_SECRET;
 const handler = async (req, res) => {
   const { method } = req;
   if (method === 'POST') {
-    const token = await getToken({ req, secret, raw: false });
+    const token = await getToken({ req, secret });
     if (token && token.exp > 0) {
       const dateCreated = new Date(Date.now());
       let { groups } = req.body;
@@ -93,7 +93,7 @@ const handler = async (req, res) => {
           .collection('documents')
           .insertOne(
             {
-              owner: token,
+              owner: token.sub,
               createdAt: dateCreated,
               updatedAt: dateCreated,
               text,

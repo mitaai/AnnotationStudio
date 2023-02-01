@@ -7,7 +7,7 @@ const secret = process.env.AUTH_SECRET;
 const handler = async (req, res) => {
   const { method } = req;
   if (method === 'GET') {
-    const token = await getToken({ req, secret, raw: false });
+    const token = await getToken({ req, secret });
     if (token && token.exp > 0) {
       const { db } = await connectToDatabase();
       const userObj = await db
@@ -17,7 +17,7 @@ const handler = async (req, res) => {
         ? userObj.groups.map((group) => group.id)
         : [];
       const findCondition = { slug: req.query.slug };
-      if (userObj.role !== 'admin') findCondition.$or = [{ groups: { $in: userGroups } }, { owner: token }];
+      if (userObj.role !== 'admin') findCondition.$or = [{ groups: { $in: userGroups } }, { owner: token.sub }];
       const doc = await db
         .collection('documents')
         .find(findCondition)

@@ -12,7 +12,7 @@ const handler = async (req, res) => {
       deleteReferenceToText,
     } = req.query;
     if (deleteReferenceToText !== undefined) {
-      const token = await getToken({ req, secret, raw: false });
+      const token = await getToken({ req, secret });
       if (token && token.exp > 0) {
         const { db } = await connectToDatabase();
         const userObj = await db
@@ -43,7 +43,7 @@ const handler = async (req, res) => {
       } else res.status(403).end('Invalid or expired token');
     } else res.status(403).end('Badly Formatted Request');
   } else if (method === 'POST') {
-    const token = await getToken({ req, secret, raw: false });
+    const token = await getToken({ req, secret });
     if (token && token.exp > 0) {
       const {
         userId,

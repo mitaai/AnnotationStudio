@@ -8,7 +8,7 @@ const handler = async (req, res) => {
   if (method === 'POST') {
     if (req.body.body && req.body.permissions && req.body.target) {
       if (req.body.target.document && req.body.target.document.slug) {
-        const token = await getToken({ req, secret, raw: false });
+        const token = await getToken({ req, secret });
         if (token && token.exp > 0) {
           const created = new Date(Date.now());
           const modified = created;
@@ -18,7 +18,7 @@ const handler = async (req, res) => {
           } = req.body;
           if (!body.type) body.type = 'TextualBody';
           if (!body.format) body.format = 'text/html';
-          if (!creator.id) creator.id = token;
+          if (!creator.id) creator.id = token.sub;
           if (!creator.name) creator.name = token.name;
           if (!creator.email) creator.email = token.email;
           const { db } = await connectToDatabase();
