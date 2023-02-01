@@ -162,7 +162,7 @@ const handler = async (req, res) => {
         const condition = {
           'permissions.private': false,
           $or: [
-            { 'permissions.sharedTo': { $in: [token] } },
+            { 'permissions.sharedTo': { $in: [token.sub] } },
             { 'permissions.groups': { $in: groupIds } },
           ],
         };
@@ -238,7 +238,7 @@ const handler = async (req, res) => {
           .collection('users')
           .findOne({ _id: ObjectID(token.sub) });
         const { role } = userObj;
-        if (role !== 'admin' && creatorToUpdate.id !== token) {
+        if (role !== 'admin' && creatorToUpdate.id !== token.sub) {
           res.status(403).end('Not authorized');
         } else {
           const findCondition = { 'creator.id': creatorToUpdate.id };
@@ -267,7 +267,7 @@ const handler = async (req, res) => {
           .collection('users')
           .findOne({ _id: ObjectID(token.sub) });
         const { role } = userObj;
-        if (role !== 'admin' && oldCreatorId !== token) {
+        if (role !== 'admin' && oldCreatorId !== token.sub) {
           res.status(403).end('Not authorized');
         } else {
           const findCondition = { 'creator.id': oldCreatorId };
