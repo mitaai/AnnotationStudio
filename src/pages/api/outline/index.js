@@ -29,7 +29,6 @@ const handler = async (req, res) => {
               document,
             },
           );
-          console.log('doc: ', doc)
         res.status(200).json(doc);
       }
     } else res.status(403).end('Invalid or expired token');

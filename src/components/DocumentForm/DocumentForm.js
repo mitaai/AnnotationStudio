@@ -375,7 +375,7 @@ const DocumentForm = ({
           const submitFunction = mode === 'edit' ? editDocument : createDocument;
           submitFunction(values)
             .then((result) => {
-              console.log('result: ', result);
+              // console.log('result: ', result);
               const { slug } = mode === 'edit' ? data : result.ops[0];
               setErrors([]);
               if (exportDocument || mode !== 'edit') {
