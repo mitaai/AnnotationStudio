@@ -34,6 +34,8 @@ const handler = async (req, res) => {
         updateObj.name = name;
       }
 
+      console.log('updateObj', updateObj)
+
       const { db } = await connectToDatabase();
       const findCondition = { _id: ObjectID(req.query.id), owner: token.sub };
       const doc = await db
@@ -56,7 +58,7 @@ const handler = async (req, res) => {
       const condition = { _id: ObjectID(req.query.id), owner: token.sub };
       const doc = await db
         .collection('ideaspaces')
-        .find(condition);
+        .findOne(condition);
       res.status(200).json(doc);
     } else res.status(403).end('Invalid or expired token');
   } else res.status(405).end(`Method ${method} Not Allowed`);

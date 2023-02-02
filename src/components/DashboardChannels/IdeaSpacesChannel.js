@@ -68,7 +68,7 @@ export default function IdeaSpacesChannel({
       name: ideaspaceName,
     })
       .then(async (res) => {
-        callback(res.value);
+        callback(res);
       })
       .catch(() => {
         setIdeaspaceNameStatus('error');
@@ -88,7 +88,7 @@ export default function IdeaSpacesChannel({
         annotationIds: { ...ideaspace.annotationIds },
       })
         .then(async (res) => {
-          updateIdeaSpaces(res.value);
+          updateIdeaSpaces(ideaspace);
         })
         .catch(() => {
         // pass
@@ -117,12 +117,14 @@ export default function IdeaSpacesChannel({
       - numberOfNewAnnotationIds;
     setAnnotationsBeingDragged();
     if (numberOfNewAnnotationIds > 0) {
+      const newAnnotationsIds = { ...newAnnotationIds, ...annotationIds };
+
       await updateIdeaSpaceData({
         id: openIdeaSpaceId,
-        annotationIds: { ...newAnnotationIds, ...annotationIds },
+        annotationIds: newAnnotationsIds,
       })
         .then(async (res) => {
-          updateIdeaSpaces(res.value);
+          updateIdeaSpaces({ ...ideaspace, annotationIds: newAnnotationsIds });
           setStatus({
             numberOfNewAnnotations: numberOfNewAnnotationIds,
             numberOfExistingAnnotations: numberOfExistingAnnotationIds,
@@ -130,6 +132,7 @@ export default function IdeaSpacesChannel({
           });
         })
         .catch(() => {
+          console.log('error');
         // pass
         });
     } else {
@@ -392,8 +395,8 @@ export default function IdeaSpacesChannel({
   const updateIdeaSpaceName = (ideaspaceName) => {
     setIdeaspaceNameStatus('saving');
     setOpenIdeaSpaceName(ideaspaceName);
-    saveIdeaSpaceNameDebounced(openIdeaSpaceId, ideaspaceName, (ideaspace) => {
-      updateIdeaSpaces(ideaspace);
+    saveIdeaSpaceNameDebounced(openIdeaSpaceId, ideaspaceName, ({ value: originalIdeaSpace }) => {
+      updateIdeaSpaces({ ...originalIdeaSpace, name: ideaspaceName });
       setIdeaspaceNameStatus('saved');
     });
   };

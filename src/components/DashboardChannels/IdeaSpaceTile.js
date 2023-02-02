@@ -51,12 +51,13 @@ export default function IdeaSpaceTile({
       - numberOfNewAnnotationIds;
     setAnnotationsBeingDragged();
     if (numberOfNewAnnotationIds > 0) {
+      const newAnnotationsIds = { ...newAnnotationIds, ...annotationIds };
       await updateIdeaSpaceData({
         id,
-        annotationIds: { ...newAnnotationIds, ...annotationIds },
+        annotationIds: newAnnotationsIds,
       })
-        .then(async (res) => {
-          updateIdeaSpace(res.value);
+        .then(async ({ value: originalIdeaSpace }) => {
+          updateIdeaSpace({ ...originalIdeaSpace, annotationIds: newAnnotationsIds });
           setStatus({
             numberOfNewAnnotations: numberOfNewAnnotationIds,
             numberOfExistingAnnotations: numberOfExistingAnnotationIds,
