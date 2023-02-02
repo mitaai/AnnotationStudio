@@ -204,8 +204,10 @@ export default function AnnotationsChannel({
       name,
       document,
     })
-      .then(async (res) => {
-        callback(res.value);
+      .then(async ({ value: originalOutline }) => {
+        const n = name || originalOutline.name;
+        const d = document || originalOutline.document;
+        callback({ ...originalOutline, name: n, document: d });
       })
       .catch(() => {
         setOutlineStatus('error');
