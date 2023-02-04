@@ -932,8 +932,8 @@ const EditGroup = ({
                           ...addRegisteredUserState.spinner,
                         }}
                         onClick={userData ? () => {
-                          addUserToGroup(group, userData.email).then((data) => {
-                            const { _id, name, email = userData.email } = data.slice(-1)[0].value;
+                          addUserToGroup(group, userData.email).then(({ user }) => {
+                            const { _id, name, email } = user;
                             const member = {
                               name, email, id: _id, role: 'member',
                             };

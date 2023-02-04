@@ -5,17 +5,13 @@ import { getAllDocumentsByGroup } from './docUtil';
 import { getUserByEmail } from './userUtil';
 import { appendProtocolIfMissing } from './fetchUtil';
 
-const updateMemberCounts = async (group) => {
-  const { members } = group;
-  // eslint-disable-next-line no-underscore-dangle
-  const updatedGroupId = group._id;
-  const memberCount = members.length;
+const updateMemberCounts = async ({ members, groupId }) => {
   return Promise.all(
     members.map(async (member) => {
       const url = `/api/user/${member.id}`;
       const body = {
-        updatedGroupId,
-        memberCount,
+        updatedGroupId: groupId,
+        memberCount: members.length,
       };
       const res = await unfetch(url, {
         method: 'PATCH',
@@ -91,19 +87,25 @@ const addUserToGroup = async (
     });
 
     if (res.status === 200) {
-      const response = await res.json();
-      const memberCount = response.value.members.length;
-      const ownerName = response.value.members.filter((member) => member.role === 'owner')[0].name;
+      const { value: originalGroup } = await res.json();
+      const memberCount = originalGroup.members.length + 1;
+      const ownerName = originalGroup.members.filter((member) => member.role === 'owner')[0].name;
       const groupToAdd = {
         id: group.id,
-        name: response.value.name,
+        name: originalGroup.name,
         memberCount,
         ownerName,
         role: 'member',
       };
+
+      const members = originalGroup.members.concat({ id: user.id, name: user.name, email: user.email, role: 'member'})
+
       return addGroupToUser(groupToAdd, user, false)
-        .then(() => updateMemberCounts(response.value))
-        .catch((err) => Promise.reject(err));
+        .then(async () => {
+
+          await updateMemberCounts({ members, groupId: originalGroup._id });
+          return { user, group: { ...originalGroup, members } };
+        }).catch((err) => Promise.reject(err));
     } return Promise.reject(Error(`Unable to add user to group: error ${res.status} received from server`));
   } return Promise.reject(Error(`Unable to add user with email ${email}: ${error}.`));
 }).catch((err) => Promise.reject(err));
@@ -138,7 +140,9 @@ const removeUserFromGroup = async (group, user) => {
   });
   if (res.status === 200) {
     const response = await res.json();
-    return removeGroupFromUser(group, user).then(updateMemberCounts(response.value));
+    const members = response.value.members.filter(({ id }) => id !== user.id)
+    const groupId = response.value._id;
+    return removeGroupFromUser(group, user).then(updateMemberCounts({ members, groupId }));
   } return Promise.reject(Error(`Unable to remove user from group: error ${res.status} received from server`));
 };
 
