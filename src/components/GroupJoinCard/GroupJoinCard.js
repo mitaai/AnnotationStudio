@@ -38,8 +38,7 @@ const GroupJoinCard = ({
                 className="mt-3"
                 variant="outline-primary"
                 onClick={() => {
-                  addUserToGroup({ id: groupId }, session.user.email, token).then((members) => {
-                    const g = members[0].value.groups.find((group) => group.id === groupId);
+                  addUserToGroup({ id: groupId }, session.user.email, token).then(({ group: g }) => {
                     const newGroupSession = {
                       user: {
                         name: session.user.name,
@@ -49,7 +48,7 @@ const GroupJoinCard = ({
                         id: session.user.id,
                         groups: [...session.user.groups, {
                           id: groupId,
-                          memberCount: g.memberCount + 1,
+                          memberCount: g.members.length,
                           name: g.name,
                           ownerName: g.ownerName,
                           role: 'member',
