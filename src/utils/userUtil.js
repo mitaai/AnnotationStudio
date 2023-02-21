@@ -86,7 +86,7 @@ const prefetchUserById = async (id, cookie) => {
 };
 
 const deleteUserById = async (id) => getUserById(id).then(async (user) => {
-  await Promise.all(user.groups.map(async (group) => {
+  await Promise.all((Array.isArray(user.groups) ? user.groups : []).map(async (group) => {
     await removeUserFromGroup(group, { ...user, id })
       .then(async () => {
         if (group.role === 'owner') {

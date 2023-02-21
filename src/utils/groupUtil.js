@@ -64,7 +64,7 @@ const addUserToGroup = async (
   group, email, inviteToken,
 ) => getUserByEmail(email).then(async (user) => {
   let alreadyInGroup = false;
-  alreadyInGroup = user.groups && user.groups.some((userGroup) => (userGroup.id === group.id));
+  alreadyInGroup = Array.isArray(user.groups) && user.groups.some((userGroup) => (userGroup.id === group.id));
   const error = (alreadyInGroup === true) ? 'User is already in group' : undefined;
   if (!error) {
     const url = `/api/group/${group.id}`;
@@ -99,10 +99,9 @@ const addUserToGroup = async (
       };
 
       const members = originalGroup.members.concat({ id: user.id, name: user.name, email: user.email, role: 'member'})
-
+      
       return addGroupToUser(groupToAdd, user, false)
         .then(async () => {
-
           await updateMemberCounts({ members, groupId: originalGroup._id });
           return { user, group: { ...originalGroup, members } };
         }).catch((err) => Promise.reject(err));
@@ -302,8 +301,7 @@ const generateInviteToken = async (group) => {
       });
   
       if (groupRes.status === 200) {
-        const groupResponse = await groupRes.json();
-        return Promise.resolve(groupResponse);
+        return Promise.resolve(groupBody);
       } return Promise.reject(Error(`Unable to add token to group: error ${res.status} received from server`));
     } return Promise.reject(tokenResult)
     
