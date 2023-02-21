@@ -802,8 +802,8 @@ const EditGroup = ({
                           setAlerts((prevState) => [...prevState, { text: 'Link copied to clipboard', variant: 'success' }]);
                         } else {
                           setGeneratingInviteLink(true);
-                          generateInviteToken(group).then((data) => {
-                            const inviteUrl = `${baseUrl}/auth/signin?callbackUrl=${baseUrl}&groupToken=${data.value.inviteToken}`;
+                          generateInviteToken(group).then(({ inviteToken }) => {
+                            const inviteUrl = `${baseUrl}/auth/signin?callbackUrl=${baseUrl}&groupToken=${inviteToken}`;
                             setGeneratedInviteLink(inviteUrl);
                             setGeneratingInviteLink();
                             setAlerts((prevState) => [...prevState, {

@@ -48,7 +48,7 @@ const AdminUserList = (props) => {
             {user.affiliation}
           </td>
           <td style={{ width: '13%' }}>
-            {format(new Date(user.createdAt), 'MM/dd/yyyy')}
+            {format(new Date(user.createdAt || new Date()), 'MM/dd/yyyy')}
           </td>
         </tr>
       </Link>

@@ -165,7 +165,6 @@ export default function GroupsChannel({
 
   useEffect(() => {
     if (!groups) { return; }
-
     const groupIds = groups.map(({ id }) => id);
     getGroupsByGroupIds(groupIds)
       .then((res) => {
