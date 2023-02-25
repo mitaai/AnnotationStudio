@@ -19,6 +19,7 @@ import {
   ChatRightQuoteFill, FileEarmarkFill, Filter, PeopleFill, ShieldLockFill,
 } from 'react-bootstrap-icons';
 import styles from './ISFilterButton.module.scss';
+import { NO_TAG_KEY } from '../../../utils/annotationFilteringUtil';
 
 const ContextAwareToggle = ({
   children, disabled, eventKey, callback,
@@ -147,14 +148,16 @@ export default function ISFilterButton({
     const filterRows2 = [];
     const keys = Object.keys(filters[type]);
     let numberApplied = 0;
+    const noTagText = <span style={{ fontStyle: 'italic' }}>[ no tag ]</span>;
     keys.map((key) => {
       const { name, number, checked } = filters[type][key];
+      const n = name == NO_TAG_KEY ? noTagText : name;
       numberApplied += checked ? 1 : 0;
       if (type === 'annotatedBy' && individualsInSelectedGroups && !individualsInSelectedGroups[key]) {
         filterRows2.push({
           elmnt: <FilterRow
             key={key}
-            text={name}
+            text={n}
             number={number}
             checked={checked}
             toggle={() => toggleFilters(type, { key })}
@@ -165,7 +168,7 @@ export default function ISFilterButton({
         filterRows.push({
           elmnt: <FilterRow
             key={key}
-            text={name}
+            text={n}
             number={number}
             checked={checked}
             toggle={() => toggleFilters(type, { key })}
