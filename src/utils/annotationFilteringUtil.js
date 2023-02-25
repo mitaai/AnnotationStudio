@@ -70,9 +70,21 @@ function annotatedByFilterMatch(email, annotatedByFilter) { // AND FUNCTION
   return annotatedByFilter.length === 0 ? true : annotatedByFilter.includes(email);
 }
 
+const NO_TAG_KEY = '<{[no tag]}>';
+
 function byTagFilterMatch(annosTags, filterTags) { // OR FUNCTION
   if (filterTags.length === 0) {
     return true;
+  }
+
+  if (filterTags.some((t) => t === NO_TAG_KEY)) {
+    if (filterTags.length > 1) {
+      return false;
+    }
+    
+    if (annosTags?.length === 0) {
+      return true;
+    }
   }
 
   if (annosTags === undefined) {
@@ -109,4 +121,5 @@ export {
   byGroupFilterMatch,
   byDocumentFilterMatch,
   byDateCreatedFilterMatch,
+  NO_TAG_KEY,
 };

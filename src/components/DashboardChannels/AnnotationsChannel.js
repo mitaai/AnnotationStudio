@@ -46,6 +46,7 @@ import {
   byGroupFilterMatch,
   byDocumentFilterMatch,
   byDateCreatedFilterMatch,
+  NO_TAG_KEY,
 } from '../../utils/annotationFilteringUtil';
 import ISGroupHeader from '../IdeaSpaceComponents/ISGroupHeader/ISGroupHeader';
 import ISOutline from '../IdeaSpaceComponents/ISOutline';
@@ -90,6 +91,8 @@ export default function AnnotationsChannel({
   const perPage = 25;
   const [groupedAnnotations, setGroupedAnnotations] = useState({});
   const [filteredAnnotations, setFilteredAnnotations] = useState([]);
+
+  const noTagText = <span style={{ fontStyle: 'italic' }}>[ no tag ]</span>;
 
   const [applyDefaultFilters, setApplyDefaultFilters] = useState();
 
@@ -488,6 +491,14 @@ export default function AnnotationsChannel({
       };
     }
 
+    if (af.byTag[NO_TAG_KEY] === undefined) {
+      af.byTag[NO_TAG_KEY] = {
+        name: NO_TAG_KEY,
+        number: 0,
+        checked: allFilters.byTag[NO_TAG_KEY] && allFilters.byTag[NO_TAG_KEY].checked,
+      };
+    }
+
     annos.map(({
       creator, created, target: { document: { groups, id: did, title } }, body: { tags },
     }, i) => {
@@ -716,7 +727,11 @@ export default function AnnotationsChannel({
               key={key}
               icon={filterIcons[type]}
               color="blue"
-              text={allFilters[type][key]?.name}
+              text={
+                allFilters[type][key]?.name === NO_TAG_KEY
+                  ? noTagText
+                  : allFilters[type][key]?.name
+              }
               marginRight={5}
               marginBottom={5}
               onDelete={() => toggleFilters(type, { key })}
