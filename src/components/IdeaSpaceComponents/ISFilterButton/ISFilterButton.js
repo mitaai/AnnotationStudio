@@ -100,6 +100,14 @@ export default function ISFilterButton({
   }
 
   const sortRows = (a, b) => {
+    if (a?.name === NO_TAG_KEY) {
+      return -1
+    }
+
+    if (b?.name === NO_TAG_KEY) {
+      return 1;
+    }
+
     if (a?.name === undefined && b?.name === undefined) {
       return 0;
     }
