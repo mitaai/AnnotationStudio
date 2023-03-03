@@ -894,7 +894,16 @@ const CreateEditDocument = ({
       }}
     >
       <div style={{
-        position: 'absolute', zIndex: 2, backgroundColor: '#f9f9f9', width: '100%', height: 110, padding: '6px 0px', border: '1px solid #bdbdbd', borderRadius: 8, dipslay: 'flex', flexDirection: 'column', overflowY: 'overlay',
+        position: 'absolute',
+        zIndex: 2,
+        backgroundColor: '#f9f9f9',
+        width: '100%', height: 110,
+        padding: '6px 0px',
+        border: '1px solid #bdbdbd',
+        borderRadius: 8,
+        dipslay: 'flex',
+        flexDirection: 'column',
+        overflowY: 'scroll',
       }}
       >
         {queriedGroups.map((g) => {
