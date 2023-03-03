@@ -1,6 +1,7 @@
 import { setCookie } from 'nookies';
 import Router from 'next/router';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import * as yup from 'yup';
 import { getCsrfToken, useSession } from 'next-auth/react';
 import { Button, Card, Form } from 'react-bootstrap';
 import Layout from '../../components/Layout';
@@ -14,6 +15,9 @@ const SignIn = ({
 }) => {
   const { data: session, status } = useSession();
   const loading = status === 'loading';
+  const schema = yup.object().shape({
+    email: yup.string().email(),
+  });
 
   const {
     cToken,
@@ -22,6 +26,24 @@ const SignIn = ({
     groupToken,
   } = props; // eslint-disable-line no-shadow
   const [alerts, setAlerts] = useState(initAlerts);
+  const [email, setEmail] = useState('');
+  const [validEmail, setValidEmail] = useState();
+
+  useEffect(() => {
+    // check validity
+    if (email.length > 0) {
+      schema
+      .isValid({
+        email,
+      })
+      .then((valid) => {
+        setValidEmail(valid)
+      });
+    } else {
+      setValidEmail()
+    }
+    
+  }, [email])
   return (
     <Layout
       type="signin"
@@ -38,8 +60,14 @@ const SignIn = ({
               <input name="csrfToken" type="hidden" defaultValue={cToken} />
               <input name="callbackUrl" type="hidden" defaultValue={Router.query.callbackUrl} />
               <Form.Label>With email address</Form.Label>
-              <Form.Control name="email" type="email" placeholder="Email address" />
-              <Button variant="outline-secondary" type="submit" className="mt-3">
+              <Form.Control
+                name="email"
+                type="email"
+                placeholder="Email address"
+                value={email}
+                onChange={(ev) => setEmail(ev.target.value)}
+              />
+              <Button disabled={!validEmail} variant={validEmail ? 'primary' : 'outline-secondary'} type="submit" className="mt-3">
                 Submit
               </Button>
             </Form>
