@@ -147,6 +147,7 @@ export default function Home({
 
   const [annotationsBeingDragged, setAnnotationsBeingDragged] = useState();
   const [selectedGroupId, setSelectedGroupId] = useState('privateGroup');
+  const [invitedToGroup, setInvitedToGroup] = useState();
   const [selectedDocumentId, setSelectedDocumentId] = useState();
   const [selectedDocumentSlug, setSelectedDocumentSlug] = useState();
   const [documents, setDocuments] = useState({});
@@ -269,8 +270,21 @@ export default function Home({
         setDocumentPermissions(['mine', 'core-documents', 'shared'].includes(query.dp) ? query.dp : 'shared');
       }
     }
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query, session]);
+
+  useEffect(() => {
+    if (statefulSession || session) {
+      const s = statefulSession || session;
+      if (groupId && groupId !== '') {
+        const userGroupIds = s.user.groups.map(({ id }) => id);
+        const groupIdInUserGroups = userGroupIds.some((id) => groupId === id);
+        setInvitedToGroup(!groupIdInUserGroups);
+      }
+    }
+    
+  }, [statefulSession, session]);
 
   const showDashboard = session
   && ((session.user && session.user.firstName)
@@ -331,7 +345,7 @@ export default function Home({
         </Card>
       )}
       {session && ((session.user && session.user.firstName) || statefulSession)
-        && !loading && groupId && groupId !== '' && (
+        && !loading && invitedToGroup && (
         <GroupJoinCard
           alerts={alerts}
           setAlerts={setAlerts}
