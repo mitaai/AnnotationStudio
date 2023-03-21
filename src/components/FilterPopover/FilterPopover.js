@@ -34,6 +34,7 @@ import { FirstNameLastInitial } from '../../utils/nameUtil';
 import { DocumentFiltersContext, DocumentAnnotationsContext } from '../../contexts/DocumentContext';
 import PermissionsButtonGroup from '../PermissionsButtonGroup';
 import { DeepCopyObj } from '../../utils/docUIUtils';
+import { NO_TAG_KEY } from '../../utils/annotationFilteringUtil';
 
 
 function FilterPopover({ session }) {
@@ -49,9 +50,11 @@ function FilterPopover({ session }) {
     setDocumentFilters,
     FilterAnnotations,
   ] = useContext(DocumentFiltersContext);
+
   const [byTagsTypeheadMarginTop, setByTagsTypeheadMarginTop] = useState(0);
   const [byTagsTypeheadMarginBottom, setByTagsTypeheadMarginBottom] = useState(0);
   const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState();
+  const [noTagSelected, setNoTagSelected] = useState();
 
   const [expandAnnotations, setExpandAnnotations] = useState(null);
 
@@ -63,7 +66,6 @@ function FilterPopover({ session }) {
     });
     return ids.left.length + ids.right.length;
   };
-
 
   const totalNumberOfFilteredAnnotations = (
     documentFilters.annotationIds.left === null
@@ -109,6 +111,12 @@ function FilterPopover({ session }) {
   // OR filter
   const GetNumberOfMatchesForThisTag = (annotations, currentFilters, filterTag) => {
     const f = Object.assign(DeepCopyObj(currentFilters), { byTags: [filterTag] });
+    const ids = FilterAnnotations(annotations, f);
+    return ids.left.length + ids.right.length;
+  };
+
+  const GetNumberOfMatchesForNoTag = (annotations, currentFilters) => {
+    const f = Object.assign(DeepCopyObj(currentFilters), { byTags: [NO_TAG_KEY] });
     const ids = FilterAnnotations(annotations, f);
     return ids.left.length + ids.right.length;
   };
@@ -165,15 +173,28 @@ function FilterPopover({ session }) {
   };
 
 
-  const filterOptions = GenerateFilterOptions(session.user.email, channelAnnotations, {
+  const f = {
     annotatedBy: documentFilters.filters.annotatedBy.map((opt) => opt.email),
-    byTags: documentFilters.filters.byTags.map((opt) => opt.name),
+    byTags: documentFilters.filters.byTags.map((opt) => opt.id),
     permissions: documentFilters.filters.permissions,
-  });
+  };
+
+  const filterOptions = GenerateFilterOptions(session.user.email, channelAnnotations, f);
+
+  const numberOfMatchesForNoTag = GetNumberOfMatchesForNoTag(channelAnnotations, f);
+
+  const noTagText = `${numberOfMatchesForNoTag} annotation${numberOfMatchesForNoTag === 1 ? '' : 's'} with no tags`;
 
   const UpdateSelectedTokensMatchesValue = (type, selected) => selected.map((s) => {
-    const obj = filterOptions[type].find((opt) => opt.id === s.id);
-    return Object.assign(s, { matches: obj === undefined ? 0 : obj.matches });
+    let m = 0;
+    if (s.id === NO_TAG_KEY) {
+      m = numberOfMatchesForNoTag
+    } else {
+      const obj = filterOptions[type].find((opt) => opt.id === s.id);
+      m = obj === undefined ? 0 : obj.matches
+    }
+    
+    return Object.assign(s, { matches: m });
   });
 
   useEffect(() => {
@@ -196,13 +217,22 @@ function FilterPopover({ session }) {
   }, [documentFilters]);
 
   const updateFilters = (type, selected) => {
+
     documentFilters.filters[type] = selected;
 
     const annotationIds = FilterAnnotations(channelAnnotations, {
       annotatedBy: documentFilters.filters.annotatedBy.map((opt) => opt.email),
-      byTags: documentFilters.filters.byTags.map((opt) => opt.name),
+      byTags: documentFilters.filters.byTags.map((opt) => opt.id),
       permissions: documentFilters.filters.permissions,
     });
+
+    // check if no-tag is in selected array
+    if (type === 'byTags') {
+      if (selected.find(({ id }) => id === NO_TAG_KEY) === undefined && noTagSelected) {
+        setNoTagSelected();
+      }
+    }
+    
 
     setDocumentFilters({ ...documentFilters, annotationIds });
   };
@@ -347,6 +377,17 @@ function FilterPopover({ session }) {
                     options={filterOptions.byTags}
                     placeholder="Select one or more tag(s)"
                   />
+                  <Form.Text>
+                    <a
+                      className={noTagSelected ? 'text-muted': ''}
+                      href="#"
+                      onClick={() => {
+                        setNoTagSelected(true);
+                      }}
+                    >
+                      {noTagText}
+                    </a>
+                  </Form.Text>
                 </Form.Group>
               </Col>
             </Row>
@@ -425,6 +466,17 @@ function FilterPopover({ session }) {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [expandAnnotations]);
+
+  useEffect(() => {
+    if (noTagSelected) {
+      // we need to filter out any no-tag keys because we are adding it into selectedTags
+      const byTagsFilters = DeepCopyObj(documentFilters.filters.byTags).filter(({ id }) => id !== NO_TAG_KEY)
+      const selectedTags = [{ id: NO_TAG_KEY, name: '[no tags]', matches: numberOfMatchesForNoTag }]
+          .concat(UpdateSelectedTokensMatchesValue('byTags', byTagsFilters));
+
+        updateFilters('byTags', selectedTags)
+    }
+  }, [noTagSelected]);
 
   return (
     <>

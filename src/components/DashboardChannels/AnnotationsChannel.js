@@ -59,6 +59,7 @@ import {
   getOutlineById,
 } from '../../utils/outlineUtil';
 import NewPlusButton from '../NewPlusButton';
+import { useWindowSize } from '../../utils/customHooks';
 
 export default function AnnotationsChannel({
   session,
@@ -82,6 +83,7 @@ export default function AnnotationsChannel({
   // eslint-disable-next-line no-undef
   const { origin } = window.location;
   const router = useRouter();
+  const windowSize = useWindowSize();
   const [selectedPermissions, setSelectedPermissions] = useState('shared');
   const [listLoading, setListLoading] = useState();
   // for AS annotations
@@ -1366,8 +1368,8 @@ export default function AnnotationsChannel({
       className={styles.tabSelectionLine}
       style={
         annotationsTabSelected
-          ? { width: 'calc(60% - 5px)', left: 0, opacity: tabSelectionLineOpacity }
-          : { width: 'calc(40% + 5px)', left: 'calc(60% - 5px)', opacity: tabSelectionLineOpacity }
+          ? { width: 'calc(50% - 1px)', left: 0, opacity: tabSelectionLineOpacity }
+          : { width: 'calc(50% + 1px)', left: 'calc(50% - 1px)', opacity: tabSelectionLineOpacity }
       }
     />
   );
@@ -1634,7 +1636,7 @@ export default function AnnotationsChannel({
             className={tab === 'outlines' ? styles.selectedTab : undefined}
             style={{
               display: 'flex',
-              flex: 2,
+              flex: 3,
               borderLeft: '1px solid #DADCE1',
               paddingLeft: 8,
               paddingBottom: 5,

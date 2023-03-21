@@ -78,13 +78,7 @@ function byTagFilterMatch(annosTags, filterTags) { // OR FUNCTION
   }
 
   if (filterTags.some((t) => t === NO_TAG_KEY)) {
-    if (filterTags.length > 1) {
-      return false;
-    }
-    
-    if (annosTags?.length === 0) {
-      return true;
-    }
+    return annosTags?.length === 0
   }
 
   if (annosTags === undefined) {
