@@ -9,6 +9,7 @@ const SelectInput = ({
   selectedOptionKey,
   setSelectedOptionKey = () => {},
   value,
+  valuePlaceholder = 'Name',
   setValue = () => {},
   options = [],
   style = {},
@@ -16,9 +17,12 @@ const SelectInput = ({
 }) => {
   const [focused, setFocused] = useState();
 
+  const hasSelectOptions = Array.isArray(options) && options.length > 0;
+  const borderRadius = hasSelectOptions ? '0px 6px 6px 0px': '6px';
+
   return (
     <div className={`${styles.selectInputContainer} ${focused ? styles.focused : ''}`} style={style}>
-      <div
+      {Array.isArray(options) && options.length > 0 && <div
         style={{ width: 150 }}
       >
         <Select
@@ -27,12 +31,12 @@ const SelectInput = ({
           setSelectedOptionKey={setSelectedOptionKey}
           inSelectInput
         />
-      </div>
+      </div>}
       <input
         style={{
-          flex: 1, padding: '6px 10px', borderRadius: '0px 6px 6px 0px', color: '#424242',
+          flex: 1, padding: '6px 10px', borderRadius, color: '#424242',
         }}
-        placeholder="Name"
+        placeholder={valuePlaceholder}
         value={value}
         onChange={(ev) => setValue(ev.target.value)}
         onFocus={() => setFocused(true)}
