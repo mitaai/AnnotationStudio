@@ -317,7 +317,7 @@ const CreateEditDocument = ({
   };
 
   const addContributor = () => {
-    setContributors([{ type: 'Author', name: '' }].concat(contributors.slice()));
+    setContributors(contributors.slice().concat([{ type: 'Author', name: '' }]));
     setAddingContributor(0);
   };
 
@@ -1423,24 +1423,16 @@ const CreateEditDocument = ({
                 clearTitleHovered ? styles.clearTitleHovered : '',
               ].join(' ')}
               >
-                <input
-                  placeholder={fileName || 'Untitled'}
-                  style={{
-                    flex: 1,
-                  }}
-                  type="text"
+                <SelectInput
+                  style={{ marginBottom: 4, flex: 1 }}
+                  options={[]}
+                  setSelectedOptionKey={() => {}}
+                  valuePlaceholder={fileName || 'Untitled'}
                   value={title}
-                  maxLength={100}
-                  onChange={(ev) => setTitle(ev.target.value)}
+                  setValue={setTitle}
+                  onDelete={() => setTitle('')}
                 />
-                <div
-                  className={styles.clearTitleIcon}
-                  onClick={() => setTitle('')}
-                  onMouseEnter={() => setClearTitleHovered(true)}
-                  onMouseLeave={() => setClearTitleHovered()}
-                >
-                  <X size={18} />
-                </div>
+                
               </div>
               <div style={{
                 fontSize: 16, color: '#424242', fontWeight: 'bold', marginBottom: 10,
@@ -1473,6 +1465,23 @@ const CreateEditDocument = ({
                   + Add a contributor
                 </span>
               </div>
+              {contributors.map(({ type, name }, i) => (
+                <SelectInput
+                  key={`selet-input-contribution-${i}`}
+                  style={{ marginBottom: 4 }}
+                  options={[
+                    { text: 'Author', key: 'Author' },
+                    { text: 'Editor', key: 'Editor' },
+                    { text: 'Translator', key: 'Translator' },
+                    { text: 'Contributor', key: 'Contributor' },
+                  ]}
+                  selectedOptionKey={type}
+                  setSelectedOptionKey={(k) => updateContributors(i, { type: k })}
+                  value={name}
+                  setValue={(v) => updateContributors(i, { name: v })}
+                  onDelete={() => removeContributor(i)}
+                />
+              ))}
               <div
                 style={{
                   overflow: addingContributor === 2 ? 'hidden' : undefined,
@@ -1496,23 +1505,6 @@ const CreateEditDocument = ({
                   onDelete={() => {}}
                 />
               </div>
-              {contributors.map(({ type, name }, i) => (
-                <SelectInput
-                  key={`selet-input-contribution-${i}`}
-                  style={{ marginBottom: 4 }}
-                  options={[
-                    { text: 'Author', key: 'Author' },
-                    { text: 'Editor', key: 'Editor' },
-                    { text: 'Translator', key: 'Translator' },
-                    { text: 'Contributor', key: 'Contributor' },
-                  ]}
-                  selectedOptionKey={type}
-                  setSelectedOptionKey={(k) => updateContributors(i, { type: k })}
-                  value={name}
-                  setValue={(v) => updateContributors(i, { name: v })}
-                  onDelete={() => removeContributor(i)}
-                />
-              ))}
               <div
                 className={styles.additionalMetadata}
                 style={{
