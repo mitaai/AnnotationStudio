@@ -81,6 +81,28 @@ const SecondNavbar = ({
   const [showMoreDocumentInfo, setShowMoreDocumentInfo] = useState();
   const [mobileView, setMobileView] = useState();
 
+  const truncateDocumentTitle = (title) => {
+    const ellipse = '...';
+    const sizes =  { isMobilePhone: 25, isTabletOrMobile: 40, isDesktopOrLaptop: 100, isBigScreen: 140 };
+    const booleanObj = windowSize.smallerThanOrEqual;
+    let size = 180;
+    if (booleanObj.isMobilePhone) {
+      size = sizes.isMobilePhone;
+    } else if (booleanObj.isTabletOrMobile) {
+      size = sizes.isTabletOrMobile;
+    } else if (booleanObj.isDesktopOrLaptop) {
+      size = sizes.isDesktopOrLaptop;
+    } else if (booleanObj.isBigScreen) {
+      size = sizes.isBigScreen;
+    }
+
+    if (title.length <= size) {
+      return title
+    }
+
+    return `${title.substring(0, size - ellipse.length)}${ellipse}`;
+  };
+
   const contributorsArrayToHtml = (contributors) => {
     const contributorsObj = {};
     contributors.map(({ type: cType, name }) => {
@@ -170,7 +192,7 @@ const SecondNavbar = ({
         </Breadcrumb.Item>
         )}
         {document && (
-        <Breadcrumb.Item active>{document.title}</Breadcrumb.Item>
+        <Breadcrumb.Item active>{truncateDocumentTitle(document.title)}</Breadcrumb.Item>
         )}
         {type === 'document' && document && docView && (
         <span className={styles.infobutton}>
@@ -182,10 +204,15 @@ const SecondNavbar = ({
 
   const size = mode === 'is' ? 12 : 8;
 
+  const docViewBreakPoint = type === 'document' && document && docView && windowSize.width < 1000;
+  const styleHeight = docViewBreakPoint? { height: 100 } : {};
+  const stylePositionBreadCrumbs = docViewBreakPoint ? { position: 'relative', top: -20 } : {};
+  const stylePositionFilters = docViewBreakPoint ? { position: 'relative', top: -15 } : {};
+
   return (
     <>
       <Navbar
-        style={{ borderBottom: borderBottom || '1px solid #ececec' }}
+        style={{ borderBottom: borderBottom || '1px solid #ececec',  ...styleHeight}}
         className={`px-0 ${styles.secondnav}`}
         bg="light"
         variant="light"
@@ -194,7 +221,7 @@ const SecondNavbar = ({
         <Container
           fluid
           className={[windowSize.smallerThanOrEqual.isTabletOrMobile ? styles.mobileView : '', 'px-5'].join(' ')}
-          style={{ transition: 'padding 0.5s' }}
+          style={{ transition: 'padding 0.5s', ...stylePositionBreadCrumbs }}
         >
           <Row className={styles.row} style={{ height: 48 }}>
             <Col
@@ -267,7 +294,7 @@ const SecondNavbar = ({
             {type === 'document' && document && docView && (
               <Col
                 md={mobileView ? 12 : 5}
-                style={{ paddingLeft: (mobileView ? 15 : 0), paddingRight: 0 }}
+                style={{ paddingLeft: (mobileView ? 15 : 0), paddingRight: 0, ...stylePositionFilters }}
               >
                 <div className={styles.rightpanel} style={{ float: mobileView ? 'left' : 'right' }}>
                   <div className={styles['zoom-slider-container']}>
