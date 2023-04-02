@@ -2020,6 +2020,7 @@ const CreateEditDocument = ({
           height: calc(100% - 50px);
           padding: 30px 0px 40px 0px;
           overflow: overlay;
+          overflow-y: scroll;
           position: relative;
         }
 
