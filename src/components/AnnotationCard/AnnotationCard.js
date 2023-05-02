@@ -114,7 +114,7 @@ function AnnotationCard({
     return permissions;
   };
 
-  const maxAnnotationTextLength = 750;
+  const maxAnnotationTextLength = 1000;
 
   const fontSizeMultiplier = largeFontSize ? 2 : 1;
 
