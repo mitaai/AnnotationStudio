@@ -46,6 +46,7 @@ import { copyToClipboard } from '../../utils/docUIUtils';
 import { FirstNameLastInitial } from '../../utils/nameUtil';
 import { fixIframes } from '../../utils/parseUtil';
 import AnnotationShareableLinkIcon from '../AnnotationShareableLinkIcon';
+import ConfirmationDialog from '../ConfirmationDialog';
 
 function addHoverEventListenersToAllHighlightedText() {
   $('.annotation-highlighted-text').on('mouseover', (e) => {
@@ -134,6 +135,8 @@ function AnnotationCard({
   const [hovered, setHovered] = useState();
   const [annotationHeaderHovered, setAnnotationHeaderHovered] = useState();
   const [newSelectedUsersToShare, setNewSelectedUsersToShare] = useState(null);
+
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState();
 
   const leftRightPositionForAnnotation = annotationData.editing ? -10 : 15;
 
@@ -547,7 +550,19 @@ function AnnotationCard({
     </div>
   );
 
-  const annotationSaveButton = annotationMatchesCurrentFilters() ? saveButton : (
+  const annotationSaveButton = annotationMatchesCurrentFilters() ? 
+  <OverlayTrigger
+    overlay={(
+      <Tooltip
+        className="styled-tooltip"
+      >
+        Save
+      </Tooltip>
+    )}
+  >
+    {saveButton}
+  </OverlayTrigger>
+  : (
     <OverlayTrigger
       overlay={(
         <Tooltip className="styled-tooltip">
@@ -644,38 +659,8 @@ function AnnotationCard({
               onMouseLeave={() => { setAnnotationHeaderHovered(); }}
             >
               <span
-                style={{ height: 30, width: annotationData.editing && !annotationData.new ? 0 : 7 }}
+                style={{ height: 30, marginRight: 8, width: annotationData.editing && !annotationData.new ? 0 : 7 }}
               />
-
-              {!annotationData.new && annotationData.editing && (
-              <>
-                <div
-                  className="delete-annotation-btn-container-container"
-                >
-                  <div style={{
-                    position: 'absolute', left: -1, overflow: 'hidden',
-                  }}
-                  >
-                    <div className="delete-annotation-btn-container" onClick={DeleteAnnotation}>
-                      <TrashFill
-                        style={{ marginLeft: 6 }}
-                        className="delete-annotation-btn"
-                        size={14}
-                      />
-                      <span style={{ marginLeft: 6 }}>Delete</span>
-                    </div>
-                  </div>
-                </div>
-                <div style={{
-                  width: 1,
-                  height: 14,
-                  background: '#bdbdbd',
-                  marginLeft: 10,
-                  marginRight: 10,
-                }}
-                />
-              </>
-              )}
 
               <span>{FirstNameLastInitial(annotationData.creator.name)}</span>
               {!annotationData.editing && (
@@ -913,16 +898,48 @@ function AnnotationCard({
                         || newAnnotationPermissions !== null
                         || newAnnotationText !== null)
                         && showPermissionNumber() !== 2
-                        && annotationSaveButton}
+                        && (
+                          annotationSaveButton
+                        )}
                         {showPermissionNumber() !== 2 && (
-                        <div
-                          id="cancel-annotation-btn"
-                          onClick={CancelAnnotation}
+                          <OverlayTrigger
+                            overlay={(
+                              <Tooltip
+                                className="styled-tooltip"
+                              >
+                                Cancel
+                              </Tooltip>
+                            )}
+                          >
+                            <div
+                              id="cancel-annotation-btn"
+                              onClick={CancelAnnotation}
+                            >
+                              <X
+                                style={{ fontSize: 17 }}
+                              />
+                            </div>
+                          </OverlayTrigger>
+                        )}
+                        {showPermissionNumber() !== 2 && !annotationData.new && annotationData.editing && (
+                        <OverlayTrigger
+                          overlay={(
+                            <Tooltip
+                              className="styled-tooltip"
+                            >
+                              Delete
+                            </Tooltip>
+                          )}
                         >
-                          <X
-                            style={{ fontSize: 17 }}
-                          />
-                        </div>
+                          <div
+                            id="cancel-annotation-btn"
+                            onClick={() => setShowDeleteConfirmation(true)}
+                          >
+                            <TrashFill
+                              style={{ fontSize: 14 }}
+                            />
+                          </div>
+                        </OverlayTrigger>
                         )}
                       </div>
                       <div style={{ display: showPermissionNumber() === 2 ? 'flex' : 'none', flexDirection: 'row' }}>
@@ -951,16 +968,48 @@ function AnnotationCard({
                         || newAnnotationPermissions !== null
                         || newAnnotationText !== null)
                         && showPermissionNumber() === 2
-                        && annotationSaveButton}
+                        && (
+                          annotationSaveButton
+                        )}
                         {showPermissionNumber() === 2 && (
-                        <div
-                          id="cancel-annotation-btn"
-                          onClick={CancelAnnotation}
+                        <OverlayTrigger
+                          overlay={(
+                            <Tooltip
+                              className="styled-tooltip"
+                            >
+                              Cancel
+                            </Tooltip>
+                          )}
                         >
-                          <X
-                            style={{ fontSize: 17 }}
-                          />
-                        </div>
+                          <div
+                            id="cancel-annotation-btn"
+                            onClick={CancelAnnotation}
+                          >
+                            <X
+                              style={{ fontSize: 17 }}
+                            />
+                          </div>
+                        </OverlayTrigger>
+                        )}
+                        {showPermissionNumber() === 2 && !annotationData.new && annotationData.editing && (
+                        <OverlayTrigger
+                          overlay={(
+                            <Tooltip
+                              className="styled-tooltip"
+                            >
+                              Delete
+                            </Tooltip>
+                          )}
+                        >
+                          <div
+                            id="cancel-annotation-btn"
+                            onClick={() => setShowDeleteConfirmation(true)}
+                          >
+                            <TrashFill
+                              style={{ fontSize: 14 }}
+                            />
+                          </div>
+                        </OverlayTrigger>
                         )}
                       </div>
                     </ListGroup.Item>
@@ -1087,6 +1136,13 @@ function AnnotationCard({
         )}
 
       </Card>
+      <ConfirmationDialog
+        name={undefined}
+        type="annotation"
+        handleCloseModal={() => setShowDeleteConfirmation()}
+        show={showDeleteConfirmation}
+        onClick={DeleteAnnotation}
+      />
       <style jsx global>
         {`
 

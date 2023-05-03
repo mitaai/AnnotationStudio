@@ -34,6 +34,16 @@ const ConfirmationDialog = ({
     </p>
   );
 
+  const annotationModalBody = (
+    <p>
+      <strong>
+        Are you sure you want to delete this annotation permanently?
+      </strong>
+      {' '}
+      This action cannot be undone.
+    </p>
+  );
+
   const userModalBody = (
     <>
       <p>
@@ -55,15 +65,17 @@ const ConfirmationDialog = ({
     >
       <Modal.Header closeButton>
         <Modal.Title>
-          {type === 'group' && (<>Delete Group:</>)}
-          {type === 'document' && (<>Delete Document:</>)}
-          {' '}
-          {name}
+          {type === 'group' && (<>Delete Group</>)}
+          {type === 'document' && (<>Delete Document</>)}
+          {type === 'annotation' && (<>Delete Annotation</>)}
+
+          {name ? `: ${name}` : <></>}
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>
         {type === 'group' && groupModalBody}
         {type === 'document' && documentModalBody}
+        {type === 'annotation' && annotationModalBody}
         {type === 'user' && userModalBody}
       </Modal.Body>
       <Modal.Footer>
@@ -76,6 +88,7 @@ const ConfirmationDialog = ({
         >
           {type === 'group' && (<>Yes, delete this group.</>)}
           {type === 'document' && (<>Yes, delete this document.</>)}
+          {type === 'annotation' && (<>Yes, delete this annotation.</>)}
           {type === 'user' && (<>Yes, delete this user.</>)}
         </Button>
       </Modal.Footer>
