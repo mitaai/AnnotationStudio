@@ -145,8 +145,11 @@ export default function DocumentsChannel({
 
   useEffect(() => {
     if (retry > 0) {
-      setRefresh(true);
-      setRetry((prevState) => prevState - 1)
+      setTimeout((func) => {
+        func(true);
+      }, 500, setRefresh)
+      
+      setRetry((prevState) => prevState - 1);
     }
   }, [retry])
 
