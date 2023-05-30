@@ -41,6 +41,8 @@ export default function DocumentsChannel({
   groupMembers,
   maxNumberOfDocumentGroups = 3,
   dashboardState,
+  retry,
+  setRetry,
 }) {
   const [listLoading, setListLoading] = useState(true);
   const [loadMore, setLoadMore] = useState();
@@ -140,6 +142,13 @@ export default function DocumentsChannel({
       setQueriedDocuments();
     }
   }, [searchQuery]);
+
+  useEffect(() => {
+    if (retry > 0) {
+      setRefresh(true);
+      setRetry((prevState) => prevState - 1)
+    }
+  }, [retry])
 
 
   useEffect(() => {

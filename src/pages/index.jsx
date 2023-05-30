@@ -19,6 +19,7 @@ import IdeaSpacesChannel from '../components/DashboardChannels/IdeaSpacesChannel
 import AnnotationTile from '../components/DashboardChannels/AnnotationTile';
 import SplashPage from '../components/SplashPage';
 import { useWindowSize } from '../utils/customHooks';
+import { Prescription } from 'react-bootstrap-icons';
 
 export default function Home({
   query,
@@ -37,6 +38,7 @@ export default function Home({
   const [mode, setMode] = useState('as');
   const [modeChanged, setModeChanged] = useState();
   const [groupMembers, setGroupMembers] = useState({});
+  const [documentsChannelRetry, setDocumentsChannelRetry] = useState(0);
   const router = useRouter();
   const newReg = query && query.alert && query.alert === 'completeRegistration';
   const loading = status === 'loading';
@@ -266,6 +268,7 @@ export default function Home({
         if (query.did !== undefined && query.slug !== undefined) {
           setSelectedDocumentId(query.did);
           setSelectedDocumentSlug(query.slug);
+          setDocumentsChannelRetry((prevState) => prevState + 1)
         }
         setDocumentPermissions(['mine', 'core-documents', 'shared'].includes(query.dp) ? query.dp : 'shared');
       }
@@ -417,6 +420,8 @@ export default function Home({
               setAlerts={setAlerts}
               forceUpdate={!!statefulSession}
               dashboardState={dashboardState}
+              retry={documentsChannelRetry}
+              setRetry={setDocumentsChannelRetry}
             />
             <AnnotationsChannel
               width={channelPositions.annotations.width}
