@@ -5,7 +5,7 @@ import moment from 'moment';
 import {
   Dropdown, OverlayTrigger, Popover,
 } from 'react-bootstrap';
-import { Folder2Open } from 'react-bootstrap-icons';
+import { ArchiveFill, Folder2Open } from 'react-bootstrap-icons';
 import TileBadge from '../TileBadge';
 import {
   TilePointer, ThreeDotDropdown,
@@ -22,6 +22,7 @@ export default function DocumentTile({
   selected,
   selectedGroupId,
   setSelectedGroupId,
+  state,
   activityDate,
   maxNumberOfDocumentGroups,
   onClick,
@@ -201,6 +202,26 @@ export default function DocumentTile({
               >
                 <span>{moment(activityDate).fromNow()}</span>
               </OverlayTrigger>
+              {(state === 'archived') && 
+                <>
+                  <span className={styles.dotSeperator} />
+                  <OverlayTrigger
+                    key="document-activity-date-tooltip"
+                    placement="bottom"
+                    onExited={() => setHovered()}
+                    overlay={(
+                      <Popover
+                        id="popover-basic"
+                      >
+                        <Popover.Content style={{ color: '#636363' }}>Archived</Popover.Content>
+                      </Popover>
+                    )}
+                  >
+                    <span><ArchiveFill style={{ position: 'relative', top: -1 }} /></span>
+                  </OverlayTrigger>
+                </>
+              }
+              
             </div>
             {tileBadges}
           </div>
