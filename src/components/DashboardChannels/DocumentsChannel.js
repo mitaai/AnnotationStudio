@@ -281,7 +281,7 @@ export default function DocumentsChannel({
       : (queriedDocuments || documents[selectedGroupId][documentPermissions]).sort(sortDocuments);
 
     documentTiles = rawDocumentTiles.map(({
-      _id, title, groups, contributors, updatedAt, slug, owner,
+      _id, title, groups, contributors, updatedAt, slug, owner, state,
     }) => {
       const contributor = contributors ? contributors.find(({ type }) => type.toLowerCase() === 'author') : undefined;
       const author = contributor === undefined ? 'Author' : contributor.name;
@@ -294,6 +294,7 @@ export default function DocumentsChannel({
           author={author}
           slug={slug}
           isOwner={owner === session.user.id}
+          state={state}
           activityDate={updatedAt}
           selected={_id === selectedDocumentId}
           groups={groups}
