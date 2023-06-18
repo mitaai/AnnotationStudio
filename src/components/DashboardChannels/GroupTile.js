@@ -104,9 +104,9 @@ export default function GroupTile({
                 <Dropdown.Item eventKey="manage">
                   {position === 'Member' ? 'View' : 'Manage'}
                 </Dropdown.Item>
-                <Dropdown.Item eventKey="remove-from-list">
+                {(position === 'Owner' || position === 'Manager') && <Dropdown.Item eventKey="remove-from-list">
                   {archived ? 'Unarchive' : 'Archive'}
-                </Dropdown.Item>
+                </Dropdown.Item>}
               </Dropdown.Menu>
             </Dropdown>
           )}

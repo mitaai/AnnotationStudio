@@ -373,7 +373,7 @@ const archiveGroupById = async (id) => {
   } return Promise.reject(Error(`Unable to get group ${id}: error ${res.status} received from server`));
 };
 
-const unarchiveGroupbyId = async (id) => {
+const unarchiveGroupById = async (id) => {
   const url = `/api/group/unarchive/${id}`;
   const res = await unfetch(url, {
     method: 'PATCH',
@@ -429,5 +429,5 @@ export {
   getGroupsByGroupIds,
   roleInGroup,
   archiveGroupById,
-  unarchiveGroupbyId,
+  unarchiveGroupById,
 };

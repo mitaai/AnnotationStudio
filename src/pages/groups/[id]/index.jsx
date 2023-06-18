@@ -37,6 +37,8 @@ import {
   generateInviteToken,
   deleteInviteToken,
   roleInGroup,
+  unarchiveGroupById,
+  archiveGroupById,
 } from '../../../utils/groupUtil';
 import { appendProtocolIfMissing } from '../../../utils/fetchUtil';
 import styles from './index.module.scss';
@@ -59,6 +61,7 @@ const EditGroup = ({
   const windowSize = useWindowSize();
   const [alerts, setAlerts] = useState(initAlerts || []);
   const [canEditGroup, setCanEditGroup] = useState();
+  const [archived, setArchived] = useState(group.archive);
 
   const [minimize, setMinimize] = useState();
   const [showDeleteGroupModal, setShowDeleteGroupModal] = useState();
@@ -375,6 +378,34 @@ const EditGroup = ({
     </div>
 
   );
+
+  const toggleArchive = () => {
+    if (archived) {
+      unarchiveGroupById(group.id).then((res) => {
+        // eslint-disable-next-line no-underscore-dangle
+        const gid = res?.value?._id;
+        if (gid) {
+          setArchived(false);
+          setAlerts((prevState) => [...prevState, {
+            text: 'Group Unarchived Successfully',
+            variant: 'success',
+          }]);
+        }
+      });
+    } else {
+      archiveGroupById(group.id).then((res) => {
+        // eslint-disable-next-line no-underscore-dangle
+        const gid = res?.value?._id;
+        if (gid) {
+          setArchived(true);
+          setAlerts((prevState) => [...prevState, {
+            text: 'Group Archived Successfully',
+            variant: 'success',
+          }]);
+        }
+      });
+    }
+  };
 
   useEffect(() => {
     setUserEmailFound(2);
@@ -989,11 +1020,19 @@ const EditGroup = ({
                   </div>
                   {spacer}
                   <div style={{ flex: 1, marginBottom: 40 }} />
-                  <div
-                    className={styles.deleteGroupBtn}
-                    onClick={() => setShowDeleteGroupModal(true)}
-                  >
-                    Delete Group
+                  <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
+                    <div
+                      className={styles.archiveGroupBtn}
+                      onClick={toggleArchive}
+                    >
+                      {archived ? 'Unarchive' : 'Archive'}
+                    </div>
+                    <div
+                      className={styles.deleteGroupBtn}
+                      onClick={() => setShowDeleteGroupModal(true)}
+                    >
+                      Delete
+                    </div>
                   </div>
                 </>
               )}
@@ -1077,15 +1116,18 @@ export async function getServerSideProps(context) {
   });
   if (res.status === 200) {
     const foundGroup = await res.json();
+    console.log('foundGroup: ', foundGroup)
     const {
       name,
       members,
       inviteToken,
+      archive,
     } = foundGroup;
     const group = {
       id: context.params.id,
       name,
       members,
+      archive: archive || null,
     };
     group.inviteToken = inviteToken || null;
     group.inviteUrl = inviteToken

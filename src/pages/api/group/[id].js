@@ -21,12 +21,14 @@ const handler = async (req, res) => {
         .toArray();
       if (doc[0]) {
         const group = doc[0];
+        console.log('db group: ', group)
         const {
           name,
           members,
           inviteToken,
           createdAt,
           updatedAt,
+          archive,
         } = group;
         res.status(200).json({
           name,
@@ -34,6 +36,7 @@ const handler = async (req, res) => {
           inviteToken,
           createdAt,
           updatedAt,
+          archive,
         });
       } else res.status(404).end('Not Found');
     } else res.status(403).end('Invalid or expired token');
