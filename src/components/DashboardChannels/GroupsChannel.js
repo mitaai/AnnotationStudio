@@ -13,7 +13,7 @@ import { DeepCopyObj } from '../../utils/docUIUtils';
 import {
   getGroupsByGroupIds,
   archiveGroupById,
-  unarchiveGroupbyId,
+  unarchiveGroupById,
 } from '../../utils/groupUtil';
 import PermissionsButtonGroup from '../PermissionsButtonGroup';
 import ChannelHeader from './ChannelHeader';
@@ -43,7 +43,7 @@ export default function GroupsChannel({
   const moveGroupTileToList = (archived, groupId) => {
     if (archived) {
       // if the tile is archived then we want to unarchive the group
-      unarchiveGroupbyId(groupId).then((res) => {
+      unarchiveGroupById(groupId).then((res) => {
         // eslint-disable-next-line no-underscore-dangle
         const gid = res?.value?._id;
         if (gid) {
@@ -115,6 +115,7 @@ export default function GroupsChannel({
     ) || []).concat(seachQueryGroups.sort(sortGroups));
 
     // Personal Psuedo group will only be apart of the active groups not archived
+    console.log(rawGroupTiles);
     groupTiles = rawGroupTiles.map(({
       id, name, memberCount, role, isPrivateGroup,
     }) => (
