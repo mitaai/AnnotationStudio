@@ -342,7 +342,9 @@ const EditGroup = ({
   );
 
   const queriedMembers = groupMembers
-    ? groupMembers.filter(({ name, email, role }) => {
+    ? groupMembers.filter((m) => {
+      const { name, email, role } = m || {};
+      console.log('m: ', m);
       // eslint-disable-next-line no-useless-escape
       const r = searchQuery ? new RegExp(`\.\*${escapeRegExp(searchQuery)}\.\*`, 'i') : new RegExp('\.\*', 'i');
       return name.search(r) !== -1 || email.search(r) !== -1 || role.search(r) !== -1;
