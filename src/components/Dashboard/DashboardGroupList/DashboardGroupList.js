@@ -38,7 +38,7 @@ const DashboardGroupList = ({
                     </Link>
                   </Col>
                   <Col className="text-right">
-                    <GroupRoleBadge groupRole={group.role} />
+                    <GroupRoleBadge groupRole={group.role || 'undefined'} />
                   </Col>
                 </Row>
               </ListGroup.Item>

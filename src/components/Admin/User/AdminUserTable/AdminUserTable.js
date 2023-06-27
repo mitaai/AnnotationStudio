@@ -39,7 +39,7 @@ const AdminUserTable = ({
   const handleShowReassignModal = () => setShowReassignModal(true);
 
   const handleChangeRole = async (role) => {
-    await changeUserRole(user.id, role)
+    await changeUserRole(user.id, role || 'member')
       .then(() => {
         Router.push({
           pathname: '/admin',

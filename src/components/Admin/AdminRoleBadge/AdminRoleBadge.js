@@ -16,7 +16,7 @@ const AdminRoleBadge = (props) => {
   }
   return (
     <Badge variant={variant} data-testid="admin-role-badge">
-      {role}
+      {role || 'undefined'}
     </Badge>
   );
 };
