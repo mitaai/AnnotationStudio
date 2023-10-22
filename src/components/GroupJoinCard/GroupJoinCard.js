@@ -53,7 +53,7 @@ const GroupJoinCard = ({
                           ownerName: g.ownerName,
                           role: 'member',
                         }],
-                        role: session.user.role,
+                        role: session.user.role || 'user',
                       },
                       expires: session.expires,
                     };
