@@ -11,6 +11,7 @@ import { prefetchUserById } from '../../../utils/userUtil';
 import AdminUserTable from '../../../components/Admin/User/AdminUserTable';
 
 const AdminManageUser = (props) => {
+  console.log('props: ', props)
   const { user, initAlert, statefulSession } = props;
   const { data: session, status } = useSession();
   const loading = status === 'loading';
