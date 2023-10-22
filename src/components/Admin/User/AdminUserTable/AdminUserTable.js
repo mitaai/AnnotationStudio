@@ -69,6 +69,8 @@ const AdminUserTable = ({
     }
   };
 
+  console.log("user::: ", user)
+
   return (
     <>
       <Table
@@ -130,15 +132,15 @@ const AdminUserTable = ({
           </tr>
           <tr>
             <th>Role</th>
-            <td><AdminRoleBadge role={user.role} /></td>
+            <td><AdminRoleBadge role={user.role || 'user'} /></td>
           </tr>
           <tr>
             <th>Registered</th>
-            <td>{format(new Date(user.createdAt), 'PPPppp')}</td>
+            <td>{format(user?.createdAt ? new Date(user?.createdAt) : new Date(), 'PPPppp')}</td>
           </tr>
           <tr>
             <th>Updated</th>
-            <td>{format(new Date(user.updatedAt), 'PPPppp')}</td>
+            <td>{format(user?.updatedAt ? new Date(user?.updatedAt) : new Date(), 'PPPppp')}</td>
           </tr>
           <tr>
             <th>Last login</th>
