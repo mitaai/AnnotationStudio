@@ -91,6 +91,7 @@ const AdminPanel = ({
       await searchForUsers({
         query, page, perPage: perP, sort: formattedSort,
       }).then((res) => {
+        console.log('res: ', res)
         if (page === 1) {
           setUsersListData(res.users);
         } else {
