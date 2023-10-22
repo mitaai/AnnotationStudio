@@ -27,6 +27,7 @@ const handler = async (req, res) => {
         const {
           name, firstName, lastName, affiliation, role,
         } = doc[0];
+        console.log('doc[0]: ', doc[0])
         const groups = doc[0].groups ? doc[0].groups : [];
         if (querierRole === 'admin') {
           const {
@@ -38,7 +39,7 @@ const handler = async (req, res) => {
             lastName,
             affiliation,
             groups,
-            role,
+            role: role || 'user',
             email,
             emailVerified,
             createdAt,
@@ -47,7 +48,7 @@ const handler = async (req, res) => {
           });
         } else {
           res.status(200).json({
-            name, firstName, lastName, affiliation, groups, role,
+            name, firstName, lastName, affiliation, groups, role: role || 'user',
           });
         }
       } else res.status(404).end('Not Found');

@@ -42,7 +42,7 @@ const AdminUserList = (props) => {
             {user.email}
           </td>
           <td style={{ width: '13%' }}>
-            <AdminRoleBadge role={user.role || 'undefined'} />
+            <AdminRoleBadge role={user.role || 'user'} />
           </td>
           <td style={{ width: '13%' }}>
             {user.affiliation}
