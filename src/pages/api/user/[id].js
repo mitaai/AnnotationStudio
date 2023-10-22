@@ -39,7 +39,7 @@ const handler = async (req, res) => {
             lastName,
             affiliation,
             groups,
-            role,
+            role: role || 'user',
             email,
             emailVerified,
             createdAt,
@@ -48,7 +48,7 @@ const handler = async (req, res) => {
           });
         } else {
           res.status(200).json({
-            name, firstName, lastName, affiliation, groups, role,
+            name, firstName, lastName, affiliation, groups, role: role || 'user',
           });
         }
       } else res.status(404).end('Not Found');
