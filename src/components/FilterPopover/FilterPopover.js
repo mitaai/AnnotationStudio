@@ -483,7 +483,7 @@ function FilterPopover({ session }) {
       <OverlayTrigger
         trigger="click"
         key="unsaved-changes-popover"
-        placement="bottom"
+        placement="bottom-end"
         rootClose
         overlay={annotationIdBeingEdited === undefined ? <div /> : unsavedChangesPopoverComponent}
       >
@@ -494,7 +494,7 @@ function FilterPopover({ session }) {
       <OverlayTrigger
         trigger="click"
         key="filter-popover"
-        placement="bottom"
+        placement="bottom-end"
         onToggle={(isOpen) => setIsFilterPopoverOpen(isOpen)}
         rootClose
         overlay={annotationIdBeingEdited !== undefined

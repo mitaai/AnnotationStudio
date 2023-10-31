@@ -111,7 +111,7 @@ function TextAnalysisPopover({ textAnalysisData, loadingTextAnalysisData, getTex
       <OverlayTrigger
         trigger="click"
         key="filter-popover"
-        placement="bottom"
+        placement="bottom-end"
         onToggle={(isOpen) => setIsFilterPopoverOpen(isOpen)}
         rootClose
         overlay={filterPopoverComponent}
