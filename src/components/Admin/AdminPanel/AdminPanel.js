@@ -268,12 +268,12 @@ const AdminPanel = ({
                 aria-describedby="basic-addon1"
               />
             </InputGroup>
-            <Button
+            {activeKey === 'users' && <Button
               onClick={() => setShowAddUserModal(true)}
               style={{ height: 38, width: 130, marginLeft: 5 }}
             >
               Add user
-            </Button>
+            </Button>}
             <Modal show={showAddUserModal} onHide={() => setShowAddUserModal()}>
               <Modal.Body>
                 <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>

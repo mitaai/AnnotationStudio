@@ -25,7 +25,7 @@ import Layout from '../../../components/Layout';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import AnnotationChannel from '../../../components/AnnotationChannel';
 import Document from '../../../components/Document';
-import { getDocumentTextAnalysis, prefetchDocumentBySlug } from '../../../utils/docUtil';
+import { getDocumentTextAnalysis, getManyGroupNamesById, prefetchDocumentBySlug } from '../../../utils/docUtil';
 import { fetchSharedAnnotationsOnDocument, MAX_NUMBER_OF_ANNOTATIONS_REQUESTED } from '../../../utils/annotationUtil';
 import {
   DocumentAnnotationsContext,
@@ -43,6 +43,7 @@ import { annotatedByFilterMatch, byPermissionsDocumentViewFilterMatch, byTagFilt
 import MaxedTextLengthToast from '../../../components/MaxedTextLengthToast';
 import MaxedAnnotationLengthToast from '../../../components/MaxedAnnotationLengthToast';
 import RunTextAnalysisModal from '../../../components/RunTextAnalysisModal';
+import { groupBy } from 'lodash';
 
 
 const DocumentPage = ({
@@ -80,6 +81,8 @@ const DocumentPage = ({
   ).current;
 
   const [largeFontSize, setLargeFontSize] = useState();
+  const [groupNameMapping, setGroupNameMapping] = useState();
+  const [documentTextLoading, setDocumentTextLoading] = useState(true);
   const [documentLoading, setDocumentLoading] = useState(true);
   const [
     initializedDocumentScrollEventListener,
@@ -100,6 +103,7 @@ const DocumentPage = ({
     annotationsLoaded: false,
     annotationIds: { left: null, right: null },
     filters: {
+      byGroup: [],
       annotatedBy: [], // list of filter options that have been selected by user
       byTags: [], // list of filter options that have been selected by user},
       permissions: defaultPermissions,
@@ -650,8 +654,30 @@ const DocumentPage = ({
 
   const cloudfrontUrl = process.env.NEXT_PUBLIC_SIGNING_URL.split('/url')[0];
 
-  useEffect(() => {
-    if (document && document.text
+  useEffect(async () => {
+    if (!document) return
+
+    if (document.groups.length >= 0) {
+      const groupNamesRes = await getManyGroupNamesById(document.groups);
+      console.log('groupNamesRes: ', groupNamesRes)
+      const grpNameMapping = {
+        array: groupNamesRes.groups || [],
+        idToName: {},
+        nameToId: {},
+      };
+
+      grpNameMapping.array.map(({ id, name }) => {
+        grpNameMapping.idToName[id] = name;
+        grpNameMapping.nameToId[name] = id;
+
+        return null;
+      });
+
+      setGroupNameMapping(grpNameMapping)
+    }
+    
+
+    if (document?.text
       && document.text.length < 255 && document.text.includes(cloudfrontUrl)) {
       unfetch(document.text.substring(
         document.text.indexOf(cloudfrontUrl), document.text.indexOf('.html') + 5,
@@ -663,16 +689,23 @@ const DocumentPage = ({
       }).then((res) => {
         res.text().then((result) => {
           document.text = result;
-          setDocumentLoading(false);
+          
+          setDocumentTextLoading(false)
         });
       }).catch((err) => {
         setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
-        setDocumentLoading(false);
+        setDocumentTextLoading(false)
       });
     } else {
-      setDocumentLoading(false);
+      setDocumentTextLoading(false)
     }
   }, [document]);
+
+  useEffect(() => {
+    if (!documentTextLoading && groupNameMapping !== undefined) {
+      setDocumentLoading(false);
+    }
+  }, [documentTextLoading, groupNameMapping]);
 
   useEffect(() => {
     // eslint-disable-next-line no-undef
@@ -875,7 +908,7 @@ const DocumentPage = ({
           ]}
         >
           <DocumentFiltersContext.Provider
-            value={[documentFilters, setDocumentFilters, FilterAnnotations]}
+            value={[documentFilters, setDocumentFilters, FilterAnnotations, groupNameMapping]}
           >
             <Layout
               type="document"

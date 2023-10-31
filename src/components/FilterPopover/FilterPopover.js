@@ -49,6 +49,7 @@ function FilterPopover({ session }) {
     documentFilters,
     setDocumentFilters,
     FilterAnnotations,
+    documentGroupNameMapping,
   ] = useContext(DocumentFiltersContext);
 
   const [byTagsTypeheadMarginTop, setByTagsTypeheadMarginTop] = useState(0);
@@ -60,6 +61,7 @@ function FilterPopover({ session }) {
 
   const GetNumberOfMatchesForThisPermission = (permissions) => {
     const ids = FilterAnnotations(channelAnnotations, {
+      byGroup: [],
       annotatedBy: [],
       byTags: [],
       permissions,
@@ -102,7 +104,16 @@ function FilterPopover({ session }) {
   }
 
   // OR filter
+  const GetNumberOfMatchesForThisGroup = (annotations, currentFilters, filterGroupId) => {
+    const f = Object.assign(DeepCopyObj(currentFilters), { byGroup: [filterEmail] });
+    // console.log('annotations: ', annotations)
+    // const ids = FilterAnnotations(annotations, f);
+    // return ids.left.length + ids.right.length;
+  };
+
+  // OR filter
   const GetNumberOfMatchesForThisEmail = (annotations, currentFilters, filterEmail) => {
+    
     const f = Object.assign(DeepCopyObj(currentFilters), { annotatedBy: [filterEmail] });
     const ids = FilterAnnotations(annotations, f);
     return ids.left.length + ids.right.length;
@@ -122,10 +133,12 @@ function FilterPopover({ session }) {
   };
 
   const GenerateFilterOptions = (userEmail, annotations, filters) => {
+    console.log('annotations: ', annotations)
     // this function takes in a list of annotations and returns an object of all
     // the filter options that are available for this list of annotations and how
     // many matches each option has with the current filtres applied
     const filterOptions = {
+      byGroup: [],
       annotatedBy: [],
       byTags: [],
     };
@@ -305,6 +318,51 @@ function FilterPopover({ session }) {
             />
           </Card.Header>
           <Card.Body>
+            <Row>
+              <Col>
+                <Form.Group style={{ marginTop: '0px' }}>
+                  <Form.Label>By Group</Form.Label>
+                  <Typeahead
+                    id="typehead-annotated-by"
+                    labelKey="name"
+                    renderMenu={renderMenu}
+                    renderToken={renderToken}
+                    multiple
+                    clearButton
+                    highlightOnlyResult
+                    disabled={true}
+                    selected={
+                  UpdateSelectedTokensMatchesValue(
+                    'annotatedBy',
+                    DeepCopyObj(documentFilters.filters.annotatedBy),
+                  )
+                }
+                    onChange={(selected) => { updateFilters('annotatedBy', selected); }}
+                    onMenuToggle={(isOpen) => {
+                      if (isOpen) {
+                        setByTagsTypeheadMarginTop($('#typehead-annotated-by').height() + 10);
+                      } else {
+                        setByTagsTypeheadMarginTop(0);
+                      }
+                    }}
+                    onInputChange={() => {
+                      setByTagsTypeheadMarginTop($('#typehead-annotated-by').height() + 10);
+                    }}
+                    options={filterOptions.annotatedBy}
+                    placeholder="Select one or more groups to filter by"
+                  />
+                  {byUserDisabled && (
+                  <Form.Text className="text-muted">
+                    {`Coming soon! ${documentGroupNameMapping?.array?.length > 0
+                      ? 'This option will be enabled once it\'s fully implemented'
+                      : 'This option is only enabled if this document is shared to multiple groups'}`
+                    }
+                  </Form.Text>
+                  )}
+
+                </Form.Group>
+              </Col>
+            </Row>
             <Row>
               <Col>
                 <Form.Group style={{ marginTop: '0px' }}>
