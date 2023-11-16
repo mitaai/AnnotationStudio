@@ -232,13 +232,16 @@ export default function AnnotationsChannel({
     byDateCreated: <CalendarEventFill size={14} style={{ marginRight: 4 }} />,
   };
 
+  const byWithGroupId = (anno) => byGroupFilterMatch(anno?.creator?.withGroupId ? [anno?.creator?.withGroupId] : [], [selectedGroupId]);
+
   const buttons = [
     {
       text: 'Mine',
       textWidth: 40,
-      count: annotations[slug]?.countByPermissions === undefined
-        ? 0
-        : annotations[slug]?.countByPermissions.mine,
+      count: (annotations[slug]?.mine || [])?.filter(byWithGroupId).length || 0,
+      // count: annotations[slug]?.countByPermissions === undefined
+      //   ? 0
+      //   : annotations[slug]?.countByPermissions.mine,
       selected: selectedPermissions === 'mine',
       onClick: () => { setSelectedPermissions('mine'); },
       icon: <PersonFill size="1.2em" />,
@@ -246,9 +249,10 @@ export default function AnnotationsChannel({
     {
       text: 'Shared with group(s)',
       textWidth: 145,
-      count: annotations[slug]?.countByPermissions === undefined
-        ? 0
-        : annotations[slug]?.countByPermissions.shared,
+      count: (annotations[slug]?.shared || [])?.filter(byWithGroupId).length || 0,
+      // count: annotations[slug]?.countByPermissions === undefined
+      //   ? 0
+      //   : annotations[slug]?.countByPermissions.shared,
       selected: selectedPermissions === 'shared',
       onClick: () => { setSelectedPermissions('shared'); },
       icon: <PeopleFill size="1.2em" />,
@@ -256,9 +260,10 @@ export default function AnnotationsChannel({
     {
       text: 'Shared with me',
       textWidth: 115,
-      count: annotations[slug]?.countByPermissions === undefined
-        ? 0
-        : annotations[slug]?.countByPermissions['shared-with-me'],
+      count: (annotations[slug] && (annotations[slug]['shared-with-me'] || [])?.filter(byWithGroupId).length) || 0,
+      // count: annotations[slug]?.countByPermissions === undefined
+      //   ? 0
+      //   : annotations[slug]?.countByPermissions['shared-with-me'],
       selected: selectedPermissions === 'shared-with-me',
       onClick: () => { setSelectedPermissions('shared-with-me'); },
       icon: <PersonPlusFill size="1.2em" />,
@@ -305,18 +310,23 @@ export default function AnnotationsChannel({
   };
 
   const filterAnnotations = (f) => {
-    const annotationMatchesFilters = (a) => (
+    const annotationMatchesFilters = (a) => {
+
+      return (
       byPermissionsIdeaSpaceFilterMatch({
         user: session.user,
         annotation: a,
         filterPermissions: f.byPermissions,
       })
-      && byGroupFilterMatch(a.target.document.groups, f.byGroup)
+      && (mode === 'as'
+        ? byGroupFilterMatch(a.creator.withGroupId ? [a.creator.withGroupId] : [], [selectedGroupId])
+        : byGroupFilterMatch(a.target.document.groups, f.byGroup)
+      )
       && byDocumentFilterMatch(a.target.document.id, f.byDocument)
       && annotatedByFilterMatch(a.creator.id, f.annotatedBy)
       && byTagFilterMatch(a.body.tags, f.byTag)
       && byDateCreatedFilterMatch(a.created, f.byDateCreated)
-    );
+    )};
 
     const filteredAnnos = [];
     if (appliedFilters.byGroup.length === 0) {
@@ -1284,25 +1294,27 @@ export default function AnnotationsChannel({
       annotationTiles = <EmptyListMessage text="No document selected" />;
     } else if (annotations[slug] === undefined) {
       annotationTiles = <EmptyListMessage />;
-    } else if (annotations[slug][selectedPermissions].length === 0) {
+    } else if (annotations[slug][selectedPermissions].filter(byWithGroupId).length === 0) {
       annotationTiles = <EmptyListMessage />;
     } else {
       rawAnnotationTiles = annotations[slug][selectedPermissions];
 
+      const byGroupRawAnnotationTiles = rawAnnotationTiles.filter(byWithGroupId)
+
       if (selectedPermissions === 'mine') {
-        annotationTiles = rawAnnotationTiles.map((anno) => toAnnotationsTile(anno, {
+        annotationTiles = byGroupRawAnnotationTiles.map((anno) => toAnnotationsTile(anno, {
           maxNumberOfTags: maxNumberOfAnnotationTags,
           shareableLink: `${origin}/documents/${anno.target.document.slug}?mine=true&aid=${anno._id}`,
           setAlerts,
         }));
       } else if (selectedPermissions === 'shared') {
-        annotationTiles = rawAnnotationTiles.map((anno) => toAnnotationsTile(anno, {
+        annotationTiles = byGroupRawAnnotationTiles.map((anno) => toAnnotationsTile(anno, {
           maxNumberOfTags: maxNumberOfAnnotationTags,
           shareableLink: `${origin}/documents/${anno.target.document.slug}?mine=false&aid=${anno._id}`,
           setAlerts,
         }));
       } else if (selectedPermissions === 'shared-with-me') {
-        annotationTiles = rawAnnotationTiles.map((anno) => toAnnotationsTile(anno, {
+        annotationTiles = byGroupRawAnnotationTiles.map((anno) => toAnnotationsTile(anno, {
           maxNumberOfTags: maxNumberOfAnnotationTags,
           shareableLink: `${origin}/documents/${anno.target.document.slug}?mine=false&&sharedWithMe=true&aid=${anno._id}`,
           setAlerts,

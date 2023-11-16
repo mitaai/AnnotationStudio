@@ -16,12 +16,12 @@ const handler = async (req, res) => {
       // eslint-disable-next-line no-useless-escape
       const r = query ? new RegExp(`\.\*${escapeRegExp(query)}\.\*`, 'i') : new RegExp('\.\*', 'i');
 
-      let ownerCondition = condition.permissions === 'mine' ? { owner: token.sub } : {};
+      let ownerCondition = condition?.permissions === 'mine' ? { owner: token.sub } : {};
       if (condition?.groupOwnersAndManagers) {
-        const obj = { $in: condition.groupOwnersAndManagers };
-        if (condition.permissions === 'core-documents') {
+        const obj = { $in: condition?.groupOwnersAndManagers };
+        if (condition?.permissions === 'core-documents') {
           ownerCondition = { owner: obj };
-        } else if (condition.permissions === 'shared') {
+        } else if (condition?.permissions === 'shared') {
           ownerCondition = { owner: { $not: obj } };
         }
       }

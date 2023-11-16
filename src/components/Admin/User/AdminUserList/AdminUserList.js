@@ -92,7 +92,7 @@ const AdminUserList = (props) => {
             SortIcon={SortIcon}
             style={{ flex: 13 }}
           >
-            Role
+            Type
           </SortableHeader>
           <SortableHeader
             field="affiliation"

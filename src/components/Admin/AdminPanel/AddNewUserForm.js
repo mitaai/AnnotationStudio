@@ -101,6 +101,7 @@ function AddNewUserForm({ onHide, setAlerts }) {
                       size="md"
                       type="submit"
                       value="Add User"
+                      style={{ marginBottom: 16 }}
                     />
                   </Col>
                 </>

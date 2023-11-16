@@ -25,6 +25,7 @@ const handler = async (req, res) => {
       if (doc[0]) {
         const document = doc[0];
         const {
+          version,
           _id,
           title,
           owner,
@@ -59,6 +60,7 @@ const handler = async (req, res) => {
           textAnalysisId,
         } = document;
         res.status(200).json({
+          version,
           id: _id,
           title,
           owner,

@@ -533,6 +533,7 @@ function AnnotationCard({
     channelAnnos[side] = [{ ...annotationData, permissions: { ...newPermissions } }];
     const ids = FilterAnnotations(channelAnnos, {
       annotatedBy: documentFilters.filters.annotatedBy.map((opt) => opt.email),
+      byGroup: (documentFilters.filters.byGroup || []).map((opt) => opt.id),
       byTags: documentFilters.filters.byTags.map((opt) => opt.name),
       permissions: documentFilters.filters.permissions,
     });

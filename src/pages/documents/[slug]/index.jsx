@@ -7,6 +7,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import $ from 'jquery';
 import {
+  Button,
   Modal,
   ProgressBar,
   Toast,
@@ -25,7 +26,7 @@ import Layout from '../../../components/Layout';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import AnnotationChannel from '../../../components/AnnotationChannel';
 import Document from '../../../components/Document';
-import { getDocumentTextAnalysis, prefetchDocumentBySlug } from '../../../utils/docUtil';
+import { getDocumentTextAnalysis, getManyGroupNamesById, prefetchDocumentBySlug } from '../../../utils/docUtil';
 import { fetchSharedAnnotationsOnDocument, MAX_NUMBER_OF_ANNOTATIONS_REQUESTED } from '../../../utils/annotationUtil';
 import {
   DocumentAnnotationsContext,
@@ -39,10 +40,11 @@ import AnnotationsOverlay from '../../../components/AnnotationsOverlay';
 import UnsavedChangesToast from '../../../components/UnsavedChangesToast/UnsavedChangesToast';
 import adjustLine, { DeepCopyObj } from '../../../utils/docUIUtils';
 import Footer from '../../../components/Footer';
-import { annotatedByFilterMatch, byPermissionsDocumentViewFilterMatch, byTagFilterMatch } from '../../../utils/annotationFilteringUtil';
+import { annotatedByFilterMatch, byGroupFilterMatch, byPermissionsDocumentViewFilterMatch, byTagFilterMatch } from '../../../utils/annotationFilteringUtil';
 import MaxedTextLengthToast from '../../../components/MaxedTextLengthToast';
 import MaxedAnnotationLengthToast from '../../../components/MaxedAnnotationLengthToast';
 import RunTextAnalysisModal from '../../../components/RunTextAnalysisModal';
+import { groupBy } from 'lodash';
 
 
 const DocumentPage = ({
@@ -58,6 +60,8 @@ const DocumentPage = ({
       defaultPermissions = query.mine === 'true' ? 0 : defaultP;
     }
   }
+
+  console.log('document: ', document)
 
   const documentIsPDF = document && document.uploadContentType && document.uploadContentType.includes('pdf');
 
@@ -80,7 +84,12 @@ const DocumentPage = ({
   ).current;
 
   const [largeFontSize, setLargeFontSize] = useState();
+  const [groupNameMapping, setGroupNameMapping] = useState();
+  const [documentTextLoading, setDocumentTextLoading] = useState(true);
   const [documentLoading, setDocumentLoading] = useState(true);
+  const [showGroupFilteringModal, setShowGroupFilteringModal] = useState(true);
+  const [defaultGroupFilteringId, setDefaultGroupFilteringId] = useState();
+  const [foundDefaultGroupFilteringId, setFoundDefaultGroupFilteringId] = useState();
   const [
     initializedDocumentScrollEventListener,
     setInitializedDocumentScrollEventListener,
@@ -100,6 +109,7 @@ const DocumentPage = ({
     annotationsLoaded: false,
     annotationIds: { left: null, right: null },
     filters: {
+      byGroup: [],
       annotatedBy: [], // list of filter options that have been selected by user
       byTags: [], // list of filter options that have been selected by user},
       permissions: defaultPermissions,
@@ -177,6 +187,7 @@ const DocumentPage = ({
   const AnnotationMatchesFilters = (
     userEmail, a, filters, userId,
   ) => annotatedByFilterMatch(a.creator.email, filters.annotatedBy)
+    && byGroupFilterMatch(a.creator.withGroupId ? [a.creator.withGroupId] : [], filters.byGroup)
     && byTagFilterMatch(a.body.tags, filters.byTags)
     && byPermissionsDocumentViewFilterMatch(
       userEmail,
@@ -648,10 +659,55 @@ const DocumentPage = ({
     }
   }, [annotationChannel1Loaded, annotationChannel2Loaded]);
 
+  useEffect(() => {
+
+    if (!annotationChannel1Loaded || !annotationChannel2Loaded || documentLoading) return;
+
+    setShowGroupFilteringModal(true);
+
+    // if all of these are false we can show the group filtering for document modal
+  }, [annotationChannel1Loaded, annotationChannel2Loaded, documentLoading])
+
   const cloudfrontUrl = process.env.NEXT_PUBLIC_SIGNING_URL.split('/url')[0];
 
-  useEffect(() => {
-    if (document && document.text
+  useEffect(async () => {
+    if (!document) return
+
+    if (document.groups.length >= 0) {
+      const groupNamesRes = await getManyGroupNamesById(document.groups); 
+      const grpNameMapping = {
+        array: groupNamesRes.groups || [],
+        idToName: {
+          'personal-group': 'Personal',
+        },
+        nameToId: {
+          'Personal': 'personal-group',
+        },
+      };
+
+      let defaultGrpFilteringId = undefined;
+
+      grpNameMapping.array.map(({ _id, name }) => {
+        grpNameMapping.idToName[_id] = name;
+        grpNameMapping.nameToId[name] = _id;
+
+        if (_id === query.gid) {
+          defaultGrpFilteringId = _id;
+        }
+
+        return null;
+      });
+
+      setDefaultGroupFilteringId(defaultGrpFilteringId);
+      if (defaultGrpFilteringId) {
+        setFoundDefaultGroupFilteringId(true);
+      }
+      
+      setGroupNameMapping(grpNameMapping)
+    }
+    
+
+    if (document?.text
       && document.text.length < 255 && document.text.includes(cloudfrontUrl)) {
       unfetch(document.text.substring(
         document.text.indexOf(cloudfrontUrl), document.text.indexOf('.html') + 5,
@@ -663,16 +719,23 @@ const DocumentPage = ({
       }).then((res) => {
         res.text().then((result) => {
           document.text = result;
-          setDocumentLoading(false);
+          
+          setDocumentTextLoading(false)
         });
       }).catch((err) => {
         setAlerts((prevState) => [...prevState, { text: err.message, variant: 'danger' }]);
-        setDocumentLoading(false);
+        setDocumentTextLoading(false)
       });
     } else {
-      setDocumentLoading(false);
+      setDocumentTextLoading(false)
     }
   }, [document]);
+
+  useEffect(() => {
+    if (!documentTextLoading && groupNameMapping !== undefined) {
+      setDocumentLoading(false);
+    }
+  }, [documentTextLoading, groupNameMapping]);
 
   useEffect(() => {
     // eslint-disable-next-line no-undef
@@ -856,6 +919,8 @@ const DocumentPage = ({
     return <span>Document could not be found</span>;
   }
 
+  const defaultGroupFilteringIdSelected = (annotationChannel1Loaded && annotationChannel2Loaded) ? foundDefaultGroupFilteringId || showGroupFilteringModal === null : false;
+
   return (
     <DocumentActiveAnnotationsContext.Provider value={[activeAnnotations, setActiveAnnotations]}>
       <DocumentContext.Provider value={[document, documentZoom, setDocumentZoom]}>
@@ -875,7 +940,7 @@ const DocumentPage = ({
           ]}
         >
           <DocumentFiltersContext.Provider
-            value={[documentFilters, setDocumentFilters, FilterAnnotations]}
+            value={[documentFilters, setDocumentFilters, FilterAnnotations, groupNameMapping, defaultGroupFilteringId, defaultGroupFilteringIdSelected]}
           >
             <Layout
               type="document"
@@ -976,6 +1041,7 @@ const DocumentPage = ({
                           user={session ? session.user : undefined}
                           showCannotAnnotateDocumentToast={showCannotAnnotateDocumentToast}
                           setShowCannotAnnotateDocumentToast={setShowCannotAnnotateDocumentToast}
+                          defaultGroupFilteringId={defaultGroupFilteringId}
                         />
                       </div>
                       <AnnotationChannel
@@ -999,6 +1065,35 @@ const DocumentPage = ({
                     </div>
                   </div>
                   <Footer />
+                  <Modal show={document.version === 4 && !foundDefaultGroupFilteringId && showGroupFilteringModal} onHide={() => {}}>
+                    <Modal.Header>
+                      <Modal.Title>Opening Document with group</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                      {groupNameMapping.array.length > 0 ? groupNameMapping.array.map(({ _id, name }) => <Button
+                        style={{ margin: '0px 10px 10px 0px'}}
+                        variant={defaultGroupFilteringId === _id ? 'dark' : 'light'}
+                        onClick={() => setDefaultGroupFilteringId(_id)}
+                      >
+                        {name}
+                      </Button>) : <Button
+                        style={{ margin: '0px 10px 10px 0px'}}
+                        variant={defaultGroupFilteringId === 'personal-group' ? 'dark' : 'light'}
+                        onClick={() => setDefaultGroupFilteringId('personal-group')}
+                      >
+                        Personal
+                      </Button>}
+                    </Modal.Body>
+                    <Modal.Footer>
+                      <Button
+                        variant="primary"
+                        onClick={() => setShowGroupFilteringModal(null)}
+                        disabled={defaultGroupFilteringId === undefined}
+                      >
+                        Continue
+                      </Button>
+                    </Modal.Footer>
+                  </Modal>
                   <Modal
                     show={!(annotationChannel1Loaded && annotationChannel2Loaded)}
                     backdrop="static"

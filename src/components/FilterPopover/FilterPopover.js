@@ -49,6 +49,9 @@ function FilterPopover({ session }) {
     documentFilters,
     setDocumentFilters,
     FilterAnnotations,
+    documentGroupNameMapping,
+    defaultGroupFilteringId,
+    defaultGroupFilteringIdSelected,
   ] = useContext(DocumentFiltersContext);
 
   const [byTagsTypeheadMarginTop, setByTagsTypeheadMarginTop] = useState(0);
@@ -60,6 +63,7 @@ function FilterPopover({ session }) {
 
   const GetNumberOfMatchesForThisPermission = (permissions) => {
     const ids = FilterAnnotations(channelAnnotations, {
+      byGroup: [],
       annotatedBy: [],
       byTags: [],
       permissions,
@@ -102,7 +106,15 @@ function FilterPopover({ session }) {
   }
 
   // OR filter
+  const GetNumberOfMatchesForThisGroup = (annotations, currentFilters, filterGroupId) => {
+    const f = Object.assign(DeepCopyObj(currentFilters), { byGroup: [filterGroupId] });
+    const ids = FilterAnnotations(annotations, f);
+    return ids.left.length + ids.right.length;
+  };
+
+  // OR filter
   const GetNumberOfMatchesForThisEmail = (annotations, currentFilters, filterEmail) => {
+    
     const f = Object.assign(DeepCopyObj(currentFilters), { annotatedBy: [filterEmail] });
     const ids = FilterAnnotations(annotations, f);
     return ids.left.length + ids.right.length;
@@ -122,10 +134,12 @@ function FilterPopover({ session }) {
   };
 
   const GenerateFilterOptions = (userEmail, annotations, filters) => {
+    console.log('annotations: ', annotations)
     // this function takes in a list of annotations and returns an object of all
     // the filter options that are available for this list of annotations and how
     // many matches each option has with the current filtres applied
     const filterOptions = {
+      byGroup: [],
       annotatedBy: [],
       byTags: [],
     };
@@ -165,9 +179,35 @@ function FilterPopover({ session }) {
               matches: GetNumberOfMatchesForThisTag(annotations, filters, tag),
             });
           }
+
+          // third we will add this annotions byGroup
+          // take these new tags and map them into an object
+          // and add them to the existing list of byTags array
+          index = a.creator.withGroupId === undefined ? 0 : filterOptions.byGroup.findIndex((opt) => opt.id === a.creator.withGroupId);
+          if (index === -1) {
+            filterOptions.byGroup.push({
+              id: a.creator.withGroupId,
+              name: documentGroupNameMapping.idToName[a.creator.withGroupId],
+              matches: GetNumberOfMatchesForThisGroup(annotations, filters, a.creator.withGroupId),
+            });
+          }
         }
       }
     }
+
+    // we need to check if there are byGroup ids that were not accounted for because there are not annotations that are annotated with the group
+    const accountedForGroupIds = filterOptions.byGroup.map((opt) => opt.id);
+    const unaccountedForGroupIds = (documentGroupNameMapping?.array || []).filter((opt) => !accountedForGroupIds.includes(opt._id))
+    unaccountedForGroupIds.map(({ _id, name }) => {
+
+      filterOptions.byGroup.push({
+        id: _id,
+        name: name,
+        matches: 0
+      });
+
+      return null;
+    })
 
     return filterOptions;
   };
@@ -175,11 +215,14 @@ function FilterPopover({ session }) {
 
   const f = {
     annotatedBy: documentFilters.filters.annotatedBy.map((opt) => opt.email),
+    byGroup: (documentFilters.filters.byGroup || []).map((opt) => opt.id),
     byTags: documentFilters.filters.byTags.map((opt) => opt.id),
     permissions: documentFilters.filters.permissions,
   };
 
   const filterOptions = GenerateFilterOptions(session.user.email, channelAnnotations, f);
+
+  console.log('filterOptions: ', filterOptions)
 
   const numberOfMatchesForNoTag = GetNumberOfMatchesForNoTag(channelAnnotations, f);
 
@@ -198,10 +241,27 @@ function FilterPopover({ session }) {
   });
 
   useEffect(() => {
+    console.log('defaultGroupFilteringIdSelected: ', defaultGroupFilteringIdSelected)
+    if (!defaultGroupFilteringIdSelected) return;
+
+    console.log('defaultGroupFilteringId: ', defaultGroupFilteringId)
+
+    console.log('filterOptions.byGroup: ', filterOptions.byGroup)
+
+    const selected = filterOptions.byGroup.find(({ id }) => id === defaultGroupFilteringId)
+    console.log('selected: ', selected)
+    if (selected) {
+      updateFilters('byGroup', [selected])
+    }
+  }, [defaultGroupFilteringIdSelected])
+
+  useEffect(() => {
     if (documentFilters.filterOnInit && documentFilters.annotationsLoaded) {
       const FilterOnInit = () => {
+        
         const annotationIds = FilterAnnotations(channelAnnotations, {
           annotatedBy: documentFilters.filters.annotatedBy.map((opt) => opt.email),
+          byGroup: (documentFilters.filters.byGroup || []).map((opt) => opt.id),
           byTags: documentFilters.filters.byTags.map((opt) => opt.name),
           permissions: documentFilters.filters.permissions,
         });
@@ -217,11 +277,12 @@ function FilterPopover({ session }) {
   }, [documentFilters]);
 
   const updateFilters = (type, selected) => {
-
+    console.log('selected: ', selected)
     documentFilters.filters[type] = selected;
 
     const annotationIds = FilterAnnotations(channelAnnotations, {
       annotatedBy: documentFilters.filters.annotatedBy.map((opt) => opt.email),
+      byGroup: (documentFilters.filters.byGroup || []).map((opt) => opt.id),
       byTags: documentFilters.filters.byTags.map((opt) => opt.id),
       permissions: documentFilters.filters.permissions,
     });
@@ -305,6 +366,48 @@ function FilterPopover({ session }) {
             />
           </Card.Header>
           <Card.Body>
+            <Row>
+              <Col>
+                <Form.Group style={{ marginTop: '0px' }}>
+                  <Form.Label>By Group</Form.Label>
+                  <Typeahead
+                    id="typehead-by-group"
+                    labelKey="name"
+                    disabled={!defaultGroupFilteringIdSelected}
+                    renderMenu={renderMenu}
+                    renderToken={renderToken}
+                    multiple
+                    clearButton
+                    highlightOnlyResult
+                    selected={
+                      UpdateSelectedTokensMatchesValue(
+                        'byGroup',
+                        DeepCopyObj(documentFilters.filters.byGroup),
+                      )
+                    }
+                    onChange={(selected) => { updateFilters('byGroup', selected); }}
+                    onMenuToggle={(isOpen) => {
+                      if (isOpen) {
+                        setByTagsTypeheadMarginTop($('#typehead-by-group').height() + 10);
+                      } else {
+                        setByTagsTypeheadMarginTop(0);
+                      }
+                    }}
+                    onInputChange={() => {
+                      setByTagsTypeheadMarginTop($('#typehead-by-group').height() + 10);
+                    }}
+                    options={filterOptions.byGroup}
+                    placeholder="Select one or more groups to filter by"
+                  />
+                  <Form.Text className="text-muted">
+                    {defaultGroupFilteringIdSelected
+                      ? '' : 'This option is only enabled for v4 and higher documnents (updated 10/06/2023)'
+                    }
+                  </Form.Text>
+
+                </Form.Group>
+              </Col>
+            </Row>
             <Row>
               <Col>
                 <Form.Group style={{ marginTop: '0px' }}>
@@ -428,7 +531,8 @@ function FilterPopover({ session }) {
 
 
   const filterActive = (documentFilters.filters.annotatedBy.length
-  + documentFilters.filters.byTags.length > 0);
+    + documentFilters.filters.byGroup.length
+    + documentFilters.filters.byTags.length > 0);
 
   const buttons = [
     {
@@ -556,8 +660,9 @@ function FilterPopover({ session }) {
         }
 
         #filter-popover {
-          max-width: 30vw;
-          width: 30vw;
+          max-width: 20vw;
+          width: 20vw;
+          min-width: 385px;
         }
 
         #filter-popover .card {
