@@ -15,7 +15,7 @@ export default function AnnotationTile({
   activityDate,
   draggable,
   tags,
-  maxNumberOfAnnotationTags = 3,
+  maxNumberOfAnnotationTags = 1,
   onClick = () => {},
   onDelete,
   openInAnnotationStudio,
@@ -40,8 +40,7 @@ export default function AnnotationTile({
   if (tags.length > maxNumberOfAnnotationTags) {
     tileBadges = [
       <TileBadge key="tag1" color="grey" text={tags[0]} />,
-      <TileBadge key="tag2" color="grey" text={tags[1]} marginLeft={5} />,
-      <TileBadge key="moreTags" color="grey" text={`+${tags.length - 2} more`} marginLeft={5} />,
+      <TileBadge key="moreTags" color="grey" text={`+${tags.length - 1}`} marginLeft={5} />,
     ];
   } else {
     tileBadges = tags.map((t, i) => <TileBadge key={t} color="grey" text={t} marginLeft={i > 0 ? 5 : 0} />);

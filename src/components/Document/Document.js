@@ -101,6 +101,7 @@ export default function Document({
   displayAnnotationsInChannels,
   setAlerts,
   setShowCannotAnnotateDocumentToast,
+  defaultGroupFilteringId,
 }) {
   const myRef = useRef();
   const documentZoomRef = useRef(documentZoom);
@@ -291,6 +292,7 @@ export default function Document({
         id: user.id,
         name: user.name,
         email: user.email,
+        withGroupId: defaultGroupFilteringId,
       },
       permissions: {
         groups: [],

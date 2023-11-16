@@ -39,7 +39,7 @@ export default function DocumentsChannel({
   documentPermissions,
   setDocumentPermissions,
   groupMembers,
-  maxNumberOfDocumentGroups = 3,
+  maxNumberOfDocumentGroups = 1,
   dashboardState,
   retry,
   setRetry,

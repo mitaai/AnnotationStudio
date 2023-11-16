@@ -25,6 +25,7 @@ const handler = async (req, res) => {
       if (doc[0]) {
         const document = doc[0];
         const {
+          version,
           title,
           slug,
           owner,
@@ -60,6 +61,7 @@ const handler = async (req, res) => {
           textAnalysisId,
         } = document;
         res.status(200).json({
+          version,
           title,
           slug,
           owner,
@@ -100,6 +102,7 @@ const handler = async (req, res) => {
     const token = await getToken({ req, secret });
     if (token && token.exp > 0) {
       const {
+        version,
         title,
         groups,
         slug,
@@ -130,6 +133,7 @@ const handler = async (req, res) => {
         textAnalysisId,
       } = req.body;
       const fieldsToSet = {
+        version,
         title,
         groups,
         slug,

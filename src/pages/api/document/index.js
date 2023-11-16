@@ -13,6 +13,7 @@ const handler = async (req, res) => {
       let { groups } = req.body;
       groups = groups ? groups.filter((group) => group !== '') : {};
       const {
+        version,
         title,
         slug,
         resourceType,
@@ -43,6 +44,7 @@ const handler = async (req, res) => {
         textAnalysisId,
       } = req.body;
       const metadata = {
+        version,
         title,
         slug,
         groups,

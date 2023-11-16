@@ -131,7 +131,7 @@ const AdminUserTable = ({
             <td>{user.affiliation}</td>
           </tr>
           <tr>
-            <th>Type</th>
+            <th>Role</th>
             <td><AdminRoleBadge role={user.role || 'user'} /></td>
           </tr>
           <tr>

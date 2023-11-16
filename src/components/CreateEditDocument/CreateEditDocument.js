@@ -379,6 +379,7 @@ const CreateEditDocument = ({
 
     const resourceTypeAdditionalMetadata = resourceTypeMetadataObj(rt);
     const newDocument = {
+      version: 4,
       uploadContentType: htmlValue ? contentType : 'text/slate-html',
       fileObj,
       title: title === '' ? (fileName || 'Untitled') : title,
@@ -417,6 +418,7 @@ const CreateEditDocument = ({
     const patchUrl = `/api/document/${document.id}`;
     const resourceTypeAdditionalMetadata = resourceTypeMetadataObj(rt);
     const newDocument = {
+      version: document.version,
       title: title === '' ? 'Untitled' : title,
       groups: orderOfGroupsShared.core.concat(orderOfGroupsShared.contributions),
       slug: document.slug,

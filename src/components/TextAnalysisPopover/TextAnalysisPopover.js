@@ -159,8 +159,9 @@ function TextAnalysisPopover({ textAnalysisData, loadingTextAnalysisData, getTex
           }
   
           #filter-popover {
-            max-width: 30vw;
-            width: 30vw;
+            max-width: 20vw;
+            width: 20vw;
+            min-width: 385px;
           }
   
           #filter-popover .card {

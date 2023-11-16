@@ -43,7 +43,6 @@ export default function DocumentTile({
   const g = groups.slice();
 
   if (g.length > 0) {
-    console.log('groups: ', groups)
     const indexOfSelectedGroup = groups.findIndex((grp) => grp?._id === selectedGroupId);
     const selectedGroup = g.splice(indexOfSelectedGroup, 1)[0];
     tileBadges = [
@@ -82,7 +81,7 @@ export default function DocumentTile({
         </Popover>
       )}
       color="grey"
-      text={`+${g.length} more`}
+      text={`+${g.length}`}
       marginLeft={5}
     />);
   } else {
