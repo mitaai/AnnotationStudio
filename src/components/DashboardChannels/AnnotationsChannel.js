@@ -175,15 +175,16 @@ export default function AnnotationsChannel({
     if (selectedGroupId && selectedDocumentId) {
       const obj = documents[selectedGroupId]
 
-      for (const [key, arr] of Object.entries(obj)) {
-        if (Array.isArray(arr)) {
-          for (let d of arr) {
-            if (d._id === selectedDocumentId) {
-              return d
+      if (obj) {
+        for (const [key, arr] of Object.entries(obj)) {
+          if (Array.isArray(arr)) {
+            for (let d of arr) {
+              if (d._id === selectedDocumentId) {
+                return d
+              }
             }
           }
         }
-        
       }
     }
     

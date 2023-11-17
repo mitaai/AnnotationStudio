@@ -83,7 +83,6 @@ const AnnotationChannelWithContext = ({
   setLargeFontSize,
 }) => {
 
-  console.log('membersIntersection: ', membersIntersection)
   const [, documentZoom] = useContext(DocumentContext);
   const [channelAnnotations, , expandedAnnotations] = useContext(DocumentAnnotationsContext);
   const [documentFilters] = useContext(DocumentFiltersContext);
