@@ -213,9 +213,9 @@ export default function AnnotationsChannel({
     );
 
   const ASLoadMoreAnnos = (
-    (annotations[slug] && annotations[slug]?.countByPermissions
+    annotations[slug]?.countByPermissions
     && annotations[slug]?.countByPermissions[selectedPermissions]
-      > (annotations[slug][selectedPermissions] || []).filter(byWithGroupId).length))
+      > annotations[slug][selectedPermissions].length)
     ? loadComponent
     : <></>;
 
@@ -255,7 +255,6 @@ export default function AnnotationsChannel({
     byTag: <BookmarkFill size={14} style={{ marginRight: 4 }} />,
     byDateCreated: <CalendarEventFill size={14} style={{ marginRight: 4 }} />,
   };
-  
 
   const buttons = [
     {
