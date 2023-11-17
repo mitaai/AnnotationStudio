@@ -189,9 +189,9 @@ export default function AnnotationsChannel({
     );
 
   const ASLoadMoreAnnos = (
-    (annotations[slug] && annotations[slug]?.countByPermissions
+    annotations[slug]?.countByPermissions
     && annotations[slug]?.countByPermissions[selectedPermissions]
-      > (annotations[slug][selectedPermissions] || []).filter(byWithGroupId).length))
+      > annotations[slug][selectedPermissions].length)
     ? loadComponent
     : <></>;
 
@@ -232,28 +232,7 @@ export default function AnnotationsChannel({
     byDateCreated: <CalendarEventFill size={14} style={{ marginRight: 4 }} />,
   };
 
-  const getDocumentFromDocuments = () => {
-    if (selectedGroupId && selectedDocumentId) {
-      const obj = documents[selectedGroupId]
-      // console.log('obj: ', Object.entries(obj))
-      for (const [key, arr] of Object.entries(obj)) {
-        if (Array.isArray(arr)) {
-          for (let d of arr) {
-            if (d._id === selectedDocumentId) {
-              return d
-            }
-          }
-        }
-        
-      }
-    }
-    
-    return undefined
-  }
-
-  const byWithGroupId = (anno) => (
-    getDocumentFromDocuments()?.version === 4 ? byGroupFilterMatch(anno?.creator?.withGroupId ? [anno?.creator?.withGroupId] : [], [selectedGroupId]) : true
-  );
+  const byWithGroupId = (anno) => byGroupFilterMatch(anno?.creator?.withGroupId ? [anno?.creator?.withGroupId] : [], [selectedGroupId]);
 
   const buttons = [
     {
