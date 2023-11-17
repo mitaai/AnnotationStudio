@@ -115,7 +115,7 @@ export default function GroupsChannel({
     ) || []).concat(seachQueryGroups.sort(sortGroups));
 
     // Personal Psuedo group will only be apart of the active groups not archived
-    console.log(rawGroupTiles);
+    // console.log(rawGroupTiles);
     groupTiles = rawGroupTiles.map(({
       id, name, memberCount, role, isPrivateGroup,
     }) => (

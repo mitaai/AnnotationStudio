@@ -171,6 +171,29 @@ export default function AnnotationsChannel({
     callback();
   }).current;
 
+  const getDocumentFromDocuments = () => {
+    if (selectedGroupId && selectedDocumentId) {
+      const obj = documents[selectedGroupId]
+
+      for (const [key, arr] of Object.entries(obj)) {
+        if (Array.isArray(arr)) {
+          for (let d of arr) {
+            if (d._id === selectedDocumentId) {
+              return d
+            }
+          }
+        }
+        
+      }
+    }
+    
+    return undefined
+  }
+
+  const byWithGroupId = (anno) => (
+    getDocumentFromDocuments()?.version === 4 ? byGroupFilterMatch(anno?.creator?.withGroupId ? [anno?.creator?.withGroupId] : [], [selectedGroupId]) : true
+  );
+
   const loadComponent = loadMore
     ? <ListLoadingSpinner />
     : (
@@ -231,29 +254,7 @@ export default function AnnotationsChannel({
     byTag: <BookmarkFill size={14} style={{ marginRight: 4 }} />,
     byDateCreated: <CalendarEventFill size={14} style={{ marginRight: 4 }} />,
   };
-
-  const getDocumentFromDocuments = () => {
-    if (selectedGroupId && selectedDocumentId) {
-      const obj = documents[selectedGroupId]
-      // console.log('obj: ', Object.entries(obj))
-      for (const [key, arr] of Object.entries(obj)) {
-        if (Array.isArray(arr)) {
-          for (let d of arr) {
-            if (d._id === selectedDocumentId) {
-              return d
-            }
-          }
-        }
-        
-      }
-    }
-    
-    return undefined
-  }
-
-  const byWithGroupId = (anno) => (
-    getDocumentFromDocuments()?.version === 4 ? byGroupFilterMatch(anno?.creator?.withGroupId ? [anno?.creator?.withGroupId] : [], [selectedGroupId]) : true
-  );
+  
 
   const buttons = [
     {
