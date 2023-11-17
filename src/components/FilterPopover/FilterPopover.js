@@ -134,7 +134,7 @@ function FilterPopover({ session }) {
   };
 
   const GenerateFilterOptions = (userEmail, annotations, filters) => {
-    console.log('annotations: ', annotations)
+    // console.log('annotations: ', annotations)
     // this function takes in a list of annotations and returns an object of all
     // the filter options that are available for this list of annotations and how
     // many matches each option has with the current filtres applied
@@ -222,7 +222,7 @@ function FilterPopover({ session }) {
 
   const filterOptions = GenerateFilterOptions(session.user.email, channelAnnotations, f);
 
-  console.log('filterOptions: ', filterOptions)
+  // console.log('filterOptions: ', filterOptions)
 
   const numberOfMatchesForNoTag = GetNumberOfMatchesForNoTag(channelAnnotations, f);
 
