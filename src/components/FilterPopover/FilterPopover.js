@@ -52,6 +52,7 @@ function FilterPopover({ session }) {
     documentGroupNameMapping,
     defaultGroupFilteringId,
     defaultGroupFilteringIdSelected,
+    documentVersion,
   ] = useContext(DocumentFiltersContext);
 
   const [byTagsTypeheadMarginTop, setByTagsTypeheadMarginTop] = useState(0);
@@ -241,15 +242,12 @@ function FilterPopover({ session }) {
   });
 
   useEffect(() => {
-    console.log('defaultGroupFilteringIdSelected: ', defaultGroupFilteringIdSelected)
+    if (documentVersion < 4 || !documentVersion) return;
+    // console.log('defaultGroupFilteringIdSelected: ', defaultGroupFilteringIdSelected)
     if (!defaultGroupFilteringIdSelected) return;
 
-    console.log('defaultGroupFilteringId: ', defaultGroupFilteringId)
-
-    console.log('filterOptions.byGroup: ', filterOptions.byGroup)
-
     const selected = filterOptions.byGroup.find(({ id }) => id === defaultGroupFilteringId)
-    console.log('selected: ', selected)
+
     if (selected) {
       updateFilters('byGroup', [selected])
     }
@@ -277,7 +275,6 @@ function FilterPopover({ session }) {
   }, [documentFilters]);
 
   const updateFilters = (type, selected) => {
-    console.log('selected: ', selected)
     documentFilters.filters[type] = selected;
 
     const annotationIds = FilterAnnotations(channelAnnotations, {
@@ -400,8 +397,8 @@ function FilterPopover({ session }) {
                     placeholder="Select one or more groups to filter by"
                   />
                   <Form.Text className="text-muted">
-                    {defaultGroupFilteringIdSelected
-                      ? '' : 'This option is only enabled for v4 and higher documnents (updated 10/06/2023)'
+                    {documentVersion >= 4
+                      ? '' : 'Update! This filter option only works fully for documents made after October 6th, 2023'
                     }
                   </Form.Text>
 

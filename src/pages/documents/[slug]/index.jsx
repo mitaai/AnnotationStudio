@@ -61,8 +61,6 @@ const DocumentPage = ({
     }
   }
 
-  console.log('document: ', document)
-
   const documentIsPDF = document && document.uploadContentType && document.uploadContentType.includes('pdf');
 
   const focusedAnnotationsRef = useRef({ left: null, right: null }).current;
@@ -940,7 +938,7 @@ const DocumentPage = ({
           ]}
         >
           <DocumentFiltersContext.Provider
-            value={[documentFilters, setDocumentFilters, FilterAnnotations, groupNameMapping, defaultGroupFilteringId, defaultGroupFilteringIdSelected]}
+            value={[documentFilters, setDocumentFilters, FilterAnnotations, groupNameMapping, defaultGroupFilteringId, defaultGroupFilteringIdSelected, document?.version]}
           >
             <Layout
               type="document"
