@@ -61,6 +61,7 @@ const fetchSharedAnnotationsOnDocument = async ({
   userEmail,
   countByPermissions,
   selectedPermissions,
+  selectedGroupId,
 }) => {
   const url = `${prefetch ? appendProtocolIfMissing(process.env.SITE) : ''}/api/annotations`;
   /*
@@ -91,6 +92,7 @@ const fetchSharedAnnotationsOnDocument = async ({
     userEmail,
     countByPermissions,
     selectedPermissions,
+    selectedGroupId,
   };
   // eslint-disable-next-line no-undef
   const f = prefetch ? fetch : unfetch;
@@ -105,13 +107,14 @@ const fetchSharedAnnotationsOnDocument = async ({
   if (res.status === 200) {
     const response = await res.json();
     const {
-      annotations, count, countByPermissions: cbp, annotationsByPermissions,
+      annotations, count, countByPermissions: cbp, annotationsByPermissions, countByGroup,
     } = response;
     return Promise.resolve({
       annotations,
       count,
       countByPermissions: cbp,
       annotationsByPermissions,
+      countByGroup,
     });
   } if (res.status === 404) {
     return Promise.resolve([]);
