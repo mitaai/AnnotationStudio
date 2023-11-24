@@ -192,7 +192,7 @@ export default function AnnotationsChannel({
   }
 
   const byWithGroupId = (anno) => (
-    getDocumentFromDocuments()?.version === 4 ? byGroupFilterMatch(anno?.creator?.withGroupId ? [anno?.creator?.withGroupId] : [], [selectedGroupId]) : true
+    getDocumentFromDocuments()?.version >= 4 ? byGroupFilterMatch(anno?.creator?.withGroupId ? [anno?.creator?.withGroupId] : [], [selectedGroupId]) : true
   );
 
   const loadComponent = loadMore
@@ -256,11 +256,17 @@ export default function AnnotationsChannel({
     byDateCreated: <CalendarEventFill size={14} style={{ marginRight: 4 }} />,
   };
 
+  const newDocumentVersion = getDocumentFromDocuments()?.version >= 4;
+
   const buttons = [
     {
       text: 'Mine',
       textWidth: 40,
-      count: (annotations[slug]?.mine || [])?.filter(byWithGroupId).length || 0,
+      count: newDocumentVersion && annotations[slug]?.countByGroup && annotations[slug]?.countByGroup[selectedGroupId]?.mine !== undefined
+        ? annotations[slug]?.countByGroup[selectedGroupId]?.mine
+        : (annotations[slug]?.countByPermissions === undefined ? 0 : annotations[slug]?.countByPermissions.mine),
+        
+      // count: (annotations[slug]?.mine || [])?.filter(byWithGroupId).length || 0,
       // count: annotations[slug]?.countByPermissions === undefined
       //   ? 0
       //   : annotations[slug]?.countByPermissions.mine,
@@ -271,7 +277,10 @@ export default function AnnotationsChannel({
     {
       text: 'Shared with group(s)',
       textWidth: 145,
-      count: (annotations[slug]?.shared || [])?.filter(byWithGroupId).length || 0,
+      count: newDocumentVersion && annotations[slug]?.countByGroup && annotations[slug]?.countByGroup[selectedGroupId]?.shared !== undefined
+        ? annotations[slug]?.countByGroup[selectedGroupId]?.shared
+        : (annotations[slug]?.countByPermissions === undefined ? 0 : annotations[slug]?.countByPermissions.shared),
+      // count: (annotations[slug]?.shared || [])?.filter(byWithGroupId).length || 0,
       // count: annotations[slug]?.countByPermissions === undefined
       //   ? 0
       //   : annotations[slug]?.countByPermissions.shared,
@@ -282,7 +291,10 @@ export default function AnnotationsChannel({
     {
       text: 'Shared with me',
       textWidth: 115,
-      count: (annotations[slug] && (annotations[slug]['shared-with-me'] || [])?.filter(byWithGroupId).length) || 0,
+      count: newDocumentVersion && annotations[slug]?.countByGroup && annotations[slug]?.countByGroup[selectedGroupId]?.['shared-with-me'] !== undefined
+        ? annotations[slug]?.countByGroup[selectedGroupId]?.['shared-with-me']
+        : (annotations[slug]?.countByPermissions === undefined ? 0 : annotations[slug]?.countByPermissions['shared-with-me']),
+      // count: (annotations[slug] && (annotations[slug]['shared-with-me'] || [])?.filter(byWithGroupId).length) || 0,
       // count: annotations[slug]?.countByPermissions === undefined
       //   ? 0
       //   : annotations[slug]?.countByPermissions['shared-with-me'],
@@ -295,6 +307,7 @@ export default function AnnotationsChannel({
   const updateAnnotations = (annos) => {
     const {
       countByPermissions,
+      countByGroup,
       page = 1,
       mine = [],
       shared = [],
@@ -306,10 +319,31 @@ export default function AnnotationsChannel({
           annotations[slug].countByPermissions.mine = countByPermissions.mine;
         }
         if (countByPermissions?.shared) {
-          annotations[slug].countByPermissions.mine = countByPermissions.mine;
+          annotations[slug].countByPermissions.shared = countByPermissions.shared;
         }
         if (countByPermissions['shared-with-me']) {
           annotations[slug].countByPermissions['shared-with-me'] = countByPermissions['shared-with-me'];
+        }
+      }
+
+      if (countByGroup) {
+        for(const [groupId, counts] of Object.entries(countByGroup)) {
+          if (annotations[slug].countByGroup[groupId] === undefined) {
+            annotations[slug].countByGroup[groupId] = {};
+          }
+
+          if (counts?.mine !== undefined) {
+            annotations[slug].countByGroup[groupId].mine = counts.mine;
+          }
+
+          if (counts?.shared !== undefined) {
+            annotations[slug].countByGroup[groupId].shared = counts.shared;
+          }
+
+          if (counts['shared-with-me'] !== undefined) {
+            annotations[slug].countByGroup[groupId]['shared-with-me'] = counts['shared-with-me'];
+          }
+
         }
       }
 
@@ -320,6 +354,7 @@ export default function AnnotationsChannel({
     } else {
       annotations[slug] = {
         countByPermissions,
+        countByGroup,
         page,
         mine,
         shared,
@@ -1144,6 +1179,7 @@ export default function AnnotationsChannel({
   );
 
   useEffect(() => {
+
     // user refreshing idea space
     if (refresh && mode === 'is') {
       fetchAllAnnotations();
@@ -1156,7 +1192,7 @@ export default function AnnotationsChannel({
       return;
     }
 
-    if (annotations[slug] !== undefined && !refresh && !loadMore) {
+    if (annotations[slug] && annotations[slug]?.countByGroup?.[selectedGroupId] && !refresh && !loadMore) {
       // we already have the annotations for this document so we don't need to reload that
       // information
       return;
@@ -1185,11 +1221,14 @@ export default function AnnotationsChannel({
       userId: session.user.id,
       userEmail: session.user.email,
       selectedPermissions,
+      selectedGroupId,
     })
       .then((data) => {
+
         const a = {
           page: pageNumber,
           countByPermissions: data.countByPermissions,
+          countByGroup: data.countByGroup,
         };
 
         if (data.annotationsByPermissions) {
@@ -1228,7 +1267,7 @@ export default function AnnotationsChannel({
         setLastUpdated(new Date());
       });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug, refresh, loadMore]);
+  }, [slug, selectedGroupId, refresh, loadMore]);
 
   useEffect(() => {
     // this keeps the refresh popover text up-to-date

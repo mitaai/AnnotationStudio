@@ -2,6 +2,7 @@ import { ObjectID } from 'mongodb';
 import { getToken } from 'next-auth/jwt';
 import { byPermissionFilter, MAX_NUMBER_OF_ANNOTATIONS_REQUESTED } from '../../utils/annotationUtil';
 import { connectToDatabase } from '../../utils/dbUtil';
+import { byGroupFilterMatch } from '../../utils/annotationFilteringUtil';
 
 const secret = process.env.AUTH_SECRET;
 
@@ -18,6 +19,7 @@ const handler = async (req, res) => {
         userId,
         userEmail,
         selectedPermissions,
+        selectedGroupId,
         perPage = MAX_NUMBER_OF_ANNOTATIONS_REQUESTED,
       } = req.body;
 
@@ -35,7 +37,7 @@ const handler = async (req, res) => {
         const p = page || 1;
         const skip = p < 0 ? 0 : (p - 1) * perPage;
 
-        if (countByPermissions && selectedPermissions) {
+        if ((countByPermissions || selectedGroupId) && selectedPermissions) {
           // the user is loading annotations for a specific document with specific permissions for
           // the dashboard for the first time / refreshing
           arr = await db
@@ -65,15 +67,35 @@ const handler = async (req, res) => {
             'shared-with-me': cbp['shared-with-me'].slice(skip, perPage),
           };
 
+          let countByGroup = undefined;
+
+          if (selectedGroupId) {
+            // add in the count for this specific selectedGroupId
+
+            const byWithGroupId = (anno) => (
+              byGroupFilterMatch(anno?.creator?.withGroupId ? [anno?.creator?.withGroupId] : [], [selectedGroupId])
+            );
+
+            countByGroup = {
+              [selectedGroupId]: {
+                mine: cbp.mine.filter(byWithGroupId).length,
+                shared: cbp.shared.filter(byWithGroupId).length,
+                'shared-with-me': cbp['shared-with-me'].filter(byWithGroupId).length,
+              },
+            }
+
+          }
+
           res.status(200).json({
             annotations: annotationsByPermissions[selectedPermissions],
             annotationsByPermissions,
             count: arr.length,
-            countByPermissions: {
+            countByPermissions: countByPermissions ? {
               mine: cbp.mine.length,
               shared: cbp.shared.length,
               'shared-with-me': cbp['shared-with-me'].length,
-            },
+            } : {},
+            countByGroup,
           });
         } else if (selectedPermissions) {
           // The user is trying to load more annotations for a specific document with specific
@@ -102,13 +124,31 @@ const handler = async (req, res) => {
 
           annotationsByPermissions[selectedPermissions] = arr.slice(skip, skip + perPage);
 
+          let countByGroup = undefined;
+
+          if (selectedGroupId) {
+            // add in the count for this specific selectedGroupId
+
+            const byWithGroupId = (anno) => (
+              byGroupFilterMatch(anno?.creator?.withGroupId ? [anno?.creator?.withGroupId] : [], [selectedGroupId])
+            );
+
+            countByGroup = {
+              [selectedGroupId]: {
+                [selectedPermissions]: annotationsByPermissions[selectedPermissions].filter(byWithGroupId).length,
+              },
+            };
+
+          }
+
           res.status(200).json({
             annotations: annotationsByPermissions[selectedPermissions],
             annotationsByPermissions,
+            count: arr.length,
             countByPermissions: {
               [selectedPermissions]: arr.length,
             },
-            count: arr.length,
+            countByGroup,
           });
         } else {
           // user is trying to load annotations by slug for document view. Needs the first packet
