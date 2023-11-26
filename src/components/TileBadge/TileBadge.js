@@ -23,7 +23,10 @@ export default function TileBadge({
   marginLeft = 0,
   marginBottom = 0,
   marginRight = 0,
-  maxWidth = 200,
+  maxTextWidth = 200,
+  maxHeight,
+  textLineHeight,
+  display,
   href,
   fontSize = 10,
   icon,
@@ -94,12 +97,14 @@ export default function TileBadge({
           cursor: 'default',
           alignItems: 'center',
           justifyContent: 'center',
+          maxHeight,
+          display,
         }}
       >
         {icon}
         <span
           className={styles.tileBadgeText}
-          style={{ maxWidth }}
+          style={{ maxWidth: maxTextWidth, lineHeight: textLineHeight }}
         >
           {text}
         </span>

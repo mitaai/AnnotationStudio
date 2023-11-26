@@ -212,7 +212,7 @@ export default function IdeaSpacesChannel({
         <TileBadge
           key="existingAnnotationsText"
           color="red"
-          maxWidth={300}
+          maxTextWidth={300}
           text={existingText}
         />
       );
