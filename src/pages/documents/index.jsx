@@ -168,6 +168,7 @@ const DocumentsIndex = ({
           marginRight={5}
           marginBottom={4}
           maxHeight={25}
+          maxTextWidth={180}
           text={groupNamesObj[id]}
         />
       ) : <></>
