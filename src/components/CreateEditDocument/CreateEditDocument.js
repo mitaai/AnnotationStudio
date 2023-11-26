@@ -1602,9 +1602,13 @@ const CreateEditDocument = ({
                         key={gid}
                         text={groupsShared.core[gid]?.name}
                         fontSize={14}
+                        maxHeight={30}
+                        textLineHeight="14px"
+                        display="flex"
                         color="blue"
                         onDelete={() => deleteGroup(gid)}
                         marginRight={6}
+                        marginBottom={4}
                       />
                     ),
                   )}
@@ -1627,9 +1631,13 @@ const CreateEditDocument = ({
                         key={gid}
                         text={groupsShared.contributions[gid]?.name}
                         fontSize={14}
+                        maxHeight={30}
+                        textLineHeight="14px"
+                        display="flex"
                         color="blue"
                         onDelete={() => deleteGroup(gid)}
                         marginRight={6}
+                        marginBottom={4}
                       />
                     ),
                   )}

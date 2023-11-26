@@ -347,10 +347,13 @@ export default function AnnotationsChannel({
         }
       }
 
-      annotations[slug].page = page;
-      annotations[slug].mine.push(...mine);
-      annotations[slug].shared.push(...shared);
-      annotations[slug]['shared-with-me'].push(...sharedWithMe);
+      if (annotations[slug].page !== page) {
+        annotations[slug].page = page;
+        annotations[slug].mine.push(...mine);
+        annotations[slug].shared.push(...shared);
+        annotations[slug]['shared-with-me'].push(...sharedWithMe);
+      }
+      
     } else {
       annotations[slug] = {
         countByPermissions,

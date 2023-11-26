@@ -137,7 +137,7 @@ export default function IdeaSpaceTile({
         <TileBadge
           key="existingAnnotationsText"
           color="red"
-          maxWidth={300}
+          maxTextWidth={300}
           text={existingText}
         />
       );

@@ -166,6 +166,9 @@ const DocumentsIndex = ({
           key={`group-tile-badge-${id}`}
           color="grey"
           marginRight={5}
+          marginBottom={4}
+          maxHeight={25}
+          maxTextWidth={180}
           text={groupNamesObj[id]}
         />
       ) : <></>
@@ -489,7 +492,7 @@ const DocumentsIndex = ({
                     },
                   },
                   { content: contributorsListToContributorsContent(contributors) || '-', style: { color: '#86919D' } },
-                  { content: groupsToTileBadges(groups) || '-', style: { color: '#86919D' } },
+                  { content: groupsToTileBadges(groups) || '-', style: { display: 'flex', flexWrap: 'wrap', color: '#86919D' } },
                   { content: state || '-', style: { color: '#86919D' } },
                   {
                     content: (createdAt && (
