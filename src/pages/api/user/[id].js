@@ -100,6 +100,9 @@ const handler = async (req, res) => {
       if (Object.keys(fieldsToSet).length !== 0) updateMethods.$set = fieldsToSet;
       updateMethods.$currentDate = { updatedAt: true };
 
+
+      console.log("ObjectId.isValid(req.query.id): ", ObjectId.isValid(req.query.id))
+
       const doc = await db
         .collection('users')
         .findOneAndUpdate(

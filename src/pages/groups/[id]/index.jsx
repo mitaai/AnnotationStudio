@@ -966,9 +966,10 @@ const EditGroup = ({
                         }}
                         onClick={userData ? () => {
                           addUserToGroup(group, userData.email).then(({ user }) => {
-                            const { _id, name, email } = user;
+                            const { id, name, email } = user;
+                            console.log('user: ', user);
                             const member = {
-                              name, email, id: _id, role: 'member',
+                              name, email, id, role: 'member',
                             };
                             setGroupMembers((prevState) => [...prevState, member]);
                             setUserData();
