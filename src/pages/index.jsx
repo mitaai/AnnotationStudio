@@ -44,34 +44,34 @@ export default function Home({
   const newReg = query && query.alert && query.alert === 'completeRegistration';
   const loading = status === 'loading';
 
-  const [socketUrl, setSocketUrl] = useState('wss://wq5pn518mf.execute-api.us-east-2.amazonaws.com/dev/');
-  const [messageHistory, setMessageHistory] = useState([]);
+  // const [socketUrl, setSocketUrl] = useState('wss://wq5pn518mf.execute-api.us-east-2.amazonaws.com/dev/');
+  // const [messageHistory, setMessageHistory] = useState([]);
 
-  const {
-    sendMessage,
-    sendJsonMessage,
-    lastMessage,
-    lastJsonMessage,
-    readyState,
-    getWebSocket,
-  } = useWebSocket(socketUrl, {
-    onOpen: () => console.log('opened'),
-    //Will attempt to reconnect on all close events, such as server shutting down
-    shouldReconnect: (closeEvent) => true,
-  });
+  // const {
+  //   sendMessage,
+  //   sendJsonMessage,
+  //   lastMessage,
+  //   lastJsonMessage,
+  //   readyState,
+  //   getWebSocket,
+  // } = useWebSocket(socketUrl, {
+  //   onOpen: () => console.log('opened'),
+  //   //Will attempt to reconnect on all close events, such as server shutting down
+  //   shouldReconnect: (closeEvent) => true,
+  // });
 
-  const connectionStatus = {
-    [ReadyState.CONNECTING]: 'Connecting',
-    [ReadyState.OPEN]: 'Open',
-    [ReadyState.CLOSING]: 'Closing',
-    [ReadyState.CLOSED]: 'Closed',
-    [ReadyState.UNINSTANTIATED]: 'Uninstantiated',
-  }[readyState];
+  // const connectionStatus = {
+  //   [ReadyState.CONNECTING]: 'Connecting',
+  //   [ReadyState.OPEN]: 'Open',
+  //   [ReadyState.CLOSING]: 'Closing',
+  //   [ReadyState.CLOSED]: 'Closed',
+  //   [ReadyState.UNINSTANTIATED]: 'Uninstantiated',
+  // }[readyState];
 
-  console.log('connectionStatus: ', connectionStatus);
+  // console.log('connectionStatus: ', connectionStatus);
 
 
-  const handleSendMessage = useCallback(() => sendJsonMessage({ "action": 'request', "rm": '1', "_set": { "name": 'bob' } }), []);
+  // const handleSendMessage = useCallback(() => sendJsonMessage({ "action": 'request', "rm": '1', "_set": { "name": 'bob' } }), []);
 
 
   const channelsMinWidth = 1375;
@@ -266,19 +266,19 @@ export default function Home({
     );
   };
 
-  useEffect(() => {
-    if (lastMessage !== null) {
-      console.log('lastMessage: ', lastMessage)
-      setMessageHistory((prev) => prev.concat(lastMessage));
-    }
-  }, [lastMessage, setMessageHistory]);
+  // useEffect(() => {
+  //   if (lastMessage !== null) {
+  //     console.log('lastMessage: ', lastMessage)
+  //     setMessageHistory((prev) => prev.concat(lastMessage));
+  //   }
+  // }, [lastMessage, setMessageHistory]);
 
-  useEffect(() => {
-    if (lastJsonMessage !== null) {
-      console.log('lastJsonMessage: ', lastJsonMessage)
-      setMessageHistory((prev) => prev.concat(lastJsonMessage));
-    }
-  }, [lastJsonMessage, setMessageHistory]);
+  // useEffect(() => {
+  //   if (lastJsonMessage !== null) {
+  //     console.log('lastJsonMessage: ', lastJsonMessage)
+  //     setMessageHistory((prev) => prev.concat(lastJsonMessage));
+  //   }
+  // }, [lastJsonMessage, setMessageHistory]);
 
 
   useEffect(() => {
@@ -359,7 +359,7 @@ export default function Home({
         }
       }}
     >
-      <Button onClick={() => handleSendMessage({ "action": 'request', "rm": '1', "_set": { "name": 'bob' } })}>Hello</Button>
+      {/* <Button onClick={() => handleSendMessage({ "action": 'request', "rm": '1', "_set": { "name": 'bob' } })}>Hello</Button> */}
       {loading && (
         <Card>
           <Card.Body>
