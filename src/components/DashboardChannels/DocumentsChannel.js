@@ -195,10 +195,10 @@ export default function DocumentsChannel({
         })
           .then(async (data) => {
             const { docs, count } = data;
-            console.log('docs: ', docs);
+            
             await addGroupNamesToDocuments(docs)
               .then((docsWithGroupNames) => {
-                console.log('docsWithGroupNames: ', docsWithGroupNames)
+
                 const d = {
                   countByPermissions: {
                     [documentPermissions]: count,
