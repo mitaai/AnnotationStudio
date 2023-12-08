@@ -35,13 +35,16 @@ const handler = async (req, res) => {
       }
 
       const { db } = await connectToDatabase();
-      const findCondition = { _id: ObjectID(req.query.id), owner: token.sub };
+      const findCondition = {
+          $and: [
+            { _id: ObjectID(req.query.id) },
+            { owner: token.sub },
+          ],
+      };
       const doc = await db
         .collection('outlines')
         .findOneAndUpdate(
-          {
-            ...findCondition,
-          },
+          findCondition,
           { $set: updateObj },
           {
             returnOriginal: false,

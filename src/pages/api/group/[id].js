@@ -13,8 +13,15 @@ const handler = async (req, res) => {
       const userObj = await db
         .collection('users')
         .findOne({ _id: ObjectID(token.sub) });
-      const findCondition = { _id: ObjectID(req.query.id) };
-      if (userObj.role !== 'admin') findCondition['members.id'] = token.sub;
+
+      const findCondition = {
+        $and: [
+          { _id: ObjectID(req.query.id) }
+        ],
+      };
+
+      if (userObj.role !== 'admin') findCondition.$and.push({ 'members.id': token.sub });
+
       const doc = await db
         .collection('groups')
         .find(findCondition)
@@ -97,25 +104,31 @@ const handler = async (req, res) => {
       const userObj = await db
         .collection('users')
         .findOne({ _id: ObjectID(token.sub) });
-      const findCondition = { _id: ObjectID(req.query.id) };
+      const findCondition = {
+        $and: [
+          { _id: ObjectID(req.query.id) },
+        ],
+      };
       if (userObj.role !== 'admin') {
         if (req.body.inviteToken) {
           const tokenObj = await db
             .collection('inviteTokens')
             .findOne({ token: req.body.inviteToken });
           if (tokenObj.group !== req.query.id) {
-            findCondition['members.id'] = token.sub;
+            findCondition.$and.push({ 'members.id': token.sub });
           }
         } else {
-          findCondition['members.id'] = token.sub;
+          findCondition.$and.push({ 'members.id': token.sub });
         }
       }
       const doc = await db
         .collection('groups')
         .findOneAndUpdate(
-          {
-            ...findCondition,
-            ...memberById,
+          { 
+            $and: [
+              findCondition,
+              memberById,
+            ],
           },
           updateMethods,
           {
@@ -131,8 +144,12 @@ const handler = async (req, res) => {
       const userObj = await db
         .collection('users')
         .findOne({ _id: ObjectID(token.sub) });
-      const findCondition = { _id: ObjectID(req.query.id) };
-      if (userObj.role !== 'admin') findCondition.members = { $elemMatch: { id: token.sub, role: 'owner' } };
+      const findCondition = {
+        $and: [
+          { _id: ObjectID(req.query.id) }
+        ],
+      };
+      if (userObj.role !== 'admin') findCondition.$and.push({ members: { $elemMatch: { id: token.sub, role: 'owner' } } });
       const doc = await db
         .collection('groups')
         .findOneAndDelete(findCondition);

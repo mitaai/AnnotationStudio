@@ -44,10 +44,11 @@ export default function DocumentTile({
   const g = groups.slice().filter((g_item) => g_item);
 
   if (g.length > 0) {
-    const indexOfSelectedGroup = groups.findIndex((grp) => grp?._id === selectedGroupId);
+    const indexOfSelectedGroup = g.findIndex((grp) => grp?._id === selectedGroupId);
     const selectedGroup = g.splice(indexOfSelectedGroup, 1)[0];
+
     tileBadges = [
-      <TileBadge key="selectedGroup" color="blue" text={selectedGroup.name} />,
+      <TileBadge key="selectedGroup" color="blue" text={selectedGroup?.name} />,
     ];
   }
 

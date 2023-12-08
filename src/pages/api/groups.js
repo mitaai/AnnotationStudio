@@ -12,13 +12,18 @@ const handler = async (req, res) => {
       const { groupIds } = req.body;
       if (groupIds) {
         const { db } = await connectToDatabase();
+
         const userObj = await db
           .collection('users')
           .findOne({ _id: ObjectID(token.sub) });
         const groupObjectIds = groupIds.map((id) => ObjectID(id));
-        const findCondition = { _id: { $in: groupObjectIds } };
-        if (userObj.role !== 'admin') findCondition['members.id'] = token.sub;
-        const projection = { _id: 1, name: 1 };
+        const findCondition = {
+          $and: [
+            { _id: { $in: groupObjectIds } },
+          ]
+        };
+        if (userObj.role !== 'admin') findCondition.$and.push({ 'members.id': token.sub });
+        const projection = { _id: 1, name: 1, members: 1 };
         const arr = await db
           .collection('groups')
           .find(findCondition, {
@@ -26,6 +31,8 @@ const handler = async (req, res) => {
             sort: [['_id', -1]],
           })
           .toArray();
+
+
         res.status(200).json({ groups: arr });
       } else res.status(400).end('Bad request');
     } else res.status(403).end('Invalid or expired token');

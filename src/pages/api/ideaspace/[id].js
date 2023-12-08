@@ -34,16 +34,19 @@ const handler = async (req, res) => {
         updateObj.name = name;
       }
 
-      console.log('updateObj', updateObj)
+      // console.log('updateObj', updateObj)
 
       const { db } = await connectToDatabase();
-      const findCondition = { _id: ObjectID(req.query.id), owner: token.sub };
+      const findCondition = {
+        $and: [
+          { _id: ObjectID(req.query.id) },
+          { owner: token.sub },
+        ],
+      };
       const doc = await db
         .collection('ideaspaces')
         .findOneAndUpdate(
-          {
-            ...findCondition,
-          },
+          findCondition,
           { $set: updateObj },
           {
             returnOriginal: false,

@@ -248,8 +248,10 @@ const handler = async (req, res) => {
           .findOne({ _id: ObjectID(token.sub) });
         const { role } = userObj;
         let findCondition = {
-          'target.document.slug': documentToUpdate.slug,
-          'target.document.owner.id': token.sub,
+          $and: [
+            { 'target.document.slug': documentToUpdate.slug },
+            { 'target.document.owner.id': token.sub },
+          ],
         };
         if (role === 'admin') {
           findCondition = { 'target.document.slug': documentToUpdate.slug };
