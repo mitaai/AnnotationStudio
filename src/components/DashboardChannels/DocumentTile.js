@@ -40,7 +40,8 @@ export default function DocumentTile({
   ].join(' ');
 
   let tileBadges = [];
-  const g = groups.slice();
+  // make sure there are no undefined values
+  const g = groups.slice().filter((g_item) => g_item);
 
   if (g.length > 0) {
     const indexOfSelectedGroup = groups.findIndex((grp) => grp?._id === selectedGroupId);
@@ -51,6 +52,7 @@ export default function DocumentTile({
   }
 
   if (g.length >= maxNumberOfDocumentGroups) {
+    
     tileBadges.push(<TileBadge
       key="moreGroups"
       showPopover={showPopover}
