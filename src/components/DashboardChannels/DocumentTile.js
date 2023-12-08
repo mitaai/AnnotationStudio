@@ -52,7 +52,7 @@ export default function DocumentTile({
   }
 
   if (g.length >= maxNumberOfDocumentGroups) {
-    console.log('g: ', g)
+    
     tileBadges.push(<TileBadge
       key="moreGroups"
       showPopover={showPopover}
