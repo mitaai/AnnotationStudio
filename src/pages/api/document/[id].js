@@ -16,8 +16,12 @@ const handler = async (req, res) => {
       const userGroups = (userObj.groups && userObj.groups.length > 0)
         ? userObj.groups.map((group) => group.id)
         : [];
-      const findCondition = { _id: ObjectID(req.query.id) };
-      if (userObj.role !== 'admin') findCondition.$or = [{ groups: { $in: userGroups } }, { owner: token.sub }];
+      const findCondition = {
+          $and: [
+            { _id: ObjectID(req.query.id) },
+        ],
+      };
+      if (userObj.role !== 'admin') findCondition.$and.push({ $or: [{ groups: { $in: userGroups } }, { owner: token.sub }] });
       const doc = await db
         .collection('documents')
         .find(findCondition)
@@ -191,14 +195,20 @@ const handler = async (req, res) => {
       const userObj = await db
         .collection('users')
         .findOne({ _id: ObjectID(token.sub) });
-      const findCondition = { _id: ObjectID(req.query.id) };
-      if (userObj.role !== 'admin') findCondition.owner = token.sub;
+      const findCondition = {
+        $and: [
+          { _id: ObjectID(req.query.id) }
+        ],
+      };
+      if (userObj.role !== 'admin') findCondition.$and.push({ owner: token.sub });
       const doc = await db
         .collection('documents')
         .findOneAndUpdate(
           {
-            ...findCondition,
-            ...groupById,
+            $and: [
+              findCondition,
+              groupById,
+            ],
           },
           updateMethods,
           {
@@ -214,8 +224,12 @@ const handler = async (req, res) => {
       const userObj = await db
         .collection('users')
         .findOne({ _id: ObjectID(token.sub) });
-      const findCondition = { _id: ObjectID(req.query.id) };
-      if (userObj.role !== 'admin') findCondition.owner = token.sub;
+      const findCondition = {
+        $and: [
+          { _id: ObjectID(req.query.id) },
+        ],
+      };
+      if (userObj.role !== 'admin') findCondition.$and.push({ owner: token.sub });
       const doc = await db
         .collection('documents')
         .findOneAndDelete(findCondition);

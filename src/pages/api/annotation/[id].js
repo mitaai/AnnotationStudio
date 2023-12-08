@@ -48,7 +48,12 @@ const handler = async (req, res) => {
         .collection('users')
         .findOne({ _id: ObjectID(token.sub) });
       const { role } = userObj;
-      let findCondition = { _id: ObjectID(req.query.id), 'creator.id': token.sub };
+      let findCondition = {
+        $and: [
+          { _id: ObjectID(req.query.id) },
+          { 'creator.id': token.sub },
+        ],
+      };
       if (role === 'admin') {
         findCondition = { _id: ObjectID(req.query.id) };
       }
@@ -79,7 +84,13 @@ const handler = async (req, res) => {
         .collection('users')
         .findOne({ _id: ObjectID(token.sub) });
       const { role } = userObj;
-      let findCondition = { _id: ObjectID(req.query.id), 'creator.id': token.sub };
+      let findCondition = {
+        $and: [
+          { _id: ObjectID(req.query.id) },
+          { 'creator.id': token.sub },
+        ],
+      };
+
       if (role === 'admin') {
         findCondition = { _id: ObjectID(req.query.id) };
       }

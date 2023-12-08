@@ -195,8 +195,10 @@ export default function DocumentsChannel({
         })
           .then(async (data) => {
             const { docs, count } = data;
+            console.log('docs: ', docs);
             await addGroupNamesToDocuments(docs)
               .then((docsWithGroupNames) => {
+                console.log('docsWithGroupNames: ', docsWithGroupNames)
                 const d = {
                   countByPermissions: {
                     [documentPermissions]: count,
@@ -279,6 +281,7 @@ export default function DocumentsChannel({
     || documents[selectedGroupId][documentPermissions] === undefined
       ? []
       : (queriedDocuments || documents[selectedGroupId][documentPermissions]).sort(sortDocuments);
+
 
     documentTiles = rawDocumentTiles.map(({
       _id, title, groups, contributors, updatedAt, slug, owner, state,
