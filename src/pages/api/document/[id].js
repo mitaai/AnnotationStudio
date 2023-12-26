@@ -197,7 +197,7 @@ const handler = async (req, res) => {
         .findOne({ _id: ObjectID(token.sub) });
       const findCondition = {
         $and: [
-          { _id: ObjectID(req.query.id) }
+          { _id: ObjectID(req.query.id) },
         ],
       };
       if (userObj.role !== 'admin') findCondition.$and.push({ owner: token.sub });

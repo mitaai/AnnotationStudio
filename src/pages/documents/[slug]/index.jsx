@@ -3,17 +3,20 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-restricted-syntax */
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useContext } from 'react';
 import { useSession } from 'next-auth/react';
 import $ from 'jquery';
 import {
   Button,
   Modal,
+  Overlay,
+  OverlayTrigger,
+  Popover,
   ProgressBar,
   Toast,
 } from 'react-bootstrap';
 import {
-  ArchiveFill, PencilFill, ChatLeftTextFill,
+  ArchiveFill, PencilFill, ChatLeftTextFill, BellSlash, EyeSlash, Eye, Bell, BroadcastPin,
 } from 'react-bootstrap-icons';
 import {
   createTextQuoteSelector,
@@ -33,6 +36,7 @@ import {
   DocumentFiltersContext,
   DocumentContext,
   DocumentActiveAnnotationsContext,
+  WebsocketContext,
 } from '../../../contexts/DocumentContext';
 import { getGroupById } from '../../../utils/groupUtil';
 import { FirstNameLastInitial } from '../../../utils/nameUtil';
@@ -63,6 +67,9 @@ const DocumentPage = ({
 
   const documentIsPDF = document && document.uploadContentType && document.uploadContentType.includes('pdf');
 
+
+  const targetWebsocketContainer = useRef(null);
+
   const focusedAnnotationsRef = useRef({ left: null, right: null }).current;
   const debouncedRepositioning = useRef(
     debounce((channelAnnotations, setChannelAnnotations) => {
@@ -81,6 +88,38 @@ const DocumentPage = ({
     }, 750),
   ).current;
 
+  const [messageHistory, setMessageHistory, handleSendJsonMessage, lastJsonMessage, readyState, connectionStatus, getWebSocket] = useContext(WebsocketContext);
+  const [documentViewWebsocketConnectionStatus, setDocumentViewWebsocketConnectionStatus] = useState(0);
+
+  const [websocketRMID, setWebsocketRMID] = useState();
+
+  const [websocketNotifications, setWebsocketNotifications] = useState({
+    unread: 0,
+    list: [],
+  });
+
+  const [websocketViews, setWebsocketViews] = useState({
+    withGroupId: {},
+    connectionIds: {},
+  });
+
+  const docViewWSStatus = {
+    0: {
+      color: '#dc3545',
+      text: 'Not connected'
+    },
+    1: {
+      color: '#0d6efd',
+      text: 'Connecting...'
+    },
+    2: {
+      color: '#198754',
+      text: 'Connected'
+    },
+  };
+
+  const [pulseWebsocketButton, setPulseWebsocketButton] = useState();
+
   const [largeFontSize, setLargeFontSize] = useState();
   const [groupNameMapping, setGroupNameMapping] = useState();
   const [documentTextLoading, setDocumentTextLoading] = useState(true);
@@ -88,6 +127,9 @@ const DocumentPage = ({
   const [showGroupFilteringModal, setShowGroupFilteringModal] = useState(true);
   const [defaultGroupFilteringId, setDefaultGroupFilteringId] = useState();
   const [foundDefaultGroupFilteringId, setFoundDefaultGroupFilteringId] = useState();
+
+  const [showWebsocketContainer, setShowWebsocketContainer] = useState();
+  
   const [
     initializedDocumentScrollEventListener,
     setInitializedDocumentScrollEventListener,
@@ -730,6 +772,183 @@ const DocumentPage = ({
   }, [document]);
 
   useEffect(() => {
+    if (lastJsonMessage !== null) {
+      console.log('lastJsonMessage: ', lastJsonMessage);
+      if (documentViewWebsocketConnectionStatus < 2) {
+        setDocumentViewWebsocketConnectionStatus(2);
+      }
+
+      // mangage data coming into the websocket
+
+      const {
+        status,
+        res: {
+          // messages
+          $enter_rm,
+          $set_rm,
+          $disconnect,
+          // requests
+          $set,
+          $get,
+        },
+      } = lastJsonMessage;
+
+      if ($enter_rm) {
+        const msg = {
+          date: new Date(),
+          header: 'new user entered room',
+          description: 'Joshua Mbogo Date-time',
+        };
+
+        setWebsocketNotifications((prevState) => ({
+          unread: prevState.unread + 1,
+          list: [msg, ...prevState.list],
+        }));
+
+        setPulseWebsocketButton(true);
+
+        const { connectionId, data: { user, withGroupId } } = $enter_rm;
+
+        const views = DeepCopyObj(websocketViews);
+
+        if (!views.withGroupId[withGroupId]) {
+          // if the groupId is not set, set it
+          views.withGroupId[withGroupId] = { [connectionId]: true }
+        } else if (!views.withGroupId[withGroupId][connectionId]) {
+          // if the connectionId in this groupId is not set, set it
+          views.withGroupId[withGroupId][connectionId] = true;
+        }
+
+        
+        views.connectionIds[connectionId] = user;
+
+        setWebsocketViews(views);
+
+      }
+
+      if ($set_rm && $set_rm.connectionId !== $enter_rm.connectionId) {
+
+        const { connectionId, data: { user, withGroupId } } = $set_rm;
+
+        const views = DeepCopyObj(websocketViews);
+
+        views.connectionIds[connectionId] = user;
+
+        setWebsocketViews(views);
+
+      }
+
+      if ($get) {
+        const { data } = $get;
+
+        const views = DeepCopyObj(websocketViews);
+
+        for (const [connectionId, { user, withGroupId }] of Object.entries(data)) {
+          if (!views.withGroupId[withGroupId]) {
+            // if the groupId is not set, set it
+            views.withGroupId[withGroupId] = { [connectionId]: true }
+          } else if (!views.withGroupId[withGroupId][connectionId]) {
+            // if the connectionId in this groupId is not set, set it
+            views.withGroupId[withGroupId][connectionId] = true;
+          }
+  
+          views.connectionIds[connectionId] = user;
+
+        }
+
+        setWebsocketViews(views);
+
+      }
+
+      if ($disconnect) {
+        const views = DeepCopyObj(websocketViews);
+
+        $disconnect.map(({ rm, connectionId, data: { user, withGroupId} }) => {
+
+          if (rm === websocketRMID) {
+
+            let foundUser = false;
+            
+            if (views.withGroupId[withGroupId][connectionId]) {
+              delete views.withGroupId[withGroupId][connectionId];
+              foundUser = true;
+            }
+
+            if (views.connectionIds[connectionId]) {
+              delete views.connectionIds[connectionId];
+              foundUser = true;
+            }
+
+            if (foundUser) {
+
+              const msg = {
+                date: new Date(),
+                header: 'new user has left the document',
+                description: 'Joshua Mbogo Date-time',
+              };
+      
+              setWebsocketNotifications((prevState) => ({
+                unread: prevState.unread + 1,
+                list: [msg, ...prevState.list],
+              }));
+
+            }
+          }
+
+          return null;
+        });
+
+        // updating websocketViews object
+        setWebsocketViews(views);
+
+      }
+
+
+    }
+  }, [lastJsonMessage]);
+
+  useEffect(() => {
+    console.log('websocketNotifications: ', websocketNotifications);
+    console.log('websocketViews: ', websocketViews);
+  }, [websocketNotifications, websocketViews])
+
+  useEffect(() => {
+    console.log('websocketNotifications: ', websocketNotifications);
+    console.log('websocketViews: ', websocketViews);
+  }, [websocketNotifications, websocketViews]);
+
+  useEffect(() => {
+    if (pulseWebsocketButton) {
+      setTimeout(() => setPulseWebsocketButton(), 1500);
+    }
+  }, [pulseWebsocketButton])
+
+  useEffect(() => {
+
+    if (foundDefaultGroupFilteringId && defaultGroupFilteringId && readyState === 1 && documentViewWebsocketConnectionStatus === 0) {
+      const rm = `[doc-view]-${document.slug}`;
+      setDocumentViewWebsocketConnectionStatus(1);
+      console.log("session: ", session);
+      console.log("document: ", document);
+      console.log("defaultGroupFilteringId: ", defaultGroupFilteringId);
+      console.log("readyState: ", readyState);
+      console.log("connectionStatus: ", connectionStatus);
+      const json = {
+        "action": 'request',
+        "rm": rm,
+        "_set": {
+          "user": { "id": `${session.user.id}`, "name": `${session.user.name}`, "email": `${session.user.email}` },
+          "withGroupId": `${defaultGroupFilteringId}`,
+        },
+        "_get": true,
+      };
+      handleSendJsonMessage(json);
+      setWebsocketRMID(rm);
+    }
+
+  }, [foundDefaultGroupFilteringId, connectionStatus, document, documentViewWebsocketConnectionStatus]);
+
+  useEffect(() => {
     if (!documentTextLoading && groupNameMapping !== undefined) {
       setDocumentLoading(false);
     }
@@ -919,6 +1138,134 @@ const DocumentPage = ({
 
   const defaultGroupFilteringIdSelected = (annotationChannel1Loaded && annotationChannel2Loaded) ? foundDefaultGroupFilteringId || showGroupFilteringModal === null : false;
 
+  const baseID = 'websocket-container-section';
+
+  const websocketContainerSections = {
+    connection: {
+      button: <div id={`${baseID}-connection`}
+      style={{
+        color: docViewWSStatus[documentViewWebsocketConnectionStatus].color,
+        display: 'flex',
+        alignItems: 'center'
+      }}>
+        <BroadcastPin
+          style={{ marginRight: 6 }}
+          color={docViewWSStatus[documentViewWebsocketConnectionStatus].color}
+        />
+        {docViewWSStatus[documentViewWebsocketConnectionStatus].text}
+      </div>,
+      toast: {
+        header: <>
+          <strong className="me-auto">Broadcast status</strong>
+          <div style={{ flex: 1 }} />
+        </>,
+        body: <div style={{ display: 'flex', flexDirection: 'column', padding: '0px 2px' }}>
+          <small>Your successfully connected! You'll get notifications and information on what's occuring in this document.</small>
+          <div style={{ margin: '8px 0px', height: 1, backgroundColor: 'rgba(0, 0, 0, 0.05)'}} />
+        </div>
+      },
+    },
+    notification: {
+      button: <div id={`${baseID}-notification`}
+        style={{ display: 'flex', alignItems: 'center' }} >
+        {documentViewWebsocketConnectionStatus >= 2 ? <Bell /> : <BellSlash />}
+        <span style={{ marginLeft: 6 }}>{websocketNotifications.unread}</span>
+      </div>,
+      toast: {
+        header: <>
+          <strong className="me-auto">Notifications</strong>
+          <div style={{ flex: 1 }} />
+          <small
+            id="clear-all-label"
+            onClick={() => setWebsocketNotifications((prevState) => ({
+              ...prevState,
+              unread: 0,
+            }))}
+          >Clear all</small>
+        </>,
+        body: <div style={{ display: 'flex', flexDirection: 'column', padding: '0px 2px' }}>
+          <small>Coming soon!</small>
+          {/* <div style={{ margin: '8px 0px', height: 1, backgroundColor: 'rgba(0, 0, 0, 0.05)'}} /> */}
+        </div>
+      },
+    },
+    views: {
+      button: <div id={`${baseID}-views`}
+        style={{ display: 'flex', alignItems: 'center' }}
+      >
+        {documentViewWebsocketConnectionStatus >= 2 ? <Eye /> : <EyeSlash />}
+        <span style={{ marginLeft: 6 }}>{Object.keys(websocketViews.withGroupId[defaultGroupFilteringId] || {}).length}</span>
+      </div>,
+      toast: {
+        header: <>
+          <strong className="me-auto">People on document</strong>
+          <div style={{ flex: 1 }} />
+        </>,
+        body: <div style={{ display: 'flex', flexDirection: 'column', padding: '0px 2px' }}>
+          <small>Coming soon!</small>
+          {/* <div style={{ margin: '8px 0px', height: 1, backgroundColor: 'rgba(0, 0, 0, 0.05)'}} /> */}
+        </div>
+      },
+    },
+  };
+
+  const handleClick = (ev) => {
+    const ids = [
+      `${baseID}-connection`,
+      `${baseID}-notification`,
+      `${baseID}-views`
+    ];
+    if (ev.target.id === ids[0] ||  $(ev.target).parents(`#${ids[0]}`).length > 0) {
+      setShowWebsocketContainer('connection')
+    } else if (ev.target.id === ids[1] || $(ev.target).parents(`#${ids[1]}`).length > 0) {
+      setShowWebsocketContainer('notification')
+    } else if (ev.target.id === ids[2] || $(ev.target).parents(`#${ids[2]}`).length > 0) {
+      setShowWebsocketContainer('views')
+    } else {
+      setShowWebsocketContainer(!showWebsocketContainer)
+    }
+    
+  };
+
+  const websocketContainer = <div style={{
+      zIndex: 5,
+      position: 'absolute',
+      top: `calc(100vh - ${headerHeight + footerHeight - 70 }px)`,
+      right: 20,
+    }}>
+      <Button
+        ref={targetWebsocketContainer}
+        className={documentViewWebsocketConnectionStatus >= 2 && pulseWebsocketButton && `pulse-button-2`}
+        style={{ position: 'relative', display: 'flex', alignItems: 'center', border: '1px solid #DBE0E5' }}
+        size="sm"
+        variant="light"
+        onClick={handleClick}
+      >
+        {websocketContainerSections.connection.button}
+        <div style={{ width: 1, height: 15, background: 'rgba(219, 224, 229, 0.8)', margin: '0px 10px' }} />
+        {websocketContainerSections.notification.button}
+        <div style={{ width: 1, height: 15, background: 'rgba(219, 224, 229, 0.8)', margin: '0px 10px' }} />
+        {websocketContainerSections.views.button}
+      </Button>
+      <Overlay
+        rootClose
+        onHide={handleClick}
+        target={targetWebsocketContainer.current}
+        transition={false}
+        show={showWebsocketContainer}
+        placement="top-end"
+      >
+        <Toast show={true} style={{ width: 300, zIndex: 1000, marginBottom: 10 }}>
+          <Toast.Header closeButton={false}>
+            {websocketContainerSections[showWebsocketContainer]?.toast.header}
+          </Toast.Header>
+          <Toast.Body style={{ height: 350, overflowY: 'scroll' }}>
+            {websocketContainerSections[showWebsocketContainer]?.toast.body}
+          </Toast.Body>
+        </Toast>
+      </Overlay>
+    </div>;
+
   return (
     <DocumentActiveAnnotationsContext.Provider value={[activeAnnotations, setActiveAnnotations]}>
       <DocumentContext.Provider value={[document, documentZoom, setDocumentZoom]}>
@@ -980,6 +1327,7 @@ const DocumentPage = ({
                   />
                   {!displayAnnotationsInChannels && <AnnotationsOverlay />}
                   {cannotAnnotateDocumentToast}
+                  {websocketContainer}
                   <div id="document-container" className={footerHeight > 0 && 'has-footer'}>
                     <div id="document-inner-container">
                       <AnnotationChannel
@@ -1163,6 +1511,7 @@ const DocumentPage = ({
               }
 
               #document-container {
+                position: relative;
                 height: calc(100vh - ${headerHeight + footerHeight}px);
                 transition: height 0.5s;
                 overflow-y: overlay !important;
@@ -1270,6 +1619,38 @@ const DocumentPage = ({
     
               #show-cannot-annotate-document-toast-container .toast-header button {
                 color: white !important;
+              }
+
+              #clear-all-label {  
+                cursor: pointer;          
+                transition: all 0.5s;
+                color: #6c757d;
+              }
+
+              #clear-all-label:hover {
+                color: #dc3545;
+              }
+
+              // 25, 135, 84
+              // 219, 224, 229
+
+              .pulse-button-2 {
+                display: block;
+                border: none;
+                // background: rgba(219, 224, 229, 0.8);
+                box-shadow: 0 0 0 0 rgba(219, 224, 229, 0.5);
+                -webkit-animation: pulse2 1s 1;
+              }
+              
+              @-webkit-keyframes pulse2 {
+                0% {
+                }
+                70% {
+                  box-shadow: 0 0 0 25px rgba(219, 224, 229, 0);
+                }
+                  100% {
+                  box-shadow: 0 0 0 0 rgba(219, 224, 229, 0);
+                }
               }
               
             `}
