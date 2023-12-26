@@ -7,7 +7,11 @@ import { useState, useEffect, useRef, useContext } from 'react';
 import { useSession } from 'next-auth/react';
 import $ from 'jquery';
 import {
+  Badge,
   Button,
+  Dropdown,
+  DropdownButton,
+  ListGroup,
   Modal,
   Overlay,
   OverlayTrigger,
@@ -42,13 +46,14 @@ import { getGroupById } from '../../../utils/groupUtil';
 import { FirstNameLastInitial } from '../../../utils/nameUtil';
 import AnnotationsOverlay from '../../../components/AnnotationsOverlay';
 import UnsavedChangesToast from '../../../components/UnsavedChangesToast/UnsavedChangesToast';
-import adjustLine, { DeepCopyObj } from '../../../utils/docUIUtils';
+import adjustLine, { DeepCopyObj, RID } from '../../../utils/docUIUtils';
 import Footer from '../../../components/Footer';
 import { annotatedByFilterMatch, byGroupFilterMatch, byPermissionsDocumentViewFilterMatch, byTagFilterMatch } from '../../../utils/annotationFilteringUtil';
 import MaxedTextLengthToast from '../../../components/MaxedTextLengthToast';
 import MaxedAnnotationLengthToast from '../../../components/MaxedAnnotationLengthToast';
 import RunTextAnalysisModal from '../../../components/RunTextAnalysisModal';
 import { groupBy } from 'lodash';
+import moment from 'moment';
 
 
 const DocumentPage = ({
@@ -92,6 +97,7 @@ const DocumentPage = ({
   const [documentViewWebsocketConnectionStatus, setDocumentViewWebsocketConnectionStatus] = useState(0);
 
   const [websocketRMID, setWebsocketRMID] = useState();
+  const [websocketID, setWebsocketID] = useState();
 
   const [websocketNotifications, setWebsocketNotifications] = useState({
     unread: 0,
@@ -773,7 +779,7 @@ const DocumentPage = ({
 
   useEffect(() => {
     if (lastJsonMessage !== null) {
-      console.log('lastJsonMessage: ', lastJsonMessage);
+      // console.log('lastJsonMessage: ', lastJsonMessage);
       if (documentViewWebsocketConnectionStatus < 2) {
         setDocumentViewWebsocketConnectionStatus(2);
       }
@@ -820,19 +826,32 @@ const DocumentPage = ({
         }
 
         
-        views.connectionIds[connectionId] = user;
+        views.connectionIds[connectionId] = { ...user, withGroupId };
 
         setWebsocketViews(views);
 
       }
 
-      if ($set_rm && $set_rm.connectionId !== $enter_rm.connectionId) {
+      if ($set_rm && $set_rm.connectionId !== $enter_rm?.connectionId) {
 
         const { connectionId, data: { user, withGroupId } } = $set_rm;
 
         const views = DeepCopyObj(websocketViews);
 
-        views.connectionIds[connectionId] = user;
+        // check if this users withGroupId value has changed before setting the user, could possibly mean the user is switching withGroupId
+        if (views.connectionIds[connectionId]?.withGroupId !== withGroupId) {
+          // go through each withGroupId and make sure to remove the user from it and add the user to the correct one
+          for (const [gid, obj] of Object.entries(views.withGroupId)) {
+            if (gid === withGroupId) {
+              obj[connectionId] = true;
+            } else {
+              delete obj[connectionId];
+            }
+          }
+          
+        }
+
+        views.connectionIds[connectionId] = {...user,  withGroupId};
 
         setWebsocketViews(views);
 
@@ -852,7 +871,7 @@ const DocumentPage = ({
             views.withGroupId[withGroupId][connectionId] = true;
           }
   
-          views.connectionIds[connectionId] = user;
+          views.connectionIds[connectionId] = { ...user, withGroupId };
 
         }
 
@@ -908,42 +927,45 @@ const DocumentPage = ({
   }, [lastJsonMessage]);
 
   useEffect(() => {
-    console.log('websocketNotifications: ', websocketNotifications);
-    console.log('websocketViews: ', websocketViews);
-  }, [websocketNotifications, websocketViews])
-
-  useEffect(() => {
-    console.log('websocketNotifications: ', websocketNotifications);
-    console.log('websocketViews: ', websocketViews);
-  }, [websocketNotifications, websocketViews]);
-
-  useEffect(() => {
     if (pulseWebsocketButton) {
       setTimeout(() => setPulseWebsocketButton(), 1500);
     }
   }, [pulseWebsocketButton])
+
+  const handleSwitchWithGroupId = (withGroupId) => {
+    const rm = `[doc-view]-${document.slug}`;
+    const json = {
+      "action": 'request',
+      "rm": rm,
+      "_set": {
+        "user": { "id": `${session.user.id}`, "name": `${session.user.name}`, "email": `${session.user.email}`, "websocket_id": `${websocketID}`, date: new Date(), },
+        "withGroupId": `${withGroupId}`,
+      },
+      "_get": true,
+    };
+    handleSendJsonMessage(json);
+    setDefaultGroupFilteringId(withGroupId)
+  };
 
   useEffect(() => {
 
     if (foundDefaultGroupFilteringId && defaultGroupFilteringId && readyState === 1 && documentViewWebsocketConnectionStatus === 0) {
       const rm = `[doc-view]-${document.slug}`;
       setDocumentViewWebsocketConnectionStatus(1);
-      console.log("session: ", session);
-      console.log("document: ", document);
-      console.log("defaultGroupFilteringId: ", defaultGroupFilteringId);
-      console.log("readyState: ", readyState);
-      console.log("connectionStatus: ", connectionStatus);
+
+      const websocket_id = RID();
       const json = {
         "action": 'request',
         "rm": rm,
         "_set": {
-          "user": { "id": `${session.user.id}`, "name": `${session.user.name}`, "email": `${session.user.email}` },
+          "user": { "id": `${session.user.id}`, "name": `${session.user.name}`, "email": `${session.user.email}`, "websocket_id": `${websocket_id}`, date: new Date(), },
           "withGroupId": `${defaultGroupFilteringId}`,
         },
         "_get": true,
       };
       handleSendJsonMessage(json);
       setWebsocketRMID(rm);
+      setWebsocketID(websocket_id);
     }
 
   }, [foundDefaultGroupFilteringId, connectionStatus, document, documentViewWebsocketConnectionStatus]);
@@ -1140,6 +1162,13 @@ const DocumentPage = ({
 
   const baseID = 'websocket-container-section';
 
+  const sortedWithGroupIdListCount = (groupNameMapping?.array || [])
+    .map(({ _id: gid, name }) => [gid, Object.keys(websocketViews.withGroupId[gid] || {}).length, name, gid === defaultGroupFilteringId])
+    .sort(([a_gid, a_count, n, a_bool], [b_gid, b_count]) => a_bool ? -1 : b_count - a_count)
+  
+  // const viewsWithGroupId = Object.keys(websocketViews.withGroupId[defaultGroupFilteringId] || {}).length;
+  const totalViews = sortedWithGroupIdListCount.reduce((accumulator, [grpId, count]) => accumulator + count, 0)
+
   const websocketContainerSections = {
     connection: {
       button: <div id={`${baseID}-connection`}
@@ -1156,7 +1185,7 @@ const DocumentPage = ({
       </div>,
       toast: {
         header: <>
-          <strong className="me-auto">Broadcast status</strong>
+          <strong className="me-auto" style={{ color: '#212121' }}>Broadcast status</strong>
           <div style={{ flex: 1 }} />
         </>,
         body: <div style={{ display: 'flex', flexDirection: 'column', padding: '0px 2px' }}>
@@ -1173,7 +1202,7 @@ const DocumentPage = ({
       </div>,
       toast: {
         header: <>
-          <strong className="me-auto">Notifications</strong>
+          <strong className="me-auto" style={{ color: '#212121' }}>Notifications</strong>
           <div style={{ flex: 1 }} />
           <small
             id="clear-all-label"
@@ -1194,16 +1223,59 @@ const DocumentPage = ({
         style={{ display: 'flex', alignItems: 'center' }}
       >
         {documentViewWebsocketConnectionStatus >= 2 ? <Eye /> : <EyeSlash />}
-        <span style={{ marginLeft: 6 }}>{Object.keys(websocketViews.withGroupId[defaultGroupFilteringId] || {}).length}</span>
+        <span style={{ marginLeft: 6 }}>{totalViews}</span>
       </div>,
       toast: {
         header: <>
-          <strong className="me-auto">People on document</strong>
-          <div style={{ flex: 1 }} />
+          <div style={{ height: 21, width: 50 }} />
+          <DropdownButton
+            variant="light"
+            id="dropdown-btn-group-view"
+            title={<div style={{ display: 'inline-block', minWidth: 265, textAlign: 'left' }}>
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <div className="ellipsis" style={{ fontWeight: 'bold', maxWidth: 200 }}>{(sortedWithGroupIdListCount[0] && sortedWithGroupIdListCount[0][2]) || ''}</div>
+                <div style={{ flex: 1 }} />
+                <div style={{ fontSize: 13, marginLeft: 5 }}>{`${(sortedWithGroupIdListCount[0] && sortedWithGroupIdListCount[0][1]) || '0'}/${totalViews}`}</div>
+              </div>
+            </div>}
+            size="sm"
+            style={{ position: 'absolute' }}
+          >
+            {sortedWithGroupIdListCount.map(([gid, count, name]) => <Dropdown.Item
+              key={`withGroupId-list-count-${gid}`}
+              href="#/action-1" style={{ minWidth: 296, fontSize: 12, display: 'flex' }}
+              onClick={() => handleSwitchWithGroupId(gid)}
+            >
+                <div className="ellipsis" style={{ fontWeight: 'bold', maxWidth: 200 }}>{name}</div>
+                <div style={{ flex: 1}} />
+                <div>{count}</div>
+              </Dropdown.Item>
+            )}
+          </DropdownButton>
         </>,
         body: <div style={{ display: 'flex', flexDirection: 'column', padding: '0px 2px' }}>
-          <small>Coming soon!</small>
-          {/* <div style={{ margin: '8px 0px', height: 1, backgroundColor: 'rgba(0, 0, 0, 0.05)'}} /> */}
+          <ListGroup as="ol" numbered variant="flush">
+            {Object.entries(websocketViews.withGroupId[defaultGroupFilteringId] || {}).map(([ connectionId ]) => {
+              const websocket_id = websocketViews.connectionIds[connectionId]?.websocket_id;
+              const me = websocket_id && websocket_id === websocketID;
+
+              return [websocketViews.connectionIds[connectionId]?.date, <ListGroup.Item
+                as="li"
+                className="d-flex justify-content-between align-items-start"
+                style={{ display: 'flex', justifyContent: 'between', alignItems: 'start' }}
+              >
+                <div className="ms-2 me-auto" style={{ position: 'relative', top: -2 }}>
+                  <div style={{ fontSize: 14, fontWeight: 'bold', color: me ? '#198754' : '#212121' }}>
+                    {FirstNameLastInitial(websocketViews.connectionIds[connectionId]?.name) + (me ? ' (Me)' : '')}
+                  </div>
+                  <div style={{ fontSize: 12 }}>{websocketViews.connectionIds[connectionId]?.email}</div>
+                </div>
+                {websocketViews.connectionIds[connectionId]?.date && <Badge variant="dark" pill>
+                  {moment(websocketViews.connectionIds[connectionId]?.date).fromNow()}
+                </Badge>}
+              </ListGroup.Item>];
+            }).sort(([a], [b]) => new Date(b) - new Date(a)).map(([date, react_comp]) => react_comp)}
+          </ListGroup>
         </div>
       },
     },
@@ -1242,8 +1314,8 @@ const DocumentPage = ({
         onClick={handleClick}
       >
         {websocketContainerSections.connection.button}
-        <div style={{ width: 1, height: 15, background: 'rgba(219, 224, 229, 0.8)', margin: '0px 10px' }} />
-        {websocketContainerSections.notification.button}
+        {/* <div style={{ width: 1, height: 15, background: 'rgba(219, 224, 229, 0.8)', margin: '0px 10px' }} />
+        {websocketContainerSections.notification.button} */}
         <div style={{ width: 1, height: 15, background: 'rgba(219, 224, 229, 0.8)', margin: '0px 10px' }} />
         {websocketContainerSections.views.button}
       </Button>
@@ -1255,8 +1327,8 @@ const DocumentPage = ({
         show={showWebsocketContainer}
         placement="top-end"
       >
-        <Toast show={true} style={{ width: 300, zIndex: 1000, marginBottom: 10 }}>
-          <Toast.Header closeButton={false}>
+        <Toast id="websocket-container-toast" show={true} style={{ width: 300, zIndex: 1000, marginBottom: 10 }}>
+          <Toast.Header closeButton={false} style={{ position: 'relative' }}>
             {websocketContainerSections[showWebsocketContainer]?.toast.header}
           </Toast.Header>
           <Toast.Body style={{ height: 350, overflowY: 'scroll' }}>
@@ -1651,6 +1723,22 @@ const DocumentPage = ({
                   100% {
                   box-shadow: 0 0 0 0 rgba(219, 224, 229, 0);
                 }
+              }
+
+              #dropdown-btn-group-view {
+                position: relative;
+                height: 28px;
+                left: -11px;
+                width: 296px;
+              }
+
+              [aria-labelledby="dropdown-btn-group-view"] {
+                max-height: 348px;
+                overflow-y: scroll;
+              }
+
+              #websocket-container-toast .list-group-item {
+                padding: 0.6rem 0.25rem 0.5rem 0.25rem;
               }
               
             `}
