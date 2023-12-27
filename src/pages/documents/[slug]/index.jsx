@@ -93,16 +93,12 @@ const DocumentPage = ({
     }, 750),
   ).current;
 
-  const [messageHistory, setMessageHistory, handleSendJsonMessage, lastJsonMessage, readyState, connectionStatus, getWebSocket] = useContext(WebsocketContext);
+  const [messageHistory, setMessageHistory, handleSendJsonMessage, lastJsonMessage, readyState, connectionStatus, getWebSocket, websocketID] = useContext(WebsocketContext);
   const [documentViewWebsocketConnectionStatus, setDocumentViewWebsocketConnectionStatus] = useState(0);
 
   const [websocketRMID, setWebsocketRMID] = useState();
-  const [websocketID, setWebsocketID] = useState();
 
-  const [websocketNotifications, setWebsocketNotifications] = useState({
-    unread: 0,
-    list: [],
-  });
+  const [websocketNotifications, setWebsocketNotifications] = useState({});
 
   const [websocketViews, setWebsocketViews] = useState({
     withGroupId: {},
@@ -792,6 +788,7 @@ const DocumentPage = ({
           // messages
           $enter_rm,
           $set_rm,
+          $notification_rm,
           $disconnect,
           // requests
           $set,
@@ -800,20 +797,36 @@ const DocumentPage = ({
       } = lastJsonMessage;
 
       if ($enter_rm) {
+        const { connectionId, data: { user, withGroupId } } = $enter_rm;
+
         const msg = {
           date: new Date(),
-          header: 'new user entered room',
-          description: 'Joshua Mbogo Date-time',
+          header: 'new user viewing document',
+          description: `${FirstNameLastInitial(user.name)} | ${user.email}`,
         };
 
-        setWebsocketNotifications((prevState) => ({
-          unread: prevState.unread + 1,
-          list: [msg, ...prevState.list],
-        }));
+        // make sure we have a valid withGroupId and that your not recieving notifications that are coming from yourself
+        if (withGroupId && user.websocket_id !== websocketID) {
+          if (websocketNotifications[withGroupId]) {
+            setWebsocketNotifications((prevState) => ({
+              ...prevState,
+              [withGroupId]: {
+                unread: prevState[withGroupId].unread + 1,
+                list: [msg, ...prevState[withGroupId].list],
+              }
+            }));
+          } else {
+            setWebsocketNotifications((prevState) => ({
+              ...prevState,
+              [withGroupId]: {
+                unread: 1,
+                list: [msg],
+              }
+            }));
+          }
+        }
 
         setPulseWebsocketButton(true);
-
-        const { connectionId, data: { user, withGroupId } } = $enter_rm;
 
         const views = DeepCopyObj(websocketViews);
 
@@ -857,28 +870,6 @@ const DocumentPage = ({
 
       }
 
-      if ($get) {
-        const { data } = $get;
-
-        const views = DeepCopyObj(websocketViews);
-
-        for (const [connectionId, { user, withGroupId }] of Object.entries(data)) {
-          if (!views.withGroupId[withGroupId]) {
-            // if the groupId is not set, set it
-            views.withGroupId[withGroupId] = { [connectionId]: true }
-          } else if (!views.withGroupId[withGroupId][connectionId]) {
-            // if the connectionId in this groupId is not set, set it
-            views.withGroupId[withGroupId][connectionId] = true;
-          }
-  
-          views.connectionIds[connectionId] = { ...user, withGroupId };
-
-        }
-
-        setWebsocketViews(views);
-
-      }
-
       if ($disconnect) {
         const views = DeepCopyObj(websocketViews);
 
@@ -902,14 +893,32 @@ const DocumentPage = ({
 
               const msg = {
                 date: new Date(),
-                header: 'new user has left the document',
-                description: 'Joshua Mbogo Date-time',
+                header: 'User has left document',
+                description: `${FirstNameLastInitial(user.name)} | ${user.email}`,
               };
       
-              setWebsocketNotifications((prevState) => ({
-                unread: prevState.unread + 1,
-                list: [msg, ...prevState.list],
-              }));
+              // make sure we have a valid withGroupId and that your not recieving notifications that are coming from yourself
+              if (withGroupId && user.websocket_id !== websocketID) {
+                if (websocketNotifications[withGroupId]) {
+                  setWebsocketNotifications((prevState) => ({
+                    ...prevState,
+                    [withGroupId]: {
+                      unread: prevState[withGroupId].unread + 1,
+                      list: [msg, ...prevState[withGroupId].list],
+                    }
+                  }));
+                } else {
+                  setWebsocketNotifications((prevState) => ({
+                    ...prevState,
+                    [withGroupId]: {
+                      unread: 1,
+                      list: [msg],
+                    }
+                  }));
+                }
+              }
+
+              setPulseWebsocketButton(true);
 
             }
           }
@@ -918,6 +927,79 @@ const DocumentPage = ({
         });
 
         // updating websocketViews object
+        setWebsocketViews(views);
+
+      }
+
+      if ($notification_rm) {
+        const {
+          connectionId,
+          data,
+        } = $notification_rm;
+
+        const {
+          annotation,
+          new_annotation,
+          user,
+          withGroupId,
+        } = data;
+
+        let description = ''
+
+        if (annotation) {
+          description = `${FirstNameLastInitial(annotation.creator.name)} ${new_annotation ? 'made' : 'edited'} an annotation`;
+        }
+
+        const msg = {
+          date: new Date(),
+          connectionId,
+          data,
+          header: 'new notification',
+          description,
+        };
+
+        // make sure we have a valid withGroupId and that your not recieving notifications that are coming from yourself
+        if (withGroupId && user.websocket_id !== websocketID) {
+          if (websocketNotifications[withGroupId]) {
+            setWebsocketNotifications((prevState) => ({
+              ...prevState,
+              [withGroupId]: {
+                unread: prevState[withGroupId].unread + 1,
+                list: [msg, ...prevState[withGroupId].list],
+              }
+            }));
+          } else {
+            setWebsocketNotifications((prevState) => ({
+              ...prevState,
+              [withGroupId]: {
+                unread: 1,
+                list: [msg],
+              }
+            }));
+          }
+        }
+
+        setPulseWebsocketButton(true);
+      }
+
+      if ($get) {
+        const { data } = $get;
+
+        const views = DeepCopyObj(websocketViews);
+
+        for (const [connectionId, { user, withGroupId }] of Object.entries(data)) {
+          if (!views.withGroupId[withGroupId]) {
+            // if the groupId is not set, set it
+            views.withGroupId[withGroupId] = { [connectionId]: true }
+          } else if (!views.withGroupId[withGroupId][connectionId]) {
+            // if the connectionId in this groupId is not set, set it
+            views.withGroupId[withGroupId][connectionId] = true;
+          }
+  
+          views.connectionIds[connectionId] = { ...user, withGroupId };
+
+        }
+
         setWebsocketViews(views);
 
       }
@@ -965,7 +1047,6 @@ const DocumentPage = ({
       };
       handleSendJsonMessage(json);
       setWebsocketRMID(rm);
-      setWebsocketID(websocket_id);
     }
 
   }, [foundDefaultGroupFilteringId, connectionStatus, document, documentViewWebsocketConnectionStatus]);
@@ -1162,6 +1243,8 @@ const DocumentPage = ({
 
   const baseID = 'websocket-container-section';
 
+  // console.log('groupMapping: ', groupNameMapping?.idToName[defaultGroupFilteringId]);
+
   const sortedWithGroupIdListCount = (groupNameMapping?.array || [])
     .map(({ _id: gid, name }) => [gid, Object.keys(websocketViews.withGroupId[gid] || {}).length, name, gid === defaultGroupFilteringId])
     .sort(([a_gid, a_count, n, a_bool], [b_gid, b_count]) => a_bool ? -1 : b_count - a_count)
@@ -1198,7 +1281,7 @@ const DocumentPage = ({
       button: <div id={`${baseID}-notification`}
         style={{ display: 'flex', alignItems: 'center' }} >
         {documentViewWebsocketConnectionStatus >= 2 ? <Bell /> : <BellSlash />}
-        <span style={{ marginLeft: 6 }}>{websocketNotifications.unread}</span>
+        <span style={{ marginLeft: 6 }}>{(defaultGroupFilteringId && websocketNotifications[defaultGroupFilteringId]?.unread) || 0}</span>
       </div>,
       toast: {
         header: <>
@@ -1206,15 +1289,42 @@ const DocumentPage = ({
           <div style={{ flex: 1 }} />
           <small
             id="clear-all-label"
-            onClick={() => setWebsocketNotifications((prevState) => ({
-              ...prevState,
-              unread: 0,
-            }))}
+            onClick={() => {
+              if (defaultGroupFilteringId && websocketNotifications[defaultGroupFilteringId]) {
+                // clear the notification unread count for the specific withGroupId
+                setWebsocketNotifications((prevState) => ({
+                  ...prevState,
+                  [defaultGroupFilteringId]: {
+                    unread: 0,
+                    // list: prevState[defaultGroupFilteringId].list,
+                    list: [],
+                  }
+                }));
+              }
+            }}
           >Clear all</small>
         </>,
         body: <div style={{ display: 'flex', flexDirection: 'column', padding: '0px 2px' }}>
-          <small>Coming soon!</small>
-          {/* <div style={{ margin: '8px 0px', height: 1, backgroundColor: 'rgba(0, 0, 0, 0.05)'}} /> */}
+          <ListGroup as="ol" numbered variant="flush">
+            {((defaultGroupFilteringId && websocketNotifications[defaultGroupFilteringId]?.list) || []).map((msg) => <ListGroup.Item
+                as="li"
+                className="d-flex justify-content-between align-items-start"
+                style={{ display: 'flex', flexDirection: 'column' }}
+              >
+                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'start', width: '100%' }}>
+                  <div className="ellipsis" style={{ maxWidth: 150, fontSize: 12, fontWeight: 'bold', color: '#212121', position: 'relative', top: -2 }}>
+                    {msg?.header || 'Unknown notification'}
+                  </div>
+                  <div style={{ flex: 1 }} />
+                  {msg?.date && <Badge variant="dark" pill>
+                    {moment(msg.date).fromNow()}
+                  </Badge>}
+                </div>
+
+                <div style={{ fontSize: 12 }}>{msg?.description || '[Error identifying message]'}</div>
+                
+              </ListGroup.Item>)}
+          </ListGroup>
         </div>
       },
     },
@@ -1262,17 +1372,33 @@ const DocumentPage = ({
               return [websocketViews.connectionIds[connectionId]?.date, <ListGroup.Item
                 as="li"
                 className="d-flex justify-content-between align-items-start"
-                style={{ display: 'flex', justifyContent: 'between', alignItems: 'start' }}
+                style={{ display: 'flex', flexDirection: 'column' }}
               >
-                <div className="ms-2 me-auto" style={{ position: 'relative', top: -2 }}>
-                  <div style={{ fontSize: 14, fontWeight: 'bold', color: me ? '#198754' : '#212121' }}>
+                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'start', width: '100%' }}>
+                  <div className="ellipsis"
+                    style={{
+                      maxWidth: 150,
+                      fontSize: 14,
+                      fontWeight: 'bold',
+                      color: me ? '#198754' : '#212121',
+                      position: 'relative',
+                      top: 0,
+                    }}
+                  >
                     {FirstNameLastInitial(websocketViews.connectionIds[connectionId]?.name) + (me ? ' (Me)' : '')}
                   </div>
-                  <div style={{ fontSize: 12 }}>{websocketViews.connectionIds[connectionId]?.email}</div>
+                  <div style={{ flex: 1 }} />
+                  {websocketViews.connectionIds[connectionId]?.date && <Badge
+                    style={{ position: 'relative', top: 3 }}
+                    variant="dark"
+                    pill
+                  >
+                    {moment(websocketViews.connectionIds[connectionId]?.date).fromNow()}
+                  </Badge>}
                 </div>
-                {websocketViews.connectionIds[connectionId]?.date && <Badge variant="dark" pill>
-                  {moment(websocketViews.connectionIds[connectionId]?.date).fromNow()}
-                </Badge>}
+
+                <div style={{ fontSize: 12 }}>{websocketViews.connectionIds[connectionId]?.email || ''}</div>
+                
               </ListGroup.Item>];
             }).sort(([a], [b]) => new Date(b) - new Date(a)).map(([date, react_comp]) => react_comp)}
           </ListGroup>
@@ -1314,8 +1440,8 @@ const DocumentPage = ({
         onClick={handleClick}
       >
         {websocketContainerSections.connection.button}
-        {/* <div style={{ width: 1, height: 15, background: 'rgba(219, 224, 229, 0.8)', margin: '0px 10px' }} />
-        {websocketContainerSections.notification.button} */}
+        <div style={{ width: 1, height: 15, background: 'rgba(219, 224, 229, 0.8)', margin: '0px 10px' }} />
+        {websocketContainerSections.notification.button}
         <div style={{ width: 1, height: 15, background: 'rgba(219, 224, 229, 0.8)', margin: '0px 10px' }} />
         {websocketContainerSections.views.button}
       </Button>

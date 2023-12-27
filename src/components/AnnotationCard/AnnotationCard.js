@@ -41,8 +41,9 @@ import {
   DocumentAnnotationsContext,
   DocumentFiltersContext,
   DocumentActiveAnnotationsContext,
+  WebsocketContext,
 } from '../../contexts/DocumentContext';
-import { copyToClipboard } from '../../utils/docUIUtils';
+import { DeepCopyObj, copyToClipboard } from '../../utils/docUIUtils';
 import { FirstNameLastInitial } from '../../utils/nameUtil';
 import { fixIframes } from '../../utils/parseUtil';
 import AnnotationShareableLinkIcon from '../AnnotationShareableLinkIcon';
@@ -76,6 +77,9 @@ function AnnotationCard({
   membersIntersection,
   setAlerts,
 }) {
+
+  const [messageHistory, setMessageHistory, handleSendJsonMessage, lastJsonMessage, readyState, connectionStatus, getWebSocket, websocketID] = useContext(WebsocketContext);
+
   const refCardClickedAlready = useRef(false);
   const [activeAnnotations] = useContext(DocumentActiveAnnotationsContext);
   const [,,,
@@ -192,10 +196,45 @@ function AnnotationCard({
     $(`.annotation-highlighted-text[annotation-id='${id}']`).removeClass('active');
   }
 
-  function SetAndSaveAnnotationData(anno) {
+  function SendNewAnnotationWebsocketNotification(anno, new_anno) {
+
+    const { permissions: { private: priv, sharedTo } } = anno;
+
+    if (priv || sharedTo) {
+      // don't send out notification
+      return;
+    }
+
+    const rm = `[doc-view]-${anno.target.document.slug}`;
+    const json = {
+      "action": 'request',
+      "rm": rm,
+      "_notification": {
+        "annotation": anno,
+        "new_annotation": new_anno,
+        "user": { "id": `${anno.creator.id}`, "name": `${anno.creator.name}`, "email": `${anno.creator.email}`, "websocket_id": `${websocketID}`, date: new Date(), },
+        "withGroupId": anno.creator.withGroupId,
+      },
+    };
+
+    handleSendJsonMessage(DeepCopyObj(json));
+
+  }
+
+  function SetAndSaveAnnotationData(args) {
+    const {
+      anno,
+      new: new_anno,
+      sendNotification,
+    } = args || {};
     setAnnotationData(anno);
     saveAnnotationChanges(anno, side);
     setDocumentFilters({ ...documentFilters, filterOnInit: true });
+
+    // send websocket notification that user made an annotation
+    if (sendNotification) {
+      SendNewAnnotationWebsocketNotification(anno, new_anno)
+    }
   }
 
   function SaveAnnotation() {
@@ -277,7 +316,7 @@ function AnnotationCard({
         setExpanded(true);
         AddClassActive(newAnnotationData._id);
         // update the annotation data
-        SetAndSaveAnnotationData(newAnnotationData);
+        SetAndSaveAnnotationData({ anno: newAnnotationData, new: true, sendNotification: true });
         // focus annotation so that things get shifted to their correct spots
         setUpdateFocusOfAnnotation(true);
       }).catch((err) => {
@@ -295,7 +334,7 @@ function AnnotationCard({
         setSavingAnnotation(false);
         // once the new annotation data saves properly
         // on the database then we can update the annotation data
-        SetAndSaveAnnotationData(newAnnotationData);
+        SetAndSaveAnnotationData({ anno: newAnnotationData, new: false, sendNotification: true });
 
         // after setting the annotation data we need
         // to reset the "new" data back to null
@@ -335,7 +374,7 @@ function AnnotationCard({
       // if the annotation is not new then canceling
       // should just return it to its previous state
       annotationData.editing = false;
-      SetAndSaveAnnotationData(annotationData);
+      SetAndSaveAnnotationData({ anno: annotationData, new: false, sendNotification: false });
       setUpdateFocusOfAnnotation(true);
     }
   }
@@ -707,7 +746,7 @@ function AnnotationCard({
                         setShowUnsavedChangesToast(true);
                       } else {
                         annotationData.editing = true;
-                        SetAndSaveAnnotationData(annotationData);
+                        SetAndSaveAnnotationData({ anno: annotationData, new: false, sendNotification: false });
                       }
                     }}
                   >

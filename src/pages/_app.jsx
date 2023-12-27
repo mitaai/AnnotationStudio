@@ -14,6 +14,7 @@ import 'semantic-ui-css/components/label.min.css';
 import 'semantic-ui-css/components/icon.min.css';
 import 'react-bootstrap-typeahead/css/Typeahead.css';
 import '../style/custom.scss';
+import { RID } from '../utils/docUIUtils';
 
 Router.events.on('routeChangeStart', () => NProgress.start());
 Router.events.on('routeChangeComplete', () => NProgress.done());
@@ -24,6 +25,7 @@ export default function AnnotationStudio({ Component, pageProps }) {
 
   const [socketUrl, setSocketUrl] = useState('wss://wq5pn518mf.execute-api.us-east-2.amazonaws.com/dev/');
   const [messageHistory, setMessageHistory] = useState([]);
+  const [websocketID, setWebsocketID] = useState();
 
   const {
     sendMessage,
@@ -57,9 +59,13 @@ export default function AnnotationStudio({ Component, pageProps }) {
     }
   }, [lastJsonMessage, setMessageHistory]);
 
+  useEffect(() => {
+    setWebsocketID(RID());
+  }, [])
+
   return (
     <SessionProvider session={pageProps.session}>
-      <WebsocketContext.Provider value={[messageHistory, setMessageHistory, handleSendJsonMessage, lastJsonMessage, readyState, connectionStatus, getWebSocket]}>
+      <WebsocketContext.Provider value={[messageHistory, setMessageHistory, handleSendJsonMessage, lastJsonMessage, readyState, connectionStatus, getWebSocket, websocketID]}>
         <Component {...pageProps} statefulSession={session} updateSession={setSession} />
       </WebsocketContext.Provider>
     </SessionProvider>
