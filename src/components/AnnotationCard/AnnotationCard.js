@@ -196,7 +196,7 @@ function AnnotationCard({
     $(`.annotation-highlighted-text[annotation-id='${id}']`).removeClass('active');
   }
 
-  function SendNewAnnotationWebsocketNotification(anno, new_anno) {
+  function SendNewAnnotationWebsocketNotification(anno, new_anno, side) {
 
     const { permissions: { private: priv, sharedTo } } = anno;
 
@@ -212,6 +212,7 @@ function AnnotationCard({
       "_notification": {
         "annotation": anno,
         "new_annotation": new_anno,
+        "side": side,
         "user": { "id": `${anno.creator.id}`, "name": `${anno.creator.name}`, "email": `${anno.creator.email}`, "websocket_id": `${websocketID}`, date: new Date(), },
         "withGroupId": anno.creator.withGroupId,
       },
@@ -233,7 +234,7 @@ function AnnotationCard({
 
     // send websocket notification that user made an annotation
     if (sendNotification) {
-      SendNewAnnotationWebsocketNotification(anno, new_anno)
+      SendNewAnnotationWebsocketNotification(anno, new_anno, side)
     }
   }
 

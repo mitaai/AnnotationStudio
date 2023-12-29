@@ -288,11 +288,14 @@ const DocumentPage = ({
     return tags.filter((value, index, self) => self.indexOf(value) === index).sort();
   }
 
-  const saveAnnotationChanges = (anno, side) => {
+  const saveAnnotationChanges = (anno, side, dontSetAnnotationIdBeingEdited) => {
     const index = channelAnnotations[side].findIndex((a) => a._id === anno._id);
     channelAnnotations[side][index] = DeepCopyObj(anno);
     setChannelAnnotations(DeepCopyObj(channelAnnotations));
-    setAnnotationIdBeingEdited(anno.editing ? anno._id : undefined);
+    if (!dontSetAnnotationIdBeingEdited) {
+      setAnnotationIdBeingEdited(anno.editing ? anno._id : undefined);
+    }
+    return index;
   };
 
   const scrollToAnnotation = () => {
@@ -940,6 +943,7 @@ const DocumentPage = ({
         const {
           annotation,
           new_annotation,
+          side,
           user,
           withGroupId,
         } = data;
@@ -948,6 +952,13 @@ const DocumentPage = ({
 
         if (annotation) {
           description = `${FirstNameLastInitial(annotation.creator.name)} ${new_annotation ? 'made' : 'edited'} an annotation`;
+
+          if (new_annotation) {
+
+          } else {
+            // edit exisiting annotation data
+            // console.log('index: ', saveAnnotationChanges(annotation, side, true))
+          }
         }
 
         const msg = {
