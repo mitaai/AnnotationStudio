@@ -788,9 +788,10 @@ const DocumentPage = ({
       console.log('lastJsonMessage: ', lastJsonMessage)
 
       const {
-        // info
-        connectionId,
-        rm,
+        // Connection info: (unused)
+        // connectionId,
+        // rm,
+        
         // broadcast keys: $enter_rm, $set, $notification, $disconnect,
         broadcast,
         
