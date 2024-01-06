@@ -23,7 +23,7 @@ Router.events.on('routeChangeError', () => NProgress.done());
 export default function AnnotationStudio({ Component, pageProps }) {
   const [session, setSession] = useState(pageProps.session);
 
-  const [socketUrl, setSocketUrl] = useState('wss://wq5pn518mf.execute-api.us-east-2.amazonaws.com/dev/');
+  const [socketUrl, setSocketUrl] = useState('wss://9tn6yisxy0.execute-api.us-east-2.amazonaws.com/dev/');
   const [messageHistory, setMessageHistory] = useState([]);
   const [websocketID, setWebsocketID] = useState();
 

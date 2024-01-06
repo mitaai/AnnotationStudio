@@ -28,7 +28,7 @@ const handler = async (req, res) => {
         .toArray();
       if (doc[0]) {
         const group = doc[0];
-        console.log('db group: ', group)
+
         const {
           name,
           members,

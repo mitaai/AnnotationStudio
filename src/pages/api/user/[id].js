@@ -27,7 +27,7 @@ const handler = async (req, res) => {
         const {
           name, firstName, lastName, affiliation, role,
         } = doc[0];
-        console.log('doc[0]: ', doc[0])
+
         const groups = doc[0].groups ? doc[0].groups : [];
         if (querierRole === 'admin') {
           const {

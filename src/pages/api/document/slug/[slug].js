@@ -10,6 +10,7 @@ const handler = async (req, res) => {
     const token = await getToken({ req, secret });
     if (token && token.exp > 0) {
       const { db } = await connectToDatabase();
+      // console.log('variable info: ', db);
       const userObj = await db
         .collection('users')
         .findOne({ _id: ObjectID(token.sub) });

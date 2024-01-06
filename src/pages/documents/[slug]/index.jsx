@@ -785,22 +785,22 @@ const DocumentPage = ({
 
       // mangage data coming into the websocket
 
+      console.log('lastJsonMessage: ', lastJsonMessage)
+
       const {
-        status,
-        res: {
-          // messages
-          $enter_rm,
-          $set_rm,
-          $notification_rm,
-          $disconnect,
-          // requests
-          $set,
-          $get,
-        },
+        // info
+        connectionId,
+        rm,
+        // broadcast keys: $enter_rm, $set, $notification, $disconnect,
+        broadcast,
+        
+        // response keys: $enter_rm, $set_rm, $notification, $set, $get,
+        response,
+
       } = lastJsonMessage;
 
-      if ($enter_rm) {
-        const { connectionId, data: { user, withGroupId } } = $enter_rm;
+      if (broadcast?.$enter_rm) {
+        const { connectionId, data: { user, withGroupId } } = broadcast.$enter_rm;
 
         const msg = {
           date: new Date(),
@@ -848,9 +848,9 @@ const DocumentPage = ({
 
       }
 
-      if ($set_rm && $set_rm.connectionId !== $enter_rm?.connectionId) {
+      if (broadcast?.$set_rm) {
 
-        const { connectionId, data: { user, withGroupId } } = $set_rm;
+        const { connectionId, data: { user, withGroupId } } = broadcast.$set_rm;
 
         const views = DeepCopyObj(websocketViews);
 
@@ -873,10 +873,10 @@ const DocumentPage = ({
 
       }
 
-      if ($disconnect) {
+      if (broadcast?.$disconnect) {
         const views = DeepCopyObj(websocketViews);
 
-        $disconnect.map(({ rm, connectionId, data: { user, withGroupId} }) => {
+        broadcast.$disconnect.map(({ rm, connectionId, data: { user, withGroupId} }) => {
 
           if (rm === websocketRMID) {
 
@@ -934,11 +934,11 @@ const DocumentPage = ({
 
       }
 
-      if ($notification_rm) {
+      if (broadcast?.$notification) {
         const {
           connectionId,
           data,
-        } = $notification_rm;
+        } = broadcast.$notification;
 
         const {
           annotation,
@@ -993,8 +993,8 @@ const DocumentPage = ({
         setPulseWebsocketButton(true);
       }
 
-      if ($get) {
-        const { data } = $get;
+      if (response?.$get) {
+        const { data } = response.$get;
 
         const views = DeepCopyObj(websocketViews);
 
