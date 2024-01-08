@@ -791,7 +791,7 @@ const DocumentPage = ({
         // Connection info: (unused)
         // connectionId,
         // rm,
-        
+
         // broadcast keys: $enter_rm, $set, $notification, $disconnect,
         broadcast,
         
@@ -1629,7 +1629,9 @@ const DocumentPage = ({
                       {groupNameMapping.array.length > 0 ? groupNameMapping.array.map(({ _id, name }) => <Button
                         style={{ margin: '0px 10px 10px 0px'}}
                         variant={defaultGroupFilteringId === _id ? 'dark' : 'light'}
-                        onClick={() => setDefaultGroupFilteringId(_id)}
+                        onClick={() => {
+                          setDefaultGroupFilteringId(_id);
+                        }}
                       >
                         {name}
                       </Button>) : <Button
@@ -1643,7 +1645,10 @@ const DocumentPage = ({
                     <Modal.Footer>
                       <Button
                         variant="primary"
-                        onClick={() => setShowGroupFilteringModal(null)}
+                        onClick={() => {
+                          setShowGroupFilteringModal(null);
+                          setFoundDefaultGroupFilteringId(true);
+                        }}
                         disabled={defaultGroupFilteringId === undefined}
                       >
                         Continue
