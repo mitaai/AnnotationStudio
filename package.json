@@ -22,7 +22,7 @@
     "@aws-sdk/client-s3": "^3.105.0",
     "@google-cloud/language": "^4.3.2",
     "@next-auth/mongodb-adapter": "^1.1.1",
-    "@sendgrid/mail": "^7.4.2",
+    "@sendgrid/mail": "^8.1.1",
     "@sindresorhus/slugify": "^1.1.0",
     "@tinymce/tinymce-react": "^3.9.0",
     "@udecode/slate-plugins": "^0.75.2",
