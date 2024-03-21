@@ -70,7 +70,7 @@
     "slate-hyperscript": "^0.62.0",
     "slate-react": "^0.63.0",
     "tinymce": "^5.6.2",
-    "typeorm": "0.2.28",
+    "typeorm": "0.3.0",
     "typescript": "^3.9.7",
     "unfetch": "^4.2.0",
     "yup": "^0.29.3"
